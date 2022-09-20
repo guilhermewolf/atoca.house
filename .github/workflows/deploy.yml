@@ -18,8 +18,6 @@ jobs:
             password: ${{ secrets.PORTAINER_PASSWORD }}
             endpointId: 2
             stackname: cloudflare-ddns-test
-            imagenames: |
-                xoznu/cloudflare-ddns:latest
             docker_compose: |
               version: '2'
               services:

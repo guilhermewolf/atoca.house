@@ -10,34 +10,34 @@ jobs:
       steps:
         - name: Clone Repository
           uses: actions/checkout@v2
-        # - name: portainer
-        #   uses: LGinC/portainer-stack-deploy@master
-        #   with:
-        #     serverurl: ${{ secrets.PORTAINER_URL}}
-        #     username: ${{ secrets.PORTAINER_USERNAME }}
-        #     password: ${{ secrets.PORTAINER_PASSWORD }}
-        #     endpointId: 1
-        #     stackname: cloudflare-ddns-test
-        #     imagenames: |
-        #         xoznu/cloudflare-ddns:latest
-        #     docker_compose: |
-        #       version: '2'
-        #       services:
-        #         cloudflare-ddns:
-        #           image: oznu/cloudflare-ddns:latest
-        #           restart: always
-        #           environment:
-        #             - API_KEY=${{ secrets.CLOUDFLARE_TOKEN }}
-        #             - ZONE=atoca.house
-        #             - PROXIED=true
-
-        - name: Deploy Stack
-          uses: kgierke/portainer-stack-deployment@v1
+        - name: portainer
+          uses: LGinC/portainer-stack-deploy@master
           with:
-            portainer-url: ${{ secrets.PORTAINER_URL}}
-            portainer-username: ${{ secrets.PORTAINER_USERNAME }}
-            portainer-password: ${{ secrets.PORTAINER_PASSWORD }}
-            portainer-endpoint: 2
-            name: cloudflare-ddns-test
-            file: stacks/cloudflare-ddns.yml.mustache
-            variables: '{"CLOUDFLARE_TOKEN": "${{ secrets.CLOUDFLARE_TOKEN}}"}'
+            serverurl: ${{ secrets.PORTAINER_URL}}
+            username: ${{ secrets.PORTAINER_USERNAME }}
+            password: ${{ secrets.PORTAINER_PASSWORD }}
+            endpointId: 2
+            stackname: cloudflare-ddns-test
+            imagenames: |
+                xoznu/cloudflare-ddns:latest
+            docker_compose: |
+              version: '2'
+              services:
+                cloudflare-ddns:
+                  image: oznu/cloudflare-ddns:latest
+                  restart: always
+                  environment:
+                    - API_KEY=${{ secrets.CLOUDFLARE_TOKEN }}
+                    - ZONE=atoca.house
+                    - PROXIED=true
+
+        # - name: Deploy Stack
+        #   uses: kgierke/portainer-stack-deployment@v1
+        #   with:
+        #     portainer-url: ${{ secrets.PORTAINER_URL}}
+        #     portainer-username: ${{ secrets.PORTAINER_USERNAME }}
+        #     portainer-password: ${{ secrets.PORTAINER_PASSWORD }}
+        #     portainer-endpoint: 2
+        #     name: cloudflare-ddns-test
+        #     file: stacks/cloudflare-ddns.yml.mustache
+        #     variables: '{"CLOUDFLARE_TOKEN": "${{ secrets.CLOUDFLARE_TOKEN}}"}'

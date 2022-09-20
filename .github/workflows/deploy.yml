@@ -5,32 +5,18 @@ on:
     - main
 
 jobs:
-  deploy_cloudflare:
-    runs-on: ubuntu-latest
-    steps:
-      - name: deploy to portainer
-        uses: LGinC/portainer-stack-deploy@master
-        with: 
-          serverurl: ${{ secrets.PORTAINER_URL}}
-          username: ${{ secrets.PORTAINER_USERNAME }}
-          password: ${{ secrets.PORTAINER_PASSWORD }}
-          endpointId: 1
-          stackname: cloudflare-ddns-test
-          imagenames: |
-              xxx/xxx
-              myhub.com/xx1/xxx
-          variables: |
-              tag=6.0-alpine
-          env: |
-              TZ=Asia/Shanghai
-              myTag=App
-          docker_compose: |
-            version: '2'
-            services:
-              cloudflare-ddns:
-                image: oznu/cloudflare-ddns:latest
-                restart: always
-                environment:
-                  - API_KEY=${{ secrets.CLOUDFLARE_TOKEN}}
-                  - ZONE=atoca.house
-                  - PROXIED=true
+    deploy_cloudflare:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Clone Repository
+          uses: actions/checkout@v2
+        - name: Deploy Stack
+          uses: kgierke/portainer-stack-deployment@v1
+          with:
+            portainer-url: ${{ secrets.PORTAINER_URL}}
+            portainer-username: ${{ secrets.PORTAINER_USERNAME }}
+            portainer-password: ${{ secrets.PORTAINER_PASSWORD }}
+            portainer-endpoint: 16
+            name: cloudflare-ddns-test
+            file: stacks/cloudflare-ddns.yml.mustache
+            variables: '{"CLOUDFLARE_TOKEN": "${{ secrets.CLOUDFLARE_TOKEN}}"}'

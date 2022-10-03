@@ -1,0 +1,9 @@
+---
+version: '2'
+services:
+  cloudflare-ddns:
+    image: oznu/cloudflare-ddns:latest
+    restart: always
+    environment:
+      - ZONE=atoca.house
+      - PROXIED=true

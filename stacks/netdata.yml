@@ -1,0 +1,38 @@
+version: '3'
+services:
+  netdata:
+    image: netdata/netdata
+    container_name: netdata
+    hostname: rpimaster # set to fqdn of host
+    ports:
+      - 19999:19999
+    restart: always
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+    environment:
+      - NETDATA_CLAIM_TOKEN=$NETDATA_CLAIM_TOKEN
+      - NETDATA_CLAIM_URL=https://app.netdata.cloud
+      - NETDATA_CLAIM_ROOMS=
+      - DOCKER_HOST=proxy:2375
+  proxy:
+    image: tecnativa/docker-socket-proxy
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+    environment:
+      - CONTAINERS=1
+volumes:
+  netdataconfig:
+  netdatalib:
+  netdatacache:

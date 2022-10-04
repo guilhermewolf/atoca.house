@@ -1,0 +1,19 @@
+---
+version: "2.1"
+services:
+  code-server:
+    image: lscr.io/linuxserver/code-server
+    container_name: code-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Amsterdam
+      - PASSWORD=$PASSWORD 
+      - SUDO_PASSWORD=$SUDO_PASSWORD 
+      - DEFAULT_WORKSPACE=/config/workspace 
+    volumes:
+      - /home/ubuntu/vscode/:/config
+      - /home/ubuntu/homer/:/config/homer:rw
+    ports:
+      - 8443:8443
+    restart: unless-stopped

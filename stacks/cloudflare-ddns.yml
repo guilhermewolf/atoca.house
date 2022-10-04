@@ -5,6 +5,6 @@ services:
     image: oznu/cloudflare-ddns:latest
     restart: always
     environment:
-      - API_KEY={{ CLOUDFLARE_TOKEN }}
+      - API_KEY=$API_KEY
       - ZONE=atoca.house
       - PROXIED=true

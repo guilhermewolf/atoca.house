@@ -1,0 +1,100 @@
+version: '2.1'
+services:
+    transmission-openvpn:
+        cap_add:
+            - NET_ADMIN
+        volumes:
+            - '/mnt/Movies/downloads:/data'
+            - /etc/localtime:/etc/localtime:ro
+        environment:
+            - OPENVPN_PROVIDER=$OPENVPN_PROVIDER
+            - OPENVPN_USERNAME=$OPENVPN_USERNAME
+            - OPENVPN_PASSWORD=$OPENVPN_PASSWORD
+            - LOCAL_NETWORK=$OPENVPN_LOCAL_NETWORK
+        logging:
+            driver: json-file
+            options:
+                max-size: 10m
+        ports:
+            - 9091:9091
+            - 9117:9117
+            - 7878:7878
+            - 8989:8989
+            - 8686:8686
+            - 6767:6767
+        image: haugene/transmission-openvpn
+        restart: always
+    jackett:
+        image: linuxserver/jackett
+        container_name: jackett
+        network_mode: "service:transmission-openvpn"
+        environment:
+            - PUID=1000
+            - PGID=100
+            - TZ=Europe/Amsterdam
+            - AUTO_UPDATE=true #optional
+            - RUN_OPTS=#optional
+        volumes:
+            - jackett:/config
+        restart: unless-stopped
+    radarr:
+        image: linuxserver/radarr
+        network_mode: "service:transmission-openvpn"
+        container_name: radarr
+        environment:
+            - PUID=1000
+            - PGID=100
+            - TZ=Europe/Amsterdam
+            - UMASK_SET=022 #optional
+        volumes:
+            - radarr:/config
+            - /mnt/Movies/downloads:/data
+            - /mnt/Movies/media:/media
+        restart: unless-stopped
+    sonarr:
+        image: linuxserver/sonarr
+        network_mode: "service:transmission-openvpn"
+        container_name: sonarr
+        environment:
+          - PUID=1000
+          - PGID=100
+          - TZ=Europe/Amsterdam
+          - UMASK SET=022
+        volumes:
+          - sonarr:/config
+          - /mnt/Movies/downloads:/data
+          - /mnt/Movies/series:/media
+        restart: unless-stopped
+    lidarr:
+        image: linuxserver/lidarr
+        network_mode: "service:transmission-openvpn"
+        container_name: lidarr
+        environment:
+            - PUID=1000
+            - PGID=100
+            - TZ=Europe/Amsterdam
+            - UMASK_SET=022 #optional
+        volumes:
+            - lidarr:/config
+            - /mnt/Movies/media:/media
+        restart: unless-stopped
+  #  bazarr:
+  #      image: lscr.io/linuxserver/bazarr
+  #      container_name: bazarr
+  #      network_mode: "service:transmission-openvpn"
+  #      environment:
+  #        - PUID=1000
+  #        - PGID=1000
+  #        - TZ=Europe/Amsterdam
+  #      volumes:
+  #        - bazarr:/config
+  #        - /mnt/Movies/media:/media
+  #        - /mnt/Movies/series:/series
+  #      restart: unless-stopped
+
+volumes:
+  lidarr:
+  radarr:
+  sonarr:
+  jackett:
+  bazarr:

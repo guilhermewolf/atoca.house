@@ -21,7 +21,7 @@ services:
             - 7878:7878
             - 8989:8989
             - 8686:8686
-            #- 6767:6767
+            - 6767:6767
         image: haugene/transmission-openvpn
         restart: always
     jackett:
@@ -78,19 +78,19 @@ services:
             - lidarr:/config
             - /mnt/Movies/media:/media
         restart: unless-stopped
-  #  bazarr:
-  #      image: lscr.io/linuxserver/bazarr
-  #      container_name: bazarr
-  #      network_mode: "service:transmission-openvpn"
-  #      environment:
-  #        - PUID=1000
-  #        - PGID=1000
-  #        - TZ=Europe/Amsterdam
-  #      volumes:
-  #        - bazarr:/config
-  #        - /mnt/Movies/media:/media
-  #        - /mnt/Movies/series:/series
-  #      restart: unless-stopped
+    bazarr:
+        image: lscr.io/linuxserver/bazarr
+        container_name: bazarr
+        network_mode: "service:transmission-openvpn"
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=Europe/Amsterdam
+        volumes:
+            - bazarr:/config
+            - /mnt/Movies/media:/media
+            - /mnt/Movies/series:/series
+        restart: unless-stopped
 
 volumes:
   lidarr:

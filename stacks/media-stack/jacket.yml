@@ -1,0 +1,19 @@
+version: "2.1"
+services:
+  jackett:
+    image: ghcr.io/linuxserver/jackett
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Amsterdam
+      - AUTO_UPDATE=true #optional
+    volumes:
+      - jackett:/config
+    ports:
+      - 9117:9117
+    restart: unless-stopped
+
+volumes:
+  jackett:
+    external: true

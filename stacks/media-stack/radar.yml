@@ -1,0 +1,21 @@
+version: "2.1"
+services:
+  radarr:
+    image: ghcr.io/linuxserver/radarr
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Amsterdam
+      - UMASK_SET=022 #optional
+    volumes:
+      - radarr:/config
+      - /mnt/write/movies:/movies
+      - /mnt/write/downloads:/downloads
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+
+volumes:
+  radarr:
+    external: true

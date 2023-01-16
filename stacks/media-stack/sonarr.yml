@@ -1,0 +1,19 @@
+version: "2.1"
+services:
+  sonarr:
+    image: ghcr.io/linuxserver/sonarr
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=100
+      - TZ=Europe/Amsterdam
+      - UMASK SET=022
+    volumes:
+      - sonarr:/config
+      - /mnt/Movies/downloads:/data
+      - /mnt/Movies/series:/media
+    restart: unless-stopped
+
+volumes:
+  sonarr:
+    external: true

@@ -1,8 +1,6 @@
 version: '3.3'
 services:
   transmission-openvpn:
-    cap_add:
-        - NET_ADMIN
     volumes:
         - '/mnt/Movies/downloads:/data'
         - /etc/localtime:/etc/localtime:ro
@@ -10,12 +8,15 @@ services:
         - OPENVPN_PROVIDER=$OPENVPN_PROVIDER
         - OPENVPN_USERNAME=$OPENVPN_USERNAME
         - OPENVPN_PASSWORD=$OPENVPN_PASSWORD
+        - WEBPROXY_ENABLED=yes
         - LOCAL_NETWORK=$OPENVPN_LOCAL_NETWORK
+    cap_add:
+        - NET_ADMIN
     logging:
         driver: json-file
         options:
             max-size: 10m
     ports:
-        - 9091:9091
+        - '9091:9091'
     image: haugene/transmission-openvpn
     restart: unless-stopped

@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3.3'
 services:
     transmission-openvpn:
         cap_add:
@@ -11,6 +11,7 @@ services:
             - OPENVPN_USERNAME=$OPENVPN_USERNAME
             - OPENVPN_PASSWORD=$OPENVPN_PASSWORD
             - LOCAL_NETWORK=$OPENVPN_LOCAL_NETWORK
+            - WEBPROXY_ENABLED=yes
         logging:
             driver: json-file
             options:
@@ -23,7 +24,8 @@ services:
             - 8686:8686
             - 6767:6767
         image: haugene/transmission-openvpn
-        restart: always
+        restart: unless-stopped
+
     jackett:
         image: linuxserver/jackett
         container_name: jackett

@@ -10,6 +10,7 @@ services:
         - UMASK_SET=022 #optional
     volumes:
         - lidarr:/config
+        - /mnt/Movies/downloads:/data
         - /mnt/Movies/music:/media
     ports:
       - 8686:8686

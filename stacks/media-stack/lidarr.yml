@@ -11,6 +11,8 @@ services:
     volumes:
         - lidarr:/config
         - /mnt/Movies/media:/media
+    ports:
+      - 8686:8686
     restart: unless-stopped
 
 volumes:

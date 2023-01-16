@@ -11,6 +11,8 @@ services:
         - bazarr:/config
         - /mnt/Movies/media:/media
         - /mnt/Movies/series:/series
+    ports:
+      - 6767:6767
     restart: unless-stopped
 
 volumes:

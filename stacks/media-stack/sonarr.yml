@@ -12,6 +12,8 @@ services:
       - sonarr:/config
       - /mnt/Movies/downloads:/data
       - /mnt/Movies/series:/media
+    ports:
+      - 8989:8989
     restart: unless-stopped
 
 volumes:

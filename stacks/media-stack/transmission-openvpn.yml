@@ -11,6 +11,7 @@ services:
         - WEBPROXY_ENABLED=yes
         - LOCAL_NETWORK=$OPENVPN_LOCAL_NETWORK
         - NORDVPN_COUNTRY=$NORDVPN_COUNTRY
+        - NORDVPN_CATEGORY=$NORDVPN_CATEGORY
     cap_add:
         - NET_ADMIN
     logging:

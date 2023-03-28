@@ -10,6 +10,7 @@ services:
         - OPENVPN_PASSWORD=$OPENVPN_PASSWORD
         - WEBPROXY_ENABLED=yes
         - LOCAL_NETWORK=$OPENVPN_LOCAL_NETWORK
+        - NORDVPN_COUNTRY=$NORDVPN_COUNTRY
     cap_add:
         - NET_ADMIN
     logging:

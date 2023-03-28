@@ -4,6 +4,7 @@ services:
     image: containrrr/watchtower
     restart: unless-stopped
     environment:
+      - TZ='Europe/Amsterdam'
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_ROLLING_RESTART=true
     volumes:

@@ -6,6 +6,7 @@ services:
         - /etc/localtime:/etc/localtime:ro
     environment:
         - OPENVPN_PROVIDER=$OPENVPN_PROVIDER
+        - OPENVPN_CONFIG=$OPENVPN_CONFIG
         - OPENVPN_USERNAME=$OPENVPN_USERNAME
         - OPENVPN_PASSWORD=$OPENVPN_PASSWORD
         - WEBPROXY_ENABLED=yes
@@ -18,5 +19,5 @@ services:
             max-size: 10m
     ports:
         - '9091:9091'
-    image: haugene/transmission-openvpn
     restart: unless-stopped
+    image: haugene/transmission-openvpn

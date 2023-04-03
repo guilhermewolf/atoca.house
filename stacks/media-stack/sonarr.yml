@@ -10,8 +10,8 @@ services:
       - UMASK SET=022
     volumes:
       - sonarr:/config
-      - /mnt/Movies/downloads:/data
-      - /mnt/Movies/series:/media
+      - /volume2/Movies/downloads:/data
+      - /volume2/Movies/series:/media
     ports:
       - 8989:8989
     restart: unless-stopped

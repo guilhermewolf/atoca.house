@@ -2,7 +2,7 @@ version: '3.3'
 services:
   transmission-openvpn:
     volumes:
-        - '/mnt/Movies/downloads:/data'
+        - '/volume2/Movies/downloads:/data'
     environment:
         - OPENVPN_PROVIDER=$OPENVPN_PROVIDER
         - OPENVPN_CONFIG=$OPENVPN_CONFIG

@@ -10,8 +10,8 @@ services:
         - UMASK_SET=022 #optional
     volumes:
         - lidarr:/config
-        - /mnt/Movies/downloads:/data
-        - /mnt/Movies/music:/media
+        - /volume2/Movies/downloads:/data
+        - /volume2/Movies/music:/media
     ports:
       - 8686:8686
     restart: unless-stopped

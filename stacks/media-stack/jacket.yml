@@ -13,6 +13,7 @@ services:
     ports:
       - 9117:9117
     restart: unless-stopped
-
+    labels:
+      - "com.centurylinlabs.watchtower.enable=true"
 volumes:
   jackett:

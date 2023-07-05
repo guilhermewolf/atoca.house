@@ -22,3 +22,5 @@ services:
         - '9091:9091'
     restart: unless-stopped
     image: haugene/transmission-openvpn
+    labels:
+        - "com.centurylinklabs.watchtower.enable=true"

@@ -1,0 +1,8 @@
+version: '3.3'
+services:
+    it-tools:
+        container_name: it-tools
+        restart: unless-stopped
+        ports:
+            - '8088:80'
+        image: 'corentinth/it-tools:latest'

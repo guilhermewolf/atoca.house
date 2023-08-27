@@ -1,0 +1,28 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: cloudflare-prod
+spec:
+  acme:
+    email: guilhermewolf@outlook.com
+
+    # Configure your server here...
+    # ---
+    # Letsencrypt Production
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    # Configure DNS or HTTP Challenge here...
+    # ---
+    # DNS Challenge:
+    - dns01:
+        # Configure your DNS Provider here...
+        # ---
+        cloudflare:
+          email: guilhermewolf@outlook.com
+        # API Key:
+          apiKeySecretRef:
+            name: cloudflare-cm-key
+            key: credential  
+

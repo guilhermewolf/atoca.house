@@ -1,0 +1,7 @@
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: cloudflare-cm-key 
+  namespace: cert-manager
+spec:
+  itemPath: "vaults/k8s/items/cloudflare-cm-key"

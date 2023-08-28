@@ -6,7 +6,6 @@ resources:
   - namespace.yaml
   - https://raw.githubusercontent.com/argoproj/argo-cd/v2.7.11/manifests/install.yaml
   - ingress.yaml
-  - certificate.yaml
 
 patchesStrategicMerge:
   # Kustomize --enable-helm plugin for Helm charts

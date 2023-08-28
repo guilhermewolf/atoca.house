@@ -7,3 +7,4 @@ resources:
   - ingress.yaml
   - deployment.yaml
   - service.yaml
+  - tunnel.yaml

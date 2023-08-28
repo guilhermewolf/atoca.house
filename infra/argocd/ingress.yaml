@@ -22,4 +22,4 @@ spec:
   tls:
   - hosts:
     - argocd.atoca.house
-    secretName: argocd-certificate
+    secretName: argocd-tls

@@ -4,7 +4,6 @@ namespace: whoami
 
 resources:
   - namespace.yaml
-  - ingress.yaml
   - deployment.yaml
   - service.yaml
   - tunnel.yaml

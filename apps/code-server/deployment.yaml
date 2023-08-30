@@ -26,7 +26,7 @@ spec:
             - name: PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: code-server
+                  name: vscode-password
                   key: password
             - name: DEFAULT_WORKSPACE
               value: "/config/workspace"

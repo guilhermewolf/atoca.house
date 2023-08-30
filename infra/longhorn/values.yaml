@@ -1,0 +1,30 @@
+defaultSettings:
+  defaultDataPath: "/storage"
+
+# Ingress Resource. Longhorn dashboard.
+ingress:
+  ## Enable creation of ingress resource
+  enabled: true
+  ## Add ingressClassName to the Ingress
+  ingressClassName: nginx
+
+  # ingress host
+  host: longhorn.atoca.house
+
+  ## Set this to true in order to enable TLS on the ingress record
+  tls: true
+
+  ## TLS Secret Name
+  tlsSecret: longhorn-tls
+
+  ## Default ingress path
+  path: /
+
+  ## Ingress annotations
+  annotations:
+    # Enable cert-manager to create automatically the SSL certificate and store in Secret
+    # Possible Cluster-Issuer values: 
+    #   * 'letsencrypt-issuer' (valid TLS certificate using IONOS API) 
+    #   * 'ca-issuer' (CA-signed certificate, not valid)
+    cert-manager.io/cluster-issuer: "cloudflare-prod"
+    #cert-manager.io/common-name: longhorn.atoca.house

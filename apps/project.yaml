@@ -13,6 +13,8 @@ spec:
       server: '*'
     - namespace: 'whoami'
       server: '*'
+    - namespace: 'code-server'
+      server: '*'
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

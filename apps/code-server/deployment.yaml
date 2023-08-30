@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-server
+  namespace: code-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: code-server
+  template:
+    metadata:
+      labels:
+        app: code-server
+    spec:
+      containers:
+        - name: code-server
+          image: lscr.io/linuxserver/code-server
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Amsterdam"
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: code-server
+                  key: password
+            - name: DEFAULT_WORKSPACE
+              value: "/config/workspace"
+          volumeMounts:
+            - name: code-server-pvc
+              mountPath: "/config"
+          ports:
+            - containerPort: 8443
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8443
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8443
+      volumes:
+        - name: code-server-pvc
+          persistentVolumeClaim:
+            claimName: code-server-pvc

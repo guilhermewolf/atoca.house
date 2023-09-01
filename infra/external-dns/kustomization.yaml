@@ -3,5 +3,6 @@ kind: Kustomization
 namespace: external-dns
 
 resources:
+  - namespace.yaml
   - cloudflare-key.yaml
   - deployment.yaml

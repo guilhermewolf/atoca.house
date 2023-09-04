@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: infra
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  sourceNamespaces:
+    - '*'
+  sourceRepos:
+    - 'https://github.com/guilhermewolf/atoca.house/*'
+    - 'ghcr.io/actions/actions-runner-controller-charts'
+  destinations:
+    - namespace: 'arc-system'
+      server: '*'
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'

@@ -1,0 +1,12 @@
+githubConfigUrl: https://github.com/guilhermewolf/atoca.house
+githubConfigSecret:
+  github_token: 
+    valueFrom:
+      secretKeyRef:
+        name: github-token-arc
+        key: credential
+minRunners: 0
+maxRunners: 2
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-controller-gha-runner-scale-set-controller

@@ -21,17 +21,6 @@ alertmanager:
           resources:
             requests:
               storage: 10Gi
-  ingress:
-    enabled: true
-    ngressClassName: nginx
-    annotations:
-          cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts: 
-      - alertmanager.atoca.house
-    tls: 
-    - secretName: alertmanager-tls
-      hosts:
-      - alertmanager.atoca.house
   serviceMonitor:
     relabelings:
       # Replace job value

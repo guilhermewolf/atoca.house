@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: authentik-outpost
+    namespace: authentik
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+spec:
+    ingressClassName: nginx
+    rules:
+        - host: authentik.atoca.house
+          http:
+              paths:
+                - backend:
+                    service:
+                      name: ak-outpost-authentik-embedded-outpost
+                      port:
+                        number: 9000
+                  path: /outpost.goauthentik.io
+                  pathType: Prefix
+    tls:
+    - hosts:
+      - authentik.atoca.house
+      secretName: authentik-tls

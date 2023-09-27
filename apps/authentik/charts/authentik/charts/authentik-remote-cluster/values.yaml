@@ -1,0 +1,10 @@
+nameOverride: ""
+fullnameOverride: ""
+
+annotations: {}
+
+serviceAccountSecret:
+  enabled: true
+
+clusterRole:
+  enabled: true

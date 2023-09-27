@@ -15,6 +15,10 @@ spec:
       server: '*'
     - namespace: 'code-server'
       server: '*'
+    - namespace: 'ntfy'
+      server: '*'
+    - namespace: 'authentik'
+      server: '*'
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

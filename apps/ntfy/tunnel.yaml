@@ -1,0 +1,9 @@
+apiVersion: networking.cfargotunnel.com/v1alpha1
+kind: TunnelBinding
+metadata:
+  name: ntfy-cluster-tun
+subjects:
+  - name: ntfy
+tunnelRef:
+  kind: ClusterTunnel
+  name: k3s-cluster-tunnel

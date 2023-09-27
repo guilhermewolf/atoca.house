@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: code-server
-          image: lscr.io/linuxserver/code-server
+          image: lscr.io/linuxserver/code-server:4.15.0
           env:
             - name: PUID
               value: "1000"

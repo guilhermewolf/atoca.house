@@ -1,7 +1,14 @@
 authentik:
     error_reporting:
         enabled: true
-
+    email:
+        host: "smtp.migadu.com"
+        port: 465
+        username: "no-reply@atoca.house"
+        use_tls: true
+        use_ssl: false
+        timeout: 30
+        from: "no-reply@atoca.house"
 ingress:
     ingressClassName: nginx
     enabled: true
@@ -26,6 +33,10 @@ envValueFrom:
         secretKeyRef:
             name: authentik-keys
             key: secret_key
+    AUTHENTIK_EMAIL__PASSWORD:
+        secretKeyRef:
+            name: authentik-keys
+            key: email-password 
 
 postgresql:
     enabled: true

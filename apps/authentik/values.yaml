@@ -3,7 +3,7 @@ authentik:
         enabled: true
     email:
         host: "smtp.migadu.com"
-        port: 465
+        port: 587
         username: "no-reply@atoca.house"
         use_tls: true
         use_ssl: false

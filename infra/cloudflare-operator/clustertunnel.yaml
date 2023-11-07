@@ -6,8 +6,8 @@ metadata:
   namespace: cloudflare-operator-system
 spec:
   newTunnel:
-    name: my-k8s-tunnel
-  size: 3 
+    name: k3s-cluster-tunnel
+  size: 1 
   cloudflare:
     email: guilhermewolf@outlook.com 
     domain: atoca.house

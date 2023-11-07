@@ -1,4 +1,0 @@
-clusterName: test-cluster-name
-nodeSelector:
-  role: bastion
-  environment: security

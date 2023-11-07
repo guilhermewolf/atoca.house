@@ -1,3 +1,4 @@
 operator:
   create: true
+  installCRDs: true
 

@@ -9,5 +9,5 @@ helmCharts:
   - name: longhorn
     repo: https://charts.longhorn.io
     releaseName: "longhorn"
-    version: 1.5.2
+    version: 1.5.3
     valuesFile: values.yaml

@@ -7,7 +7,7 @@ on:
       - terraform
 
 env:
-  tf_actions_working_dir: "terraform"
+  tf_actions_working_dir: "./terraform"
 
 jobs:
   terraform:

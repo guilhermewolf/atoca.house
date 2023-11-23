@@ -39,3 +39,4 @@ jobs:
         id: apply-run
         run: |
           cd ${{ env.tf_actions_working_dir }}
+          terraform apply -auto-approve

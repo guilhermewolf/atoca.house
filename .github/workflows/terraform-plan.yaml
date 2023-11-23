@@ -7,7 +7,7 @@ on:
       - terraform
 
 env:
-  tf_actions_working_dir: "terraform"
+  tf_actions_working_dir: "./terraform"
 
 jobs:
   terraform:
@@ -19,30 +19,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      # https://github.com/actions/setup-node
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
       
       - name: Terraform fmt
         id: fmt
-        run: terraform fmt -check
+        run: |
+          cd ${{ env.tf_actions_working_dir }}
+          terraform fmt -check
         continue-on-error: true
-        working-directory: ${{ env.tf_actions_working_dir }}
     
       - name: Terraform Init
         id: init
-        run: terraform init
-        working-directory: ${{ env.tf_actions_working_dir }}
+        run:  |
+          cd ${{ env.tf_actions_working_dir }}
+          terraform init
 
       - name: Terraform Validate
         id: validate
-        run: terraform validate -no-color
-        working-directory: ${{ env.tf_actions_working_dir }}
+        run: |
+          cd ${{ env.tf_actions_working_dir }}
+          terraform validate -no-color
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color
+        run:  |
+          cd ${{ env.tf_actions_working_dir }}
+          terraform plan -no-color
         continue-on-error: true
-        working-directory: ${{ env.tf_actions_working_dir }}
 
       - uses: actions/github-script@v6
         if: github.event_name == 'pull_request'

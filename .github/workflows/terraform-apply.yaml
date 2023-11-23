@@ -1,0 +1,32 @@
+name: "Terraform Apply"
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+    tf_actions_working_dir: "/terraform"
+
+jobs:
+  terraform:
+    name: "Terraform Apply"
+    runs-on: self-hosted
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        working-directory: ${{ env.tf_actions_working_dir }}
+
+      - name: Terraform Apply
+        id: apply-run
+        run: terraform apply -auto-approve
+        working-directory: ${{ env.tf_actions_working_dir }}

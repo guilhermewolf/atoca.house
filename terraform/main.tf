@@ -1,0 +1,4 @@
+
+output "test" {
+  value = "test"
+}

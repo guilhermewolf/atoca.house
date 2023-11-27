@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tf-state
+  labels:
+    name: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: tf-state
+  template:
+    metadata:
+      labels:
+        service: tf-state
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:14-alpine
+          volumeMounts:
+          - name: tf-state-pvc
+            mountPath: /var/lib/postgresql/data
+            subPath: postgres
+          env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: tf-state-secrets
+                key: username
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: tf-state-secrets
+                key: user
+      restartPolicy: Always
+      volumes:
+        - name: tf-state-pvc
+          persistentVolumeClaim:
+            claimName: tf-state-pvc

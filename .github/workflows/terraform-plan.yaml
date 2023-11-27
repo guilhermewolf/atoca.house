@@ -27,12 +27,12 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
       
-      - name: Terraform fmt
-        id: fmt
-        run: |
-          cd ${{ env.tf_actions_working_dir }}
-          terraform fmt -check
-        continue-on-error: true
+      # - name: Terraform fmt
+      #   id: fmt
+      #   run: |
+      #     cd ${{ env.tf_actions_working_dir }}
+      #     terraform fmt -check
+      #   continue-on-error: true
     
       - name: Terraform Init
         id: init

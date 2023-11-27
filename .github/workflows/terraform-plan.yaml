@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - terraform
+      - 'terraform/**'
 
 env:
   tf_actions_working_dir: "./terraform"
@@ -36,6 +36,8 @@ jobs:
     
       - name: Terraform Init
         id: init
+        env:
+          PG_CONN_STR: ${{ secrets.PG_CONN_STR }}
         run:  |
           cd ${{ env.tf_actions_working_dir }}
           terraform init
@@ -48,6 +50,8 @@ jobs:
 
       - name: Terraform Plan
         id: plan
+        env:
+          PG_CONN_STR: ${{ secrets.PG_CONN_STR }}
         run:  |
           cd ${{ env.tf_actions_working_dir }}
           terraform plan -no-color

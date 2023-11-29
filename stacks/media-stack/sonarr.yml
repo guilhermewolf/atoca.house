@@ -12,6 +12,7 @@ services:
       - sonarr:/config
       - /volume2/Movies/downloads:/data
       - /volume2/Movies/series:/media
+      - /volume2/Movies/nzb/:/nzb
     ports:
       - 8989:8989
     restart: unless-stopped

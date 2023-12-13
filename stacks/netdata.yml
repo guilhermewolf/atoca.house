@@ -3,7 +3,7 @@ services:
   netdata:
     image: netdata/netdata
     container_name: netdata
-    hostname: rpimaster # set to fqdn of host
+    hostname: compartilhado # set to fqdn of host
     ports:
       - 19999:19999
     restart: always

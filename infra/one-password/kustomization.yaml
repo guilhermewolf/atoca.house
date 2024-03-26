@@ -10,6 +10,6 @@ resources:
 helmCharts:
   - name: connect
     repo: https://1password.github.io/connect-helm-charts
-    version: 1.14.0
+    version: 1.15.0
     releaseName: connect 
     valuesFile: values.yaml

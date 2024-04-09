@@ -1,2 +1,4 @@
 # Ignore .terraform folder
 .terraform/
+
+.DS_Store

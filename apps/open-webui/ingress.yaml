@@ -3,9 +3,8 @@ kind: Ingress
 metadata:
   name: open-webui-ingress
   namespace: open-webui
-  #annotations:
-    # Use appropriate annotations for your Ingress controller, e.g., for NGINX:
-    # nginx.ingress.kubernetes.io/rewrite-target: /
+  annotations:
+    cert-manager.io/cluster-issuer: "cloudflare-prod"
 spec:
   ingressClassName: nginx
   rules:
@@ -20,6 +19,6 @@ spec:
             port:
               number: 8080
   tls:
-  - hosts:
-    - open-webui.atoca.house
-    secretName: open-webui-tls
+    - hosts:
+        - open-webui.atoca.house
+      secretName: open-webui-tls

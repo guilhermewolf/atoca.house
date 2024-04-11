@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tf-state-ingress
+  namespace: tf-state
+  annotations:
+    cert-manager.io/cluster-issuer: "cloudflare-prod"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: tf-state.atoca.house
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tf-state
+            port:
+              number: 5432
+  tls:
+    - hosts:
+        - tf-state.atoca.house
+      secretName: tf-state-tls

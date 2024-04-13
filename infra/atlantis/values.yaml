@@ -22,6 +22,11 @@ environmentSecrets:
       name: atlantis-gh-app
       key: gh-webhook-secret
       
+  - name: ATLANTIS_TFE_TOKEN
+    secretKeyRef:
+      name: atlantis-gh-app
+      key: tf-cloud-team-token
+
 
 ## Use Server Side Repo Config,
 ## ref: https://www.runatlantis.io/docs/server-side-repo-config.html

@@ -1,0 +1,8 @@
+version: 3
+projects:
+- name: atoca-house
+  dir: ./terraform
+  workspace: atoca-house
+  autoplan:
+    when_modified: ["*.tf", "../modules/**/*.tf", ".terraform.lock.hcl"]
+    enabled: true

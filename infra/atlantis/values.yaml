@@ -36,7 +36,6 @@ repoConfig: |
  repos:
  - id: /.*/
    apply_requirements: []
-   workspace: atoca-house
    workflow: atoca-house
    allowed_overrides: []
    allow_custom_workflows: false

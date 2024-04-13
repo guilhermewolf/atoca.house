@@ -1,0 +1,57 @@
+atlantisUrl: https://atlantis.atoca.house
+
+orgAllowlist: github.com/guilhermewolf/atoca.house
+
+
+environment:
+  ATLANTIS_WRITE_GIT_CREDS: "true"
+  
+environmentSecrets:
+  - name: ATLANTIS_GH_APP_ID
+    secretKeyRef:
+      name: atlantis-gh-app
+      key: gh-app-id
+
+  - name: ATLANTIS_GH_APP_KEY
+    secretKeyRef:
+      name: atlantis-gh-app
+      key: gh-app-key-file
+
+  - name: ATLANTIS_GH_WEBHOOK_SECRET
+    secretKeyRef:
+      name: atlantis-gh-app
+      key: gh-webhook-secret
+      
+
+## Use Server Side Repo Config,
+## ref: https://www.runatlantis.io/docs/server-side-repo-config.html
+## Example default configuration
+repoConfig: |
+ ---
+ repos:
+ - id: /.*/
+   apply_requirements: []
+   workflow: default
+   allowed_overrides: []
+   allow_custom_workflows: false
+ workflows:
+   default:
+     plan:
+       steps: [init, plan]
+     apply:
+       steps: [apply]
+
+enableDiffMarkdownFormat: true
+
+commonLabels:
+  app.kubernetes.io/name: atlantis
+  app.kubernetes.io/instance: atlantis
+
+
+ingress:
+  enabled: false
+
+volumeClaim:
+  enabled: true
+  dataStorage: 5Gi
+  storageClassName: longhorn

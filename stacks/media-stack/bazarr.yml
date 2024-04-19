@@ -13,7 +13,7 @@ services:
         - /volume2/Movies/series:/series
     ports:
       - 6767:6767
-    restart: unless-stopped
+    restart: always
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 

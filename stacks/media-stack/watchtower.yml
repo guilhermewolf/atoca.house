@@ -2,7 +2,7 @@ version: "3"
 services:
   watchtower:
     image: containrrr/watchtower
-    restart: unless-stopped
+    restart: always
     environment:
       - TZ='Europe/Amsterdam'
       - WATCHTOWER_CLEANUP=true

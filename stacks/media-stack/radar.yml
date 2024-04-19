@@ -14,7 +14,7 @@ services:
       - /volume2/Movies/media:/media
     ports:
       - 7878:7878
-    restart: unless-stopped
+    restart: always
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 

@@ -1,32 +1,26 @@
 version: "3.3"
 services:
-  nordvpn:
-    container_name: NordLynx
-    image: ghcr.io/bubuntux/nordlynx
-    security_opt:
-      - no-new-privileges:true
+  gluetun:
+    container_name: GlueTun-Nord
+    image: qmcgaw/gluetun
     cap_add:
-      - NET_ADMIN 
+      - NET_ADMIN
     ports:
       - "9092:9091" 
       - "51413:51413" 
       - "51413:51413/udp"
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=1 
     environment:
-      - PRIVATE_KEY=$NORD_KEY
-      - ALLOWED_IPS=0.0.0.0/1,128.0.0.0/1
-      - NET_LOCAL=$NET_LOCAL/24
-      - QUERY=filters\[country_id\]=153&filters\[servers_groups\]\[identifier\]=legacy_p2p 
-      - "POST_UP=ip -4 route add $$(wg | awk -F'[: ]' '/endpoint/ {print $$5}') via $$(ip route | awk '/default/ {print $$3}')"
-      - "PRE_DOWN=ip -4 route del $$(route -n | awk '/255.255.255.255/ {print $$1}') via $$(ip route | awk '/default/ {print $$3}')"
+      - VPN_SERVICE_PROVIDER=nordvpn
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=$NORD_KEY
+      - SERVER_COUNTRIES=Netherlands
     restart: always
   transmission:
     image: ghcr.io/linuxserver/transmission:4.0.2
-    network_mode: "service:nordvpn"
+    network_mode: "service:gluetun"
     container_name: Transmission-Nord
     depends_on:
-      - nordvpn
+      - gluetun
     environment:
       - PUID=1000
       - PGID=10000

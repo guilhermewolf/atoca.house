@@ -5,14 +5,13 @@ services:
     container_name: sonarr
     environment:
       - PUID=1000
-      - PGID=100
+      - PGID=1000
       - TZ=Europe/Amsterdam
-      - UMASK SET=022
+      - UMASK_SET=022
     volumes:
       - sonarr:/config
-      - /volume2/Movies/downloads:/data
-      - /volume2/Movies/series:/media
-      - /volume2/Movies/nzb/:/nzb
+      - /volume1/Media/downloads:/downloads
+      - /volume1/Media/series:/media
     ports:
       - 8989:8989
     restart: always

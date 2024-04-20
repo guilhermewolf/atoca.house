@@ -26,5 +26,5 @@ services:
       - PGID=10000
       - TZ=Europte/Amsterdam
     volumes:
-      - "/volume2/Movies/downloads:/downloads"
+      - "/volume1/Media/downloads:/downloads"
     restart: always

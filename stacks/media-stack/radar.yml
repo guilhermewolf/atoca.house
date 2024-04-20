@@ -10,8 +10,8 @@ services:
       - UMASK_SET=022 #optional
     volumes:
       - radarr:/config
-      - /volume2/Movies/downloads:/data
-      - /volume2/Movies/media:/media
+      - /volume1/Media/downloads:/downloads
+      - /volume1/Media/movies:/media
     ports:
       - 7878:7878
     restart: always

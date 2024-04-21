@@ -5,9 +5,9 @@ services:
     container_name: radarr
     environment:
       - PUID=1001
-      - PGID=999
+      - PGID=100
       - TZ=Europe/Amsterdam
-      - UMASK_SET=022 #optional
+      #- UMASK_SET=022
     volumes:
       - radarr:/config
       - /mnt/user/media/downloads:/downloads

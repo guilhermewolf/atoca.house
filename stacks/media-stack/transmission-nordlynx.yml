@@ -23,8 +23,9 @@ services:
       - gluetun
     environment:
       - PUID=1001
-      - PGID=99900
-      - TZ=Europte/Amsterdam
+      - PGID=100
+      - TZ=Europe/Amsterdam
+      #- UMASK_SET=022
     volumes:
       - "/mnt/user/media/downloads:/downloads"
     restart: always

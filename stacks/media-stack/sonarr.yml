@@ -5,9 +5,9 @@ services:
     container_name: sonarr
     environment:
       - PUID=1001
-      - PGID=999
+      - PGID=100
       - TZ=Europe/Amsterdam
-      - UMASK_SET=022
+      #- UMASK_SET=022
     volumes:
       - sonarr:/config
       - /mnt/user/media/downloads:/downloads

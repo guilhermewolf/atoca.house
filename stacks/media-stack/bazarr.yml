@@ -4,9 +4,10 @@ services:
     image: ghcr.io/lscr.io/linuxserver/bazarr
     container_name: bazarr
     environment:
-        - PUID=1001
-        - PGID=999
-        - TZ=Europe/Amsterdam
+      - PUID=1001
+      - PGID=100
+      - TZ=Europe/Amsterdam
+      #- UMASK_SET=022
     volumes:
         - bazarr:/config
         - /mnt/user/media/movies:/media

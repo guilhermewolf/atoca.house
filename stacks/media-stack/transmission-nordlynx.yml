@@ -22,8 +22,8 @@ services:
     depends_on:
       - gluetun
     environment:
-      - PUID=1000
-      - PGID=10000
+      - PUID=1001
+      - PGID=99900
       - TZ=Europte/Amsterdam
     volumes:
       - "/volume1/Media/downloads:/downloads"

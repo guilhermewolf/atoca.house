@@ -4,8 +4,8 @@ services:
     image: ghcr.io/lscr.io/linuxserver/bazarr
     container_name: bazarr
     environment:
-        - PUID=1000
-        - PGID=1000
+        - PUID=1001
+        - PGID=999
         - TZ=Europe/Amsterdam
     volumes:
         - bazarr:/config

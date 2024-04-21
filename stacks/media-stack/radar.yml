@@ -4,8 +4,8 @@ services:
     image: ghcr.io/linuxserver/radarr
     container_name: radarr
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=1001
+      - PGID=999
       - TZ=Europe/Amsterdam
       - UMASK_SET=022 #optional
     volumes:

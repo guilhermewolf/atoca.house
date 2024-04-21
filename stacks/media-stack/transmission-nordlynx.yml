@@ -26,5 +26,5 @@ services:
       - PGID=99900
       - TZ=Europte/Amsterdam
     volumes:
-      - "/volume1/Media/downloads:/downloads"
+      - "/mnt/user/media/downloads:/downloads"
     restart: always

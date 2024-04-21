@@ -9,8 +9,8 @@ services:
         - TZ=Europe/Amsterdam
     volumes:
         - bazarr:/config
-        - /volume1/Media/movies:/media
-        - /volume1/Media/series:/series
+        - /mnt/user/media/movies:/media
+        - /mnt/user/media/series:/series
     ports:
       - 6767:6767
     restart: always

@@ -12,4 +12,4 @@ helmCharts:
   - name: cert-manager
     repo: https://charts.jetstack.io
     releaseName: "cert-manager"
-    version: 1.13.5
+    version: v1.14.5

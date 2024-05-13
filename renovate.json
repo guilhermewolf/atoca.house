@@ -1,18 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended",
+    ":automergeMinor"
   ],
-  "automerge": true,
-  "automergeType": "pr",
   "ignorePaths": [
     ".github/**"
   ],
-  "docker": {
-    "enabled": true,
-    "fileMatch": ["^stacks/(.*?/)?.*\\.yaml$"]
-  },
-  "kubernetes": {
-    "enabled": true
+  "docker-compose": {
+    "fileMatch": [
+      "^stacks/(.*?/)?.*\\.yaml$"
+    ]
   }
 }

@@ -1,7 +1,7 @@
 version: "2.1"
 services:
   bazarr:
-    image: ghcr.io/lscr.io/linuxserver/bazarr
+    image: ghcr.io/lscr.io/linuxserver/bazarr:1.4.2
     container_name: bazarr
     environment:
       - PUID=1001

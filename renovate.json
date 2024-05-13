@@ -7,5 +7,17 @@
   "automergeType": "pr",
   "ignorePaths": [
     ".github/**"
+  ],
+  "packageRules": [
+    {
+      "managers": ["dockerfile", "docker-compose"],
+      "fileMatch": ["^stacks/(.*?/)?.*\\.yml$"],
+      "enabled": true
+    },
+    {
+      "managers": ["kustomize"],
+      "fileMatch": ["^infra/.*/kustomization\\.yaml$", "^apps/.*/kustomization\\.yaml$"],
+      "enabled": true
+    }
   ]
 }

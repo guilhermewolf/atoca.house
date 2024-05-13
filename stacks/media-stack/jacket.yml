@@ -1,7 +1,7 @@
 version: "2.1"
 services:
   jackett:
-    image: ghcr.io/linuxserver/jackett
+    image: ghcr.io/linuxserver/jackett:0.21.2592
     container_name: jackett
     environment:
       - TZ=Europe/Amsterdam

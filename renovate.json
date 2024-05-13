@@ -9,7 +9,8 @@
     ".github/**"
   ],
   "docker": {
-    "enabled": true
+    "enabled": true,
+    "fileMatch": ["^stacks/(.*?/)?.*\\.yaml$"]
   },
   "kubernetes": {
     "enabled": true

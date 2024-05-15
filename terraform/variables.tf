@@ -1,14 +1,8 @@
-variable "terraform_cloud_token" {
-  description = "The API token for Terraform Cloud"
-  type        = string
-  default     = ""
-}
-
-
 # Cloudflare
 variable "cloudflare_api_token" {
-
-  default = ""
+  description = "API token for the Cloudflare account"
+  type        = string
+  default     = ""
 }
 
 variable "zone_id" {

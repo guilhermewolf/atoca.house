@@ -39,11 +39,6 @@ environmentSecrets:
       name: atlantis-web-auth
       key: password
 
-  - name: TF_CLOUD_TOKEN
-    secretKeyRef:
-      name: terraform-secrets
-      key: terraform-cloud-token
-
   - name: CF_API_KEY
     secretKeyRef:
       name: terraform-secrets

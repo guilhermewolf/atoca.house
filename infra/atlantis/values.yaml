@@ -5,6 +5,8 @@ orgAllowlist: github.com/guilhermewolf/atoca.house
 
 environment:
   ATLANTIS_WRITE_GIT_CREDS: "true"
+  ATLANTIS_REPO_ALLOWLIST: "github.com/guilhermewolf/atoca.house"
+  ATLANTIS_WEB_BASIC_AUTH: true
   
 environmentSecrets:
   - name: ATLANTIS_GH_APP_ID
@@ -27,6 +29,40 @@ environmentSecrets:
       name: atlantis-gh-app
       key: tf-cloud-team-token
 
+  - name: ATLANTIS_WEB_USERNAME
+    secretKeyRef:
+      name: atlantis-web-auth
+      key: username
+
+  - name: ATLANTIS_WEB_PASSWORD
+    secretKeyRef:
+      name: atlantis-web-auth
+      key: password
+
+  - name: TF_CLOUD_TOKEN
+    secretKeyRef:
+      name: terraform-secrets
+      key: terraform-cloud-token
+
+  - name: CF_API_KEY
+    secretKeyRef:
+      name: terraform-secrets
+      key: cloudflare-token
+
+  - name: CF_ZONE_ID
+    secretKeyRef:
+      name: terraform-secrets
+      key: cloudflare-zone-id
+
+  - name: CF_ACCOUNT_ID
+    secretKeyRef:
+      name: terraform-secrets
+      key: cloudflare-account-id
+
+  - name: CF_DOMAIN
+    secretKeyRef:
+      name: terraform-secrets
+      key: cloudflare-domain
 
 ## Use Server Side Repo Config,
 ## ref: https://www.runatlantis.io/docs/server-side-repo-config.html

@@ -39,22 +39,22 @@ environmentSecrets:
       name: atlantis-web-auth
       key: password
 
-  - name: CF_API_KEY
+  - name: TF_VAR_cloudflare_api_token
     secretKeyRef:
       name: terraform-secrets
       key: cloudflare-token
 
-  - name: CF_ZONE_ID
+  - name: TF_VAR_zone_id
     secretKeyRef:
       name: terraform-secrets
       key: cloudflare-zone-id
 
-  - name: CF_ACCOUNT_ID
+  - name: TF_VAR_account_id
     secretKeyRef:
       name: terraform-secrets
       key: cloudflare-account-id
 
-  - name: CF_DOMAIN
+  - name: TF_VAR_domain
     secretKeyRef:
       name: terraform-secrets
       key: cloudflare-domain

@@ -8,17 +8,6 @@ terraform {
   }
 }
 
-terraform {
-  backend "remote" {
-    hostname     = "app.terraform.io"
-    organization = "atoca-house"
-
-    workspaces {
-      name = "atoca-house"
-    }
-  }
-}
-
 resource "cloudflare_record" "test" {
   zone_id = var.zone_id
   name    = "test"

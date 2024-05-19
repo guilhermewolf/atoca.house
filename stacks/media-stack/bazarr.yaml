@@ -6,8 +6,6 @@ services:
     environment:
       - PUID=1001
       - PGID=100
-      - TZ=Europe/Amsterdam
-      #- UMASK_SET=022
     volumes:
         - bazarr:/config
         - /mnt/user/media/movies:/media

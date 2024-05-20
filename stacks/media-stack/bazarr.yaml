@@ -15,7 +15,10 @@ services:
     restart: always
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
 volumes:
   bazarr:
 

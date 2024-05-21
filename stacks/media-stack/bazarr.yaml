@@ -9,7 +9,7 @@ services:
     volumes:
         - bazarr:/config
         - /mnt/user/media/movies:/media
-        - /mnt/user/media/series:/series
+        - /mnt/user/media/tv:/series
     ports:
       - 6767:6767
     restart: always

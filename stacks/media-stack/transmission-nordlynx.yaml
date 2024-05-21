@@ -16,7 +16,7 @@ services:
       - SERVER_COUNTRIES=Netherlands
     restart: always
   transmission:
-    image: ghcr.io/linuxserver/transmission:4.0.2
+    image: ghcr.io/linuxserver/transmission:4.0.5
     network_mode: "service:gluetun"
     container_name: Transmission-Nord
     depends_on:

@@ -23,7 +23,7 @@ services:
     environment:
       - NETDATA_CLAIM_TOKEN=$NETDATA_CLAIM_TOKEN
       - NETDATA_CLAIM_URL=https://app.netdata.cloud
-      - NETDATA_CLAIM_ROOMS=
+      - NETDATA_CLAIM_ROOMS=$NETDATA_CLAIM_ROOMS
       - DOCKER_HOST=proxy:2375
   proxy:
     image: tecnativa/docker-socket-proxy

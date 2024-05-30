@@ -11,5 +11,5 @@ helmCharts:
     repo: https://bitnami-labs.github.io/sealed-secrets
     namespace: sealed-secrets
     releaseName: sealed-secrets
-    version: 2.15.3
+    version: 2.15.4
     valuesFile: values.yaml

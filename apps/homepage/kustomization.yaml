@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: homepage
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: ollama
+    repo: https://jameswynn.github.io/helm-charts
+    releaseName: "homepage"
+    version: homepage-1.2.3
+    valuesFile: values.yaml

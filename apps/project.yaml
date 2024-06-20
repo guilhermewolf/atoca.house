@@ -23,6 +23,8 @@ spec:
       server: '*'
     - namespace: 'open-webui'
       server: '*'
+    - namespace: 'homepage'
+      server: '*'
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

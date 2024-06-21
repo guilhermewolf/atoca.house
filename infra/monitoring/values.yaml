@@ -31,7 +31,6 @@ alertmanager:
         replacement: alertmanager
 prometheus:
   prometheusSpec:
-    enableRemoteWriteReceiver: true
     # Resources request and limits
     resources:
       requests:
@@ -49,8 +48,6 @@ prometheus:
               storage: 20Gi
     # Retention period
     retention: 7d
-    additionalArgs:
-      - --web.enable-remote-write-receiver
   serviceMonitor:
     relabelings:
       # Replace job value
@@ -59,9 +56,6 @@ prometheus:
         action: replace
         targetLabel: job
         replacement: prometheus
-  service:
-    type: NodePort
-    nodePort: 32090  
   ingress:
     enabled: true
     ingressClassName: nginx

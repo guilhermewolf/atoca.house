@@ -59,25 +59,10 @@ environmentSecrets:
       name: terraform-secrets
       key: cloudflare-domain
 
-  - name: TF_VAR_db_hostname
+  - name: PG_CONN_STR
     secretKeyRef:
       name: terraform-secrets
-      key: db_hostname
-
-  - name: TF_VAR_db_name
-    secretKeyRef:
-      name: terraform-secrets
-      key: db_name
-
-  - name: TF_VAR_db_user
-    secretKeyRef:
-      name: terraform-secrets
-      key: db_user
-
-  - name: TF_VAR_db_password
-    secretKeyRef:
-      name: terraform-secrets
-      key: db_password
+      key: PG_CONN_STR
 
   - name: TF_VAR_npm_ip
     secretKeyRef:

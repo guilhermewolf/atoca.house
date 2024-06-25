@@ -82,7 +82,12 @@ grafana:
   ingress:
     enabled: true
     ingressClassName: nginx
-    annotations: 
+    annotations:
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/name: "Grafana"
+      gethomepage.dev/description: "Grafana"
+      gethomepage.dev/group: "Dynamic"
+      gethomepage.dev/icon: "si-XX-#F46800"
       cert-manager.io/cluster-issuer: "cloudflare-prod"
     hosts: 
       - grafana.atoca.house

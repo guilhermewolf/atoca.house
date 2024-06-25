@@ -24,10 +24,10 @@ environmentSecrets:
       name: atlantis-gh-app
       key: gh-webhook-secret
       
-  - name: ATLANTIS_TFE_TOKEN
-    secretKeyRef:
-      name: atlantis-gh-app
-      key: tf-cloud-team-token
+  # - name: ATLANTIS_TFE_TOKEN
+  #   secretKeyRef:
+  #     name: atlantis-gh-app
+  #     key: tf-cloud-team-token
 
   - name: ATLANTIS_WEB_USERNAME
     secretKeyRef:
@@ -58,6 +58,16 @@ environmentSecrets:
     secretKeyRef:
       name: terraform-secrets
       key: cloudflare-domain
+
+  - name: PG_CONN_STR
+    secretKeyRef:
+      name: terraform-secrets
+      key: PG_CONN_STR
+
+  - name: TF_VAR_npm_ip
+    secretKeyRef:
+      name: terraform-secrets
+      key: npm_ip
 
 ## Use Server Side Repo Config,
 ## ref: https://www.runatlantis.io/docs/server-side-repo-config.html

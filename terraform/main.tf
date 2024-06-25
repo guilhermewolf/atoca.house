@@ -1,11 +1,5 @@
 terraform {
-  cloud {
-    organization = "atoca-house"
-
-    workspaces {
-      name = "atoca-house"
-    }
-  }
+  backend "pg" {}
 }
 
 resource "cloudflare_record" "test" {

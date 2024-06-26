@@ -79,7 +79,8 @@ repoConfig: |
    apply_requirements: []
    workflow: atoca-house
    allowed_overrides: []
-   allow_custom_workflows: false
+   allow_custom_workflows: true
+   allow_repo_config: true
  workflows:
    atoca-house:
      plan:

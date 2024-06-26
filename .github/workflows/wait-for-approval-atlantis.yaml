@@ -1,0 +1,33 @@
+name: Atlantis Approval Workflow
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**'
+    types: [opened, synchronize]
+
+jobs:
+  approval:
+    runs-on: self-hosted
+    steps:
+      - name: Await Manual Approval
+        uses: hmarr/auto-approve-action@v2.0.0
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  plan:
+    needs: approval
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Atlantis Plan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ATLANTIS_USER: ${{ secrets.ATLANTIS_USER }}
+          ATLANTIS_PASSWORD: ${{ secrets.ATLANTIS_PASSWORD }}
+        run: |
+          curl -u "$ATLANTIS_USER:$ATLANTIS_PASSWORD" \
+               -X POST \
+               -H "Content-Type: application/json" \
+               -d '{"event": "pull_request"}' \
+               https://atlantis.atoca.house/events
+        if: github.actor == 'guilhermewolf' || github.actor == 'renovate[bot]'

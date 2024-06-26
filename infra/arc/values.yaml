@@ -1,4 +1,33 @@
-githubConfigUrl: https://github.com/guilhermewolf/atoca.house
-githubConfigSecret: github-token-arc
-minRunners: 0
-maxRunners: 2
+# githubConfigUrl: https://github.com/guilhermewolf/atoca.house
+# githubConfigSecret: github-token-arc
+# minRunners: 0
+# maxRunners: 2
+
+replicaCount: 1
+authSecret:
+  enabled: true
+  create: false
+  name: "github-token-arc"
+
+image:
+  repository: "summerwind/actions-runner-controller"
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+
+certManagerEnabled: true
+
+# Enable the webhook server (for scaling events)
+webhookPort: 9443
+
+# Optional: specify nodeSelector, tolerations, and affinity if needed
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+resources: {}

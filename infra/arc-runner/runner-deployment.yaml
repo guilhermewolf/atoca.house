@@ -1,0 +1,12 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerDeployment
+metadata:
+  name: atoca-house-runnerdeploy
+  namespace: arc-system
+spec:
+  replicas: 1
+  template:
+    spec:
+      repository: guilhermewolf/atoca.house
+      labels:
+        - self-hosted

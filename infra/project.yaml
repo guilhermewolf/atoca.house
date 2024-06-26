@@ -34,8 +34,6 @@ spec:
       server: '*'
     - namespace: 'tf-state'
       server: '*'
-    - namespace: 'atlantis'
-      server: '*'
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

@@ -1,0 +1,21 @@
+serviceAccount:
+  create: true
+  name: external-dns
+
+rbac:
+  create: true
+
+provider: cloudflare
+
+sources:
+  - ingress
+domainFilters: ["atoca.house"]
+
+cloudflare:
+  secretName: "cloudflare-ed-key"
+  email: "guilhermewolf@outlook.com"
+  proxied: false
+
+
+extraArgs:
+  webhook-provider-url: http://localhost:8888

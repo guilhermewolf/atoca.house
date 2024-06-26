@@ -5,4 +5,4 @@ projects:
   workspace: default
   autoplan:
     when_modified: ["*.tf", "../modules/**/*.tf", ".terraform.lock.hcl"]
-    enabled: true
+    enabled: false

@@ -1,12 +1,12 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: applications
+  name: infra
   namespace: argocd
 spec:
   project: app-of-apps
   source:
-    path: apps
+    path: infra
     repoURL: https://github.com/guilhermewolf/atoca.house
     targetRevision: HEAD
   destination:
@@ -16,5 +16,3 @@ spec:
     automated:
       selfHeal: true
       prune: true
-    syncOptions:
-      - CreateNamespace=true

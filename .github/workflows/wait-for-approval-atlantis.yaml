@@ -12,7 +12,7 @@ on:
 
 jobs:
   approval:
-    runs-on: self-hosted
+    runs-on: arc-runner-set
     steps:
       - name: Await Manual Approval
         uses: hmarr/auto-approve-action@v2.0.0

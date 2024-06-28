@@ -13,7 +13,7 @@ ingress:
     ingressClassName: nginx
     enabled: true
     annotations:
-        cert-manager.io/issuer: cloudflare-prod
+        cert-manager.io/cluster-issuer: cloudflare-prod
     hosts:
         - host: authentik.atoca.house
           paths:

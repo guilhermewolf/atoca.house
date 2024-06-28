@@ -4,7 +4,7 @@ metadata:
   name: tf-state-ingress
   namespace: tf-state
   annotations:
-    cert-manager.io/issuer: "cloudflare-prod"
+    cert-manager.io/cluster-issuer: "cloudflare-prod"
 spec:
   ingressClassName: nginx
   rules:

@@ -6,6 +6,7 @@ resources:
   - cloudflare-key.yaml
   - cloudflare-staging.yaml
   - cloudflare-prod.yaml
+  - rbac.yaml
 
 helmCharts:
   - name: cert-manager

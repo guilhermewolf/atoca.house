@@ -3,4 +3,7 @@ kind: Kustomization
 namespace: argocd
 
 resources:
+  - project.yaml
+  - infra.yaml
   - applications.yaml
+

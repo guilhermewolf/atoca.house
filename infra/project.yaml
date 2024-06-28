@@ -12,8 +12,6 @@ spec:
     - 'https://github.com/guilhermewolf/*'
     - 'ghcr.io/actions/actions-runner-controller-charts'
   destinations:
-    - namespace: 'arc-system'
-      server: '*'
     - namespace: 'cert-manager'
       server: '*'
     - namespace: 'cloudflare-operator-system'

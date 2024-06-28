@@ -4,5 +4,17 @@ namespace: external-dns
 
 resources:
   - namespace.yaml
-  - cloudflare-key.yaml
-  - deployment.yaml
+  - secrets.yaml
+
+helmCharts:
+  - name: external-dns
+    repo: https://charts.bitnami.com/bitnami
+    releaseName: external-dns
+    version: 8.0.0
+    valuesFile: values.yaml
+
+  - name: external-dns
+    repo: https://charts.bitnami.com/bitnami
+    releaseName: external-dns-adguard
+    version: 8.0.0
+    valuesFile: values-adguard.yaml

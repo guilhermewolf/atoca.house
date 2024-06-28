@@ -3,8 +3,8 @@ kind: Kustomization
 namespace: sealed-secrets
 
 resources:
-  - namespace.yaml
   - https://raw.githubusercontent.com/bitnami-labs/sealed-secrets/main/helm/sealed-secrets/crds/bitnami.com_sealedsecrets.yaml
+  - namespace.yaml
 
 helmCharts:
   - name: sealed-secrets

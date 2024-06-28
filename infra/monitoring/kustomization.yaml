@@ -22,3 +22,4 @@ helmCharts:
     releaseName: monitoring
     version: 60.4.0
     valuesFile: values.yaml
+    includeCRDs: true

@@ -16,7 +16,7 @@ defaults:
 
 jobs:
   terraform-plan:
-    runs-on: self-hosted
+    runs-on: arc-runner-set
     env:
       TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_cloudflare_api_token }}
       TF_VAR_zone_id: ${{ secrets.TF_VAR_zone_id }}

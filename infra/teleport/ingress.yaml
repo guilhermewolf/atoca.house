@@ -5,7 +5,7 @@ metadata:
   name: teleport
   namespace: teleport
   annotations:
-    cert-manager.io/cluster-issuer: "cloudflare-prod"
+    cert-manager.io/issuer: "cloudflare-prod"
 spec:
   rules:
     - host: teleport.atoca.house

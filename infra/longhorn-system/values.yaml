@@ -26,5 +26,5 @@ ingress:
     # Possible Cluster-Issuer values: 
     #   * 'letsencrypt-issuer' (valid TLS certificate using IONOS API) 
     #   * 'ca-issuer' (CA-signed certificate, not valid)
-    cert-manager.io/cluster-issuer: "cloudflare-prod"
+    cert-manager.io/issuer: "cloudflare-prod"
     #cert-manager.io/common-name: longhorn.atoca.house

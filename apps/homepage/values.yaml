@@ -59,7 +59,7 @@ ingress:
       gethomepage.dev/description: "Dynamically Detected Homepage"
       gethomepage.dev/group: "Dynamic"
       gethomepage.dev/icon: "homepage.png"
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
+      cert-manager.io/issuer: "cloudflare-prod"
     hosts:
       - host: homepage.atoca.house
         paths:

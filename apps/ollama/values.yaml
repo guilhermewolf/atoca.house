@@ -7,7 +7,7 @@ ingress:
   enabled: true
   className: nginx
   annotations:
-    cert-manager.io/cluster-issuer: "cloudflare-prod"
+    cert-manager.io/issuer: "cloudflare-prod"
   hosts:
     - host: ollama.atoca.house
       paths:

@@ -4,7 +4,7 @@ metadata:
     name: authentik-outpost
     namespace: authentik
     annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
+      cert-manager.io/issuer: "cloudflare-prod"
 spec:
     ingressClassName: nginx
     rules:

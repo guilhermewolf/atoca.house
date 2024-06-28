@@ -65,7 +65,7 @@ prometheus:
     enabled: true
     ingressClassName: nginx
     annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
+      cert-manager.io/issuer: "cloudflare-prod"
     hosts: 
       - prometheus.atoca.house
     tls: 
@@ -88,7 +88,7 @@ grafana:
       gethomepage.dev/description: "Grafana"
       gethomepage.dev/group: "Dynamic"
       gethomepage.dev/icon: "si-XX-#F46800"
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
+      cert-manager.io/issuer: "cloudflare-prod"
     hosts: 
       - grafana.atoca.house
     tls: 

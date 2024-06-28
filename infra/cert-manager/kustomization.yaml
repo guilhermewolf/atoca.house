@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: cert-manager
 
 resources:
-  - https://github.com/cert-manager/cert-manager/releases/download/v1.13.5/cert-manager.crds.yaml
   - cloudflare-key.yaml
   - cloudflare-staging.yaml
   - cloudflare-prod.yaml
@@ -12,5 +11,6 @@ helmCharts:
   - name: cert-manager
     repo: https://charts.jetstack.io
     releaseName: "cert-manager"
-    version: v1.15.1
-    includeCRDs: true
+    namespace: cert-manager
+    version: v1.14.0
+    valuesFile: values.yaml

@@ -11,3 +11,4 @@ helmCharts:
     releaseName: "longhorn"
     version: 1.6.2
     valuesFile: values.yaml
+    includeCRDs: true

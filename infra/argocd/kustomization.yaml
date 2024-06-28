@@ -4,13 +4,7 @@ namespace: argocd
 
 resources:
   - namespace.yaml
- # - https://raw.githubusercontent.com/argoproj/argo-cd/v2.11.3/manifests/install.yaml
   - ingress.yaml
-
-# patchesStrategicMerge:
-#   - patches/argocd-cm-kustomize-helm-patch.yaml
-#   # Let Traefik manage TLS-termination
-#   - patches/argocd-cmd-params-cm-server-insecrure-patch.yaml
 
 helmCharts:
   - name: argo-cd

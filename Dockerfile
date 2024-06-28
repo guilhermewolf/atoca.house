@@ -1,5 +1,5 @@
 # Use an alternative base image that supports multiple architectures
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 
 # Install necessary packages and dependencies
 RUN apt-get update && \

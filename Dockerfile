@@ -10,4 +10,4 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Switch back to the default user
-USER runner
+USER runner 

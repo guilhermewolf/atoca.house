@@ -10,6 +10,6 @@ helmCharts:
     repo: https://prometheus-community.github.io/helm-charts
     namespace: monitoring
     releaseName: monitoring
-    version: 61.0.0
+    version: 61.1.1
     valuesFile: values.yaml
     includeCRDs: true

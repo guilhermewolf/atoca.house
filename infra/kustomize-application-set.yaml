@@ -18,6 +18,7 @@ spec:
           - path: infra/ingress-nginx
           - path: infra/longhorn-system
           - path: infra/metallb-system
+          - path: infra/monitoring
           - path: infra/one-password
           - path: infra/sealed-secrets
           - path: infra/teleport

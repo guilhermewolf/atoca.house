@@ -1,5 +1,3 @@
-namespaceOverride: "monitoring"
-
 crds:
   enabled: true
 prometheusOperator:

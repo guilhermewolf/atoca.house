@@ -5,3 +5,6 @@ rbac:
 serviceAccount:
   create: true
   name: cert-manager
+global:
+  leaderElection:
+    namespace: cert-manager

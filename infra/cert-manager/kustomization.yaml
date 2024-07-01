@@ -3,10 +3,10 @@ kind: Kustomization
 namespace: cert-manager
 
 resources:
+  - rbac.yaml
   - cloudflare-key.yaml
   - cloudflare-staging.yaml
   - cloudflare-prod.yaml
-  - rbac.yaml
 
 helmCharts:
   - name: cert-manager

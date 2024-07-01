@@ -13,6 +13,7 @@ spec:
         directories:
           - path: infra/argocd
           - path: infra/cert-manager
+          - path: infra/cloudflare-operator-system
           - path: infra/external-dns
           - path: infra/ingress-nginx
           - path: infra/longhorn-system

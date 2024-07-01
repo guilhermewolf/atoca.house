@@ -1,32 +1,33 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: infra
+  name: helm-applications
   namespace: argocd
   labels:
-    atoca.house: infra
+    atoca.house: helm
 spec:
   generators:
     - git:
         repoURL: https://github.com/guilhermewolf/atoca.house
         revision: HEAD
         directories:
-          - path: infra/*
+          - path: infra/monitoring
   template:
     metadata:
       name: '{{ path.basename }}'
       labels:
-        atoca.house: infra
+        atoca.house: helm
       finalizers:
         - resources-finalizer.argocd.argoproj.io
     spec:
       project: infra
       source:
-        plugin:
-          name: kustomize-build-with-helm
         repoURL: https://github.com/guilhermewolf/atoca.house
         targetRevision: HEAD
         path: '{{ path }}'
+        helm:
+          valueFiles:
+            - values.yaml
       destination:
         name: in-cluster
         namespace: '{{ path.basename }}'

@@ -7,4 +7,5 @@ commonLabels:
 
 resources:
   - project.yaml
-  - infra-set.yaml
+  - kustomize-application-set.yaml
+  - helm-application-set.yaml

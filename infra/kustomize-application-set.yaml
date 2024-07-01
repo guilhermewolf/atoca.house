@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: kustomize-helm-applications
+  namespace: argocd
+  labels:
+    atoca.house: kustomize-helm
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/guilhermewolf/atoca.house
+        revision: HEAD
+        directories:
+          - path: infra/argocd
+          - path: infra/cert-manager
+          - path: infra/external-dns
+          - path: infra/ingress-nginx
+          - path: infra/longhorn-system
+          - path: infra/metallb-system
+          - path: infra/one-password
+          - path: infra/sealed-secrets
+          - path: infra/teleport
+          - path: infra/tf-state
+  template:
+    metadata:
+      name: '{{ path.basename }}'
+      labels:
+        atoca.house: kustomize-helm
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: infra
+      source:
+        plugin:
+          name: kustomize-build-with-helm
+        repoURL: https://github.com/guilhermewolf/atoca.house
+        targetRevision: HEAD
+        path: '{{ path }}'
+      destination:
+        name: in-cluster
+        namespace: '{{ path.basename }}'
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
+        syncOptions:
+          - CreateNamespace=true

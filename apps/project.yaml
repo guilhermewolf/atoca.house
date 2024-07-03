@@ -25,6 +25,8 @@ spec:
       server: '*'
     - namespace: 'homepage'
       server: '*'
+    - namespace: 'demo'
+      server: '*'
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

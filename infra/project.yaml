@@ -36,6 +36,8 @@ spec:
       server: '*'
     - namespace: 'zitadel'
       server: '*'
+    - namespace: 'demo'
+      server: '*'
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

@@ -14,6 +14,8 @@ spec:
           - path: infra/argocd
           - path: infra/cert-manager
           - path: infra/cloudflare-operator-system
+          - path: infra/cnpg-system
+          - path: infra/databases
           - path: infra/external-dns
           - path: infra/ingress-nginx
           - path: infra/longhorn-system
@@ -22,7 +24,7 @@ spec:
           - path: infra/one-password
           - path: infra/sealed-secrets
           - path: infra/teleport
-          - path: infra/tf-state
+          - path: infra/zitadel
   template:
     metadata:
       name: '{{ path.basename }}'

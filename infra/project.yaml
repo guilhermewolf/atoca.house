@@ -30,7 +30,11 @@ spec:
       server: '*'
     - namespace: 'one-password'
       server: '*'
-    - namespace: 'tf-state'
+    - namespace: 'cnpg-system'
+      server: '*'
+    - namespace: 'databases'
+      server: '*'
+    - namespace: 'zitadel'
       server: '*'
   clusterResourceWhitelist:
     - group: '*'

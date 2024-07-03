@@ -1,24 +1,24 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: tf-state-ingress
-  namespace: tf-state
+  name: app-pg-ingress
+  namespace: databases
   annotations:
     cert-manager.io/cluster-issuer: "cloudflare-prod"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
-  ingressClassName: nginx
+  tls:
+  - hosts:
+    - postgres.atoca.house
+    secretName: app-pg-tls
   rules:
-  - host: tf-state.atoca.house
+  - host: postgres.atoca.house
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: tf-state
+            name: postgresql-cluster-rw
             port:
               number: 5432
-  tls:
-    - hosts:
-        - tf-state.atoca.house
-      secretName: tf-state-tls

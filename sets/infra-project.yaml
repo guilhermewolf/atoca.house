@@ -9,7 +9,7 @@ spec:
   sourceNamespaces:
     - '*'
   sourceRepos:
-    - 'https://github.com/guilhermewolf/*'
+    - '*'
   destinations:
     - namespace: '*'
       server: '*'

@@ -22,8 +22,6 @@ spec:
     spec:
       project: applications
       source:
-        plugin:
-          name: kustomize-build-with-helm
         repoURL: https://github.com/guilhermewolf/atoca.house
         targetRevision: HEAD
         path: '{{ path }}'

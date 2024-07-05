@@ -6,9 +6,11 @@ metadata:
 spec:
   project: app-of-apps
   source:
-    path: infra/helm
+    path: infra/helm/
     repoURL: https://github.com/guilhermewolf/atoca.house
     targetRevision: HEAD
+    directory:
+      recurse: true
   destination:
     namespace: argocd
     name: in-cluster

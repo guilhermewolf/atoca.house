@@ -1,6 +1,8 @@
 defaultSettings:
   defaultDataPath: "/storage"
 
+preUpgradeChecker:
+  jobEnabled: false
 # Ingress Resource. Longhorn dashboard.
 ingress:
   ## Enable creation of ingress resource

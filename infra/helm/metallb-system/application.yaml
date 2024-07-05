@@ -1,23 +1,24 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: longhorn-system
+  name: metallb-system
   namespace: argocd
 spec:
   destination:
-    namespace: longhorn-system
+    namespace: metallb-system
     server: https://kubernetes.default.svc
   project: infra
   sources:
-    - chart: longhorn
-      repoURL: https://charts.longhorn.io
-      targetRevision: 1.6.2
+    - chart: metallb
+      repoURL: https://metallb.github.io/metallb
+      targetRevision: 0.14.5
       helm:
         valueFiles:
-        - $values/infra/helm/longhorn-system/values.yaml
+        - $values/infra/helm/metallb-system/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true

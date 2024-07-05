@@ -7,4 +7,5 @@ commonLabels:
 
 resources:
   - project.yaml
-  - kustomize-application-set.yaml
+  - kustomize-helm/kustomize-application-set.yaml
+  - helm/helm-application-set.yaml

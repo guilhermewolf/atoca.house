@@ -31,8 +31,5 @@ spec:
         name: in-cluster
         namespace: '{{ path.basename }}'
       syncPolicy:
-        automated:
-          selfHeal: true
-          prune: true
         syncOptions:
           - CreateNamespace=true

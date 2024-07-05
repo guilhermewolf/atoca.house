@@ -43,4 +43,3 @@ cat op-credentials.yaml| kubeseal --controller-namespace=sealed-secrets --valida
 
 rm -rf 1password-credentials.json 1password-credentials.json.pre-encode onepassword-token-no-seal.yaml op-credentials-no-seal.yaml
 ```
-

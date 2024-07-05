@@ -4,6 +4,8 @@ namespace: argocd
 
 resources:
   - project.yaml
-  - infra.yaml
+  - infra-project.yaml
+  - infra-helm.yaml
+  - infra-kustomize-helm.yaml
   - applications.yaml
 

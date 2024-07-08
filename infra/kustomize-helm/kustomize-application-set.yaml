@@ -11,20 +11,7 @@ spec:
         repoURL: https://github.com/guilhermewolf/atoca.house
         revision: HEAD
         directories:
-          - path: infra/argocd
-          - path: infra/cert-manager
-          - path: infra/cloudflare-operator-system
-          - path: infra/cnpg-system
-          - path: infra/databases
-          - path: infra/external-dns
-          - path: infra/ingress-nginx
-          - path: infra/longhorn-system
-          - path: infra/metallb-system
-          - path: infra/monitoring
-          - path: infra/one-password
-          - path: infra/sealed-secrets
-          - path: infra/teleport
-          - path: infra/zitadel
+          - path: infra/kustomize-helm/*
   template:
     metadata:
       name: '{{ path.basename }}'
@@ -35,8 +22,6 @@ spec:
     spec:
       project: infra
       source:
-        plugin:
-          name: kustomize-build-with-helm
         repoURL: https://github.com/guilhermewolf/atoca.house
         targetRevision: HEAD
         path: '{{ path }}'
@@ -44,8 +29,5 @@ spec:
         name: in-cluster
         namespace: '{{ path.basename }}'
       syncPolicy:
-        automated:
-          selfHeal: true
-          prune: true
         syncOptions:
           - CreateNamespace=true

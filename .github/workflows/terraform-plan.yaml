@@ -28,32 +28,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - uses: opentofu/setup-opentofu@v1
+      - uses: hashicorp/setup-terraform@v3
         with:
-          tofu_version: 1.7.0
+          terraform_version: "1.8.0"
 
-      - name: OpenTofu fmt
+      - name: Terraform fmt
         id: fmt
-        run: tofu fmt -check
+        run: terraform fmt -check
         continue-on-error: true
 
-      - name: OpenTofu Init
+      - name: Terraform Init
         id: init
-        run: tofu init
+        run: terraform init
         
-      - name: OpenTofu Validate
+      - name: Terraform Validate
         id: validate
-        run: tofu validate -no-color
+        run: terraform validate -no-color
 
-      - name: OpenTofu Plan
+      - name: Terraform Plan
         id: plan
-        run: tofu plan -no-color
+        run: terraform plan -no-color
         continue-on-error: true
 
       - uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
         env:
-          PLAN: "tofu\n${{ steps.plan.outputs.stdout }}"
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -64,13 +64,13 @@ jobs:
               issue_number: context.issue.number,
             })
             const botComment = comments.find(comment => {
-              return comment.user.type === 'Bot' && comment.body.includes('OpenTofu Format and Style')
+              return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style')
             })
       
             // 2. Prepare format of the comment
-            const output = `#### OpenTofu Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            #### OpenTofu Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### OpenTofu Validation 🤖\`${{ steps.validate.outcome }}\`
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
             <details><summary>Validation Output</summary>
       
             \`\`\`\n
@@ -79,7 +79,7 @@ jobs:
       
             </details>
       
-            #### OpenTofu Plan 📖\`${{ steps.plan.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
       
             <details><summary>Show Plan</summary>
       

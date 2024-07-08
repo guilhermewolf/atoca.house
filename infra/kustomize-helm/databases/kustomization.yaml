@@ -6,4 +6,3 @@ resources:
   - namespace.yaml
   - secrets.yaml
   - cluster.yaml  
-  - ingress.yaml

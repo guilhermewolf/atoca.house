@@ -11,6 +11,7 @@ spec:
     targetRevision: HEAD
     directory:
       recurse: true
+      include: '*/application.yaml'
   destination:
     namespace: argocd
     name: in-cluster

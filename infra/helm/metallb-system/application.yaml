@@ -20,9 +20,9 @@ spec:
       ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
-      ref: infra/helm/metallb-system/
+      path: infra/helm/metallb-system/
       directory:
-        recurse: true
+        exclude: '{application.yaml,values.yaml}'
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

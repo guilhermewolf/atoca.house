@@ -1,0 +1,5 @@
+githubConfigSecret: "github-pat"
+githubConfigUrl: "https://github.com/guilhermewolf/atoca.house"
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-systems-gha-rs-controller

@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arc-runners
+  namespace: argocd
+  annotations:
+    operator.1password.io/item-path: "vaults/k8s/items/github-token-arc"
+    operator.1password.io/item-name: "github-pat"
+spec:
+  destination:
+    namespace: arc-runners
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - chart: gha-runner-scale-set
+      repoURL: ghcr.io/actions/actions-runner-controller-charts
+      targetRevision: 0.9.3
+      helm:
+        valueFiles:
+        - $values/infra/helm/arc-runners/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

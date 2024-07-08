@@ -9,9 +9,16 @@ spec:
     path: infra/kustomize-helm
     repoURL: https://github.com/guilhermewolf/atoca.house
     targetRevision: HEAD
+    directory:
+      exclude: infra/kustomize-helm/argocd/**
   destination:
     namespace: argocd
     name: in-cluster
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Application
+      name: argocd
+      namespace: argocd

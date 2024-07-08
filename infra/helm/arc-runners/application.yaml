@@ -3,9 +3,6 @@ kind: Application
 metadata:
   name: arc-runners
   namespace: argocd
-  annotations:
-    operator.1password.io/item-path: "vaults/k8s/items/github-token-arc"
-    operator.1password.io/item-name: "github-pat"
 spec:
   destination:
     namespace: arc-runners
@@ -21,6 +18,11 @@ spec:
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: infra/helm/arc-runners/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

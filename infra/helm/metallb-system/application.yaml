@@ -18,6 +18,11 @@ spec:
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: infra/helm/metallb-system/
+      directory:
+        recurse: true
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

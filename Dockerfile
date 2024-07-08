@@ -1,4 +1,3 @@
-# Use the official GitHub Actions runner image as the base image
 FROM ghcr.io/actions/actions-runner:latest
 
 # Switch to root user to install packages
@@ -11,7 +10,4 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Switch back to the default user
-USER runner
-
-# Set the entrypoint to the default entrypoint of the base image
-ENTRYPOINT ["/runner/entrypoint.sh"]
+USER runner 

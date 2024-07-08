@@ -1,26 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: applications
+  name: kustomize-helm-applications
   namespace: argocd
   labels:
-    atoca.house: application
+    atoca.house: kustomize-helm
 spec:
   generators:
     - git:
         repoURL: https://github.com/guilhermewolf/atoca.house
         revision: HEAD
         directories:
-          - path: apps/*
+          - path: infra/kustomize-helm/*
   template:
     metadata:
       name: '{{ path.basename }}'
       labels:
-        atoca.house: application
+        atoca.house: kustomize-helm
       finalizers:
         - resources-finalizer.argocd.argoproj.io
     spec:
-      project: applications
+      project: infra
       source:
         repoURL: https://github.com/guilhermewolf/atoca.house
         targetRevision: HEAD
@@ -29,8 +29,5 @@ spec:
         name: in-cluster
         namespace: '{{ path.basename }}'
       syncPolicy:
-        automated:
-          selfHeal: true
-          prune: true
         syncOptions:
           - CreateNamespace=true

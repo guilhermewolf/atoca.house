@@ -1,0 +1,132 @@
+crds:
+  enabled: true
+
+alertmanager:
+  alertmanagerSpec:
+    config:
+      global:
+        resolve_timeout: 5m
+      route:
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 1h
+        receiver: 'ntfy-receiver'
+        routes:
+          - match:
+              alertname: Watchdog
+            receiver: 'ntfy-receiver'
+          - match_re:
+              alertname: .*
+            receiver: 'ntfy-receiver'
+      receivers:
+        - name: 'ntfy-receiver'
+          webhook_configs:
+            - url: 'https://ntfy.atoca.house/rpi-k8s'
+              send_resolved: true
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/name: "Alertmanager"
+      gethomepage.dev/description: "Alertmanager"
+      gethomepage.dev/group: "Dynamic"
+      gethomepage.dev/icon: "si-XX-#F46800"
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+    hosts:
+      - alertmanager.atoca.house
+    tls:
+      - secretName: alertmanager-tls
+        hosts:
+          - alertmanager.atoca.house
+
+prometheus:
+  prometheusSpec:
+    additionalScrapeConfigs:
+      - job_name: 'compartilhado-prometheus'
+        scrape_interval: 30s
+        static_configs:
+          - targets:
+            - '192.168.178.160:9090'  # Prometheus running on NAS
+      - job_name: 'compartilhado-node-exporter'
+        scrape_interval: 30s
+        static_configs:
+          - targets:
+            - '192.168.178.160:9100'  # Node Exporter running on NAS
+      - job_name: 'compartilhado-cadvisor'
+        scrape_interval: 30s
+        static_configs:
+          - targets:
+            - '192.168.178.160:8080'  # cAdvisor running on NAS
+      - job_name: 'k8s'
+        scrape_interval: 30s
+        kubernetes_sd_configs:
+          - role: node
+          - role: pod
+          - role: service
+          - role: endpoint
+    resources:
+      requests:
+        memory: 1Gi
+      limits:
+        memory: 2Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi
+    # Retention period
+    retention: 7d
+    retentionSize: "20GB"
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+    hosts:
+      - prometheus.atoca.house
+    tls:
+      - secretName: prometheus-tls
+        hosts:
+          - prometheus.atoca.house
+
+grafana:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/name: "Grafana"
+      gethomepage.dev/description: "Grafana"
+      gethomepage.dev/group: "Dynamic"
+      gethomepage.dev/icon: "si-XX-#F46800"
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+    hosts:
+      - grafana.atoca.house
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.atoca.house
+  adminPassword: "admin_password"
+  plugins:
+    - grafana-piechart-panel
+  serviceMonitor:
+    labels:
+      release: kube-prometheus-stack
+    relabelings:
+      - sourceLabels:
+        - __address__
+        action: replace
+        targetLabel: job
+        replacement: grafana

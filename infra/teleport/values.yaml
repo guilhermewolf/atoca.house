@@ -1,7 +1,0 @@
-clusterName: teleport.atoca.house
-proxyListenerMode: multiplex
-
-kubeClusterName: atoca.house
-
-tls:
-  existingSecretName: teleport-tls

@@ -1,0 +1,42 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql-cluster
+  namespace: databases
+spec:
+  instances: 3
+  primaryUpdateStrategy: supervised
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: postgres-secrets
+  storage:
+    size: 1Gi
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  bootstrap:
+    initdb:
+      database: initial_db
+      owner: initial_user
+      postInitSQL:
+        - CREATE DATABASE terraform;
+        - CREATE USER terraform WITH PASSWORD '$(TERRAFORM_DB_PASSWORD)';
+        - GRANT ALL PRIVILEGES ON DATABASE terraform TO terraform;
+        - CREATE DATABASE zitadel;
+        - CREATE USER zitadel WITH PASSWORD '$(ZITADEL_DB_PASSWORD)';
+        - GRANT ALL PRIVILEGES ON DATABASE zitadel TO zitadel;
+  env:
+    - name: TERRAFORM_DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: postgres-secrets
+          key: terraform_pg_password
+    - name: ZITADEL_DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: postgres-secrets
+          key: zitadel_pg_password

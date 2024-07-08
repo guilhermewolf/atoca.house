@@ -1,0 +1,47 @@
+configs:
+  params:
+    server.insecure: true
+  cm:
+    statusbadge.enabled: true
+    # Adding Applications health check
+    resource.customizations.health.argoproj.io_Application: |
+      hs = {}
+      hs.status = "Progressing"
+      hs.message = ""
+      if obj.status ~= nil then
+        if obj.status.health ~= nil then
+          hs.status = obj.status.health.status
+          if obj.status.health.message ~= nil then
+            hs.message = obj.status.health.message
+          end
+        end
+      end
+      return hs
+    # Kustomize build options
+    # --enable-helm: Enabling Helm chart rendering with Kustomize
+    # --load-restrictor LoadRestrictionsNone: Local kustomizations may load files from outside their root
+    kustomize.buildOptions: --enable-helm --load-restrictor LoadRestrictionsNone
+
+crds:
+  install: true
+  # -- Keep CRDs on chart uninstall
+  keep: false
+
+server:
+  # Ingress Resource.
+  ingress:
+    ## Enable creation of ingress resource
+    enabled: true
+    ## Add ingressClassName to the Ingress
+    ingressClassName: nginx
+    # ingress host
+    hostname: argocd.atoca.house
+    ## Default ingress path
+    path: /
+    pathType: Prefix
+    # Enable tls. argocd-server-tls secret is created automatically for hostname
+    tls: true
+
+    ## Ingress annotations
+    annotations:
+      cert-manager.io/cluster-issuer: cloudflare-prod

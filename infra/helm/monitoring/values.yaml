@@ -1,18 +1,28 @@
 crds:
   enabled: true
-prometheusOperator:
-  kubeletService:
-    enabled: false
-  serviceMonitor:
-    relabelings:
-    # Replace job value
-    - sourceLabels:
-      - __address__
-      action: replace
-      targetLabel: job
-      replacement: prometheus-operator
+
 alertmanager:
   alertmanagerSpec:
+    config:
+      global:
+        resolve_timeout: 5m
+      route:
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 1h
+        receiver: 'ntfy-receiver'
+        routes:
+          - match:
+              alertname: Watchdog
+            receiver: 'ntfy-receiver'
+          - match_re:
+              alertname: .*
+            receiver: 'ntfy-receiver'
+      receivers:
+        - name: 'ntfy-receiver'
+          webhook_configs:
+            - url: 'https://ntfy.atoca.house/rpi-k8s'
+              send_resolved: true
     storage:
       volumeClaimTemplate:
         spec:
@@ -21,24 +31,53 @@ alertmanager:
           resources:
             requests:
               storage: 10Gi
-  serviceMonitor:
-    relabelings:
-      # Replace job value
-      - sourceLabels:
-        - __address__
-        action: replace
-        targetLabel: job
-        replacement: alertmanager
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      gethomepage.dev/enabled: "true"
+      gethomepage.dev/name: "Alertmanager"
+      gethomepage.dev/description: "Alertmanager"
+      gethomepage.dev/group: "Dynamic"
+      gethomepage.dev/icon: "si-XX-#F46800"
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+    hosts:
+      - alertmanager.atoca.house
+    tls:
+      - secretName: alertmanager-tls
+        hosts:
+          - alertmanager.atoca.house
+
 prometheus:
   prometheusSpec:
-    enableRemoteWriteReceiver: true
-    # Resources request and limits
+    additionalScrapeConfigs:
+      - job_name: 'compartilhado-prometheus'
+        scrape_interval: 30s
+        static_configs:
+          - targets:
+            - '192.168.178.160:9090'  # Prometheus running on NAS
+      - job_name: 'compartilhado-node-exporter'
+        scrape_interval: 30s
+        static_configs:
+          - targets:
+            - '192.168.178.160:9100'  # Node Exporter running on NAS
+      - job_name: 'compartilhado-cadvisor'
+        scrape_interval: 30s
+        static_configs:
+          - targets:
+            - '192.168.178.160:8080'  # cAdvisor running on NAS
+      - job_name: 'k8s'
+        scrape_interval: 30s
+        kubernetes_sd_configs:
+          - role: node
+          - role: pod
+          - role: service
+          - role: endpoint
     resources:
       requests:
-        memory: 500Mi
+        memory: 1Gi
       limits:
-        memory: 500Mi
-    # PVC configuration
+        memory: 2Gi
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -50,35 +89,19 @@ prometheus:
     # Retention period
     retention: 7d
     retentionSize: "20GB"
-  serviceMonitor:
-    relabelings:
-      # Replace job value
-      - sourceLabels:
-        - __address__
-        action: replace
-        targetLabel: job
-        replacement: prometheus
-  service:
-    type: NodePort
-    nodePort: 32090  
   ingress:
     enabled: true
     ingressClassName: nginx
     annotations:
       cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts: 
+    hosts:
       - prometheus.atoca.house
-    tls: 
+    tls:
       - secretName: prometheus-tls
         hosts:
           - prometheus.atoca.house
+
 grafana:
-  # Configuring /grafana subpath
-  # grafana.ini:
-  #   server:
-  #     domain: monitoring.atoca.house
-  #     root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
-  #     serve_from_sub_path: true
   ingress:
     enabled: true
     ingressClassName: nginx
@@ -89,73 +112,21 @@ grafana:
       gethomepage.dev/group: "Dynamic"
       gethomepage.dev/icon: "si-XX-#F46800"
       cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts: 
+    hosts:
       - grafana.atoca.house
-    tls: 
-    - secretName: grafana-tls
-      hosts:
-      - grafana.atoca.house
-
-  # Admin user password
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.atoca.house
   adminPassword: "admin_password"
-  # List of grafana plugins to be installed
   plugins:
     - grafana-piechart-panel
-  # ServiceMonitor label and job relabel
   serviceMonitor:
     labels:
       release: kube-prometheus-stack
     relabelings:
-      # Replace job value
       - sourceLabels:
         - __address__
         action: replace
         targetLabel: job
         replacement: grafana
-  # Additional configuration to grafana dashboards sidecar
-  # Search in all namespaces for configMaps containing label `grafana_dashboard`
-  sidecar:
-    dashboards:
-      searchNamespace: ALL
-      SCProvider: true
-      annotations: {}
-      defaultFolderName: null
-      enabled: true
-      folder: /tmp/dashboards
-      folderAnnotation: null
-      label: grafana_dashboard
-      labelValue: null
-
-# Disabling monitoring of K8s services.
-# Monitoring of K3S components will be configured out of kube-prometheus-stack
-kubelet:
-  enabled: false
-kubeApiServer:
-  enabled: false
-kubeControllerManager:
-  enabled: false
-kubeScheduler:
-  enabled: false
-kubeProxy:
-  enabled: false
-kubeEtcd:
-  enabled: false
-# Disable K8S Prometheus Rules
-# Rules for K3S components will be configured out of kube-prometheus-stack
-defaultRules:
-  create: true
-  rules:
-    etcd: false
-    k8s: false
-    kubeApiserverAvailability: false
-    kubeApiserverBurnrate: false
-    kubeApiserverHistogram: false
-    kubeApiserverSlos: false
-    kubeControllerManager: false
-    kubelet: false
-    kubeProxy: false
-    kubernetesApps: false
-    kubernetesResources: false
-    kubernetesStorage: false
-    kubernetesSystem: false
-    kubeScheduler: false

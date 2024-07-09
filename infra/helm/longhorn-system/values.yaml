@@ -1,5 +1,7 @@
 defaultSettings:
   defaultDataPath: "/storage"
+  backupTarget: "s3://rpi-k8s@auto/"
+  backupTargetCredentialSecret: longhorn-r2-backups
 
 preUpgradeChecker:
   jobEnabled: false

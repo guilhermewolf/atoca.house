@@ -4,12 +4,29 @@
     "config:recommended",
     ":automergeMinor"
   ],
-  "ignorePaths": [
-    ".github/**"
-  ],
   "docker-compose": {
     "fileMatch": [
       "^stacks/(.*?/)?.*\\.yaml$"
     ]
-  }
+  },
+  "regexManagers": [
+    {
+      "datasourceTemplate": "helm",
+      "fileMatch": [
+        "^infra/helm/.*?/application\\.yaml$"
+      ],
+      "matchStrings": [
+        "chart:\\s?(?<depName>.*?)\\n\\s*repoURL:\\s?(?<lookupName>.*)\\n\\s*targetRevision:\\s?(?<currentValue>.*)\\n"
+      ]
+    },
+    {
+      "datasourceTemplate": "github-releases",
+      "fileMatch": [
+        "^infra/helm/.*?/application\\.yaml$"
+      ],
+      "matchStrings": [
+        " +targetRevision: +(?<currentValue>[^'\" ]+) +# renovate: depName=(?<depName>[^ \\n]+) +(extractVersion=(?<extractVersion>[^\\n]+))?"
+      ]
+    }
+  ]
 }

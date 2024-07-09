@@ -2,10 +2,8 @@
 locals {
   subdomains = [
     "bazar",
-    "cloud",
     "compartilhado",
     "comp-netdata",
-    "home",
     "jacket",
     "jellyfin",
     "kuma",

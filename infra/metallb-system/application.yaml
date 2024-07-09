@@ -1,23 +1,28 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: monitoring
+  name: metallb-system
   namespace: argocd
 spec:
   destination:
-    namespace: monitoring
+    namespace: metallb-system
     server: https://kubernetes.default.svc
   project: infra
   sources:
-    - chart: kube-prometheus-stack
-      repoURL: https://prometheus-community.github.io/helm-charts
-      targetRevision: 61.2.0
+    - chart: metallb
+      repoURL: https://metallb.github.io/metallb
+      targetRevision: 0.14.5
       helm:
         valueFiles:
-        - $values/infra/helm/monitoring/values.yaml
+        - $values/infra/metallb-system/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: infra/metallb-system/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

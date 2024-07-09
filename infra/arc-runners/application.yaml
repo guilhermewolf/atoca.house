@@ -1,29 +1,33 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: metallb-system
+  name: arc-runners
   namespace: argocd
 spec:
   destination:
-    namespace: metallb-system
+    namespace: arc-runners
     server: https://kubernetes.default.svc
   project: infra
   sources:
-    - chart: metallb
-      repoURL: https://metallb.github.io/metallb
-      targetRevision: 0.14.5
+    - chart: gha-runner-scale-set
+      repoURL: ghcr.io/actions/actions-runner-controller-charts
+      targetRevision: 0.9.0
       helm:
         valueFiles:
-        - $values/infra/helm/metallb-system/values.yaml
+        - $values/infra/arc-runners/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
-      path: infra/helm/metallb-system/
+      path: infra/arc-runners/
       directory:
         exclude: '{application.yaml,values.yaml}'
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true
+  ignoreDifferences:
+    - group: "apps"
+      kind: "Deployment"
+      jsonPointers:
+        - /spec/template/spec/containers/0/resources

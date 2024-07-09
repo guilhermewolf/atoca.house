@@ -1,20 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: longhorn-system
+  name: kured
   namespace: argocd
 spec:
   destination:
-    namespace: longhorn-system
+    namespace: kured
     server: https://kubernetes.default.svc
   project: infra
   sources:
-    - chart: longhorn
-      repoURL: https://charts.longhorn.io
-      targetRevision: 1.6.2
+    - chart: kured
+      repoURL: https://kubereboot.github.io/charts
+      targetRevision: 4.7.0
       helm:
         valueFiles:
-        - $values/infra/helm/longhorn-system/values.yaml
+        - $values/infra/kured/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values

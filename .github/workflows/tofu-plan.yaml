@@ -1,9 +1,9 @@
-name: Terraform Plan
+name: OpenTofu Plan
 
 on:
   pull_request:
     paths:
-      - 'terraform/**/*.tf'
+      - 'tofu/**/*.tf'
 
 permissions:
   id-token: write   # This is required for requesting the JWT
@@ -15,7 +15,7 @@ defaults:
     working-directory: ./terraform
 
 jobs:
-  terraform-plan:
+  tofu-plan:
     runs-on: arc-runners
     env:
       TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_cloudflare_api_token }}
@@ -28,32 +28,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.8.0"
-
-      - name: Terraform fmt
+      - uses: opentofu/setup-opentofu@v1
+      
+      - name: OpenTofu fmt
         id: fmt
-        run: terraform fmt -check
+        run: tofu fmt -check
         continue-on-error: true
 
-      - name: Terraform Init
+      - name: OpenTofu Init
         id: init
-        run: terraform init
+        run: tofu init
         
-      - name: Terraform Validate
+      - name: OpenTofu Validate
         id: validate
-        run: terraform validate -no-color
+        run: tofu validate -no-color
 
-      - name: Terraform Plan
+      - name: OpenTofu Plan
         id: plan
-        run: terraform plan -no-color
+        run: tofu plan -no-color
         continue-on-error: true
 
       - uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
         env:
-          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+          PLAN: "tofu\n${{ steps.plan.outputs.stdout }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -64,13 +62,13 @@ jobs:
               issue_number: context.issue.number,
             })
             const botComment = comments.find(comment => {
-              return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style')
+              return comment.user.type === 'Bot' && comment.body.includes('OpenTofu Format and Style')
             })
       
             // 2. Prepare format of the comment
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            const output = `#### OpenTofu Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### OpenTofu Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### OpenTofu Validation 🤖\`${{ steps.validate.outcome }}\`
             <details><summary>Validation Output</summary>
       
             \`\`\`\n
@@ -79,7 +77,7 @@ jobs:
       
             </details>
       
-            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            #### OpenTofu Plan 📖\`${{ steps.plan.outcome }}\`
       
             <details><summary>Show Plan</summary>
       

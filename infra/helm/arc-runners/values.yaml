@@ -3,3 +3,13 @@ githubConfigUrl: "https://github.com/guilhermewolf/atoca.house"
 controllerServiceAccount:
   namespace: arc-systems
   name: arc-systems-gha-rs-controller
+
+#maxRunners: 5
+minRunners: 1
+
+template:
+  spec:
+    containers:
+      - name: runner
+        image: ghcr.io/guilhermewolf/atoca.house/custom-actions-runner:latest
+        command: ["/home/runner/run.sh"]

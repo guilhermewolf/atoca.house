@@ -19,6 +19,13 @@ zitadel:
         Admin:
           SSL:
             Mode: disable
+    DefaultInstance:
+      SMTPConfiguration:
+        SMTP:
+          Host: 'smtp.migadu.com:587'
+          User: 'no-reply@atoca.house'
+        TLS: true
+        From: 'no-reply@atoca.house'
 
 ingress:
   enabled: true
@@ -61,3 +68,8 @@ env:
       secretKeyRef:
         name: zitadel-secrets
         key: zitadel_password
+  - name: ZITADEL_DEFAULTINSTANCE_SMTPCONFIGURATION_SMTP_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: zitadel-secrets
+        key: zitadel_email_password

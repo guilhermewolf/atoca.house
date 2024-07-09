@@ -11,7 +11,7 @@ spec:
   sources:
     - chart: kured
       repoURL: https://kubereboot.github.io/charts
-      targetRevision: 4.7.0
+      targetRevision: 5.4.5
       helm:
         valueFiles:
         - $values/infra/helm/kured/values.yaml

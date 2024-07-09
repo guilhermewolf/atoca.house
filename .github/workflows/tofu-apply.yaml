@@ -25,7 +25,7 @@ jobs:
       PG_CONN_STR: ${{ secrets.PG_CONN_STR }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Setup Nodejs
         uses: actions/setup-node@v1

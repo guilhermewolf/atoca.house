@@ -1,0 +1,41 @@
+name: OpenTofu Apply
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  id-token: write
+  contents: read
+
+defaults:
+  run:
+    working-directory: ./terraform
+
+jobs:
+  tofu-apply:
+    runs-on: arc-runners
+    env:
+      TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_cloudflare_api_token }}
+      TF_VAR_zone_id: ${{ secrets.TF_VAR_zone_id }}
+      TF_VAR_account_id: ${{ secrets.TF_VAR_account_id }}
+      TF_VAR_domain: ${{ secrets.TF_VAR_domain }}
+      TF_VAR_npm_ip: ${{ secrets.TF_VAR_npm_ip }}
+      PG_CONN_STR: ${{ secrets.PG_CONN_STR }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Nodejs
+        uses: actions/setup-node@v1
+
+      - uses: opentofu/setup-opentofu@v1
+
+      - name: OpenTofu Init
+        id: init
+        run: tofu init
+        
+      - name: OpenTofu Apply
+        id: apply
+        run: tofu apply -auto-approve

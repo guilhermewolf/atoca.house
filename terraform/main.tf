@@ -3,5 +3,5 @@ terraform {
 }
 
 output "message" {
-  value = "Hello, World!1"
+  value = "Hello, World!2"
 }

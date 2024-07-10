@@ -7,12 +7,14 @@ locals {
     "jacket",
     "jellyfin",
     "kuma",
+    "minio",
     "npm",
     "portainer",
     "radar",
     "readar",
+    "s3",
     "sonar",
-    "transmission"
+    "transmission",
   ]
   domain = "atoca.house"
 }

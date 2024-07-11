@@ -26,16 +26,19 @@ My cluster is [k3s](https://k3s.io/) provisioned overtop bare-metal Ubuntu 22 us
 
 ### Core Components
 
-- [actions-runner-controller](https://github.com/actions/actions-runner-controller): self-hosted Github runners
-- [cert-manager](https://cert-manager.io/docs/): creates SSL certificates for services in my cluster
-- [external-dns](https://github.com/kubernetes-sigs/external-dns): automatically syncs DNS records from my cluster ingresses to a DNS provider
 - [1Password Controler](https://github.com/1Password/onepassword-operator): Secrets storage using [1Password Connect](https://github.com/1Password/connect).
-- [ingress-nginx](https://github.com/kubernetes/ingress-nginx/): ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
+- [actions-runner-controller](https://github.com/actions/actions-runner-controller): self-hosted Github runners
 - [ArgoCD](https://argoproj.github.io/argo-cd/): GitOps continuous delivery tool for Kubernetes
+- [cert-manager](https://cert-manager.io/docs/): creates SSL certificates for services in my cluster
+- [Cloudfrare-Controler](https://github.com/adyanth/cloudflare-operator): External tunnel for exposing services on my cluster to the internet
+- [Cloud Native Postgres](https://cloudnative-pg.io/): Operator to deploy highly available PostgreSQL database cluster
+- [external-dns](https://github.com/kubernetes-sigs/external-dns): automatically syncs DNS records from my cluster ingresses to a DNS provider
+- [ingress-nginx](https://github.com/kubernetes/ingress-nginx/): ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
+- [kured](https://kured.dev/): Kubernetes reboot daemon
 - [MetalLB](https://metallb.universe.tf/): load balancer for bare metal Kubernetes clusters
 - [Longhorn](https://longhorn.io/): distributed block storage for Kubernetes
 - [Prometheus](https://prometheus.io/): monitoring and alerting toolkit
-- [Cloudfrare-Controler](https://github.com/adyanth/cloudflare-operator): External tunnel for exposing services on my cluster to the internet
+- [sealed-secrets](https://github.com/bitnami-labs/sealed-secrets): encrypted secrets for Kubernetes
 
 ---
 
@@ -58,8 +61,8 @@ This Git repository contains the following directories.
 | Name                  | CIDR              |
 |-----------------------|-------------------|
 | Server VLAN           | `192.168.178.0/24` |
-| Kubernetes pods       | `10.32.0.0/16`    |
-| Kubernetes services   | `10.33.0.0/16`    |
+| Kubernetes pods       | `10.42.0.0/16`    |
+| Kubernetes services   | `10.43.0.0/16`    |
 
 ---
 
@@ -86,13 +89,13 @@ While most of my infrastructure and workloads are selfhosted I do rely upon the 
 | Raspberry Pi 4              | 1     | 128GB (SD)   | -                           | 8GB  | Ubuntu 22.04     | K8s node            |
 | Raspberry PoE Hat           | 4     | -            | -                           | -    | -                | Power the Pi's      |
 | TP-Link TL-SG108PE          | 1     | -            | -                           | -    | -                | Network PoE Switch  |
-| Asustor AS6602T             | 1     | -            | 4x 1TB Nvme (RAID 5)        | 4GB  | ADM 4.0.0.RF53   | NAS                 |
+| Asustor AS5404T             | 1     | -            | 4x 1TB Nvme (RAID 5)        | 4GB  | Unraid 6.12.10   | NAS                 |
 
 ---
 ## 💪 TO-DO 
 
 - [ ] Ansible playbook for deploying the cluster
-- [ ] Implement terraform for managing cloud resources
+- [x] Implement terraform for managing cloud resources
 
 ---
 

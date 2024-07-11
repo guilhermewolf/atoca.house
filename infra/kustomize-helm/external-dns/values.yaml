@@ -19,3 +19,6 @@ cloudflare:
 
 extraArgs:
   webhook-provider-url: http://localhost:8888
+
+serviceMonitor:
+  enabled: true

@@ -43,3 +43,6 @@ sidecars:
         value: "0.0.0.0"
       - name: DRY_RUN
         value: "false"
+
+serviceMonitor:
+  enabled: true

@@ -1,7 +1,7 @@
 defaultSettings:
   defaultDataPath: "/storage"
-  backupTarget: "s3://rpi-k8s@auto/"
-  backupTargetCredentialSecret: longhorn-r2-backups
+  backupTarget: "s3://longhorn@eu-west-1/"
+  backupTargetCredentialSecret: minio-longhorn
 
 preUpgradeChecker:
   jobEnabled: false

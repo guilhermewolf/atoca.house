@@ -83,33 +83,41 @@ prometheus:
       - secretName: prometheus-tls
         hosts:
           - prometheus.atoca.house
-
-grafana:
-  ingress:
-    enabled: true
-    ingressClassName: nginx
-    annotations:
-      gethomepage.dev/enabled: "true"
-      gethomepage.dev/name: "Grafana"
-      gethomepage.dev/description: "Grafana"
-      gethomepage.dev/group: "Dynamic"
-      gethomepage.dev/icon: "si-XX-#F46800"
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts:
-      - grafana.atoca.house
-    tls:
-      - secretName: grafana-tls
-        hosts:
-          - grafana.atoca.house
-  adminPassword: "admin_password"
-  plugins:
-    - grafana-piechart-panel
-  serviceMonitor:
-    labels:
-      release: kube-prometheus-stack
-    relabelings:
-      - sourceLabels:
-        - __address__
-        action: replace
-        targetLabel: job
-        replacement: grafana
+  grafana:
+    enabled: false
+    forceDeployDashboards: true
+# grafana:
+#   ingress:
+#     enabled: true
+#     ingressClassName: nginx
+#     annotations:
+#       gethomepage.dev/enabled: "true"
+#       gethomepage.dev/name: "Grafana"
+#       gethomepage.dev/description: "Grafana"
+#       gethomepage.dev/group: "Dynamic"
+#       gethomepage.dev/icon: "si-XX-#F46800"
+#       cert-manager.io/cluster-issuer: "cloudflare-prod"
+#     hosts:
+#       - grafana.atoca.house
+#     tls:
+#       - secretName: grafana-tls
+#         hosts:
+#           - grafana.atoca.house
+#   adminPassword: "admin_password"
+#   plugins:
+#     - grafana-piechart-panel
+#   serviceMonitor:
+#     labels:
+#       release: kube-prometheus-stack
+#     relabelings:
+#       - sourceLabels:
+#         - __address__
+#         action: replace
+#         targetLabel: job
+#         replacement: grafana
+#   dashboards:
+#     default:
+#       node-exporter-full:
+#         gnetId: 1860
+#         revision: 1
+#         datasource: Prometheus

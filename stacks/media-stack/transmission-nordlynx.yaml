@@ -1,4 +1,5 @@
-version: "3.3"
+version: "3.8" # Updated version
+
 services:
   gluetun:
     container_name: GlueTun-Nord
@@ -6,8 +7,8 @@ services:
     cap_add:
       - NET_ADMIN
     ports:
-      - "9092:9091" 
-      - "51413:51413" 
+      - "9092:9091"
+      - "51413:51413"
       - "51413:51413/udp"
     environment:
       - VPN_SERVICE_PROVIDER=nordvpn
@@ -18,8 +19,9 @@ services:
       resources:
         limits:
           cpus: '1.0'
-          memory: 1g
+          memory: 512M
     restart: always
+
   transmission:
     image: ghcr.io/linuxserver/transmission:4.0.6
     network_mode: "service:gluetun"
@@ -37,5 +39,5 @@ services:
       resources:
         limits:
           cpus: '1.0'
-          memory: 1g
+          memory: 512M
     restart: always

@@ -2,23 +2,23 @@
 version: '3.8'
 
 services:
-  sonarr:
-    image: lscr.io/linuxserver/sonarr:4.0.6
-    container_name: sonarr
+  radarr:
+    image: lscr.io/linuxserver/radarr:5.5.3
+    container_name: radarr
     network_mode: bridge
     ports:
-      - "8989:8989"
+      - "7878:7878"
     volumes:
-      - /mnt/user/media/tv:/tv
+      - /mnt/user/media/movies:/movies
       - /mnt/user/media/downloads:/downloads
-      - /mnt/user/appdata/sonarr:/config
+      - /mnt/user/appdata/radarr:/config
     environment:
       - PUID=99
       - PGID=100
       - UMASK=022
-    restart: unless-stopped
     deploy:
       resources:
         limits:
           cpus: '1.0'
           memory: 512M
+    restart: unless-stopped

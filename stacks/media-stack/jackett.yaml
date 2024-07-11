@@ -1,17 +1,21 @@
-version: "2.1"
+version: "3.8" # Updated version
+
 services:
   jackett:
     image: ghcr.io/linuxserver/jackett:0.21.2592
     container_name: jackett
     environment:
       - TZ=Europe/Amsterdam
-      - AUTO_UPDATE=true #optional
+      - AUTO_UPDATE=true # optional
     volumes:
-      - jackett:/config
+      - /mnt/user/appdata/jackett:/config
     ports:
-      - 9117:9117
+      - "9117:9117"
     restart: always
     labels:
       - "com.centurylinlabs.watchtower.enable=true"
-volumes:
-  jackett:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M

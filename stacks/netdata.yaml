@@ -1,21 +1,20 @@
-version: '3'
+---
+version: '3.8'
+
 services:
   netdata:
     image: netdata/netdata:v1.46.2
     container_name: netdata
-    hostname: compartilhado # set to fqdn of host
-    ports:
-      - 19999:19999
-    restart: always
-    cap_add:
-      - SYS_PTRACE
-      - SYS_ADMIN
-    security_opt:
-      - apparmor:unconfined
+    network_mode: host
+    hostname: compartilhado 
+    environment:
+      - PGID=281
+      - DO_NOT_TRACK=1
+      - NETDATA_CLAIM_TOKEN=$NETDATA_CLAIM_TOKEN
+      - NETDATA_CLAIM_URL=https://app.netdata.cloud
+      - NETDATA_CLAIM_ROOMS=$NETDATA_CLAIM_ROOMS
+      #- NETDATA_EXTRA_DEB_PACKAGES=your_extra_packages_here
     volumes:
-      - netdataconfig:/etc/netdata
-      - netdatalib:/var/lib/netdata
-      - netdatacache:/var/cache/netdata
       - /etc/passwd:/host/etc/passwd:ro
       - /etc/group:/host/etc/group:ro
       - /etc/localtime:/etc/localtime:ro
@@ -24,11 +23,17 @@ services:
       - /etc/os-release:/host/etc/os-release:ro
       - /var/log:/host/var/log:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      - NETDATA_CLAIM_TOKEN=$NETDATA_CLAIM_TOKEN
-      - NETDATA_CLAIM_URL=https://app.netdata.cloud
-      - NETDATA_CLAIM_ROOMS=$NETDATA_CLAIM_ROOMS
-volumes:
-  netdataconfig:
-  netdatalib:
-  netdatacache:
+      - /mnt/user/appdata/netdata/config:/etc/netdata
+      - /mnt/user/appdata/netdata/lib:/var/lib/netdata
+      - /mnt/user/appdata/netdata/cache:/var/cache/netdata
+    cap_add:
+      - SYS_PTRACE
+      - NET_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    restart: unless-stopped

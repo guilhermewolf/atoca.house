@@ -6,6 +6,12 @@ initContainers:
     volumeMounts:
       - mountPath: /target
         name: plugins
+  - name: velero-plugin-for-csi
+    image: velero/velero-plugin-for-csi:v0.6.0
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins      
 # Minio storage configuration
 configuration:
   backupStorageLocation:
@@ -15,5 +21,8 @@ configuration:
         region: eu-west-1
         s3ForcePathStyle: true
         s3Url: https://s3.atoca.house
+  features: EnableCSI
 credentials:
   existingSecret: velero-secrets
+
+snapshotsEnabled: false

@@ -1,7 +1,7 @@
 # AWS backend plugin configuration
 initContainers:
   - name: velero-plugin-for-aws
-    image: velero/velero-plugin-for-aws:v1.8.0
+    image: velero/velero-plugin-for-aws:v1.10.0
     imagePullPolicy: Always
     volumeMounts:
       - mountPath: /target

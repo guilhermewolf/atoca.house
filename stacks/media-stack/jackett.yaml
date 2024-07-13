@@ -12,10 +12,8 @@ services:
     ports:
       - "9117:9117"
     restart: always
-    labels:
-      - "com.centurylinlabs.watchtower.enable=true"
     deploy:
       resources:
         limits:
           cpus: '0.5'
-          memory: 256M
+          memory: 512M

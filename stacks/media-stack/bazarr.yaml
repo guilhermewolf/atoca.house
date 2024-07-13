@@ -1,4 +1,5 @@
-version: "2.1"
+version: "3.8"
+
 services:
   bazarr:
     image: ghcr.io/lscr.io/linuxserver/bazarr:1.4.3
@@ -8,22 +9,14 @@ services:
       - PGID=100
       - UMASK=022
     volumes:
-        - bazarr:/config
-        - /mnt/user/media/movies:/media
-        - /mnt/user/media/tv:/series
+      - /mnt/user/appdata/bazarr:/config
+      - /mnt/user/media/movies:/media
+      - /mnt/user/media/tv:/series
     ports:
-      - 6767:6767
+      - "6767:6767"
     restart: always
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
     deploy:
       resources:
         limits:
-          cpus: '0.01'
-          memory: 200M
-        reservations:
-          cpus: '0.001'
-          memory: 100M
-volumes:
-  bazarr:
-
+          cpus: '0.5'
+          memory: 512M

@@ -25,6 +25,8 @@ spec:
       server: '*'
     - namespace: 'homepage'
       server: '*'
+    - namespace: 'kromgo'
+      server: '*'
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

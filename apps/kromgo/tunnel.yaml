@@ -1,0 +1,9 @@
+apiVersion: networking.cfargotunnel.com/v1alpha1
+kind: TunnelBinding
+metadata:
+  name: kromgo-cluster-tun
+subjects:
+  - name: kromgo
+tunnelRef:
+  kind: ClusterTunnel
+  name: k3s-cluster-tunnel

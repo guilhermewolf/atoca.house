@@ -20,7 +20,7 @@ This is a mono repository for my home infrastructure and Kubernetes cluster. I t
 
 ### Installation
 
-My cluster is [k3s](https://k3s.io/) provisioned overtop bare-metal Ubuntu 22 using the [k3sup](https://github.com/alexellis/k3sup). This is a semi hyper-converged cluster, workloads and block storage are sharing the same available resources on my nodes while I have a separate server for (NFS) file storage.
+My cluster is [k3s](https://k3s.io/) provisioned overtop bare-metal Ubuntu 22 using the [k3sup](https://github.com/alexellis/k3sup). This is a semi-hyper-converged cluster, workloads and block storage are sharing the same available resources on my nodes while I have a separate server for (NFS) file storage.
 
 ---
 
@@ -47,11 +47,15 @@ My cluster is [k3s](https://k3s.io/) provisioned overtop bare-metal Ubuntu 22 us
 This Git repository contains the following directories.
 
 ```sh
-📁 infra           # Kubernetes controlers grouped by namspaces
+📁 .github         # Github workflows
 📁 apps            # Apps deployed into my cluster grouped by namespace
+📁 argocd          # ArgoCD Helm Chart and configuration
 📁 docs            # Extra documentation and assets
+📁 infra           # Kubernetes controlers grouped by namspaces
+📁 sets            # ArgoCD application sets
 📁 stacks          # docker-compose files running on Asustor NAS
 └─📁 media-stack   # Media management stack
+📁 terraform       # terraform configuration for cloud resources
 ```
 
 ---
@@ -68,7 +72,7 @@ This Git repository contains the following directories.
 
 ## ☁️ Cloud Dependencies
 
-While most of my infrastructure and workloads are selfhosted I do rely upon the cloud for certain key parts of my setup. This saves me from having to worry about two things. (1) Dealing with chicken/egg scenarios and (2) services I critically need whether my cluster is online or not.
+While most of my infrastructure and workloads are self-hosted I do rely upon the cloud for certain key parts of my setup. This saves me from having to worry about two things. (1) Dealing with chicken/egg scenarios and (2) services I critically need whether my cluster is online or not.
 
 | Service                                         | Use                                                               | Cost           |
 |-------------------------------------------------|-------------------------------------------------------------------|----------------|
@@ -89,7 +93,7 @@ While most of my infrastructure and workloads are selfhosted I do rely upon the 
 | Raspberry Pi 4              | 1     | 128GB (SD)   | -                           | 8GB  | Ubuntu 22.04     | K8s node            |
 | Raspberry PoE Hat           | 4     | -            | -                           | -    | -                | Power the Pi's      |
 | TP-Link TL-SG108PE          | 1     | -            | -                           | -    | -                | Network PoE Switch  |
-| Asustor AS5404T             | 1     | -            | 4x 1TB Nvme (RAID 5)        | 4GB  | Unraid 6.12.10   | NAS                 |
+| Asustor AS5404T             | 1     | -            | 4x 1TB Nvme + 1x 2TB SSD    | 8GB  | Unraid 6.12.10   | NAS                 |
 
 ---
 ## 💪 TO-DO 
@@ -101,7 +105,7 @@ While most of my infrastructure and workloads are selfhosted I do rely upon the 
 
 ## 🤝 Gratitude and Thanks
 
-Thanks to all people that share their knowledge and experience on Github. I have learned a lot from reading blog posts and watching YouTube videos. I have tried to link to the sources of my inspiration where possible
+Thanks to all the people who share their knowledge and experience on Github. I have learned a lot from reading blog posts and watching YouTube videos. I have tried to link to the sources of my inspiration where possible
 
 - [k8s-at-home](https://github.com/topics/k8s-at-home)
 - [Christian Lempa](https://www.youtube.com/@christianlempa)

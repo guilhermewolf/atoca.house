@@ -11,14 +11,12 @@ area/github:
 area/kubernetes:
   - changed-files:
       - any-glob-to-any-file: "infra/**/*"
-area/taskfile:
-  - changed-files:
-      - any-glob-to-any-file:
-          - ".taskfiles/**/*"
-          - "Taskfile.yaml"
 area/apps:
   - changed-files:
       - any-glob-to-any-file: "apps/**/*"
+area/docker:
+  - changed-files:
+      - any-glob-to-any-file: "stacks/**/*"
 # Clusters
 cluster/main:
   - changed-files:

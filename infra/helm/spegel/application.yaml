@@ -10,8 +10,8 @@ spec:
   project: infra
   sources:
     - chart: spegel
-      repoURL: ghcr.io/spegel-org/helm-charts/spegel
-      targetRevision: 0.0.23 
+      repoURL: ghcr.io/spegel-org/helm-charts
+      targetRevision: v0.0.23 
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

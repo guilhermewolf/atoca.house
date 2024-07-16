@@ -7,13 +7,12 @@ services:
     network_mode: bridge
     ports:
       - "8080:8080"
-      - "8090:8090"
     volumes:
       - /mnt/user/appdata/sabnzbd:/data
-      - /mnt/user/media/downloads:/downloads
+      - /mnt/user/media/downloads/complete:/downloads
       - /mnt/user/media/incomplete:/incomplete-downloads
     environment:
-      - PUID=99
+      - PUID=1001
       - PGID=100
       - TZ=Europe/Amsterdam
     deploy:

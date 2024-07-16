@@ -15,6 +15,8 @@ locals {
     "s3",
     "sonar",
     "transmission",
+    "sabnzbd",
+    "prowlarr",
   ]
   domain = "atoca.house"
 }

@@ -10,11 +10,11 @@ helmCharts:
   - name: external-dns
     repo: https://charts.bitnami.com/bitnami
     releaseName: external-dns
-    version: 8.2.1
+    version: 8.2.2
     valuesFile: values.yaml
 
   - name: external-dns
     repo: https://charts.bitnami.com/bitnami
     releaseName: external-dns-adguard
-    version: 8.2.1
+    version: 8.2.2
     valuesFile: values-adguard.yaml

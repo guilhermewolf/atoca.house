@@ -10,7 +10,7 @@ services:
       - "8989:8989"
     volumes:
       - /mnt/user/media/tv:/tv
-      - /mnt/user/media/downloads:/downloads
+      - /mnt/user/media/downloads/complete:/downloads
       - /mnt/user/appdata/sonarr:/config
     environment:
       - PUID=99

@@ -9,11 +9,12 @@ services:
       - "8080:8080"
     volumes:
       - /mnt/user/appdata/sabnzbd:/data
-      - /mnt/user/media/downloads/complete:/downloads
-      - /mnt/user/media/incomplete:/incomplete-downloads
+      - /mnt/user/media/downloads/complete:/downloads/complete
+      - /mnt/user/media/downloads/incomplete:/incomplete-downloads
     environment:
       - PUID=1001
       - PGID=100
+      - UMASK=0002 
       - TZ=Europe/Amsterdam
     deploy:
       resources:

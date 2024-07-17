@@ -32,9 +32,10 @@ services:
       - PUID=1001
       - PGID=100
       - TZ=Europe/Amsterdam
-      #- UMASK_SET=022
+      - UMASK=0002
     volumes:
-      - "/mnt/user/media/downloads:/downloads"
+      - "/mnt/user/media/downloads/complete:/downloads/complete"
+      - "/mnt/user/media/downloads/incomplete:/downloads/incomplete"
     deploy:
       resources:
         limits:

@@ -11,7 +11,7 @@ services:
     volumes:
       - /mnt/user/media/tv:/data/tvshows
       - /mnt/user/media/movies:/data/movies
-      - /mnt/user/appdata/jellyfin:/config
+      - /mnt/cache/appdata/jellyfin:/config
     environment:
       - PUID=99
       - PGID=100

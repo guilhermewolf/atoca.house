@@ -23,9 +23,9 @@ services:
       - /etc/os-release:/host/etc/os-release:ro
       - /var/log:/host/var/log:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /mnt/user/appdata/netdata/config:/etc/netdata
-      - /mnt/user/appdata/netdata/lib:/var/lib/netdata
-      - /mnt/user/appdata/netdata/cache:/var/cache/netdata
+      - /mnt/cache/appdata/netdata/config:/etc/netdata
+      - /mnt/cache/appdata/netdata/lib:/var/lib/netdata
+      - /mnt/cache/appdata/netdata/cache:/var/cache/netdata
     cap_add:
       - SYS_PTRACE
       - NET_ADMIN

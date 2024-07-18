@@ -8,7 +8,7 @@ services:
       - TZ=Europe/Amsterdam
       - AUTO_UPDATE=true # optional
     volumes:
-      - /mnt/user/appdata/jackett:/config
+      - /mnt/cache/appdata/jackett:/config
     ports:
       - "9117:9117"
     restart: always

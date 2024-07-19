@@ -24,9 +24,11 @@ spec:
       directory:
         exclude: '{application.yaml,values.yaml}'
   syncPolicy:
-    automated:
-      selfHeal: true
-      prune: false
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks

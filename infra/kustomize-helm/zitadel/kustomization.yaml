@@ -11,5 +11,5 @@ helmCharts:
     repo: https://charts.zitadel.com
     namespace: zitadel
     releaseName: zitadel
-    version: 8.0.0
+    version: 8.1.0
     valuesFile: values.yaml

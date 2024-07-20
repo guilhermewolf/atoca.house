@@ -2,6 +2,13 @@ ollama:
   # -- List of models to pull at container startup
   models:
     - tinyllama
+    - llama3
+    - gemma2
+
+  gpu:
+    enabled: true
+    type: 'nvidia'
+    number: 1
 
 ingress:
   enabled: true
@@ -17,3 +24,12 @@ ingress:
     - hosts:
       - ollama.atoca.house
       secretName: ollama-tls
+
+nodeSelector:
+  dedicated: ollama
+
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "ollama"
+    effect: "NoSchedule"

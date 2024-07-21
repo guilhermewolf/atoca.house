@@ -19,8 +19,6 @@ spec:
       server: '*'
     - namespace: 'authentik'
       server: '*'
-    - namespace: 'ollama'
-      server: '*'
     - namespace: 'open-webui'
       server: '*'
     - namespace: 'homepage'

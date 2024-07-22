@@ -9,6 +9,7 @@ export NODE1=
 export NODE2=
 export NODE3=
 export NODE4=
+export GPU_NODE=
 export SSH_KEY=
 
 k3sup install --ip $NODE1 --user ubuntu --no-extras --context rpi-k8s --k3s-extra-args '--disable traefik' --k3s-version v1.30.2+k3s1 --ssh-key $SSH_KEY --cluster
@@ -18,6 +19,15 @@ k3sup join --ip $NODE2 --user ubuntu --server-user ubuntu --server-ip $NODE1 --s
 
 k3sup join --ip $NODE3 --server-ip $NODE1  --k3s-version v1.30.2+k3s1 --user ubuntu --ssh-key $SSH_KEY
 k3sup join --ip $NODE4 --server-ip $NODE2  --k3s-version v1.30.2+k3s1 --user ubuntu --ssh-key $SSH_KEY
+k3sup join --ip $GPU_NODE --server-ip $NODE1  --k3s-version v1.30.2+k3s1 --user ubuntu --ssh-key $SSH_KEY
+```
+
+## GPU_NODE
+
+```bash
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg   && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list |     sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' |     sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+apt update
+apt install -y nvidia-container-toolkit nvidia-container-runtime cuda-drivers-fabricmanager-550 nvidia-headless-550-server nvidia-utils-550-server
 ```
 
 ## ArgoCD

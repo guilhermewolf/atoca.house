@@ -1,7 +1,6 @@
 ollama:
-  # -- List of models to pull at container startup
   models:
-    - tinyllama
+    - codegemma
     - llama3
     - gemma2
 
@@ -10,26 +9,4 @@ ollama:
     type: 'nvidia'
     number: 1
 
-ingress:
-  enabled: true
-  className: nginx
-  annotations:
-    cert-manager.io/cluster-issuer: "cloudflare-prod"
-  hosts:
-    - host: ollama.atoca.house
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-    - hosts:
-      - ollama.atoca.house
-      secretName: ollama-tls
-
-nodeSelector:
-  dedicated: ollama
-
-tolerations:
-  - key: "dedicated"
-    operator: "Equal"
-    value: "ollama"
-    effect: "NoSchedule"
+runtimeClassName: nvidia

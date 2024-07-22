@@ -9,26 +9,15 @@ spec:
     server: https://kubernetes.default.svc
   project: infra
   sources:
-    - chart: metallb
-      repoURL: https://metallb.github.io/metallb
-      targetRevision: 0.14.7
-      helm:
-        valueFiles:
-        - $values/infra/helm/metallb-system/values.yaml
-    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
-      targetRevision: HEAD
-      ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       path: infra/helm/metallb-system/
       directory:
-        exclude: '{application.yaml,values.yaml}'
+        exclude: '{application.yaml}'
+    - repoURL: 'https://github.com/metallb/metallb'
+      targetRevision: v0.14.5
+      path: config/native
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-  ignoreDifferences:
-    - group: admissionregistration.k8s.io
-      kind: ValidatingWebhookConfiguration
-      jsonPointers:
-        - /webhooks

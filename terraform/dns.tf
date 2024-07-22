@@ -12,7 +12,7 @@ locals {
     "portainer",
     "radar",
     "readar",
-    "s3",
+    "minio-data",
     "sonar",
     "transmission",
     "sabnzbd",

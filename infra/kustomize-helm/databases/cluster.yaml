@@ -30,6 +30,7 @@ spec:
         # - GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO terraform;
         # - GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO terraform;
         # - GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO terraform;
+        # - GRANT CREATE ON SCHEMA public TO terraform;
         - CREATE DATABASE zitadel;
         - CREATE USER zitadel WITH PASSWORD '$(ZITADEL_DB_PASSWORD)';
         - GRANT ALL PRIVILEGES ON DATABASE zitadel TO zitadel;

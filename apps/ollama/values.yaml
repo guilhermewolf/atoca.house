@@ -10,5 +10,3 @@ ollama:
     number: 1
 
 runtimeClassName: nvidia
-# nodeSelector:
-#   kubernetes.io/hostname: gpu-k8s

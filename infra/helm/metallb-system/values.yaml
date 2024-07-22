@@ -1,27 +1,15 @@
 crds:
-  enabled: false
+  enabled: true
+rbac:
+  create: true
+  
 controller:
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "100Mi"
-    limits:
-      cpu: "200m"
-      memory: "200Mi"
+  enabled: true
 
 speaker:
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "50Mi"
-    limits:
-      cpu: "100m"
-      memory: "100Mi"
+  enabled: false
   frr:
-    resources:
-      requests:
-        cpu: "50m"
-        memory: "50Mi"
-      limits:
-        cpu: "100m"
-        memory: "100Mi"
+    enabled: false
+
+frrk8s:
+  enabled: false

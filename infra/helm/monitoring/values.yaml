@@ -31,13 +31,6 @@ alertmanager:
           resources:
             requests:
               storage: 10Gi
-    resources:
-      requests:
-        cpu: "100m"
-        memory: "100Mi"
-      limits:
-        cpu: "200m"
-        memory: "200Mi"
   ingress:
     enabled: true
     ingressClassName: nginx
@@ -63,13 +56,6 @@ prometheus:
         static_configs:
           - targets:
             - '192.168.178.160:9100'  # Node Exporter running on NAS
-    resources:
-      requests:
-        cpu: "500m"
-        memory: "500Mi"
-      limits:
-        cpu: "1000m"
-        memory: "1000Mi"
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -79,7 +65,7 @@ prometheus:
             requests:
               storage: 20Gi
     # Retention period
-    retention: 7d
+    retention: 3d
     retentionSize: "20GB"
   ingress:
     enabled: true
@@ -96,30 +82,3 @@ prometheus:
 grafana:
   enabled: false
   forceDeployDashboards: true
-
-prometheus-node-exporter:
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "50Mi"
-    limits:
-      cpu: "100m"
-      memory: "100Mi"
-
-kube-state-metrics:
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "50Mi"
-    limits:
-      cpu: "100m"
-      memory: "100Mi"
-
-prometheus-adapter:
-  resources:
-    requests:
-      cpu: "50m"
-      memory: "50Mi"
-    limits:
-      cpu: "100m"
-      memory: "100Mi"

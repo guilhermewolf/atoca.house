@@ -15,7 +15,7 @@ spec:
       directory:
         exclude: '{application.yaml}'
     - repoURL: 'https://github.com/metallb/metallb'
-      targetRevision: v0.14.7
+      targetRevision: v0.14.8
       path: config/native
   syncPolicy:
     syncOptions:

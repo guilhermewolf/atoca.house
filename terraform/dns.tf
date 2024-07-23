@@ -17,6 +17,8 @@ locals {
     "transmission",
     "sabnzbd",
     "prowlarr",
+    "wyl",
+    "actual"
   ]
   domain = "atoca.house"
 }

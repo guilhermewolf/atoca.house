@@ -14,7 +14,7 @@ configuration:
       config:
         region: eu-west-1
         s3ForcePathStyle: true
-        s3Url: https://minio-data.atoca.house
+        s3Url: http://192.168.178.160:9768
   features: EnableCSI
 credentials:
   existingSecret: velero-secrets

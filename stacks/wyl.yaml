@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  watchyourlan:
+    image: aceberg/watchyourlan
+    container_name: watchyourlan
+    network_mode: host
+    volumes:
+      - /mnt/user/appdata/wyl:/data
+    environment:
+      GUIPORT: $GUIPORT
+      TZ: $TZ
+      IFACE: $IFACE
+

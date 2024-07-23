@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  flaresolverr:
+    image: flaresolverr/flaresolverr
+    container_name: flaresolverr
+    network_mode: bridge
+    ports:
+      - "8191:8191"
+    environment:
+      LOG_LEVEL: "info"
+      TZ: "Europe/Amsterdam"

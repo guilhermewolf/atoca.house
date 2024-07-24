@@ -9,8 +9,8 @@ services:
     ports:
       - "7878:7878"
     volumes:
-      - /mnt/user/media/movies:/movies
-      - /mnt/user/media/downloads/complete:/downloads/complete
+      - /mnt/user/media-files/movies:/movies
+      - /mnt/user/media-downloads/complete:/downloads/complete
       - /mnt/cache/appdata/radarr:/config
     environment:
       - PUID=99

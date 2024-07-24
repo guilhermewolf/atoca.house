@@ -34,8 +34,8 @@ services:
       - TZ=Europe/Amsterdam
       - UMASK=0002
     volumes:
-      - "/mnt/user/media/downloads/complete:/downloads/complete"
-      - "/mnt/user/media/downloads/incomplete:/downloads/incomplete"
+      - "/mnt/user/media-downloads/complete:/downloads/complete"
+      - "/mnt/user/media-downloads/incomplete:/downloads/incomplete"
     deploy:
       resources:
         limits:

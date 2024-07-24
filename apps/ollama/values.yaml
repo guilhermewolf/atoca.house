@@ -25,3 +25,11 @@ ingress:
       secretName: ollama-tls
 
 runtimeClassName: nvidia
+
+
+persistentVolume:
+  enabled: true
+  accessModes:
+    - ReadWriteOnce
+  size: 70Gi
+  storageClass: "longhorn"

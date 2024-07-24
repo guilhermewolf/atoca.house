@@ -10,8 +10,8 @@ services:
       - UMASK=022
     volumes:
       - /mnt/cache/appdata/bazarr:/config
-      - /mnt/user/media/movies:/media
-      - /mnt/user/media/tv:/series
+      - /mnt/user/media-files/movies:/media
+      - /mnt/user/media-files/tv:/series
     ports:
       - "6767:6767"
     restart: always

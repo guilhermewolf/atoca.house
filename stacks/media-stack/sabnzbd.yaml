@@ -9,8 +9,8 @@ services:
       - "8080:8080"
     volumes:
       - /mnt/cache/appdata/sabnzbd:/data
-      - /mnt/user/media/downloads/complete:/downloads/complete
-      - /mnt/user/media/downloads/incomplete:/incomplete-downloads
+      - /mnt/user/media-downloads/complete:/downloads/complete
+      - /mnt/user/media-downloads/incomplete:/incomplete-downloads
     environment:
       - PUID=1001
       - PGID=100

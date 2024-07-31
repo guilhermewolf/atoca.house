@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   flaresolverr:
-    image: flaresolverr/flaresolverr
+    image: flaresolverr/flaresolverr:v3.3.21
     container_name: flaresolverr
     network_mode: bridge
     ports:

@@ -1,0 +1,13 @@
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+  hosts:
+    - host: home.atoca.house
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - "home.atoca.house"
+      secretName: homarr-tls

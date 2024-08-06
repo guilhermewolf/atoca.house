@@ -2,11 +2,12 @@ ingress:
   enabled: true
   className: "nginx"
   annotations:
+    cert-manager.io/cluster-issuer: "cloudflare-prod"
   hosts:
     - host: home.atoca.house
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
   tls:
     - hosts:
         - "home.atoca.house"

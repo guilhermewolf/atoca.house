@@ -9,5 +9,5 @@ helmCharts:
   - name: homarr
     repo: https://oben01.github.io/charts/
     releaseName: "homarr"
-    version: 0.15.3
+    version: 1.2.5
     valuesFile: values.yaml

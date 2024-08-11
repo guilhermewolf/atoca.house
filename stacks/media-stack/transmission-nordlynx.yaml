@@ -3,7 +3,7 @@ version: "3.8" # Updated version
 services:
   gluetun:
     container_name: GlueTun-Nord
-    image: qmcgaw/gluetun:v3.38.0
+    image: qmcgaw/gluetun:v3.39.0
     cap_add:
       - NET_ADMIN
     ports:

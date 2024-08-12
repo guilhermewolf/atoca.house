@@ -32,4 +32,4 @@ persistentVolume:
   accessModes:
     - ReadWriteOnce
   size: 70Gi
-  storageClass: "longhorn"
+  storageClass: "local-path" 

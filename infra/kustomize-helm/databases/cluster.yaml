@@ -4,7 +4,8 @@ metadata:
   name: postgresql-cluster
   namespace: databases
 spec:
-  instances: 2
+  enablePDB: false
+  instances: 3
   primaryUpdateStrategy: supervised
   enableSuperuserAccess: true
   superuserSecret:

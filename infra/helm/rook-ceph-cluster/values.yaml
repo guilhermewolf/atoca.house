@@ -1,0 +1,69 @@
+ingress:
+  dashboard:
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+    ingressClassName: nginx
+    host:
+      name: rook.atoca.house
+      path: /
+    tls:
+    - hosts:
+        - rook.atoca.house
+      secretName: rook-tls
+cephClusterSpec:
+  dataDirHostPath: /rook
+  mon:
+    count: 3
+    allowMultiplePerNode: false
+  cephVersion:
+    image: ceph/ceph:v17.2.6
+  dashboard:
+    enabled: true
+    ssl: false
+  storage:
+    useAllNodes: true
+    useAllDevices: false
+    directories:
+      - path: /rook
+  resources:
+    mgr:
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+    mon:
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+    osd:
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+
+cephBlockPools:
+  - name: replicapool
+    spec:
+      failureDomain: host
+      replicated:
+        size: 3
+    storageClass:
+      enabled: true
+      name: ceph-block
+      isDefault: true
+      provisioner: rook-ceph.rbd.csi.ceph.com
+      parameters:
+        clusterID: rook-ceph
+        pool: replicapool
+        imageFormat: "2"
+        imageFeatures: "layering"
+        csi.storage.k8s.io/fstype: ext4
+      reclaimPolicy: Delete
+      allowVolumeExpansion: true

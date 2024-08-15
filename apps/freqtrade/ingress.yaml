@@ -20,5 +20,5 @@ spec:
                   number: 80
   tls:
     - hosts:
-        - open-webui.atoca.house
-      secretName: open-webui-tls
+        - freqtrade.atoca.house
+      secretName: freqtrade-tls

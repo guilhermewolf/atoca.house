@@ -20,7 +20,7 @@ spec:
             - sh
             - -c
             - |
-              wget -O /strategies/NostalgiaForInfinityX4.py https://raw.githubusercontent.com/iterativv/NostalgiaForInfinity/main/NostalgiaForInfinityX4.py
+              wget -O /strategies/Combined_NFIv6_SMA.py https://raw.githubusercontent.com/PeetCrypto/freqtrade-stuff/f6c38def0b2fe01d8d42e47740cdeab53511527b/Combined_NFIv6_SMA.py
           volumeMounts:
             - name: strategies-volume
               mountPath: /strategies

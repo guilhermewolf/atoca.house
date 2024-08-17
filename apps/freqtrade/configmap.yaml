@@ -40,11 +40,8 @@ data:
         "strategy": "Combined_NFIv6_SMA",
         "exchange": {
             "name": "binance",
-            "ccxt_config": {"enableRateLimit": true},
-            "ccxt_async_config": {
-              "enableRateLimit": true,
-              "rateLimit": 200
-            },
+            "ccxt_config": {},
+            "ccxt_async_config": {},
             "pair_whitelist": [
               "BTC/USDT", 
               "ETH/USDT", 
@@ -71,7 +68,31 @@ data:
             ]
         },
         "pairlists": [
-           {"method": "StaticPairList"}
+           {
+           "method": "StaticPairList",
+           "pairs": [
+              "BTC/USDT", 
+              "ETH/USDT", 
+              "SOL/USDT", 
+              "USDC/USDT", 
+              "XRP/USDT", 
+              "TON/USDT", 
+              "DOGE/USDT", 
+              "ADA/USDT", 
+              "TRX/USDT", 
+              "WBTC/USDT", 
+              "AVAX/USDT", 
+              "SHIB/USDT", 
+              "LINK/USDT", 
+              "DOT/USDT", 
+              "LTC/USDT", 
+              "UNI/USDT", 
+              "NEAR/USDT", 
+              "MATIC/USDT", 
+              "ICP/USDT"
+           ]
+           
+           }
         ],
         "telegram": {
             "enabled": true,

@@ -27,8 +27,8 @@ spec:
       server: '*'
     - namespace: 'kromgo'
       server: '*'
-    - namespace: 'freqtrade'
-      server: '*'
+    # - namespace: 'freqtrade'
+    #   server: '*'
   clusterResourceWhitelist:
     - group: '*'
       kind: '*'

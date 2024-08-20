@@ -9,6 +9,11 @@ ollama:
     type: 'nvidia'
     number: 1
 
+nodeSelector:
+  gpu: "true"
+
+runtimeClassName: nvidia
+
 ingress:
   enabled: enable
   className: "nginx"
@@ -24,12 +29,9 @@ ingress:
         - ollama.atoca.house
       secretName: ollama-tls
 
-runtimeClassName: nvidia
-
-
 persistentVolume:
   enabled: true
   accessModes:
     - ReadWriteOnce
   size: 70Gi
-  storageClass: "local-path" 
+  storageClass: "local-path"

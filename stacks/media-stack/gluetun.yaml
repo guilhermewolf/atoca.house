@@ -1,0 +1,23 @@
+version: "3.8" # Updated version
+
+services:
+  gluetun:
+    container_name: GlueTun-Nord
+    image: qmcgaw/gluetun:v3.39.0
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "9092:9091"
+      - "51413:51413"
+      - "51413:51413/udp"
+    environment:
+      - VPN_SERVICE_PROVIDER=nordvpn
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=$NORD_KEY
+      - SERVER_COUNTRIES=Netherlands
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    restart: always

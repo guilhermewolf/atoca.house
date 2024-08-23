@@ -1,0 +1,21 @@
+version: "3.8" # Updated version
+
+services:
+  transmission:
+    image: ghcr.io/linuxserver/transmission:4.0.6
+    network_mode: "container:GlueTun-Nord"
+    container_name: Transmission-Nord
+    environment:
+      - PUID=1001
+      - PGID=100
+      - TZ=Europe/Amsterdam
+      - UMASK=0002
+    volumes:
+      - "/mnt/user/media-downloads/complete:/downloads/complete"
+      - "/mnt/user/media-downloads/incomplete:/downloads/incomplete"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    restart: always

@@ -1,0 +1,4 @@
+fullnameOverride: reloader
+reloader:
+  isArgoRollouts: true
+

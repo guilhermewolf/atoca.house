@@ -10,7 +10,8 @@ controllers:
           tag: v0.4.1@sha256:237e6ac3f3bc791343e1ee84122ce9b97abf7eed86cd522d8bf4cba10a041e9f
         env:
           PROMETHEUS_URL: http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
-          PORT:  80
+          SERVER_HOST: 0.0.0.0
+          SERVER_PORT: 80
         resources:
           requests:
             cpu: 10m
@@ -27,6 +28,7 @@ service:
     controller: kromgo
     ports:
       http:
+        primary: true
         port: 80
 persistence:
   config-file:

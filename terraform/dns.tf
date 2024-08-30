@@ -19,7 +19,8 @@ locals {
     "sabnzbd",
     "sonar",
     "transmission",
-    "wyl"
+    "wyl",
+    "test"
   ]
   domain = "atoca.house"
 }

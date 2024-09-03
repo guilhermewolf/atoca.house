@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:1.21.2
+    image: lscr.io/linuxserver/prowlarr:1.23.1
     container_name: prowlarr
     network_mode: bridge
     ports:

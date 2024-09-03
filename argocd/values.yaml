@@ -21,8 +21,10 @@ configs:
     # --enable-helm: Enabling Helm chart rendering with Kustomize
     # --load-restrictor LoadRestrictionsNone: Local kustomizations may load files from outside their root
     kustomize.buildOptions: --enable-helm --load-restrictor LoadRestrictionsNone
-
-crds:
+    repositories:
+      atoca.house:
+        url: https://github.com/guilhermewolf/atoca.house
+        
   install: true
   # -- Keep CRDs on chart uninstall
   keep: false

@@ -15,7 +15,7 @@ datasources:
     apiVersion: 1
     deleteDatasources:
       - { name: Alertmanager, orgId: 1 }
-      #- { name: Loki, orgId: 1 }
+      - { name: Loki, orgId: 1 }
       - { name: Prometheus, orgId: 1 }
     datasources:
       - name: Prometheus
@@ -25,14 +25,13 @@ datasources:
         url: http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
         jsonData:
           timeInterval: 1m
-        #isDefault: true
-      # - name: Loki
-      #   type: loki
-      #   uid: loki
-      #   access: proxy
-      #   url: 
-      #   jsonData:
-      #     maxLines: 250
+      - name: Loki
+        type: loki
+        uid: loki
+        access: proxy
+        url: http://loki.loki.svc.cluster.local:3100
+        jsonData:
+          maxLines: 250
       - name: Alertmanager
         type: alertmanager
         uid: alertmanager
@@ -132,9 +131,9 @@ sidecar:
       disableDelete: true
       foldersFromFilesStructure: true
   datasources:
-    enabled: true
-    searchNamespace: ALL
-    labelValue: ""
+    enabled: false
+    # searchNamespace: ALL
+    # labelValue: ""
 plugins:
   - grafana-clock-panel
   - grafana-piechart-panel

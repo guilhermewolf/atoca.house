@@ -7,10 +7,12 @@ services:
     cap_add:
       - NET_ADMIN
     ports:
+      - "8888:8888/tcp"
       - "9092:9091"
       - "51413:51413"
       - "51413:51413/udp"
     environment:
+      - HTTPPROXY=on
       - VPN_SERVICE_PROVIDER=nordvpn
       - VPN_TYPE=wireguard
       - WIREGUARD_PRIVATE_KEY=$NORD_KEY

@@ -22,7 +22,7 @@ datasources:
         type: prometheus
         uid: prometheus
         access: proxy
-        url: http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+        url: http://monitoring-prometheus.monitoring.svc.cluster.local:9090
         jsonData:
           timeInterval: 1m
       - name: Loki
@@ -36,7 +36,7 @@ datasources:
         type: alertmanager
         uid: alertmanager
         access: proxy
-        url: http://monitoring-kube-prometheus-alertmanager.monitoring.svc.cluster.local:9093
+        url: http://monitoring-alertmanager.monitoring.svc.cluster.local:9093
         jsonData:
           implementation: prometheus
 dashboardProviders:

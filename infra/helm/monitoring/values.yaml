@@ -1,7 +1,10 @@
 crds:
   enabled: true
 
+nameOverride: "monitoring"
+
 alertmanager:
+  nameOverride: alertmanager
   alertmanagerSpec:
     config:
       global:
@@ -49,7 +52,12 @@ alertmanager:
           - alertmanager.atoca.house
 
 prometheus:
+  nameOverride: prometheus
   prometheusSpec:
+    serviceMonitorSelector:
+      matchLabels: {}
+    serviceMonitorNamespaceSelector:
+      matchLabels: {}
     additionalScrapeConfigs:
       - job_name: 'compartilhado-node-exporter'
         scrape_interval: 30s
@@ -83,6 +91,12 @@ prometheus:
       - secretName: prometheus-tls
         hosts:
           - prometheus.atoca.house
+
+kubeStateMetrics:
+  nameOverride: kube-state-metrics
+
+nodeExporter:
+  nameOverride: node-exporter
 
 grafana:
   enabled: false

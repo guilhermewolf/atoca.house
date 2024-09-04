@@ -121,6 +121,11 @@ dashboards:
       gnetId: 19105
       revision: 3
       datasource: Prometheus
+    loki-dashboards:
+      # renovate: depName="Loki"
+      gnetId: 13639
+      revision: 2
+      datasource: Loki
 sidecar:
   dashboards:
     enabled: true

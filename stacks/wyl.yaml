@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   watchyourlan:
-    image: aceberg/watchyourlan:2.0.1
+    image: aceberg/watchyourlan:2.0.2
     container_name: watchyourlan
     network_mode: host
     volumes:

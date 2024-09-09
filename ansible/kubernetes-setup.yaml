@@ -1,0 +1,93 @@
+---
+- name: Kubernetes Cluster Setup with k3sup
+  hosts: localhost
+  vars:
+    gpu_node: "192.168.178.200"
+    node1: "192.168.178.201"
+    node2: "192.168.178.202"
+    node3: "192.168.178.203"
+    node4: "192.168.178.204"
+    ssh_key: "{{ lookup('env', 'HOME') }}/.ssh/id_ed25519.pub"
+    k3s_version: "v1.30.2+k3s1"
+    k3s_extra_args: "--disable traefik ---disable servicelb --embedded-registry"
+    context_name: "atoca-k8s"
+    user: "ubuntu"
+
+  tasks:
+    - name: Download k3sup
+      shell: curl -sLS https://get.k3sup.dev | sh
+      become: yes
+
+    - name: Copy k3sup binary to /usr/local/bin
+      copy:
+        src: ./k3sup-darwin-arm64
+        dest: /usr/local/bin/k3sup
+        mode: 0755
+      become: yes
+
+    - name: Install K3s on GPU node
+      shell: |
+        k3sup install --ip {{ gpu_node }} --user {{ user }} \
+        --no-extras --context {{ context_name }} \
+        --k3s-extra-args '{{ k3s_extra_args }}' \
+        --k3s-version {{ k3s_version }} \
+        --ssh-key {{ ssh_key }} --cluster
+      become: yes
+
+    - name: Join NODE1 to the cluster as a server
+      shell: |
+        k3sup join --ip {{ node1 }} --user {{ user }} \
+        --server-user {{ user }} --server-ip {{ gpu_node }} \
+        --server --no-extras --k3s-version {{ k3s_version }} \
+        --k3s-extra-args '{{ k3s_extra_args }}' --ssh-key {{ ssh_key }}
+      become: yes
+
+    - name: Join NODE2 to the cluster as an agent
+      shell: |
+        k3sup join --ip {{ node2 }} --user {{ user }} \
+        --server-ip {{ gpu_node }} --k3s-version {{ k3s_version }} \
+        --ssh-key {{ ssh_key }}
+      become: yes
+
+    - name: Join NODE3 to the cluster as an agent
+      shell: |
+        k3sup join --ip {{ node3 }} --user {{ user }} \
+        --server-ip {{ node1 }} --k3s-version {{ k3s_version }} \
+        --ssh-key {{ ssh_key }}
+      become: yes
+
+    - name: Join NODE4 to the cluster as an agent
+      shell: |
+        k3sup join --ip {{ node4 }} --user {{ user }} \
+        --server-ip {{ node1 }} --k3s-version {{ k3s_version }} \
+        --ssh-key {{ ssh_key }}
+      become: yes
+
+    - name: Install NVIDIA drivers on GPU node
+      shell: |
+        curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg && \
+        curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+        sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+        sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list && \
+        sudo apt update && \
+        sudo apt install -y nvidia-container-toolkit nvidia-container-runtime cuda-drivers-fabricmanager-550 nvidia-headless-550-server nvidia-utils-550-server
+      become: yes
+      delegate_to: "{{ gpu_node }}"
+
+    - name: Ensure kubeconfig is set to the correct context for ArgoCD
+      shell: |
+        CONTEXT=$(kubectl config current-context)
+        if [[ $CONTEXT != *"{{ context_name }}"* ]]; then 
+          echo -e "You are using $CONTEXT\nPlease switch to '{{ context_name }}' context"; exit 1; 
+        fi
+      become: yes
+
+    - name: Deploy ArgoCD
+      shell: |
+        kubectl kustomize --enable-helm argocd | kubectl apply -f -
+      become: yes
+
+    - name: Apply ArgoCD kustomization sets
+      shell: |
+        kubectl kustomize sets/ | kubectl apply -f -
+      become: yes

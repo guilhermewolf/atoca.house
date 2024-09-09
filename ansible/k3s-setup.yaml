@@ -1,0 +1,101 @@
+---
+- name: Kubernetes Cluster Setup with k3s
+  hosts: localhost
+  vars:
+    gpu_node: "192.168.178.200"
+    node1: "192.168.178.201"
+    node2: "192.168.178.202"
+    node3: "192.168.178.203"
+    node4: "192.168.178.204"
+    ssh_key: "{{ lookup('env', 'HOME') }}/.ssh/id_ed25519"
+    k3s_version: "v1.30.2+k3s1"
+    k3s_extra_args: "--disable traefik --disable-cloud-controller --disable servicelb --disable metrics-server"
+    spegel_registry: "registry.example.com"
+
+  tasks:
+    - name: Install k3s on GPU node (server)
+      ansible.builtin.shell: |
+        curl -sfL https://get.k3s.io | sh -s - \
+        --write-kubeconfig-mode 644 \
+        --k3s-version {{ k3s_version }} \
+        --node-ip {{ gpu_node }} \
+        --cluster-init \
+        {{ k3s_extra_args }} \
+        --node-name gpu-node
+      become: yes
+      delegate_to: "{{ gpu_node }}"
+
+    - name: Join NODE1 to the cluster (server)
+      ansible.builtin.shell: |
+        curl -sfL https://get.k3s.io | K3S_URL=https://{{ gpu_node }}:6443 \
+        K3S_TOKEN=$(sudo cat /var/lib/rancher/k3s/server/node-token) \
+        sh -s - \
+        --k3s-version {{ k3s_version }} \
+        --node-ip {{ node1 }} \
+        {{ k3s_extra_args }} \
+        --server \
+        --node-name node1
+      become: yes
+      delegate_to: "{{ node1 }}"
+
+    - name: Join NODE2 to the cluster (agent)
+      ansible.builtin.shell: |
+        curl -sfL https://get.k3s.io | K3S_URL=https://{{ gpu_node }}:6443 \
+        K3S_TOKEN=$(sudo cat /var/lib/rancher/k3s/server/node-token) \
+        sh -s - \
+        --k3s-version {{ k3s_version }} \
+        --node-ip {{ node2 }} \
+        {{ k3s_extra_args }} \
+        --node-name node2
+      become: yes
+      delegate_to: "{{ node2 }}"
+
+    - name: Join NODE3 to the cluster (agent)
+      ansible.builtin.shell: |
+        curl -sfL https://get.k3s.io | K3S_URL=https://{{ gpu_node }}:6443 \
+        K3S_TOKEN=$(sudo cat /var/lib/rancher/k3s/server/node-token) \
+        sh -s - \
+        --k3s-version {{ k3s_version }} \
+        --node-ip {{ node3 }} \
+        {{ k3s_extra_args }} \
+        --node-name node3
+      become: yes
+      delegate_to: "{{ node3 }}"
+
+    - name: Join NODE4 to the cluster (agent)
+      ansible.builtin.shell: |
+        curl -sfL https://get.k3s.io | K3S_URL=https://{{ gpu_node }}:6443 \
+        K3S_TOKEN=$(sudo cat /var/lib/rancher/k3s/server/node-token) \
+        sh -s - \
+        --k3s-version {{ k3s_version }} \
+        --node-ip {{ node4 }} \
+        {{ k3s_extra_args }} \
+        --node-name node4
+      become: yes
+      delegate_to: "{{ node4 }}"
+
+    - name: Install NVIDIA drivers on GPU node
+      shell: |
+        curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg && \
+        curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+        sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+        sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list && \
+        sudo apt update && \
+        sudo apt install -y nvidia-container-toolkit nvidia-container-runtime cuda-drivers-fabricmanager-550 nvidia-headless-550-server nvidia-utils-550-server
+      become: yes
+      delegate_to: "{{ gpu_node }}"
+
+    # - name: Setup local container registry (spegel)
+    #   ansible.builtin.shell: |
+    #     kubectl create namespace registry || true
+    #     helm repo add twuni https://helm.twun.io
+    #     helm install spegel twuni/docker-registry --namespace registry \
+    #     --set persistence.enabled=true \
+    #     --set persistence.size=20Gi \
+    #     --set persistence.storageClass=longhorn \
+    #     --set service.type=ClusterIP \
+    #     --set replicas=2 \
+    #     --set storageClassName=longhorn
+    #   become: yes
+    #   delegate_to: "{{ gpu_node }}"
+

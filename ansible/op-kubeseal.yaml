@@ -1,0 +1,31 @@
+---
+- name: Ensure One Password CLI and Kubeseal are installed
+  hosts: localhost
+  gather_facts: yes
+  tasks:
+    - name: Check system architecture
+      debug:
+        msg: "System architecture: {{ ansible_architecture }}"
+
+    - name: Download One Password CLI for Mac (Intel or M3)
+      ansible.builtin.shell: |
+        brew install op
+      register: download_op
+
+    - name: Ensure kubeseal is installed
+      ansible.builtin.command: curl -sS https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.17.1/kubeseal-darwin-amd64 -o /usr/local/bin/kubeseal
+      when: ansible_architecture == "x86_64"
+      become: yes
+
+    - name: Ensure kubeseal is installed for arm64 (M1/M3)
+      ansible.builtin.command: curl -sS https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.17.1/kubeseal-darwin-arm64 -o /usr/local/bin/kubeseal
+      when: ansible_architecture == "arm64"
+      become: yes
+
+    - name: Set executable permissions for One Password CLI and Kubeseal
+      ansible.builtin.file:
+        path: "/usr/local/bin/{{ item }}"
+        mode: '0755'
+      loop:
+        - kubeseal
+      become: yes

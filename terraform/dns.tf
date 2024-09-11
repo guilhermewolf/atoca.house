@@ -18,6 +18,7 @@ locals {
     "readar",
     "sabnzbd",
     "sonar",
+    "tandoor",
     "transmission",
     "wyl"
   ]

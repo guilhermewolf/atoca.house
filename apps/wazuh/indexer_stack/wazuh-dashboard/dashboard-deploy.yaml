@@ -23,15 +23,6 @@ spec:
         app: wazuh-dashboard
       name: wazuh-dashboard
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values:
-                      - gpu-k8s
       volumes:
         - name: config
           configMap:

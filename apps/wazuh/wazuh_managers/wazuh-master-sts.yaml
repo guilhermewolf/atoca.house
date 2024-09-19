@@ -27,15 +27,6 @@ spec:
         node-type: master
       name: wazuh-manager-master
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values:
-                      - gpu-k8s
       volumes:
         - name: config
           configMap:

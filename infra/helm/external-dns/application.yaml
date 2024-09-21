@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns
+  namespace: argocd
+spec:
+  destination:
+    namespace: external-dns
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - chart: external-dns
+      repoURL: https://charts.bitnami.com/bitnami
+      targetRevision: 8.3.8
+      helm:
+        releaseName: external-dns
+        valueFiles:
+        - $values/infra/helm/external-dns/values.yaml
+    - chart: external-dns
+      repoURL: https://charts.bitnami.com/bitnami
+      targetRevision: 8.3.8
+      helm:
+        releaseName: external-dns-adguard
+        valueFiles:
+        - $values/infra/helm/external-dns/values-adguard.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: infra/helm/external-dns/
+      directory:
+        exclude: '{application.yaml,values.yaml,values-adguard.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: csi
+  namespace: argocd
+spec:
+  destination:
+    namespace: csi
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - repoURL: hhttps://github.com/kubernetes-csi/external-snapshotter/
+      targetRevision: v6.3.2
+      path: client/config/crd
+    - repoURL: hhttps://github.com/kubernetes-csi/external-snapshotter/
+      targetRevision: v6.3.2
+      path: deploy/kubernetes/snapshot-controller/
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: infra/helm/csi/
+      directory:
+        exclude: '{application.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

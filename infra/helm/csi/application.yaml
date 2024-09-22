@@ -9,10 +9,10 @@ spec:
     server: https://kubernetes.default.svc
   project: infra
   sources:
-    - repoURL: hhttps://github.com/kubernetes-csi/external-snapshotter/
+    - repoURL: https://github.com/kubernetes-csi/external-snapshotter/
       targetRevision: v6.3.2
       path: client/config/crd
-    - repoURL: hhttps://github.com/kubernetes-csi/external-snapshotter/
+    - repoURL: https://github.com/kubernetes-csi/external-snapshotter/
       targetRevision: v6.3.2
       path: deploy/kubernetes/snapshot-controller/
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'

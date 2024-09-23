@@ -11,7 +11,11 @@ controllers:
         env:
           PROMETHEUS_URL: http://monitoring-prometheus.monitoring.svc.cluster.local:9090
           SERVER_HOST: 0.0.0.0
-          SERVER_PORT: 80
+          SERVER_PORT: 8080
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
         resources:
           requests:
             cpu: 10m
@@ -30,6 +34,7 @@ service:
       http:
         primary: true
         port: 80
+        targetPort: 8080
 persistence:
   config-file:
     type: configMap

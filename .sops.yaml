@@ -1,0 +1,12 @@
+---
+creation_rules:
+  - encrypted_regex: ^(token|crt|key|id|secret|secretboxEncryptionSecret|ca)$
+   # path_regex: infra/talos/.+\.secret(\.sops)?\.ya?ml
+    input_type: yaml
+    mac_only_encrypted: true
+    key_groups:
+      - age:
+          - age1zx0z00jmqr26put69qssz3rpguwtfwnptgdn2wq6pd2axhhxepdqvfdhhu
+stores:
+  yaml:
+    indent: 2

@@ -1,6 +1,0 @@
-kured:
-  configuration:
-    annotateNodes: true
-    rebootSentinelCommand: sh -c "! /var/run/reboot-required"
-    forceReboot: true
-    timeZone: Europe/Amsterdam

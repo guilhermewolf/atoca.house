@@ -36,7 +36,7 @@ This is a mono repository for my home infrastructure and Kubernetes cluster. I t
 
 ### Installation
 
-My cluster is [k3s](https://k3s.io/) provisioned overtop bare-metal Ubuntu 22 using the [k3sup](https://github.com/alexellis/k3sup). This is a semi-hyper-converged cluster, workloads and block storage are sharing the same available resources on my nodes while I have a separate server for (NFS) file storage.
+My cluster provisioned overtop bare-metal Talos Linux. This is a semi-hyper-converged cluster, workloads and block storage are sharing the same available resources on my nodes while I have a separate server for (NFS) file storage.
 
 ---
 
@@ -50,7 +50,6 @@ My cluster is [k3s](https://k3s.io/) provisioned overtop bare-metal Ubuntu 22 us
 - [Cloud Native Postgres](https://cloudnative-pg.io/): Operator to deploy highly available PostgreSQL database cluster
 - [external-dns](https://github.com/kubernetes-sigs/external-dns): automatically syncs DNS records from my cluster ingresses to a DNS provider
 - [ingress-nginx](https://github.com/kubernetes/ingress-nginx/): ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
-- [kured](https://kured.dev/): Kubernetes reboot daemon
 - [MetalLB](https://metallb.universe.tf/): load balancer for bare metal Kubernetes clusters
 - [Longhorn](https://longhorn.io/): distributed block storage for Kubernetes
 - [Prometheus](https://prometheus.io/): monitoring and alerting toolkit
@@ -106,13 +105,13 @@ While most of my infrastructure and workloads are self-hosted I do rely upon the
 
 ## 🔧 Hardware
 
-| Device                          | Count | OS Disk Size | Data Disk Size              | Ram  | Operating System | Purpose             |
-|---------------------------------|-------|--------------|-----------------------------|------|------------------|---------------------|
-| Raspberry Pi 4                  | 3     | 128GB (SD)   | -                           | 4GB  | Ubuntu 24.04     | K8s nodes           |
-| Raspberry Pi 4                  | 1     | 128GB (SD)   | -                           | 8GB  | Ubuntu 24.04     | K8s node            |
-| Raspberry PoE Hat               | 4     | -            | -                           | -    | -                | Power the Pi's      |
-| TP-Link TL-SG108PE              | 1     | -            | -                           | -    | -                | Network PoE Switch  |
-| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB Nvme + 1x 2TB SSD    | 8GB  | Unraid 6.12.13   | NAS                 |
+| Device                          | Count | OS Disk Size | Data Disk Size              | Ram  | Operating System  | Purpose             |
+|---------------------------------|-------|--------------|-----------------------------|------|-------------------|---------------------|
+| Raspberry Pi 4                  | 3     | 128GB (SD)   | -                           | 4GB  | Talos Linux 1.7.6 | K8s nodes           |
+| Raspberry Pi 4                  | 1     | 128GB (SD)   | -                           | 8GB  | Talos Linux 1.7.6 | K8s node            |
+| Raspberry PoE Hat               | 4     | -            | -                           | -    | -                 | Power the Pi's      |
+| TP-Link TL-SG108PE              | 1     | -            | -                           | -    | -                 | Network PoE Switch  |
+| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB Nvme + 1x 2TB SSD    | 8GB  | Unraid 6.12.13    | NAS                 |
 
 ---
 ## 💪 TO-DO 

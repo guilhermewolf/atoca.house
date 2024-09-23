@@ -1,6 +1,6 @@
 storageClass:
   name: nfs-client
+  pathPattern: "${.PVC.namespace}-${.PVC.name}"
 nfs:
   server: 192.168.178.160
   path: /mnt/user/test
-pathPattern: "${.PVC.name}"

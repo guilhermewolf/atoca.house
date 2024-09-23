@@ -67,7 +67,10 @@ This Git repository contains the following directories.
 📁 apps            # Apps deployed into my cluster grouped by namespace
 📁 argocd          # ArgoCD Helm Chart and configuration
 📁 docs            # Extra documentation and assets
-📁 infra           # Kubernetes controlers grouped by namspaces
+📁 infra           # Core infrastructure configurations
+└─📁 ansible       # Ansible playbooks
+└─📁 helm          # Helm charts
+└─📁 terraform     # Terraform configurations
 📁 sets            # ArgoCD application sets
 📁 stacks          # docker-compose files running on Asustor NAS
 └─📁 media-stack   # Media management stack

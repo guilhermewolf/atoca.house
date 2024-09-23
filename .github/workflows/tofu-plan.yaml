@@ -3,7 +3,7 @@ name: OpenTofu Plan
 on:
   pull_request:
     paths:
-      - 'terraform/**/*.tf'
+      - 'infra/terraform/**/*.tf'
 
 permissions:
   id-token: write   # This is required for requesting the JWT
@@ -12,7 +12,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: ./terraform
+    working-directory: ./infra/terraform
 
 jobs:
   tofu-plan:

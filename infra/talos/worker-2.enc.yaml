@@ -1,0 +1,94 @@
+version: v1alpha1
+debug: false
+persist: true
+machine:
+  type: worker
+  token: ENC[AES256_GCM,data:xT9S/aigR0jo6iffQrkV60ZLG+gpT9M=,iv:4bvjXAlKjXRD2S2Ffaa9O09PRVnomjx0RHUYvAF29Es=,tag:4dNSL07zJNgQ+nJzIMNelg==,type:str]
+  ca:
+    crt: ENC[AES256_GCM,data:+Ky322IoKDc8XV6+1vfkLGnVfwN63ZD4S4QLDoZhxg3uSc6OQ7Dqlo8nCSnYElR2c8ouHaCXL8sP6c0/+MiSEEQTli2rtwh+32r06jQalGsKX+qEeMRXqDkehTWI3D/qsLVhbaYbXFIq44DivvsBm+CXc+ADbVKCjOj5c6mWcV9edELHObnlkesefkP1oJbbURz0N8Chajtmno4cYU3uOt0HV9ilDlXHW3sYrf+j716iu1DXdy4rktSVeCzprYkYk/wH+fSeUr8K7+7iEcATUSNa29MWddQ1uREbb8DLXwErLdpeNWreEfqjbxef0urLZHAa/6TTru3qog/GrR9T2JAMXod0tIlqllWGq53b9NyRrVy6r218uXKi1lWIER49vIejrCDs0KOB646Vp7Xrj9+pYZaWYzTE4iur4kReYslhasVvxzt/1+TlahWuT6NL1WL8nxdBBrN/awmhIEr60rDm7igq6nXCVcrx7CsNa8oK9Wj42pJSwJfwUTcuom6AlT+WPe/A6N+cKOss7X+7fHNbZMg8BwpNWiK/3+bHpc0COQ213xJ/2uWHbh2GKQm1ts4KEi4vw96MjDl4HVmmVNmX6hoEF/q8WsuNFUShB8mWWx51hj/fDwzn1feTxw6lwaSmpfo6ZUB0muU/wMgMVQZVW4/6aOpXaxZ+wFE1AznnYY0UntN1bLViEDl2FJc2HczzZPZTKr6wE/Xw9KzMj4Qu7Zf1agJq1Ks4b/B1k/j1p6fyImjckkSLKJyhMzJNOAESMg7bzDZ7PWDTvih3NDFrCtyMLFwyy8IO6CB45CkvXSQzv0UkX7KkUrdlTbF+AeccrWiMIkWVclReP//gbALzpA6aqUzA0S1knTCmkKjgFJ45,iv:nLDEpakbU8cJgFd6LfhFkEnvYMpSn2wrqi7T232PB30=,tag:nXWtmsxkq7UDEibMsVGCHw==,type:str]
+    key: ""
+  certSANs: []
+  kubelet:
+    image: ghcr.io/siderolabs/kubelet:v1.30.3
+    defaultRuntimeSeccompProfileEnabled: true
+    disableManifestsDirectory: true
+    extraMounts:
+      - destination: /var/lib/longhorn
+        type: bind
+        source: /var/lib/longhorn
+        options:
+          - bind
+          - rshared
+          - rw
+  network:
+    hostname: rpi-k8s-3
+    interfaces:
+      - interface: eth0
+        addresses:
+          - 192.168.178.203/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 192.168.178.1
+        dhcp: false
+    nameservers:
+      - 192.168.178.22
+      - 8.8.4.4
+      - 8.8.8.8
+      - 1.1.1.1
+  install:
+    disk: /dev/mmcblk0
+    image: ghcr.io/siderolabs/installer:v1.7.6
+    bootloader: true
+    wipe: false
+  features:
+    rbac: true
+    stableHostname: true
+    apidCheckExtKeyUsage: true
+    diskQuotaSupport: true
+    kubePrism:
+      enabled: true
+      port: 7445
+    hostDNS:
+      enabled: true
+cluster:
+  id: ENC[AES256_GCM,data:2+ZHRwNRCE0V0ADMcEOKoL0/Y8s7xkBovOqD8ZpJePTzbDfCwbGE5psdJi4=,iv:+oDFWQMgJJdg6GZG/Qehy6tL7J/9Z0NVG9DGCQA/Rm8=,tag:QR7mBEBiN2TkpTJRZxwErg==,type:str]
+  secret: ENC[AES256_GCM,data:EFuOrnAB3pxH2g/v44xX82egovNwxxbIP+Lcy+kprTjt4EAGU2wCRrzGM2U=,iv:xAQS9y08QTIlqSfCzaSjfbM8bWGfeeoV3DkZDnpfh7g=,tag:H+qg4sSEKnw+murefZCc3A==,type:str]
+  controlPlane:
+    endpoint: https://192.168.178.201:6443
+  network:
+    dnsDomain: cluster.local
+    podSubnets:
+      - 10.244.0.0/16
+    serviceSubnets:
+      - 10.96.0.0/12
+  token: ENC[AES256_GCM,data:9C5m7JXUpklaqA6ylTFF4coZR0hBeKs=,iv:e9IjLloASkR6dFUmDjRvCcCRcz79WozMnBOUN4NCHv8=,tag:hoz5WCIoqw8bQIMAiVgC3A==,type:str]
+  ca:
+    crt: ENC[AES256_GCM,data:JDyEEeWPP86S2F5Z1krwZcsCwn0xBXhTLbJdPVd64ul5FpcVN4QyDRQydVEfB1L1/5qcG1WLrkcBIZ+SI9ktwBXExco0BI1cfhyeYmHn9J2RCmLzCqND+ORUpwz3uqfFwKdQ5lgHLC3oEkAZfHORyqirA8OLDhW74dE1JS2aK+TxxTng1UW84WRhEcgnnt8Zz5pQ5dBYi10fM9iPQU6Q8LSzVIwoTf2EqtQNxzhXriB+M4wne6sBnKfjsKSb1k93sOMEblWYWrlXu9MfVojkKjr+MMAlPTsXzcS2ZhDghJeh+NaHRLjgr3Q2MsmtM7fFN0hh6iN9/N9imq+xk0OLrq4RMADp07HVyqltZxuX1BwiopGfjwbkQ/5BiW+w4q/INVyCNeFRqNl0lfIX/wdjOqnC2KEWnNyHkeNK2prtudFoavlPiQOsi+BzC70mIpVA2ISJGXhiHrAKQMIBf9rz798L3PQR3tv6ePKxUfF4w+WaJ9KOYNqO/tglUtyia/mDFh2nm2b3+WNrzEcJ3BOh+q/cu3CCuilSL5Y9HukqMIXGV4dh+YF0KtXtdTZw6fEuoQM+Yx8A7mjmbP68FmaIqrBsoPQ/faBgxHfmWvO/ur4MdSe8AQItJsJOpKHVfVzthU+Ain+Q2zmfNLmNzOZNcS7amCRGQNpr8B75T4SziqXVJ2gb6TdKxMbobACpYnu2hpGeCBm2/z135xQ03cra7lAxWI6MpYOaMqRkZaa1FgDJfxMAViKAk0rNb+4OgwNJUjOQjR3q+EnfuY2JJwlEGQ4nQmRoFOwRjccozx2VfAU8eGi00XUfCzskeX1QSXTnurf3A0t/eZDhwtO7jWsaQEEOYlcEtfzTrrUUnJZdQ4Oa2bAdBSQskWfsAkFPXzY7OHVF3t9sGd2h3W8pmUu35HAKEARPNcPEGe/v/LTRxZHBN/RbEaNswwS1TEII4QMkVA5091tElCpj5IHUphNgsRUBgfM4gx5zTehbbAXQz+dHXqToBUChNQ7Pjg4XBuUDt0ZHnVSwLkLT5f4CXma1GzHUgRwO4bMQyY+vow==,iv:MLv2HtdgNNH7xpDYc7tIBLwcUaDj6/oXymvmOiwPaiw=,tag:x83kB9Olfv4vmUUtsZ8jUg==,type:str]
+    key: ""
+  discovery:
+    enabled: true
+    registries:
+      kubernetes:
+        disabled: true
+      service: {}
+sops:
+  kms: []
+  gcp_kms: []
+  azure_kv: []
+  hc_vault: []
+  age:
+    - recipient: age1zx0z00jmqr26put69qssz3rpguwtfwnptgdn2wq6pd2axhhxepdqvfdhhu
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA4Y3pXZmJSMEh2OU04L1Av
+        RE93Q2N2YVNQUmFSN044R1F5aTBJQXBvN1NjCmFueEpOQncyMmUrODBsTUl3Yk5Q
+        MkQwTWViT2x2MmFSVUxmcGhSRS9SYVkKLS0tIGVqRGpTM1FOVk5zY3kzYktuMnJ2
+        TEN0REFUOTdJKzUvRDdabG1qbmRNQTgKZuHV7SacjhFVef0MyckZxKRp2YOKIAyT
+        P9Bz1WwkO0q3M2qJF4FJ2DBQrxmMXNI0WMS37M/ANLQgUjNv1dgG+g==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2024-09-23T16:57:49Z"
+  mac: ENC[AES256_GCM,data:DEhBHyXMZAViX/jycnsQI7vyO1o4OtpjatJlaAdS9TnmLMdOaEgcw1M4EkAo52tdl4c3L6ORON7RK881jZ3s1aoh1/ym6zBn9YFYadih96ymCd9onmrshYwGTG+kl6YNJn+GiOJ4QYZMFvYBSvVkye3BP0D0fms/prkHD3KtLV8=,iv:r1V30NqISqvA3V8h45f9pV/k2gc70iWB4/Dgjjit0RI=,tag:wdCbHvk8OSjLI/qXirNgwQ==,type:str]
+  pgp: []
+  encrypted_regex: ^(token|crt|key|id|secret|secretboxEncryptionSecret|ca)$
+  mac_only_encrypted: true
+  version: 3.9.0

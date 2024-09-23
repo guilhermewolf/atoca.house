@@ -1,9 +1,13 @@
 defaultSettings:
-  defaultDataPath: "/storage"
+  defaultDataPath: "/var/lib/longhorn"
   backupTarget: "s3://longhorn@eu-west-1/"
   backupTargetCredentialSecret: minio-longhorn
   snapshotMaxCount: 5
   orphanAutoDeletion: true
+  createDefaultDiskLabeledNodes: false
+  defaultDataLocality: true
+  replicaAutoBalance: true
+  nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
 
 preUpgradeChecker:
   jobEnabled: false

@@ -49,14 +49,15 @@ spec:
           volumeMounts:
             - name: wazuh-indexer
               mountPath: /var/lib/wazuh-indexer
-        - name: increase-the-vm-max-map-count
-          image: busybox
-          command:
-            - sysctl
-            - -w
-            - vm.max_map_count=262144
-          securityContext:
-            privileged: true
+        # - name: increase-the-vm-max-map-count
+        #   image: busybox
+        #   command:
+        #     - sysctl
+        #     - -w
+        #     - vm.max_map_count=262144
+        #   securityContext:
+        #     capabilities:
+        #       add: ["SYS_ADMIN", "SYS_RESOURCE"]
       containers:
         - name: wazuh-indexer
           image: 'wazuh/wazuh-indexer:4.8.2'

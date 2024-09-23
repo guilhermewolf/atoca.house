@@ -70,6 +70,7 @@ This Git repository contains the following directories.
 └─📁 ansible       # Ansible playbooks
 └─📁 helm          # Helm charts
 └─📁 terraform     # Terraform configurations
+└─📁 talos         # Talos Linux configurations
 📁 sets            # ArgoCD application sets
 📁 stacks          # docker-compose files running on Asustor NAS
 └─📁 media-stack   # Media management stack
@@ -83,8 +84,8 @@ This Git repository contains the following directories.
 | Name                  | CIDR              |
 |-----------------------|-------------------|
 | Server VLAN           | `192.168.178.0/24` |
-| Kubernetes pods       | `10.42.0.0/16`    |
-| Kubernetes services   | `10.43.0.0/16`    |
+| Kubernetes pods       | `10.244.0.0/16`    |
+| Kubernetes services   | `10.96.0.0/16`    |
 
 ---
 

@@ -95,8 +95,13 @@ prometheus:
 kubeStateMetrics:
   nameOverride: kube-state-metrics
 
-nodeExporter:
-  nameOverride: node-exporter
+prometheus-node-exporter:
+  fullnameOverride: node-exporter
+  prometheus:
+    monitor:
+      enabled: true
+  rbac:
+    pspEnabled: true
 
 grafana:
   enabled: false

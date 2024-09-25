@@ -9,6 +9,14 @@ controllers:
           tag: 5.10.4
         env:
           TZ: Europe/Amsterdam
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+
 service:
   radarr:
     controller: radarr

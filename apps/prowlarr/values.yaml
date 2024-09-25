@@ -11,6 +11,13 @@ controllers:
           - name: TZ
             value: "Europe/Amsterdam"
 
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    
 service:
   prowlarr:
     controller: prowlarr

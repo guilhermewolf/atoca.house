@@ -9,6 +9,14 @@ controllers:
           tag: 4.0.9
         env:
           TZ: Europe/Amsterdam
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+
 service:
   sonarr:
     controller: sonarr

@@ -13,6 +13,13 @@ controllers:
           - name: AUTO_UPDATE
             value: "true"
 
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+
 service:
   jackett:
     controller: jackett

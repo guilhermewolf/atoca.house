@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: freqtrade
+  namespace: argocd
+spec:
+  destination:
+    namespace: freqtrade
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: apps/freqtrade/
+      directory:
+        exclude: '{application.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

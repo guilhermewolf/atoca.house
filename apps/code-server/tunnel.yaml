@@ -1,9 +1,0 @@
-apiVersion: networking.cfargotunnel.com/v1alpha1
-kind: TunnelBinding
-metadata:
-  name: code-server-cluster-tun
-subjects:
-  - name: code-server
-tunnelRef:
-  kind: ClusterTunnel
-  name: k3s-cluster-tunnel

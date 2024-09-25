@@ -37,7 +37,7 @@ ingress:
         secretName: prowlarr-tls
 
 persistence:
-  jackett:
+  prowlarr:
     enabled: true
     type: persistentVolumeClaim
     storageClass: nfs-client

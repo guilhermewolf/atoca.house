@@ -45,7 +45,7 @@ persistence:
   media-downloads:
     type: nfs
     server: nas.atoca.house
-    path: /mnt/user/media-downloads/complete
+    path: /mnt/user/media-downloads/complete/
     globalMounts:
       - path: /downloads/complete
 

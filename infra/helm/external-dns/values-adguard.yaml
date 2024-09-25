@@ -3,6 +3,8 @@ provider: webhook
 extraArgs:
   webhook-provider-url: http://localhost:8888
 
+ingressClassFilters: ["nginx"]
+
 sidecars:
   - name: adguard-webhook
     image: ghcr.io/muhlba91/external-dns-provider-adguard:v5.1.0

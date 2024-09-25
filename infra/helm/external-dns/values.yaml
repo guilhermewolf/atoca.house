@@ -2,6 +2,8 @@ serviceAccount:
   create: true
   name: external-dns
 
+ingressClassFilters: ["nginx"]
+
 rbac:
   create: true
 

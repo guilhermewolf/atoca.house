@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: applications
+  namespace: argocd
+  labels:
+    atoca.house: application
+spec:
+  project: app-of-apps
+  source:
+    path: apps/
+    repoURL: https://github.com/guilhermewolf/atoca.house
+    targetRevision: HEAD
+    directory:
+      recurse: true
+      include: '*/application.yaml'
+  destination:
+    name: in-cluster
+    namespace: argocd
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

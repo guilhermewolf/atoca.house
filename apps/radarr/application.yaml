@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: jackett
+  name: radarr
   namespace: argocd
 spec:
   destination:
-    namespace: jackett
+    namespace: radarr
     server: https://kubernetes.default.svc
   project: infra
   sources:
@@ -13,9 +13,9 @@ spec:
       repoURL: https://bjw-s.github.io/helm-charts/
       targetRevision: 3.4.0
       helm:
-        releaseName: jackett
+        releaseName: radarr
         valueFiles:
-        - $values/apps/jackett/values.yaml
+        - $values/apps/radarr/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values

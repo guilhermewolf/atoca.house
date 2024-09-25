@@ -1,0 +1,69 @@
+controllers:
+  radarr:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      radarr:
+        image:
+          repository: lscr.io/linuxserver/radarr
+          tag: 5.10.4
+        env:
+          TZ: Europe/Amsterdam
+          RADARR__SERVER__PORT: 80
+service:
+  radarr:
+    controller: radarr
+    ports:
+      http:
+        port: 80
+
+ingress:
+  radarr:
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+    hosts:
+      - host: radarr.atoca.house
+        paths:
+          - path: /
+            pathType: Prefix
+            service:
+              identifier: radarr
+              port: http
+    tls:
+      - hosts:
+          - radarr.atoca.house
+        secretName: radarr-tls
+
+persistence:
+  media:
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/media-files/movies/
+    globalMounts:
+      - path: /media
+
+  # media:
+  #   type: nfs
+  #   server: nas.atoca.house
+  #   path: /mnt/user/
+  #   globalMounts:
+  #     - /movies
+
+  # media-downloads:
+  #   type: nfs
+  #   server: 192.168.178.160
+  #   path: /mnt/user/media-downloads/
+  #   globalMounts: 
+  #     - /downloads/complete
+
+resources:
+  limits:
+    cpu: "1"
+    memory: "1Gi"
+
+replicaCount: 1
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

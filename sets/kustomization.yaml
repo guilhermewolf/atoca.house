@@ -3,9 +3,8 @@ kind: Kustomization
 namespace: argocd
 
 resources:
-  - applicaitons.yaml
-  - apps-project.yaml
-  - apps.yaml
+  - applications.yaml
+  - applications-project.yaml
   - argocd.yaml
   - infra-helm.yaml
   - infra-project.yaml

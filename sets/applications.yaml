@@ -3,18 +3,22 @@ kind: Application
 metadata:
   name: applications
   namespace: argocd
+  labels:
+    atoca.house: application
 spec:
   project: app-of-apps
   source:
-    path: apps
+    path: apps/
     repoURL: https://github.com/guilhermewolf/atoca.house
     targetRevision: HEAD
+    directory:
+      recurse: true
+      include: '*/application.yaml'
   destination:
-    namespace: argocd
     name: in-cluster
+    namespace: argocd
   syncPolicy:
     automated:
       selfHeal: true
-      prune: true
     syncOptions:
       - CreateNamespace=true

@@ -39,6 +39,7 @@ spec:
   backup:
     barmanObjectStore:
       destinationPath: s3://databases/
+      endpointURL: http://192.168.178.160:9768
       s3Credentials:
         accessKeyId:
           name: minio-databases
@@ -46,7 +47,6 @@ spec:
         secretAccessKey:
           name: minio-databases
           key: AWS_SECRET_ACCESS_KEY
-      endpointURL: http://192.168.178.160:9768
   env:
     - name: TERRAFORM_DB_PASSWORD
       valueFrom:

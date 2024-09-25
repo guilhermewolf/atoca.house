@@ -12,6 +12,11 @@ spec:
     name: postgres-secrets
   storage:
     size: 1Gi
+  nodeMaintenanceWindow:
+    inProgress: false
+    reusePVC: true
+  monitoring:
+    enablePodMonitor: true
   resources:
     requests:
       cpu: "500m"
@@ -31,6 +36,17 @@ spec:
         - CREATE USER zitadel WITH PASSWORD '$(ZITADEL_DB_PASSWORD)';
         - CREATE DATABASE zitadel WITH OWNER zitadel;
         - GRANT ALL PRIVILEGES ON DATABASE zitadel TO zitadel;
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://databases/
+      s3Credentials:
+        accessKeyId:
+          name: minio-databases
+          key: AWS_ACCESS_KEY_ID
+        secretAccessKey:
+          name: minio-databases
+          key: AWS_SECRET_ACCESS_KEY
+      endpointURL: http://192.168.178.160:9768
   env:
     - name: TERRAFORM_DB_PASSWORD
       valueFrom:

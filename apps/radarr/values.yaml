@@ -9,13 +9,12 @@ controllers:
           tag: 5.10.4
         env:
           TZ: Europe/Amsterdam
-          RADARR__SERVER__PORT: 80
 service:
   radarr:
     controller: radarr
     ports:
       http:
-        port: 80
+        port: 7878
 
 ingress:
   radarr:
@@ -41,21 +40,24 @@ persistence:
     server: nas.atoca.house
     path: /mnt/user/media-files/movies/
     globalMounts:
-      - path: /media
+      - path: /movies
 
-  # media:
-  #   type: nfs
-  #   server: nas.atoca.house
-  #   path: /mnt/user/
-  #   globalMounts:
-  #     - /movies
+  media-downloads:
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/media-downloads/complete
+    globalMounts:
+      - path: /downloads/complete
 
-  # media-downloads:
-  #   type: nfs
-  #   server: 192.168.178.160
-  #   path: /mnt/user/media-downloads/
-  #   globalMounts: 
-  #     - /downloads/complete
+
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: nfs-client
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /config
 
 resources:
   limits:

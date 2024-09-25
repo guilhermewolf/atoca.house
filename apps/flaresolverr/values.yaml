@@ -1,0 +1,45 @@
+controllers:
+  flaresolverr:
+    strategy: RollingUpdate
+    containers:
+      flaresolverr:
+        image:
+          repository: flaresolverr/flaresolverr
+          tag: v3.3.21
+          pullPolicy: IfNotPresent
+        env:
+          - name: LOG_LEVEL
+            value: "info"
+          - name: TZ
+            value: "Europe/Amsterdam"
+
+service:
+  flaresolverr:
+    controller: flaresolverr
+    ports:
+      http:
+        primary: true
+        port: 80
+        targetPort: 8191
+ingress:
+  flaresolverr:
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+    hosts:
+      - host: flaresolverr.atoca.house
+        paths:
+          - path: /
+            pathType: Prefix
+            service:
+              identifier: flaresolverr
+              port: http
+    tls:
+      - hosts:
+          - flaresolverr.atoca.house
+        secretName: flaresolverr-tls
+eplicaCount: 1
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

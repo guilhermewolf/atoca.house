@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: flaresolverr
+  namespace: argocd
+spec:
+  destination:
+    namespace: flaresolverr
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - chart: app-template
+      repoURL: https://bjw-s.github.io/helm-charts/
+      targetRevision: 3.4.0
+      helm:
+        releaseName: flaresolverr
+        valueFiles:
+        - $values/apps/flaresolverr/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: apps/flaresolverr/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

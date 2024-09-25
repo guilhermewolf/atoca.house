@@ -6,7 +6,7 @@ controllers:
       radarr:
         image:
           repository: lscr.io/linuxserver/radarr
-          tag: 5.10.4
+          tag: 5.11.0
         env:
           TZ: Europe/Amsterdam
 

@@ -1,0 +1,12 @@
+cloudflare:
+  secretRef:
+    name: cloudflare-tunnel-ingress
+    accountIDKey: accountId
+    tunnelNameKey: tunnelName
+    apiTokenKey: apiToken
+replicaCount: 2
+
+cloudflared:
+  image:
+    tag: 2024.6.1
+  replicaCount: 2

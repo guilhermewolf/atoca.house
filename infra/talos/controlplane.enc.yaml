@@ -48,7 +48,6 @@ machine:
         nodiratime=True
         nconnect=4
         async=True
-        tcp_keepalive_time=600
       permissions: 420
       path: /etc/nfsmount.conf
       op: overwrite

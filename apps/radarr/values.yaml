@@ -45,17 +45,17 @@ ingress:
 persistence:
   media:
     type: nfs
-    server: nas.atoca.house
+    server: 192.168.178.160
     path: /mnt/user/media-files/movies/
     globalMounts:
       - path: /movies
 
-  media-downloads:
-    type: nfs
-    server: nas.atoca.house
-    path: /mnt/user/media-downloads/complete/
-    globalMounts:
-      - path: /downloads/complete
+  # media-downloads:
+  #   type: nfs
+  #   server: nas.atoca.house
+  #   path: /mnt/user/media-downloads/complete/
+  #   globalMounts:
+  #     - path: /downloads/complete
 
 
   config:

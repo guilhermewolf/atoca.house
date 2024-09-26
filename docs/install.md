@@ -6,8 +6,9 @@ mkdir -p $HOME/.config/age/
 chmod 700 ~/.config/age/
 op read op://K8s/age-key/age.key > $HOME/.config/age/age.key
 chmod 600 ~/.config/age/age.key
+export SOPS_AGE_KEY_FILE="$HOME/.config/age/age.key"
 
-sops --config .sops.yaml -d infra/talos/controlplante.enc.yaml > infra/talos/controlplante.yaml
+sops --config .sops.yaml -d infra/talos/controlplane.enc.yaml > infra/talos/controlplane.yaml
 sops --config .sops.yaml -d infra/talos/worker-1.enc.yaml > infra/talos/worker-1.yaml
 sops --config .sops.yaml -d infra/talos/worker-2.enc.yaml > infra/talos/worker-2.yaml
 sops --config .sops.yaml -d infra/talos/worker-3.enc.yaml > infra/talos/worker-3.yaml
@@ -27,4 +28,16 @@ kubectl kustomize --enable-helm argocd | kubectl apply -f -
 kubectl kustomize sets/ | kubectl apply -f -
 
 ansible-playbook infra/ansible/one-password.yaml
+```
+
+To encrypt files:
+
+```bash
+sops --config .sops.yaml -e infra/talos/controlplane.yaml > infra/talos/controlplane.enc.yaml
+sops --config .sops.yaml -e infra/talos/worker-1.yaml > infra/talos/worker-1.enc.yaml
+sops --config .sops.yaml -e infra/talos/worker-2.yaml > infra/talos/worker-2.enc.yaml
+sops --config .sops.yaml -e infra/talos/worker-3.yaml > infra/talos/worker-3.enc.yaml
+
+rm infra/talos/controlplane.yaml infra/talos/worker-1.yaml infra/talos/worker-2.yaml infra/talos/worker-3.yaml
+
 ```

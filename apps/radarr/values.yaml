@@ -61,7 +61,7 @@ persistence:
   config:
     enabled: true
     type: persistentVolumeClaim
-    storageClass: nfs-client
+    storageClass: longhorn
     accessMode: ReadWriteOnce
     size: 1Gi
     globalMounts:

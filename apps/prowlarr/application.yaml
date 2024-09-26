@@ -7,7 +7,7 @@ spec:
   destination:
     namespace: prowlarr
     server: https://kubernetes.default.svc
-  project: infra
+  project: applications
   sources:
     - chart: app-template
       repoURL: https://bjw-s.github.io/helm-charts/

@@ -7,7 +7,7 @@ spec:
   destination:
     namespace: whoami
     server: https://kubernetes.default.svc
-  project: infra
+  project: applications
   sources:
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD

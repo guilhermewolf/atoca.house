@@ -74,6 +74,7 @@ cluster:
   controlPlane:
     endpoint: https://192.168.178.201:6443
   clusterName: atoca-k8s
+  allowSchedulingOnControlPlanes: true
   network:
     dnsDomain: cluster.local
     podSubnets:

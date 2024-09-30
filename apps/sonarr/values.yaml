@@ -43,19 +43,19 @@ ingress:
         secretName: sonarr-tls
 
 persistence:
-  media:
-    type: nfs
-    server: nas.atoca.house
-    path: /mnt/user/media-files/tv/
-    globalMounts:
-      - path: /tv
+  # media:
+  #   type: nfs
+  #   server: nas.atoca.house
+  #   path: /mnt/user/media-files/tv/
+  #   globalMounts:
+  #     - path: /tv
 
-  media-downloads:
-    type: nfs
-    server: nas.atoca.house
-    path: /mnt/user/media-downloads/complete/
-    globalMounts:
-      - path: /downloads/complete
+  # media-downloads:
+  #   type: nfs
+  #   server: nas.atoca.house
+  #   path: /mnt/user/media-downloads/complete/
+  #   globalMounts:
+  #     - path: /downloads/complete
 
   config:
     enabled: true

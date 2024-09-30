@@ -1,6 +1,7 @@
 crds:
   enabled: true
 
+nameOverride: "monitoring"
 cleanPrometheusOperatorObjectNames: true
 
 alertmanager:

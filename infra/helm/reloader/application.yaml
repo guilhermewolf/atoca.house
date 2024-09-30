@@ -22,3 +22,11 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: reloader
+      namespace: reloader
+      jsonPointers:
+        - /spec/template/spec/containers/0/env/0/valueFrom/resourceFieldRef/divisor
+        - /spec/template/spec/containers/0/env/1/valueFrom/resourceFieldRef/divisor

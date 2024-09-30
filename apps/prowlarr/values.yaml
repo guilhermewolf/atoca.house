@@ -1,6 +1,5 @@
 controllers:
   prowlarr:
-    strategy: RollingUpdate
     containers:
       prowlarr:
         image:
@@ -10,14 +9,11 @@ controllers:
         env:
           - name: TZ
             value: "Europe/Amsterdam"
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
 
-defaultPodOptions:
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 99
-    runAsGroup: 100
-    fsGroup: 100
-    
 service:
   prowlarr:
     controller: prowlarr

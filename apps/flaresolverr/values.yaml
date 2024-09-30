@@ -1,6 +1,5 @@
 controllers:
-  flaresolverr:
-    strategy: RollingUpdate
+  flaresolverr:    
     containers:
       flaresolverr:
         image:

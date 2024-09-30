@@ -9,13 +9,8 @@ controllers:
           tag: 4.0.9
         env:
           TZ: Europe/Amsterdam
-
-defaultPodOptions:
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 99
-    runAsGroup: 100
-    fsGroup: 100
+          PGID: "1000"
+          PUID: "1000"
 
 service:
   sonarr:

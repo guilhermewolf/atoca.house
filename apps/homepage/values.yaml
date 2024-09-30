@@ -40,6 +40,9 @@ config:
     mode: cluster
   settings:
 
+podAnnotations:
+  configmap.reloader.stakater.com/reload: homepage
+
 # The service account is necessary to allow discovery of other services
 serviceAccount:
   create: true

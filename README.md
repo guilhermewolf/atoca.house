@@ -14,6 +14,8 @@ _... managed with ArgoCD and GitHub Actions_
 <div align="center">
 
 [![Kubernetes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Fkubernetes_version&style=for-the-badge&logo=kubernetes&logoColor=white&color=blue&label=%20)](https://k3s.io/)&nbsp;&nbsp;
+[![Talos](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Ftalos_version&style=for-the-badge&logo=talos&logoColor=white&color=blue&label=%20)](https://talos.dev)&nbsp;&nbsp;
+
 </div>
 
 <div align="center">

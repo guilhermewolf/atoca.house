@@ -12,34 +12,17 @@ spec:
     name: postgres-secrets
   storage:
     size: 1Gi
-  nodeMaintenanceWindow:
-    inProgress: false
-    reusePVC: true
-  monitoring:
-    enablePodMonitor: true
-  resources:
-    requests:
-      cpu: "500m"
-      memory: "1Gi"
-    limits:
-      cpu: "1"
-      memory: "2Gi"
-  bootstrap:
-    initdb:
-      database: initial_db
-      owner: initial_user
-      postInitSQL:
-        - CREATE USER terraform WITH PASSWORD '$(TERRAFORM_DB_PASSWORD)';
-        - CREATE DATABASE terraform WITH OWNER terraform;
-        - GRANT ALL PRIVILEGES ON DATABASE terraform TO terraform;
-        - GRANT ALL ON SCHEMA public TO terraform;
-        - CREATE USER zitadel WITH PASSWORD '$(ZITADEL_DB_PASSWORD)';
-        - CREATE DATABASE zitadel WITH OWNER zitadel;
-        - GRANT ALL PRIVILEGES ON DATABASE zitadel TO zitadel;
   backup:
-    barmanObjectStore:
+    retentionPolicy: 30d
+    barmanObjectStore: &barmanObjectStore
+      data:
+        compression: bzip2
+      wal:
+        compression: bzip2
+        maxParallel: 8
       destinationPath: s3://databases/
       endpointURL: http://192.168.178.160:9768
+      serverName: postgresql-cluster
       s3Credentials:
         accessKeyId:
           name: minio-databases
@@ -47,14 +30,22 @@ spec:
         secretAccessKey:
           name: minio-databases
           key: AWS_SECRET_ACCESS_KEY
-  env:
-    - name: TERRAFORM_DB_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: postgres-secrets
-          key: terraform_pg_password
-    - name: ZITADEL_DB_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: postgres-secrets
-          key: zitadel_pg_password
+  bootstrap:
+    recovery:
+      source: postgresql-cluster-prod
+    # initdb:
+    #   database: initial_db
+    #   owner: initial_user
+    #   postInitSQL:
+    #     - CREATE USER terraform WITH PASSWORD '$(TERRAFORM_DB_PASSWORD)';
+    #     - CREATE DATABASE terraform WITH OWNER terraform;
+    #     - GRANT ALL PRIVILEGES ON DATABASE terraform TO terraform;
+    #     - GRANT ALL ON SCHEMA public TO terraform;
+    #     - CREATE USER zitadel WITH PASSWORD '$(ZITADEL_DB_PASSWORD)';
+    #     - CREATE DATABASE zitadel WITH OWNER zitadel;
+    #     - GRANT ALL PRIVILEGES ON DATABASE zitadel TO zitadel;
+  externalClusters:
+    - name: postgresql-cluster-prod
+      barmanObjectStore:
+        <<: *barmanObjectStore
+        serverName: postgresql-cluster-prod

@@ -38,12 +38,12 @@ ingress:
         secretName: radarr-tls
 
 persistence:
-  # media:
-  #   type: nfs
-  #   server: 192.168.178.160
-  #   path: /mnt/user/media-files/movies/
-  #   globalMounts:
-  #     - path: /movies
+  media:
+    type: nfs
+    server: 192.168.178.160
+    path: /mnt/user/media-files/movies/
+    globalMounts:
+      - path: /movies
 
   # media-downloads:
   #   type: nfs

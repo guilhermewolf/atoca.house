@@ -3,9 +3,9 @@ defaultSettings:
   backupTarget: "s3://longhorn@eu-west-1/"
   backupTargetCredentialSecret: minio-longhorn
   snapshotMaxCount: 5
-  orphanAutoDeletion: true
+  orphanAutoDeletion: false
   createDefaultDiskLabeledNodes: false
-  defaultDataLocality: true
+  defaultDataLocality: best-effort
   replicaAutoBalance: true
   nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
 

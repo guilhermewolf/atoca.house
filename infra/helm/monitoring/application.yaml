@@ -23,10 +23,11 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
     managedNamespaceMetadata:
+      annotations:
+        volsync.backube/privileged-movers: "true"
       labels:
         pod-security.kubernetes.io/enforce: privileged
         pod-security.kubernetes.io/enforce-version: latest
-        volsync.backube/privileged-movers: "true"
   ignoreDifferences:
     - group: admissionregistration.k8s.io
       kind: MutatingWebhookConfiguration

@@ -19,5 +19,5 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
     managedNamespaceMetadata:
-      labels:
+      annotations:
         volsync.backube/privileged-movers: "true"

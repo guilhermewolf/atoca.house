@@ -1,0 +1,26 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: monitoring-backup
+  namespace: monitoring
+spec:
+  sourcePVC: prometheus-monitoring-db-prometheus-monitoring-0
+  trigger:
+    schedule: "0 0 * * *"
+  restic:
+    pruneIntervalDays: 14
+    repository: "s3:https://minio-data.atoca.house/restic/monitoring"
+    volumeSpapshotClassName:
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+    retain:
+      hourly: 5
+      daily: 4
+      monthly: 1
+      yearly: 1
+    copyMethod: Snapshot
+    storageClassName: longhorn
+    volumeSnapshotClassName: longhorn-snapshot-vsc

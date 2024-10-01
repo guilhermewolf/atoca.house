@@ -1,3 +1,9 @@
 manageCRDs: true
 metrics:
   disableAuth: true
+image:
+  repository: &image ghcr.io/onedr0p/volsync
+  tag: &tag 0.10.0
+restic:
+  repository: *image
+  tag: *tag

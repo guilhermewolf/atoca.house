@@ -2,15 +2,16 @@
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationSource
 metadata:
-  name: code-server-backup
-  namespace: code-server
+  name: prowlarr-backup
+  namespace: prowlarr
 spec:
-  sourcePVC: code-server-pvc
+  sourcePVC: prowlarr-pvc
   trigger:
     schedule: "0 0 * * *"
   restic:
     pruneIntervalDays: 14
     repository: volsync-restic-minio
+    volumeSpapshotClassName:
     moverSecurityContext:
       runAsUser: 1000
       runAsGroup: 1000
@@ -20,6 +21,6 @@ spec:
       daily: 4
       monthly: 1
       yearly: 1
-    copyMethod: Clone
+    copyMethod: Snapshot
     storageClassName: longhorn
     volumeSnapshotClassName: longhorn-snapshot-vsc

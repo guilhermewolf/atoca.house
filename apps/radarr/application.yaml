@@ -19,6 +19,11 @@ spec:
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: apps/radarr/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

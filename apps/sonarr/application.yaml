@@ -24,6 +24,11 @@ spec:
       path: apps/sonarr/
       directory:
         exclude: '{application.yaml,values.yaml}'
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: apps/sonarr/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

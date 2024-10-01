@@ -13,11 +13,11 @@ machine:
     defaultRuntimeSeccompProfileEnabled: true
     disableManifestsDirectory: true
     extraMounts:
-      - destination: /var/openebs/local
+      - destination: /var/lib/longhorn
         type: bind
-        source: /var/openebs/local
+        source: /var/lib/longhorn
         options:
-          - rbind
+          - bind
           - rshared
           - rw
   network:
@@ -51,14 +51,11 @@ machine:
       path: /etc/nfsmount.conf
       op: overwrite
   sysctls:
-    vm.nr_hugepages: "1024"
     fs.inotify.max_queued_events: "16384"
     fs.inotify.max_user_instances: "1024"
     fs.inotify.max_user_watches: "131072"
     net.core.rmem_max: "4194304"
     net.core.wmem_max: "4194304"
-  nodeLabels:
-    openebs.io/engine: mayastor
   features:
     rbac: true
     stableHostname: true

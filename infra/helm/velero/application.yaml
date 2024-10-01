@@ -24,8 +24,8 @@ spec:
       directory:
         exclude: '{application.yaml,values.yaml}'
   syncPolicy:
-    automated:
-      selfHeal: true
-      prune: false
+    # automated:
+    #   selfHeal: true
+    #   prune: false
     syncOptions:
       - CreateNamespace=true

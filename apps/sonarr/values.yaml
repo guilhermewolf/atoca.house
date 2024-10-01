@@ -55,7 +55,7 @@ persistence:
   config:
     enabled: true
     type: persistentVolumeClaim
-    storageClass: longhorn
+    storageClass: openebs-hostpath 
     accessMode: ReadWriteOnce
     size: 1Gi
     globalMounts:

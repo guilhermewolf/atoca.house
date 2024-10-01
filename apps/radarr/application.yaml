@@ -25,4 +25,4 @@ spec:
       - ServerSideApply=true
     managedNamespaceMetadata:
       labels:
-        volsync.backube/privileged-movers: true
+        volsync.backube/privileged-movers: "true"

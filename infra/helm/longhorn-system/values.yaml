@@ -1,0 +1,29 @@
+
+defaultSettings:
+  defaultDataPath: "/var/lib/longhorn"
+  backupTarget: "s3://longhorn@eu-west-1/"
+  backupTargetCredentialSecret: minio-longhorn
+  snapshotMaxCount: 5
+  orphanAutoDeletion: false
+  createDefaultDiskLabeledNodes: false
+  defaultDataLocality: best-effort
+  replicaAutoBalance: true
+  nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
+
+preUpgradeChecker:
+  jobEnabled: false
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  host: longhorn.atoca.house
+  tls: true
+  tlsSecret: longhorn-tls
+  path: /
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: "Longhorn"
+    gethomepage.dev/description: "Longhorn System"
+    gethomepage.dev/group: "Dynamic"
+    gethomepage.dev/icon: "prometheus.svg"
+    cert-manager.io/cluster-issuer: "cloudflare-prod"

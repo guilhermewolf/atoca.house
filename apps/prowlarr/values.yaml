@@ -43,7 +43,7 @@ persistence:
   prowlarr:
     enabled: true
     type: persistentVolumeClaim
-    storageClass: openebs-hostpath 
+    storageClass: longhorn
     accessMode: ReadWriteOnce
     size: 1Gi
     globalMounts:

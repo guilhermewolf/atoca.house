@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   bazarr:
-    image: ghcr.io/lscr.io/linuxserver/bazarr:1.4.4
+    image: ghcr.io/lscr.io/linuxserver/bazarr:1.4.5
     container_name: bazarr
     environment:
       - PUID=99

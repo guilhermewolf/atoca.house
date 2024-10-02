@@ -1,33 +1,33 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: radarr
-  namespace: argocd
-spec:
-  destination:
-    namespace: radarr
-    server: https://kubernetes.default.svc
-  project: applications
-  sources:
-    - chart: app-template
-      repoURL: https://bjw-s.github.io/helm-charts/
-      targetRevision: 3.4.0
-      helm:
-        releaseName: radarr
-        valueFiles:
-        - $values/apps/radarr/values.yaml
-    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
-      targetRevision: HEAD
-      ref: values
-    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
-      targetRevision: HEAD
-      path: apps/radarr/
-      directory:
-        exclude: '{application.yaml,values.yaml}'
-  syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
-      - ServerSideApply=true
-    managedNamespaceMetadata:
-      annotations:
-        volsync.backube/privileged-movers: "true"
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: radarr
+#   namespace: argocd
+# spec:
+#   destination:
+#     namespace: radarr
+#     server: https://kubernetes.default.svc
+#   project: applications
+#   sources:
+#     - chart: app-template
+#       repoURL: https://bjw-s.github.io/helm-charts/
+#       targetRevision: 3.4.0
+#       helm:
+#         releaseName: radarr
+#         valueFiles:
+#         - $values/apps/radarr/values.yaml
+#     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+#       targetRevision: HEAD
+#       ref: values
+#     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+#       targetRevision: HEAD
+#       path: apps/radarr/
+#       directory:
+#         exclude: '{application.yaml,values.yaml}'
+#   syncPolicy:
+#     syncOptions:
+#       - CreateNamespace=true
+#       - ServerSideApply=true
+#     managedNamespaceMetadata:
+#       annotations:
+#         volsync.backube/privileged-movers: "true"

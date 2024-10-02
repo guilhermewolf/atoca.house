@@ -5,7 +5,7 @@ metadata:
   name: jackett-backup
   namespace: jackett
 spec:
-  sourcePVC: jackett-pvc
+  sourcePVC: jackett
   trigger:
     schedule: "0 0 * * *"
   restic:

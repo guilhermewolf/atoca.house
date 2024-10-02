@@ -5,7 +5,7 @@ metadata:
   name: sonarr-backup
   namespace: sonarr
 spec:
-  sourcePVC: sonarr-pvc
+  sourcePVC: sonarr-config
   trigger:
     schedule: "0 0 * * *"
   restic:

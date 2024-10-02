@@ -5,7 +5,7 @@ metadata:
   name: radarr-backup
   namespace: radarr
 spec:
-  sourcePVC: radarr-pvc
+  sourcePVC: radarr-config
   trigger:
     schedule: "0 0 * * *"
   restic:

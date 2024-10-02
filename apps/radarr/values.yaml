@@ -39,6 +39,7 @@ ingress:
 
 persistence:
   media:
+    enabled: true
     type: nfs
     server: 192.168.178.160
     path: /mnt/user/media-files/movies/

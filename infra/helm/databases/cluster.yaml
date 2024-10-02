@@ -5,7 +5,7 @@ metadata:
   namespace: databases
 spec:
   enablePDB: false
-  instances: 3
+  instances: 2
   primaryUpdateStrategy: supervised
   enableSuperuserAccess: true
   superuserSecret:
@@ -14,14 +14,12 @@ spec:
     size: 1Gi
   backup:
     retentionPolicy: 30d
-    barmanObjectStore: &barmanObjectStore
-      data:
-        compression: bzip2
+    barmanObjectStore:
       wal:
         compression: bzip2
         maxParallel: 8
       destinationPath: s3://databases/
-      endpointURL: http://192.168.178.160:9768
+      endpointURL: https://minio-data.atoca.house
       serverName: postgresql-cluster
       s3Credentials:
         accessKeyId:
@@ -32,20 +30,19 @@ spec:
           key: AWS_SECRET_ACCESS_KEY
   bootstrap:
     recovery:
-      source: postgresql-cluster-prod
-    # initdb:
-    #   database: initial_db
-    #   owner: initial_user
-    #   postInitSQL:
-    #     - CREATE USER terraform WITH PASSWORD '$(TERRAFORM_DB_PASSWORD)';
-    #     - CREATE DATABASE terraform WITH OWNER terraform;
-    #     - GRANT ALL PRIVILEGES ON DATABASE terraform TO terraform;
-    #     - GRANT ALL ON SCHEMA public TO terraform;
-    #     - CREATE USER zitadel WITH PASSWORD '$(ZITADEL_DB_PASSWORD)';
-    #     - CREATE DATABASE zitadel WITH OWNER zitadel;
-    #     - GRANT ALL PRIVILEGES ON DATABASE zitadel TO zitadel;
+      source: postgresql-cluster
   externalClusters:
-    - name: postgresql-cluster-prod
+    - name: postgresql-cluster
       barmanObjectStore:
-        <<: *barmanObjectStore
-        serverName: postgresql-cluster-prod
+        wal:
+          compression: bzip2
+          maxParallel: 8
+        destinationPath: s3://databases/
+        endpointURL: https://minio-data.atoca.house
+        s3Credentials:
+          accessKeyId:
+            name: minio-databases
+            key: AWS_ACCESS_KEY_ID
+          secretAccessKey:
+            name: minio-databases
+            key: AWS_SECRET_ACCESS_KEY

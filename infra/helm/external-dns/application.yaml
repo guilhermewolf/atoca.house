@@ -11,14 +11,14 @@ spec:
   sources:
     - chart: external-dns
       repoURL: https://charts.bitnami.com/bitnami
-      targetRevision: 8.3.8
+      targetRevision: 8.3.9
       helm:
         releaseName: external-dns
         valueFiles:
         - $values/infra/helm/external-dns/values.yaml
     - chart: external-dns
       repoURL: https://charts.bitnami.com/bitnami
-      targetRevision: 8.3.8
+      targetRevision: 8.3.9
       helm:
         releaseName: external-dns-adguard
         valueFiles:

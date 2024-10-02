@@ -1,9 +1,0 @@
-storageClass:
-  name: nfs-client
-  pathPattern: "${.PVC.namespace}-${.PVC.name}"
-  reclaimPolicy: Retain
-  allowVolumeExpansion: true
-  volumeBindingMode: Immediate
-nfs:
-  server: 192.168.178.160
-  path: /mnt/user/k8s

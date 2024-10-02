@@ -46,13 +46,12 @@ persistence:
     globalMounts:
       - path: /movies
 
-  # media-downloads:
-  #   type: nfs
-  #   server: nas.atoca.house
-  #   path: /mnt/user/media-downloads/complete/
-  #   globalMounts:
-  #     - path: /downloads/complete
-
+  media-downloads:
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/media-downloads/complete/
+    globalMounts:
+      - path: /downloads/complete
 
   config:
     enabled: true

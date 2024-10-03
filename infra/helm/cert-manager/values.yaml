@@ -1,14 +1,14 @@
 crds:
   enabled: true
-rbac:
-  create: true
 serviceAccount:
   create: true
   name: cert-manager
 global:
+  rbac:
+    create: true
   leaderElection:
     namespace: cert-manager
 prometheus:
   enabled: true
-  # servicemonitor:
-  #   enabled: true
+  servicemonitor:
+    enabled: true

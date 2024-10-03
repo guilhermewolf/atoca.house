@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: jackett-restore
+  namespace: jackett
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: jackett-minio-secret
+    copyMethod: Direct
+    destinationPVC: jackett
+    storageClassName: longhorn
+    volumeSnapshotClassName: longhorn-snapshot-vsc
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

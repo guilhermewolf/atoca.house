@@ -10,8 +10,10 @@ locals {
     "minio-data",
     "npm",
     "portainer",
+    "radar",
     "readar",
     "sabnzbd",
+    "sonar",
     "tandoor",
     "transmission",
     "wyl"

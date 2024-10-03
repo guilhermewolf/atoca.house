@@ -10,13 +10,16 @@ area/github:
       - any-glob-to-any-file: ".github/**/*"
 area/kubernetes:
   - changed-files:
-      - any-glob-to-any-file: "infra/**/*"
+      - any-glob-to-any-file: "infra/helm/**/*"
 area/apps:
   - changed-files:
       - any-glob-to-any-file: "apps/**/*"
 area/docker:
   - changed-files:
       - any-glob-to-any-file: "stacks/**/*"
+area/terraform:
+  - changed-files:
+      - any-glob-to-any-file: "infra/terraform/**/*"
 # Clusters
 cluster/main:
   - changed-files:

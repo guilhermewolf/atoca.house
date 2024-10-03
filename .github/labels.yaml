@@ -10,6 +10,8 @@
   color: "027fa0"
 - name: area/apps
   color: "0e8a16"
+- name: "area/terraform"
+  color: "800080"
 # Clusters
 - name: cluster/main
   color: "ffc300"

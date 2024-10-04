@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: loki-ingress
+  namespace: loki
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "cloudflare-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - loki.atoca.house
+      secretName: loki-tls
+  rules:
+    - host: loki.atoca.house
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: loki
+                port:
+                  number: 3100

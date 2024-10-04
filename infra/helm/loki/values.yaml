@@ -20,18 +20,6 @@ loki:
     jsonData: "{}"
     uid: ""
 
-ingress:
-  enabled: true
-  ingressClassName: nginx
-  annotations:
-    cert-manager.io/cluster-issuer: "cloudflare-prod"
-  hosts: 
-    - loki.atoca.house
-  tls:
-    - hosts:
-        - loki.atoca.house
-      secretName: loki-tls
-
 promtail:
   enabled: true
   config:

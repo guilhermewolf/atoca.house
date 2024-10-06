@@ -2,15 +2,15 @@
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationDestination
 metadata:
-  name: jackett-restore
-  namespace: jackett
+  name: code-server-restore
+  namespace: code-server
 spec:
   trigger:
     manual: restore-once
   restic:
-    repository: jackett-r2-secret
+    repository: code-server-r2-secret
     copyMethod: Direct
-    destinationPVC: jackett
+    destinationPVC: code-server-pvc
     storageClassName: longhorn
     volumeSnapshotClassName: longhorn-snapshot-vsc
     moverSecurityContext:

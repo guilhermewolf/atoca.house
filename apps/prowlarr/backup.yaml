@@ -10,7 +10,7 @@ spec:
     schedule: "0 0 * * *"
   restic:
     pruneIntervalDays: 14
-    repository: prowlarr-minio-secret
+    repository: prowlarr-r2-secret
     moverSecurityContext:
       runAsUser: 1000
       runAsGroup: 1000

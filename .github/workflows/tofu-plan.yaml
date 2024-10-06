@@ -28,11 +28,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
       - uses: opentofu/setup-opentofu@v1
       
       - name: OpenTofu fmt

@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: prowlarr-restore
+  namespace: prowlarr
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: prowlarr-r2-secret
+    copyMethod: Direct
+    destinationPVC: prowlarr
+    storageClassName: longhorn
+    volumeSnapshotClassName: longhorn-snapshot-vsc
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

@@ -1,0 +1,39 @@
+controllers:
+  docuseal:    
+    containers:
+      docuseal:
+        image:
+          repository: docuseal/docuseal
+          tag: 1.7.4
+          pullPolicy: IfNotPresent
+
+service:
+  docuseal:
+    controller: docuseal
+    ports:
+      http:
+        primary: true
+        port: 80
+        targetPort: 3000
+ingress:
+  docuseal:
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+    hosts:
+      - host: docuseal.atoca.house
+        paths:
+          - path: /
+            pathType: Prefix
+            service:
+              identifier: docuseal
+              port: http
+    tls:
+      - hosts:
+          - docuseal.atoca.house
+        secretName: docuseal-tls
+eplicaCount: 1
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

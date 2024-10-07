@@ -6,6 +6,9 @@ controllers:
           repository: docuseal/docuseal
           tag: 1.7.4
           pullPolicy: IfNotPresent
+        envFrom:
+          - secretRef:
+              name: docuseal-secrets
 
 service:
   docuseal:

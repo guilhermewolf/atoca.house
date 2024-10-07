@@ -1,0 +1,96 @@
+replicaCount: 1
+zitadel:
+  masterkeySecretName: zitadel-secrets
+  secretConfig:
+    ExternalDomain: sso.atoca.house
+    ExternalSecure: true
+    ExternalPort: 443
+    TLS:
+      Enabled: false
+    Database:
+      Postgres:
+        Host: postgresql-cluster-rw.databases.svc.cluster.local
+        Port: 5432
+        Database: zitadel
+        User:
+          Username: zitadel
+          SSL:
+            Mode: disable
+        Admin:
+          Username: postgres
+          SSL:
+            Mode: disable
+    DefaultInstance:
+      SMTPConfiguration:
+        SMTP:
+          Host: 'smtp.migadu.com:587'
+          User: 'no-reply@atoca.house'
+        TLS: true
+        From: 'no-reply@atoca.house'
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+
+
+# initJob:
+#   enabled: false
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: cloudflare-prod
+  hosts:
+    - host: sso.atoca.house
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: sso-atoca-house-tls
+      hosts:
+        - sso.atoca.house
+
+env:
+  - name: ZITADEL_DATABASE_POSTGRES_USER_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: zitadel-secrets
+        key: zitadel_pg_password
+  - name: ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: zitadel-secrets
+        key: pg_admin_user
+  - name: ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: zitadel-secrets
+        key: pg_admin_password
+  - name: ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: zitadel-secrets
+        key: zitadel_username
+  - name: ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: zitadel-secrets
+        key: zitadel_password
+  - name: ZITADEL_DEFAULTINSTANCE_SMTPCONFIGURATION_SMTP_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: zitadel-secrets
+        key: zitadel_email_password

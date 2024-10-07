@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zitadel
+  namespace: argocd
+spec:
+  destination:
+    namespace: zitadel
+    server: https://kubernetes.default.svc
+  project: applications
+  sources:
+    - chart: zitadel
+      repoURL: https://charts.zitadel.com
+      targetRevision: 8.5.0
+      helm:
+        valueFiles:
+        - $values/apps/zitadel/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: apps/zitadel/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

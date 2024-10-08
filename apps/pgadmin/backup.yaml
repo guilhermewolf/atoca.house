@@ -1,0 +1,25 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: pgadmin-backup
+  namespace: pgadmin
+spec:
+  sourcePVC: pgadmin
+  trigger:
+    schedule: "0 0 * * *"
+  restic:
+    pruneIntervalDays: 14
+    repository: pgadmin-r2-secret
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+    retain:
+      hourly: 5
+      daily: 4
+      monthly: 1
+      yearly: 1
+    copyMethod: Clone
+    storageClassName: longhorn
+    volumeSnapshotClassName: longhorn-snapshot-vsc

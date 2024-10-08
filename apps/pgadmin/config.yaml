@@ -12,6 +12,8 @@ data:
     OAUTH2_CONFIG = [{
         'OAUTH2_NAME' : 'Zitadel',
         'OAUTH2_DISPLAY_NAME' : 'A Toca SSO',
+        'OAUTH2_CLIENT_ID' : '{{ .PGADMIN_CONFIG_OAUTH2_CLIENT_ID }}',
+        'OAUTH2_CLIENT_SECRET' : '{{ .PGADMIN_CONFIG_OAUTH2_SECRET }}',
         'OAUTH2_TOKEN_URL' : 'https://sso.atoca.house/oauth/v2/token',
         'OAUTH2_AUTHORIZATION_URL' : 'https://sso.atoca.house/oauth/v2/authorize',
         'OAUTH2_API_BASE_URL' : 'https://sso.atoca.house/v2',

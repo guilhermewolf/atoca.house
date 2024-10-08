@@ -41,7 +41,7 @@ persistence:
       - path:  /var/lib/pgadmin
   oauthconfig:
     enabled: true
-    type: configMap
+    type: secret
     name: pgadmin-local-config
     globalMounts:
       - path: /pgadmin4/config_local.py

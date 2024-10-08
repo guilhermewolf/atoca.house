@@ -4,7 +4,7 @@ controllers:
       docuseal:
         image:
           repository: docuseal/docuseal
-          tag: 1.7.4
+          tag: 1.7.5
           pullPolicy: IfNotPresent
         envFrom:
           - secretRef:

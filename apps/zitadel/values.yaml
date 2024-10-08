@@ -1,4 +1,4 @@
-replicaCount: 1
+replicaCount: 2
 zitadel:
   masterkeySecretName: zitadel-secrets
   secretConfig:
@@ -45,8 +45,8 @@ securityContext:
     type: RuntimeDefault
 
 
-# initJob:
-#   enabled: false
+initJob:
+  enabled: false
 
 ingress:
   enabled: true

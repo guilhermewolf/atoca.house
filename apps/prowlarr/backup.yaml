@@ -22,4 +22,3 @@ spec:
       yearly: 1
     copyMethod: Clone
     storageClassName: longhorn
-    volumeSnapshotClassName: longhorn-snapshot-vsc

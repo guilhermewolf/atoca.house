@@ -3,15 +3,15 @@
 apiVersion: longhorn.io/v1beta1
 kind: RecurringJob
 metadata:
-  name: backup
+  name: delete-snapshots
   namespace: longhorn-system
 spec:
   cron: "0 5 * * *"
-  task: "backup"
+  task: "snapshot-delete"
   groups:
   - default
   retain: 2
-  concurrency: 2
+  concurrency: 1
   labels:
-    type: 'full'
+    type: 'delete'
     schedule: 'daily'

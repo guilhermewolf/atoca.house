@@ -95,14 +95,13 @@ This Git repository contains the following directories.
 
 While most of my infrastructure and workloads are self-hosted I do rely upon the cloud for certain key parts of my setup. This saves me from having to worry about two things. (1) Dealing with chicken/egg scenarios and (2) services I critically need whether my cluster is online or not.
 
-| Service                                         | Use                                                               | Cost           |
-|-------------------------------------------------|-------------------------------------------------------------------|----------------|
-| [1Password](https://1password.com/)             | Secrets with 1Password Connect and Controler                      | ~$65/yr        |
-| [Cloudflare](https://www.cloudflare.com/)       | Domain and R2                                                     | ~$30/yr        |
-| [GitHub](https://github.com/)                   | Hosting this repository and continuous integration/deployments    | Free           |
-| [Terraform Cloud](https://www.terraform.io/)    | Storing Terraform state                                           | Free           |
-| [Tailscale](https://tailscale.com/)             | VPN Serice                                                        | ~$48/yr        |
-|                                                 |                                                                   |Total: ~$12/mo  |
+| Service                                         | Use                                                               | Cost            |
+|-------------------------------------------------|-------------------------------------------------------------------|-----------------|
+| [1Password](https://1password.com/)             | Secrets with 1Password Connect and Controler                      | ~$65/yr         |
+| [Cloudflare](https://www.cloudflare.com/)       | Domain and R2                                                     | ~$30/yr         |
+| [GitHub](https://github.com/)                   | Hosting this repository and continuous integration/deployments    | Free            |
+| [Tailscale](https://tailscale.com/)             | VPN Serice                                                        | Free            |
+|                                                 |                                                                   |Total: ~$7,90/mo |
 
 ---
 

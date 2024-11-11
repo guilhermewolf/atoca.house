@@ -2,15 +2,15 @@
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationDestination
 metadata:
-  name: code-server-restore
-  namespace: code-server
+  name: pgadmin-restore
+  namespace: pgadmin
 spec:
   trigger:
     manual: restore-once
   restic:
-    repository: code-server-r2-secret
+    repository: pgadmin-r2-secret
     copyMethod: Direct
-    destinationPVC: code-server-pvc
+    destinationPVC: pgadmin
     storageClassName: longhorn
     volumeSnapshotClassName: longhorn-snapshot-vsc
     moverSecurityContext:

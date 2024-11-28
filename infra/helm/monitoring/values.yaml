@@ -68,6 +68,10 @@ prometheus:
         static_configs:
           - targets:
             - '192.168.178.22:9100'  # Node Exporter running on Home Assistant
+      - job_name: 'adguard-home-exporter'
+        scrape_configs:
+          - targets:
+            - 192.168.178.160:9617 
     storageSpec:
       volumeClaimTemplate:
         spec:

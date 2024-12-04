@@ -10,14 +10,14 @@ spec:
   project: infra
   sources:
     - chart: external-dns
-      repoURL: oci://registry-1.docker.io/bitnamicharts
+      repoURL: https://charts.bitnami.com/bitnami
       targetRevision: 8.6.1
       helm:
         releaseName: external-dns
         valueFiles:
         - $values/infra/helm/external-dns/values.yaml
     - chart: external-dns
-      repoURL: oci://registry-1.docker.io/bitnamicharts
+      repoURL: https://charts.bitnami.com/bitnami
       targetRevision: 8.6.1
       helm:
         releaseName: external-dns-adguard

@@ -2,8 +2,7 @@ serviceAccount:
   create: true
   name: external-dns
 
-ingressClassFilters: 
-  - nginx
+ingressClassFilters: ["nginx"]
 
 rbac:
   create: true
@@ -12,23 +11,16 @@ provider: cloudflare
 
 sources:
   - ingress
-
-domainFilters: 
-  - atoca.house
+domainFilters: ["atoca.house"]
 
 cloudflare:
-  apiKeySecretRef:
-    name: cloudflare-ed-key
-    key: api-key
-  email: guilhermewolf@outlook.com
+  secretName: "cloudflare-ed-key"
+  email: "guilhermewolf@outlook.com"
   proxied: false
 
+
 extraArgs:
-  - --webhook-provider-url=http://localhost:8888
+  webhook-provider-url: http://localhost:8888
 
-metrics:
+serviceMonitor:
   enabled: true
-
-prometheus:
-  serviceMonitor:
-    enabled: true

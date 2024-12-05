@@ -39,13 +39,6 @@ persistence:
     size: 1Gi
     globalMounts:
       - path:  /var/lib/pgadmin
-  oauthconfig:
-    enabled: true
-    type: secret
-    name: pgadmin-local-config
-    globalMounts:
-      - path: /pgadmin4/config_local.py
-        subPath: config_local.py
 
 ingress:
   pgadmin:

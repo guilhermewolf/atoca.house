@@ -53,6 +53,10 @@ alertmanager:
 
 prometheus:
   prometheusSpec:
+    image:
+      registry: quay.io
+      repository: prometheus/prometheus
+      tag: v3.0.1
     serviceMonitorSelector:
       matchLabels: {}
     serviceMonitorNamespaceSelector:

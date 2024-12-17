@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgadmin-servers-config
+  namespace: pgadmin
+data:
+  servers.json: |
+        {
+          "Servers": {
+            "1": {
+              "Name": "CNPGCluster",
+              "Group": "Servers",
+              "Host": "postgresql-cluster-rw.databases.svc.cluster.local",
+              "Port": 5432,
+              "MaintenanceDB": "postgres",
+              "Username": "postgres",
+              "PassFile": "/var/lib/pgadmin/pgpass",
+              "SSLMode": "prefer",
+              "Comment": "Auto-configured database connection"
+            }
+          }
+        }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgpass-config
+  namespace: pgadmin
+data:
+  pgpass: |
+    "postgresql-cluster-rw.databases.svc.cluster.local:5432:postgres:{{ .username }}:{{ .password }}"

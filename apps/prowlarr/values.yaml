@@ -48,9 +48,3 @@ persistence:
     size: 1Gi
     globalMounts:
       - path: /config
-
-eplicaCount: 1
-resources: {}
-nodeSelector: {}
-tolerations: []
-affinity: {}

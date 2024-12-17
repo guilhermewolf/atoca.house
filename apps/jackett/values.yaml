@@ -19,6 +19,13 @@ controllers:
             value: "1000"
           - name: PGID
             value: "1000"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "250Mi"
+            cpu: "500m"
 
 service:
   jackett:
@@ -54,17 +61,3 @@ persistence:
     size: 1Gi
     globalMounts:
       - path: /config
-
-resources:
-  requests:
-    memory: "128Mi"
-    cpu: "100m"
-  limits:
-    memory: "250Mi"
-    cpu: "500m"
-
-replicaCount: 1
-
-nodeSelector: {}
-tolerations: []
-affinity: {}

@@ -9,6 +9,8 @@ controllers:
           tag: 8.14
         env:
           PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
+          PGADMIN_DISABLE_POSTFIX: "true"
+          PGADMIN_LISTEN_PORT: &port 80
         envFrom:
           - secretRef:
               name: pgadmin-secrets
@@ -17,43 +19,20 @@ controllers:
             memory: 300Mi
           limits:
             memory: 1Gi
-    defaultPodOptions:
-      securityContext:
-        runAsUser: 5050
-        runAsGroup: 0
-        fsGroup: 0
-        fsGroupChangePolicy: OnRootMismatch
-      initContainers:
-        fix-pgpass-permissions:
-          image: busybox
-          command: ["sh", "-c", "chmod 600 /var/lib/pgadmin/pgpass"]
-          volumeMounts:
-            - name: pgpass
-              mountPath: /var/lib/pgadmin/pgpass
-              subPath: pgpass
 
-    extraVolumes:
-      - name: pgpass
-        secret:
-          secretName: pgadmin-pgpass-secret
-      - name: servers-config
-        configMap:
-          name: pgadmin-servers-config
-
-    extraVolumeMounts:
-      - name: pgpass
-        mountPath: /var/lib/pgadmin/pgpass
-        subPath: pgpass
-      - name: servers-config
-        mountPath: /pgadmin4/servers.json
-        subPath: servers.json
+defaultPodOptions:
+  securityContext:
+    runAsUser: 5050
+    runAsGroup: 5050
+    fsGroup: 5050
+    fsGroupChangePolicy: OnRootMismatch
 
 service:
   pgadmin:
     controller: pgadmin
     ports:
       http:
-        port: 80
+        port: *port
 
 persistence:
   config:
@@ -64,6 +43,21 @@ persistence:
     size: 1Gi
     globalMounts:
       - path: /var/lib/pgadmin
+  pgpass:
+    enabled: true
+    type: secret
+    name: pgpass
+    defaultMode: 0600
+    globalMounts:
+      - path: /var/lib/pgadmin/pgpass
+        subPath: pgpass
+  servers-config:
+    enabled: true
+    type: configMap
+    name: pgadmin-servers-config
+    globalMounts:
+      - path: /pgadmin4/servers.json
+        subPath: servers.json
 
 ingress:
   pgadmin:

@@ -11,7 +11,6 @@ controllers:
             value: "info"
           - name: TZ
             value: "Europe/Amsterdam"
-
 service:
   flaresolverr:
     controller: flaresolverr
@@ -37,8 +36,14 @@ ingress:
       - hosts:
           - flaresolverr.atoca.house
         secretName: flaresolverr-tls
-eplicaCount: 1
-resources: {}
+replicaCount: 1
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
 nodeSelector: {}
 tolerations: []
 affinity: {}

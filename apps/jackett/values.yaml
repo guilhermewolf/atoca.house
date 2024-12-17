@@ -56,9 +56,12 @@ persistence:
       - path: /config
 
 resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
   limits:
+    memory: "250Mi"
     cpu: "500m"
-    memory: "512Mi"
 
 replicaCount: 1
 

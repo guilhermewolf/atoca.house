@@ -126,6 +126,9 @@ dashboards:
       gnetId: 13639
       revision: 2
       datasource: Loki
+    arc-dashboard:
+      url: https://raw.githubusercontent.com/actions/actions-runner-controller/refs/heads/master/docs/gha-runner-scale-set-controller/samples/grafana-dashboard/ARC-Autoscaling-Runner-Set-Monitoring_1692627561838.json
+      datasource: Prometheus
 sidecar:
   dashboards:
     enabled: true

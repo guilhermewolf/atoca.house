@@ -13,3 +13,8 @@ template:
       - name: runner
         image: ghcr.io/guilhermewolf/arm-actions-runner/arm-actions-runner:2.321.0
         command: ["/home/runner/run.sh"]
+
+metrics:
+  controllerManagerAddr: ":8080"
+  listenerAddr: ":8080"
+  listenerEndpoint: "/metrics"

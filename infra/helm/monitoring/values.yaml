@@ -56,7 +56,7 @@ prometheus:
     image:
       registry: quay.io
       repository: prometheus/prometheus
-      tag: v3.0.1
+      tag: v3.1.0
     serviceMonitorSelector:
       matchLabels: {}
     serviceMonitorNamespaceSelector:

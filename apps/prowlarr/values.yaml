@@ -4,7 +4,7 @@ controllers:
       prowlarr:
         image:
           repository: lscr.io/linuxserver/prowlarr
-          tag: 1.28.2
+          tag: 1.29.2
           pullPolicy: IfNotPresent
         env:
           - name: TZ

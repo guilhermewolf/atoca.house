@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  jellyseerr:
+    image: fallenbagel/jellyseerr:2.2.3
+    container_name: jellyseerr
+    restart: unless-stopped
+    ports:
+      - "5055:5055"
+    environment:
+      - PUID=99
+      - PGID=100
+      - UMASK=022
+      - LOG_LEVEL=info
+    volumes:
+      - /mnt/user/appdata/jellyseerr:/app/config
+    networks:
+      - jellyseerr_network
+
+networks:
+  jellyseerr_network:
+    driver: bridge

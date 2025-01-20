@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:1.74.3
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=Europe/Amsterdam
+      - WEBHOOK_URL=$WEBHOOK_URL
+    volumes:
+      - /mnt/cache/appdata/n8n:/home/node/.n8n
+    user: "1000:1000"
+    networks:
+      - n8n_network
+
+networks:
+  n8n_network:
+    driver: bridge

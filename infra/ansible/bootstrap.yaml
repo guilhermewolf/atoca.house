@@ -1,10 +1,10 @@
 ---
 - name: Deploy Talos configuration and ArgoCD setup
   hosts: localhost
-  gather_facts: no
+  gather_facts: yes
 
   vars:
-    talos_dir: "{{ playbook_dir | dirname }}/../talos"
+    talos_dir: "{{ lookup('env', 'PWD') }}/infra/talos"
     age_config_dir: "{{ ansible_env.HOME }}/.config/age"
     talos_config_file: "{{ ansible_env.HOME }}/.talos/config"
     op_argocd_redis_id: "Private/atoca-house-k8s-argocd-redis/credential"
@@ -38,9 +38,11 @@
         SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
     - name: Decrypt Talos controlplane file
-      shell: "sops --config {{ playbook_dir }}/.sops.yaml -d {{ talos_dir }}/controlplane.enc.yaml > {{ talos_dir }}/controlplane.yaml"
+      shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/controlplane.enc.yaml > {{ talos_dir }}/controlplane.yaml"
       args:
         creates: "{{ talos_dir }}/controlplane.yaml"
+      environment:
+        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
     - name: Apply Talos controlplane config
       shell: "talosctl apply-config --insecure --nodes {{ control_plane_node }} --file {{ talos_dir }}/controlplane.yaml"
@@ -65,19 +67,25 @@
       until: kube_ready.rc == 0
 
     - name: Decrypt Talos worker-1 file
-      shell: "sops --config {{ playbook_dir }}/.sops.yaml -d {{ talos_dir }}/worker-1.enc.yaml > {{ talos_dir }}/worker-1.yaml"
+      shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-1.enc.yaml > {{ talos_dir }}/worker-1.yaml"
       args:
         creates: "{{ talos_dir }}/worker-1.yaml"
+      environment:
+        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
     - name: Decrypt Talos worker-2 file
-      shell: "sops --config {{ playbook_dir }}/.sops.yaml -d {{ talos_dir }}/worker-2.enc.yaml > {{ talos_dir }}/worker-2.yaml"
+      shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-2.enc.yaml > {{ talos_dir }}/worker-2.yaml"
       args:
         creates: "{{ talos_dir }}/worker-2.yaml"
+      environment:
+        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
     - name: Decrypt Talos worker-3 file
-      shell: "sops --config {{ playbook_dir }}/.sops.yaml -d {{ talos_dir }}/worker-3.enc.yaml > {{ talos_dir }}/worker-3.yaml"
+      shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-3.enc.yaml > {{ talos_dir }}/worker-3.yaml"
       args:
         creates: "{{ talos_dir }}/worker-3.yaml"
+      environment:
+        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
     - name: Apply Talos worker-1 config
       shell: "talosctl apply-config --insecure --nodes 192.168.178.202 --file {{ talos_dir }}/worker-1.yaml"
@@ -133,7 +141,7 @@
         state: absent
 
     - name: Apply ArgoCD configuration with Helm and Kustomize
-      shell: "kubectl kustomize --enable-helm argocd | kubectl apply -f -"
+      shell: "kubectl kustomize --enable-helm {{ lookup('env', 'PWD') }}/argocd | kubectl apply -f -"
 
     - name: Wait for ArgoCD components to be ready
       shell: |
@@ -146,4 +154,4 @@
       until: argocd_ready.rc == 0
 
     - name: Apply additional kustomize set configurations
-      shell: "kubectl kustomize sets/ | kubectl apply -f -"
+      shell: "kubectl kustomize {{ lookup('env', 'PWD') }}/sets/ | kubectl apply -f -"

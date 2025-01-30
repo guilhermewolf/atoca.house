@@ -7,6 +7,9 @@
     talos_dir: "{{ playbook_dir | dirname }}/../talos"
     age_config_dir: "{{ ansible_env.HOME }}/.config/age"
     talos_config_file: "{{ ansible_env.HOME }}/.talos/config"
+    op_argocd_redis_id: "Private/atoca-house-k8s-argocd-redis/credential"
+    argocd_redis_token_name: "argocd-redis"
+    argocd_namespace: "argocd"
     control_plane_node: 192.168.178.201
     worker_nodes:
       - 192.168.178.202
@@ -97,6 +100,37 @@
         - "{{ talos_dir }}/worker-1.yaml"
         - "{{ talos_dir }}/worker-2.yaml"
         - "{{ talos_dir }}/worker-3.yaml"
+
+    - name: Retrieve the ArgoCD Redis secret from One Password
+      ansible.builtin.command:
+        cmd: "op read op://{{ op_argocd_redis_id }}"
+      register: argo_redis_retrieved_secret
+
+    - name: Write the ArgoCD Redis secret to a file
+      ansible.builtin.copy:
+        content: "{{ argo_redis_retrieved_secret.stdout }}"
+        dest: /tmp/op_argocd_redis.txt
+        force: yes
+
+    - name: Create a Kubernetes secret for argocd-redis
+      ansible.builtin.command:
+        cmd: "kubectl -n {{ argocd_namespace }} create secret generic {{ argocd_redis_token_name }} --dry-run=client --from-file=auth=/tmp/op_argocd_redis.txt -o yaml > /tmp/{{ argocd_redis_token_name }}.yaml" 
+        _uses_shell: true
+
+    - name: create argocd namespace
+      ansible.builtin.command:
+        cmd: "kubectl create namespace {{ argocd_namespace }}"
+        _uses_shell: true
+
+    - name: Apply argocd-redis manifest
+      ansible.builtin.command:
+        cmd: "kubectl apply -f /tmp/{{ argocd_redis_token_name }}.yaml"
+        _uses_shell: true
+
+    - name: Remove temporary files
+      ansible.builtin.file:
+        path: "/tmp/{{ argocd_redis_token_name }}.yaml"
+        state: absent
 
     - name: Apply ArgoCD configuration with Helm and Kustomize
       shell: "kubectl kustomize --enable-helm argocd | kubectl apply -f -"

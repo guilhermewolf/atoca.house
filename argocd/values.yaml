@@ -27,6 +27,10 @@ crds:
   # -- Keep CRDs on chart uninstall
   keep: false
 
+# Disable Redis Secret Initialization
+redisSecretInit:
+  enabled: false
+
 server:
   # Ingress Resource.
   ingress:

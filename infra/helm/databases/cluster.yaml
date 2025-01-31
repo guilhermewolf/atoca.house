@@ -28,21 +28,21 @@ spec:
         secretAccessKey:
           name: minio-databases
           key: AWS_SECRET_ACCESS_KEY
-  bootstrap:
-    recovery:
-      source: postgresql-cluster
-  externalClusters:
-    - name: postgresql-cluster
-      barmanObjectStore:
-        wal:
-          compression: bzip2
-          maxParallel: 8
-        destinationPath: s3://databases/
-        endpointURL: https://minio-data.atoca.house
-        s3Credentials:
-          accessKeyId:
-            name: minio-databases
-            key: AWS_ACCESS_KEY_ID
-          secretAccessKey:
-            name: minio-databases
-            key: AWS_SECRET_ACCESS_KEY
+  # bootstrap:
+  #   recovery:
+  #     source: postgresql-cluster
+  # externalClusters:
+  #   - name: postgresql-cluster
+  #     barmanObjectStore:
+  #       wal:
+  #         compression: bzip2
+  #         maxParallel: 8
+  #       destinationPath: s3://databases/
+  #       endpointURL: https://minio-data.atoca.house
+  #       s3Credentials:
+  #         accessKeyId:
+  #           name: minio-databases
+  #           key: AWS_ACCESS_KEY_ID
+  #         secretAccessKey:
+  #           name: minio-databases
+  #           key: AWS_SECRET_ACCESS_KEY

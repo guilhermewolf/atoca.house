@@ -1,0 +1,103 @@
+---
+- name: Configure CNPG Database with Users and Databases
+  hosts: localhost
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: /usr/local/bin/python3
+    op_vault: "K8s"
+    db_secret_name: "postgres-secrets"
+    pg_port: 5432
+    pg_local_port: 5433
+    k8s_namespace: "databases"
+    terraform_db: "terraform"
+
+  tasks:
+    - name: Retrieve Database Admin Password from 1Password
+      command: >
+        op read op://{{ op_vault }}/{{ db_secret_name }}/PG_PASSWORD
+      register: db_admin_password
+      changed_when: false
+
+    - name: Retrieve Database Terraform Password from 1Password
+      command: >
+        op read op://{{ op_vault }}/{{ db_secret_name }}/terraform_pg_password
+      register: db_terraform_password
+      changed_when: false
+
+    - name: Port Forward PostgreSQL in Kubernetes
+      command: >
+        kubectl port-forward svc/postgresql-cluster-rw -n {{ k8s_namespace }} {{ pg_local_port }}:{{ pg_port }}
+      async: 3600
+      poll: 0
+      changed_when: false
+
+    - name: Wait for local PostgreSQL port to be available
+      wait_for:
+        host: "localhost"
+        port: "{{ pg_local_port }}"
+        timeout: 30
+
+    - name: Create Terraform Database
+      postgresql_db:
+        name: "{{ terraform_db }}"
+        state: present
+        encoding: "UTF8"
+        login_host: "localhost"
+        login_port: "{{ pg_local_port }}"
+        login_user: "postgres"
+        login_password: "{{ db_admin_password.stdout }}"
+
+    - name: Port Forward PostgreSQL in Kubernetes
+      command: >
+        kubectl port-forward svc/postgresql-cluster-rw -n {{ k8s_namespace }} {{ pg_local_port }}:{{ pg_port }}
+      async: 3600
+      poll: 0
+      changed_when: false
+
+    - name: Create Terraform User
+      postgresql_user:
+        name: "terraform"
+        password: "{{ db_terraform_password.stdout }}"
+        role_attr_flags: "LOGIN,CREATEDB"
+        state: present
+        login_host: "localhost"
+        login_port: "{{ pg_local_port }}"
+        login_user: "postgres"
+        login_password: "{{ db_admin_password.stdout }}"
+
+    - name: Port Forward PostgreSQL in Kubernetes
+      command: >
+        kubectl port-forward svc/postgresql-cluster-rw -n {{ k8s_namespace }} {{ pg_local_port }}:{{ pg_port }}
+      async: 3600
+      poll: 0
+      changed_when: false
+
+    - name: Grant Terraform Permissions on Terraform Database
+      postgresql_privs:
+        db: "{{ terraform_db }}"
+        privs: "ALL"
+        role: "terraform"
+        type: database
+        login_host: "localhost"
+        login_port: "{{ pg_local_port }}"
+        login_user: "postgres"
+        login_password: "{{ db_admin_password.stdout }}"
+
+    - name: Port Forward PostgreSQL in Kubernetes
+      command: >
+        kubectl port-forward svc/postgresql-cluster-rw -n {{ k8s_namespace }} {{ pg_local_port }}:{{ pg_port }}
+      async: 3600
+      poll: 0
+      changed_when: false
+
+    - name: Grant Terraform User Ability to Create Extensions
+      postgresql_privs:
+        db: "{{ terraform_db }}"
+        privs: "CREATE"
+        role: "terraform"
+        type: schema
+        objs: "public"
+        login_host: "localhost"
+        login_port: "{{ pg_local_port }}"
+        login_user: "postgres"
+        login_password: "{{ db_admin_password.stdout }}"

@@ -4,11 +4,6 @@ metadata:
   name: whoami
   namespace: whoami
   annotations:
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/name: "whoami"
-    gethomepage.dev/description: "whoami testing app"
-    gethomepage.dev/group: "Dynamic"
-    gethomepage.dev/icon: "vscode.svg"
     external-dns.alpha.kubernetes.io/target: ""
 spec:
   ingressClassName: cloudflare-tunnel

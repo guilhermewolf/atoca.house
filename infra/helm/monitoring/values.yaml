@@ -38,11 +38,6 @@ alertmanager:
     enabled: true
     ingressClassName: nginx
     annotations:
-      gethomepage.dev/enabled: "true"
-      gethomepage.dev/name: "Alertmanager"
-      gethomepage.dev/description: "Alertmanager"
-      gethomepage.dev/group: "Dynamic"
-      gethomepage.dev/icon: "alertmanager.png"
       cert-manager.io/cluster-issuer: "cloudflare-prod"
     hosts:
       - alertmanager.atoca.house
@@ -87,11 +82,6 @@ prometheus:
     enabled: true
     ingressClassName: nginx
     annotations:
-      gethomepage.dev/enabled: "true"
-      gethomepage.dev/name: "Prometheus"
-      gethomepage.dev/description: "Prometheus"
-      gethomepage.dev/group: "Dynamic"
-      gethomepage.dev/icon: "prometheus.svg"
       cert-manager.io/cluster-issuer: "cloudflare-prod"
     hosts:
       - prometheus.atoca.house

@@ -4,11 +4,6 @@ metadata:
   name: ntfy
   namespace: ntfy
   annotations:
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/name: "ntfy"
-    gethomepage.dev/description: "ntfy"
-    gethomepage.dev/group: "Dynamic"
-    gethomepage.dev/icon: "ntfy.svg"
     external-dns.alpha.kubernetes.io/target: ""
 spec:
   ingressClassName: cloudflare-tunnel

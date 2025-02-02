@@ -49,8 +49,3 @@ server:
     ## Ingress annotations
     annotations:
       cert-manager.io/cluster-issuer: cloudflare-prod
-      gethomepage.dev/enabled: "true"
-      gethomepage.dev/name: "ArgoCD"
-      gethomepage.dev/description: "ArgoCD"
-      gethomepage.dev/group: "Dynamic"
-      gethomepage.dev/icon: "argocd.svg"

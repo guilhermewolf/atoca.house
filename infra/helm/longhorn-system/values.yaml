@@ -21,9 +21,4 @@ ingress:
   tlsSecret: longhorn-tls
   path: /
   annotations:
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/name: "Longhorn"
-    gethomepage.dev/description: "Longhorn System"
-    gethomepage.dev/group: "Dynamic"
-    gethomepage.dev/icon: "prometheus.svg"
     cert-manager.io/cluster-issuer: "cloudflare-prod"

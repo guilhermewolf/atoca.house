@@ -154,11 +154,6 @@ serviceMonitor:
 ingress:
   enabled: true
   annotations:
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/name: "Grafana"
-    gethomepage.dev/description: "Grafana"
-    gethomepage.dev/group: "Dynamic"
-    gethomepage.dev/icon: "grafana.svg"
     cert-manager.io/cluster-issuer: "cloudflare-prod"
   ingressClassName: nginx
   hosts:

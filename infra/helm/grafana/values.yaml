@@ -54,7 +54,9 @@ dashboardProviders:
 dashboards:
   default:
     cert-manager:
-      url: https://raw.githubusercontent.com/monitoring-mixins/website/master/assets/cert-manager/dashboards/cert-manager.json
+      # renovate: depName="Cert-manager-Kubernetes"
+      gnetId: 20842
+      revision: 3
       datasource: Prometheus
     cloudflared:
       # renovate: depName="Cloudflare Tunnels (cloudflared)"
@@ -67,40 +69,15 @@ dashboards:
       gnetId: 15038
       revision: 3
       datasource: Prometheus
-    kubernetes-api-server:
-      # renovate: depName="Kubernetes / System / API Server"
-      gnetId: 15761
-      revision: 17
-      datasource: Prometheus
-    kubernetes-coredns:
-      # renovate: depName="Kubernetes / System / CoreDNS"
-      gnetId: 15762
-      revision: 18
-      datasource: Prometheus
-    kubernetes-global:
-      # renovate: depName="Kubernetes / Views / Global"
-      gnetId: 15757
-      revision: 37
-      datasource: Prometheus
-    kubernetes-namespaces:
-      # renovate: depName="Kubernetes / Views / Namespaces"
-      gnetId: 15758
-      revision: 34
-      datasource: Prometheus
     kubernetes-nodes:
       # renovate: depName="Kubernetes / Views / Nodes"
       gnetId: 15759
-      revision: 29
+      revision: 32
       datasource: Prometheus
     kubernetes-pods:
       # renovate: depName="Kubernetes / Views / Pods"
       gnetId: 15760
-      revision: 28
-      datasource: Prometheus
-    kubernetes-volumes:
-      # renovate: depName="K8s / Storage / Volumes / Cluster"
-      gnetId: 11454
-      revision: 14
+      revision: 34
       datasource: Prometheus
     nginx:
       url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/grafana/dashboards/nginx.json
@@ -119,7 +96,7 @@ dashboards:
     prometheus:
       # renovate: depName="Prometheus"
       gnetId: 19105
-      revision: 3
+      revision: 6
       datasource: Prometheus
     loki-dashboards:
       # renovate: depName="Loki"
@@ -140,8 +117,8 @@ sidecar:
       foldersFromFilesStructure: true
   datasources:
     enabled: false
-    # searchNamespace: ALL
-    # labelValue: ""
+    searchNamespace: ALL
+    labelValue: ""
 plugins:
   - grafana-clock-panel
   - grafana-piechart-panel

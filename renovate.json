@@ -2,7 +2,11 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended",
-    ":automergeMinor"
+    ":automergeMinor",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":timezone(Europe/Amsterdam)",
+    "github>guilhermewolf/atoca.house//.github/renovate/grafanaDashboards.json5"
   ],
   "docker-compose": {
     "fileMatch": [

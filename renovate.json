@@ -6,7 +6,7 @@
     ":dependencyDashboard",
     ":semanticCommits",
     ":timezone(Europe/Amsterdam)",
-    "github>guilhermewolf/atoca.house//.github/renovate/grafanaDashboards.json5"
+    "github>guilhermewolf/atoca.house//.github/renovate/grafanaDashboards.json"
   ],
   "docker-compose": {
     "fileMatch": [

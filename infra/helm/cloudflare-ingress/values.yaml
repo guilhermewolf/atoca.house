@@ -9,7 +9,7 @@ replicaCount: 2
 cloudflared:
   image:
     repository: cloudflare/cloudflared
-    tag: 2024.6.1
+    tag: 2024.12.2
   replicaCount: 2
 
 cloudflaredServiceMonitor:

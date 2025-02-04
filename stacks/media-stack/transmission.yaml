@@ -2,7 +2,7 @@ version: "3.8" # Updated version
 
 services:
   transmission:
-    image: ghcr.io/linuxserver/transmission:4.0.6
+    image: ghcr.io/linuxserver/transmission:2021.11.18
     network_mode: "container:GlueTun-Nord"
     container_name: Transmission-Nord
     environment:

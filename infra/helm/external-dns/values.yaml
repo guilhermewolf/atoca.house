@@ -7,6 +7,9 @@ ingressClassFilters: ["nginx"]
 rbac:
   create: true
 
+crd:
+  create: true
+
 provider: cloudflare
 
 sources:
@@ -18,10 +21,9 @@ cloudflare:
   email: "guilhermewolf@outlook.com"
   proxied: false
 
-
 extraArgs:
   webhook-provider-url: http://localhost:8888
-  
+
 metrics:
   enabled: true
   serviceMonitor:

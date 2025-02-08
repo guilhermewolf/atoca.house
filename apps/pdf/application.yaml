@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pdf
+  namespace: argocd
+spec:
+  destination:
+    namespace: pdf
+    server: https://kubernetes.default.svc
+  project: applications
+  sources:
+    - chart: stirling-pdf-chart
+      repoURL: https://stirling-tools.github.io/Stirling-PDF-chart
+      targetRevision: 1.5.0
+      helm:
+        releaseName: pdf
+        valueFiles:
+        - $values/apps/pdf/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -1,0 +1,28 @@
+image:
+    registry: ghcr.io
+    repository: stirling-tools/stirling-pdf
+    tag: 0.41.0
+envs:
+  - name: SYSTEM_DEFAULTLOCALE
+    value: nl-NL
+  - name: SYSTEM_SHOWUPDATE
+    value: "true"
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: "cloudflare-prod"
+  hosts:
+  - name: pdf.atoca.house
+    path: /
+    tls: true
+    tlsSecret: pdf-tls
+resources:
+  requests:
+    cpu: 10m
+    memory: 600Mi
+probes:
+  liveness:
+    initialDelaySeconds: 30
+  readiness:
+    initialDelaySeconds: 30

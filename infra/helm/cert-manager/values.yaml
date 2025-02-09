@@ -3,6 +3,10 @@ crds:
 serviceAccount:
   create: true
   name: cert-manager
+extraArgs:
+  - --enable-certificate-owner-ref=true
+  - --dns01-recursive-nameservers-only
+  - --dns01-recursive-nameservers=8.8.8.8:53,1.1.1.1:53
 global:
   rbac:
     create: true

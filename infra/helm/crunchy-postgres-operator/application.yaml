@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crunchy-postgres-operator
+  namespace: argocd
+spec:
+  destination:
+    namespace: crunchy-postgres-operator
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - chart: pgo
+      repoURL: registry.developers.crunchydata.com/crunchydata
+      targetRevision: 5.7.3
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

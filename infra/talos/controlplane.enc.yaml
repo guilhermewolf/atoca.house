@@ -35,6 +35,11 @@ machine:
       - 8.8.4.4
       - 8.8.8.8
       - 1.1.1.1
+  time:
+    servers:
+        - time.cloudflare.com
+        - 1.pool.ntp.org
+        - 2.pool.ntp.org
   install:
     disk: /dev/mmcblk0
     image: ghcr.io/siderolabs/installer:v1.9.3

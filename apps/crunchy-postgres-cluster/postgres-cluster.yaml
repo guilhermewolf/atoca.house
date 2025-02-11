@@ -16,7 +16,6 @@ spec:
     metadata:
       annotations:
         external-dns.alpha.kubernetes.io/hostname: postgres.atoca.house
-        #lbipam.cilium.io/ips: 10.1.1.134
 
   # patroni: # turn on sync writes to at least 1 other replica
   #   dynamicConfiguration:
@@ -59,66 +58,57 @@ spec:
       password:
         type: AlphaNumeric
     # Applications
-    # - name: miniflux
-    #   databases:
-    #     - miniflux
-    #   password:
-    #     type: AlphaNumeric
-    # - name: piped
-    #   databases:
-    #     - piped
-    #   password:
-    #     type: AlphaNumeric
+    - name: terraform
+      databases:
+        - terraform
+      password:
+        type: AlphaNumeric
 
-  # backups:
-  #   pgbackrest:
-  #     configuration: &backupConfig
-  #       - secret:
-  #           name: crunchy-postgres-secret
-  #     global: &backupFlag
-  #       compress-type: "bz2"
-  #       compress-level: "9"
-  #       # Minio
-  #       repo1-bundle: "y"
-  #       repo1-retention-full: "30" # days
-  #       repo1-retention-full-type: "time"
-  #       # R2
-  #       repo2-block: "y"
-  #       repo2-bundle: "y"
-  #       repo2-path: /crunchy-pgo
-  #       repo2-retention-full: "7" # days
-  #       repo2-retention-full-type: time
-  #       repo2-s3-uri-style: path
-  #     manual:
-  #       repoName: repo1
-  #       options:
-  #         - --type=full
-  #     metadata:
-  #       labels:
-  #         app.kubernetes.io/name: crunchy-postgres-backup
-  #     repos:
-  #       - name: repo1 # NFS
-  #         volume: &nfs
-  #           volumeClaimSpec:
-  #             storageClassName: postgres-nfs
-  #             volumeName: postgres-nfs
-  #             accessModes:
-  #               - ReadWriteMany
-  #             resources:
-  #               requests:
-  #                 storage: "1Mi"
-  #         schedules:
-  #           full: "0 1 * * 0" # Sunday at 01:00
-  #           differential: "0 1 * * 1-6" # Mon-Sat at 01:00
-  #           incremental: "0 2-23 * * *" # Every hour except 01:00
-  #       - name: repo2 # R2
-  #         s3: &r2
-  #           bucket: "crunchy-postgres"
-  #           endpoint: ${CPGO_R2_ENDPOINT}
-  #           region: "us-east-1"
-  #         schedules:
-  #           full: "0 2 * * 0" # Sunday at 02:00
-  #           incremental: "0 2 * * 1-6/2" # Mon-Sat at 02:00, every 2nd day
+  backups:
+    pgbackrest:
+      configuration: &backupConfig
+        - secret:
+            name: pgbackrest-config
+      global: &backupFlag
+        compress-type: "bz2"
+        compress-level: "9"
+        # Minio
+        repo1-bundle: "y"
+        repo1-path: /crunchy-postgres
+        repo1-retention-full: "30" # days
+        repo1-retention-full-type: "time"
+        # R2
+        repo2-block: "y"
+        repo2-bundle: "y"
+        repo2-path: /rpi-k8s-crunchy-postgres
+        repo2-retention-full: "7" # days
+        repo2-retention-full-type: time
+        repo2-s3-uri-style: path
+      manual:
+        repoName: repo1
+        options:
+          - --type=full
+      metadata:
+        labels:
+          app.kubernetes.io/name: crunchy-postgres-backup
+      repos:
+        - name: repo1 # Minio
+          s3: &minio
+            bucket: "crunchy-postgres"
+            endpoint: ${CPGO_MINIO_ENDPOINT}
+            region: "eu-west-1"
+          schedules:
+            full: "0 1 * * 0" # Sunday at 01:00
+            differential: "0 1 * * 1-6" # Mon-Sat at 01:00
+            incremental: "0 2-23 * * *" # Every hour except 01:00
+        - name: repo2 # R2
+          s3: &r2
+            bucket: "crunchy-postgres"
+            endpoint: ${CPGO_R2_ENDPOINT}
+            region: "us-east-1"
+          schedules:
+            full: "0 2 * * 0" # Sunday at 02:00
+            incremental: "0 2 * * 1-6/2" # Mon-Sat at 02:00, every 2nd day
 
   # dataSource:
   #   pgbackrest:
@@ -127,7 +117,7 @@ spec:
   #     global: *backupFlag
   #     repo:
   #       name: "repo1"
-  #       volume: *nfs
+  #       s3: *minio
 
   monitoring:
     pgmonitor:

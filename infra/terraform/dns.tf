@@ -1,7 +1,6 @@
 # Define local variables
 locals {
   subdomains = [
-    "actual",
     "bazar",
     "compartilhado",
     "jellyfin",

@@ -10,7 +10,7 @@ spec:
     repoURL: 'https://github.com/guilhermewolf/atoca.house'
     targetRevision: HEAD
   destination:
-    namespace: default
+    namespace: crunchy-postgres-cluster
     server: 'https://kubernetes.default.svc'
   syncPolicy:
     syncOptions:

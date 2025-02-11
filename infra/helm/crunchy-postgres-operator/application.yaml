@@ -12,6 +12,11 @@ spec:
     - chart: pgo
       repoURL: registry.developers.crunchydata.com/crunchydata
       targetRevision: 5.7.3
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: infra/helm/crunchy-postgres-operator/
+      directory:
+        exclude: '{application.yaml}'
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

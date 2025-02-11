@@ -15,3 +15,24 @@ spec:
             name: onepassword-token
             key: token
             namespace: one-password
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: kubernetes-secrets
+spec:
+  provider:
+    kubernetes:
+      remoteNamespace: crunchy-postgres-cluster
+      server:
+        url: https://kubernetes.default.svc
+        caProvider:
+          type: ConfigMap
+          name: kube-root-ca.crt
+          key: ca.crt
+          namespace: default
+      auth:
+        serviceAccount:
+          name: external-secrets-sa
+          namespace: external-secrets
+

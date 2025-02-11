@@ -13,7 +13,9 @@ template:
       - name: runner
         image: ghcr.io/guilhermewolf/arm-actions-runner/arm-actions-runner:2.322.0
         command: ["/home/runner/run.sh"]
-
+        envFrom:
+          - secretRef:
+              name: postgres-pguser-terraform
 metrics:
   controllerManagerAddr: ":8080"
   listenerAddr: ":8080"

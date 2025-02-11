@@ -17,7 +17,9 @@ locals {
     "sonar",
     "tandoor",
     "transmission",
-    "wyl"
+    "wyl",
+    "test",
+    "test2"
   ]
   domain = "atoca.house"
 }

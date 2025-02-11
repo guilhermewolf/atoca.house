@@ -4,51 +4,7 @@ kind: PostgresCluster
 metadata:
   name: &name postgres
 spec:
-  postgresVersion: 16
-
-  metadata:
-    labels:
-      crunchy-userinit.ramblurr.github.com/enabled: "true"
-      crunchy-userinit.ramblurr.github.com/superuser: "postgres"
-
-  service:
-    type: LoadBalancer
-    metadata:
-      annotations:
-        external-dns.alpha.kubernetes.io/hostname: postgres.atoca.house
-
-  # patroni: # turn on sync writes to at least 1 other replica
-  #   dynamicConfiguration:
-  #     synchronous_mode: true
-  #     postgresql:
-  #       max_wal_size: 5GB
-  #       synchronous_commit: "on"
-  #       pg_hba:
-  #         - hostnossl all all 10.244.0.0/16 md5 # Needed because dbman does not support SSL yet
-  #         - hostssl all all all md5
-
-  instances:
-    - name: postgres
-      metadata:
-        labels:
-          app.kubernetes.io/name: crunchy-postgres
-      replicas: &replica 2
-      dataVolumeClaimSpec:
-        storageClassName: longhorn
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 10Gi
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: "kubernetes.io/hostname"
-          whenUnsatisfiable: "DoNotSchedule"
-          labelSelector:
-            matchLabels:
-              postgres-operator.crunchydata.com/cluster: *name
-              postgres-operator.crunchydata.com/data: postgres
-
+  postgresVersion: 17
   users:
     # Superuser
     - name: postgres
@@ -63,6 +19,26 @@ spec:
         - terraform
       password:
         type: AlphaNumeric
+
+  instances:
+    - name: postgres
+      replicas: &replica 2
+      dataVolumeClaimSpec:
+        storageClassName: longhorn
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  postgres-operator.crunchydata.com/cluster: *name
 
   backups:
     pgbackrest:
@@ -119,32 +95,26 @@ spec:
   #       name: "repo1"
   #       s3: *minio
 
-  monitoring:
-    pgmonitor:
-      exporter:
-        resources:
-          requests:
-            cpu: 10m
-            memory: 64M
-          limits:
-            memory: 512M
+  # monitoring:
+  #   pgmonitor:
+  #     exporter:
+  #       resources:
+  #         requests:
+  #           cpu: 10m
+  #           memory: 64M
+  #         limits:
+  #           memory: 512M
 
   proxy:
     pgBouncer:
       port: 5432
       replicas: *replica
-      metadata:
-        labels:
-          app.kubernetes.io/name: crunchy-postgres-pgbouncer
-      config:
-        global:
-          pool_mode: "transaction" # pgBouncer is set to transaction for Authentik. Grafana requires session https://github.com/grafana/grafana/issues/74260#issuecomment-1702795311. Everything else is happy with transaction
-          client_tls_sslmode: prefer
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: "kubernetes.io/hostname"
-          whenUnsatisfiable: "DoNotSchedule"
-          labelSelector:
-            matchLabels:
-              postgres-operator.crunchydata.com/cluster: *name
-              postgres-operator.crunchydata.com/role: "pgbouncer"
+      podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  postgres-operator.crunchydata.com/cluster: *name
+                  postgres-operator.crunchydata.com/role: pgbouncer

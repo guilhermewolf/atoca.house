@@ -24,7 +24,6 @@ jobs:
       TF_VAR_account_id: ${{ secrets.TF_VAR_account_id }}
       TF_VAR_domain: ${{ secrets.TF_VAR_domain }}
       TF_VAR_npm_ip: ${{ secrets.TF_VAR_npm_ip }}
-      PG_CONN_STR: ${{ secrets.PG_CONN_STR }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

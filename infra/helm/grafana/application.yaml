@@ -11,7 +11,7 @@ spec:
   sources:
     - chart: grafana
       repoURL: https://grafana.github.io/helm-charts
-      targetRevision: 8.9.0
+      targetRevision: 8.10.0
       helm:
         valueFiles:
         - $values/infra/helm/grafana/values.yaml

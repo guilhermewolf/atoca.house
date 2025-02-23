@@ -3,8 +3,16 @@ apiVersion: postgres-operator.crunchydata.com/v1beta1
 kind: PostgresCluster
 metadata:
   name: &name postgres
+  annotations:
+    postgres-operator.crunchydata.com/autoCreateUserSchema: true
 spec:
   postgresVersion: 17
+
+  metadata:
+    labels:
+      crunchy-userinit.ramblurr.github.com/enabled: "true"
+      crunchy-userinit.ramblurr.github.com/superuser: "postgres"
+
   users:
     # Superuser
     - name: postgres

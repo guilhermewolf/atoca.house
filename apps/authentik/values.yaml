@@ -1,0 +1,42 @@
+global:
+  deploymentAnnotations:
+    secret.reloader.stakater.com/reload: &secret authentik-secret
+  env:
+    - name: AUTHENTIK_SESSION_STORAGE
+      value: db
+  envFrom:
+    - secretRef:
+        name: *secret
+server:
+  replicas: 1
+  initContainers:
+    - name: init-db
+      image: ghcr.io/onedr0p/postgres-init:16.8@sha256:31864a9350264f10f25dae1e90db3c6705a9bbb90644a28600afe197b3bf917f
+      envFrom:
+        - secretRef:
+            name: *secret
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+          cert-manager.io/cluster-issuer: cloudflare-prod
+      hosts:
+          - authentik.atoca.house
+      paths:
+          - "/"
+      tls:
+        - hosts:
+            - authentik.atoca.house
+          secretName: authentik-tls
+worker:
+  replicas: 1
+authentik:
+  log_level: debug
+  error_reporting:
+    enabled: true
+redis:
+    enabled: true

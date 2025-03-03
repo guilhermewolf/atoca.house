@@ -35,14 +35,9 @@ machine:
       - 8.8.4.4
       - 8.8.8.8
       - 1.1.1.1
-  time:
-    servers:
-        - time.cloudflare.com
-        - 1.pool.ntp.org
-        - 2.pool.ntp.org
   install:
     disk: /dev/mmcblk0
-    image: ghcr.io/siderolabs/installer:v1.9.3
+    image: ghcr.io/siderolabs/installer:v1.9.4
     bootloader: true
     wipe: false
   files:
@@ -55,6 +50,11 @@ machine:
       permissions: 420
       path: /etc/nfsmount.conf
       op: overwrite
+    - path: /etc/cri/conf.d/20-customization.part
+      op: create
+      content: |
+        [plugins."io.containerd.cri.v1.images"]
+          discard_unpacked_layers = false
   sysctls:
     fs.inotify.max_queued_events: "16384"
     fs.inotify.max_user_instances: "1024"

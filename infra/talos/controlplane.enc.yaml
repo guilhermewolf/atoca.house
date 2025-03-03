@@ -39,6 +39,10 @@ machine:
     disk: /dev/mmcblk0
     image: ghcr.io/siderolabs/installer:v1.9.4
     wipe: false
+  time:
+    servers:
+        - 192.168.178.22
+        - time.cloudflare.com
   files:
     - content: |
         [ NFSMount_Global_Options ]

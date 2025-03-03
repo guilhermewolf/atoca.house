@@ -18,7 +18,7 @@
 
   tasks:
     - name: Create age config directory
-      file:
+      ansible.builtin.file:
         path: "{{ age_config_dir }}"
         state: directory
         mode: '0700'
@@ -29,13 +29,9 @@
         creates: "{{ age_config_dir }}/age.key"
 
     - name: Set permissions for age key
-      file:
+      ansible.builtin.file:
         path: "{{ age_config_dir }}/age.key"
         mode: '0600'
-
-    - name: Set SOPS_AGE_KEY_FILE environment variable
-      ansible.builtin.environment:
-        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
     - name: Decrypt Talos controlplane file
       shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/controlplane.enc.yaml > {{ talos_dir }}/controlplane.yaml"
@@ -59,8 +55,8 @@
 
     - name: Wait for Kubernetes controlplane to be ready
       shell: |
-        talosctl kubeconfig -n {{ control_plane_node }} --generate-only > /tmp/kubeconfig
-        kubectl --kubeconfig=/tmp/kubeconfig get nodes --selector node-role.kubernetes.io/control-plane -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' | grep True
+        talosctl kubeconfig -f -n {{ control_plane_node }}
+        kubectl --kubeconfig={{ lookup('env', 'HOME') }}//kubeconfig get nodes --selector node-role.kubernetes.io/control-plane -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' | grep True
       retries: 15
       delay: 60
       register: kube_ready
@@ -100,7 +96,7 @@
       shell: "talosctl kubeconfig -f -n {{ control_plane_node }}"
 
     - name: Remove decrypted Talos YAML files
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       loop:

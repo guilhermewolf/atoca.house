@@ -40,6 +40,10 @@ machine:
     image: ghcr.io/siderolabs/installer:v1.9.4
     bootloader: true
     wipe: false
+  time:
+    servers:
+        - 192.168.178.22
+        - time.cloudflare.com
   files:
     - content: |
         [ NFSMount_Global_Options ]

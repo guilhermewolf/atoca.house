@@ -43,12 +43,9 @@
     - name: Apply Talos controlplane config
       shell: "talosctl apply-config --insecure --nodes {{ control_plane_node }} --file {{ talos_dir }}/controlplane.yaml"
 
-    - name: Wait for controlplane node to be ready
-      shell: "talosctl health --nodes {{ control_plane_node }}"
-      retries: 10
-      delay: 30
-      register: health_check
-      until: health_check.rc == 0
+    - name: Wait for 20 seconds
+      ansible.builtin.pause:
+        seconds: 20
 
     - name: Bootstrap Talos controlplane
       shell: "talosctl bootstrap -n {{ control_plane_node }}"

@@ -22,15 +22,27 @@ deschedulerPolicy:
             constraints:
               - DoNotSchedule
               - ScheduleAnyway
+        - name: LowNodeUtilization
+          args:
+            thresholds:
+              cpu: 30  # Nodes with less than 30% CPU usage are considered underutilized
+              memory: 30  # Nodes with less than 30% memory usage are considered underutilized
+              pods: 30  # Nodes with less than 30% pod capacity are considered underutilized
+            targetThresholds:
+              cpu: 50  # Try to balance CPU usage to at least 50%
+              memory: 50  # Try to balance memory usage to at least 50%
+              pods: 50  # Try to balance pod distribution to at least 50%
       plugins:
         balance:
           enabled:
             - RemovePodsViolatingTopologySpreadConstraint
+            - LowNodeUtilization  # Enables pod redistribution based on resource usage
         deschedule:
           enabled:
             - RemovePodsViolatingNodeAffinity
             - RemovePodsViolatingNodeTaints
             - RemovePodsViolatingInterPodAntiAffinity
+            - LowNodeUtilization  # Ensures underutilized nodes are balanced
 
 service:
   enabled: true

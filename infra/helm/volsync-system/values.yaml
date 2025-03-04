@@ -3,7 +3,7 @@ metrics:
   disableAuth: true
 image:
   repository: &image ghcr.io/onedr0p/volsync
-  tag: &tag 0.11.0
+  tag: &tag 0.12.0
 restic:
   repository: *image
   tag: *tag

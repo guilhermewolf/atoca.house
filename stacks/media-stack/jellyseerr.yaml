@@ -16,7 +16,11 @@ services:
       - /mnt/user/appdata/jellyseerr:/app/config
     networks:
       - jellyseerr_network
-
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
 networks:
   jellyseerr_network:
     driver: bridge

@@ -7,8 +7,8 @@ controllers:
     containers:
       jackett:
         image:
-          repository: ghcr.io/linuxserver/jackett
-          tag: 0.22.671
+          repository: linuxserver/jackett
+          tag: 0.22.1507
           pullPolicy: IfNotPresent
         env:
           - name: TZ

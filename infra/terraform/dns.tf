@@ -6,6 +6,7 @@ locals {
     "jellyfin",
     "jellyseerr",
     "kuma",
+    "kvm",
     "minio",
     "minio-data",
     "n8n",

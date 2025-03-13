@@ -23,9 +23,10 @@ machine:
   network:
     hostname: rpi-k8s-3
     interfaces:
-      - interface: eth0
+      - interface: end0
         addresses:
-          - 192.168.178.202/24
+          - 192.168.178.203/24
+        mtu: 1500
         routes:
           - network: 0.0.0.0/0
             gateway: 192.168.178.1

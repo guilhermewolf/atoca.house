@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backup:
+    image: mazzolino/restic
+    restart: unless-stopped
+    container_name: restic-backup
+    environment:
+      RUN_ON_STARTUP: "true"
+      BACKUP_CRON: "0 30 1 * * *"
+      RESTIC_REPOSITORY: $RESTIC_REPOSITORY #s3:s3.amazonaws.com/bucketname
+      RESTIC_PASSWORD: $RESTIC_PASSWORD #insert-here
+      RESTIC_BACKUP_SOURCES: /appdata
+      RESTIC_COMPRESSION: max
+      RESTIC_PACK_SIZE: 64
+      RESTIC_BACKUP_ARGS: >-
+        --cleanup-cache
+      RESTIC_FORGET_ARGS: >-
+        --keep-last 3
+        --keep-daily 3
+        --keep-weekly 1
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      TZ: Europe/Amsterdam
+    volumes:
+      - /mnt/user/appdata:/appdata:ro
+
+  prune:
+    image: mazzolino/restic
+    container_name: restic-prune
+    restart: unless-stopped
+    environment:
+      SKIP_INIT: "true"
+      RUN_ON_STARTUP: "false"
+      # Prune at 4am on the 20th day of each month
+      PRUNE_CRON: "0 0 4 20 * *"
+      RESTIC_REPOSITORY: $RESTIC_REPOSITORY
+      RESTIC_PASSWORD: $RESTIC_PASSWORD
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      TZ: Europe/Amsterdam

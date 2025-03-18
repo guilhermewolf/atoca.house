@@ -1,11 +1,15 @@
 controllers:
-  docuseal:    
+  docuseal:
+    annotations:
+      reloader.stakater.com/auto: "true"
     containers:
       docuseal:
         image:
           repository: docuseal/docuseal
           tag: 1.9.5
           pullPolicy: IfNotPresent
+        env:
+          TZ: Europe/Amsterdam
         envFrom:
           - secretRef:
               name: docuseal-secrets

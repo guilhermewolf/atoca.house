@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   jellyseerr:
-    image: fallenbagel/jellyseerr:2.5.0
+    image: fallenbagel/jellyseerr:2.5.1
     container_name: jellyseerr
     restart: unless-stopped
     ports:

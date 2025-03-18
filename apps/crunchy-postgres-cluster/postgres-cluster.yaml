@@ -32,11 +32,7 @@ spec:
         - authentik
       password:
         type: AlphaNumeric
-    - name: docuseal
-      databases:
-        - docuseal
-      password:
-        type: AlphaNumeric
+
 
   instances:
     - name: postgres

@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  music-assistant:
+    image: ghcr.io/music-assistant/server:2.4.4
+    container_name: music-assistant
+    network_mode: host
+    volumes:
+      - /mnt/user/appdata/music-assistant:/data
+    privileged: true
+    restart: unless-stopped

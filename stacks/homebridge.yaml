@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  homebridge:
+    image: homebridge/homebridge:2025-02-26
+    container_name: homebridge
+    network_mode: host
+    environment:
+      - HOMEBRIDGE_CONFIG_UI=1
+      - HOMEBRIDGE_CONFIG_UI_PORT=8581
+      - PUID=99
+      - PGID=100
+      - UMASK=0000
+    volumes:
+      - /mnt/user/appdata/homebridge:/homebridge
+    restart: unless-stopped

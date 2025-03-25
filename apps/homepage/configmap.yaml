@@ -57,9 +57,16 @@ data:
         nodes:
           cpu: true
           memory: true
-          show: false
+          show: true
           showLabel: true
-
+    - datetime:
+        text_size: xs
+        locale: en-GB
+        format:
+          dateStyle: short
+          timeStyle: short
+          hourCycle: h23
+          timeZone: Europe/Amsterdam
   services.yaml: |
     - Administration:
         - AdGuard Home:
@@ -216,3 +223,4 @@ data:
 
   kubernetes.yaml: |
     mode: cluster
+    ingress: true

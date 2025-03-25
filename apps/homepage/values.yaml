@@ -11,6 +11,8 @@ controllers:
           tag: v1.0.4
         env:
           TZ: Europe/Amsterdam
+          LOG_TARGETS: stdout
+          HOMEPAGE_ALLOWED_HOSTS: homepage.atoca.house
         envFrom:
           - secretRef:
               name: homepage-secrets

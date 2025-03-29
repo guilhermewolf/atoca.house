@@ -17,8 +17,8 @@ controllers:
             cpu: 500m
             memory: 2Gi
           limits:
-            cpu: 4
-            memory: 4Gi
+            cpu: 2
+            memory: 6Gi
 service:
   wyoming-whisper:
     controller: wyoming-whisper

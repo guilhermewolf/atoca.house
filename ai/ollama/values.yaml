@@ -23,8 +23,8 @@ controllers:
             cpu: 500m
             memory: 2Gi
           limits:
-            cpu: 12
-            memory: 28Gi
+            cpu: 6
+            memory: 20Gi
 service:
   ollama:
     controller: ollama

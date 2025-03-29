@@ -1,0 +1,47 @@
+controllers:
+  openweb-ui:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      openweb-ui:
+        image:
+          repository: ghcr.io/open-webui/open-webui
+          tag: 0.5@sha256:92b238e6c27dc6dacda7769062444044ed71b78628e0a9810ba5cea25e0e1ba0
+        env:
+          OLLAMA_API_BASE_URL: http://ollama.ollama.svc.cluster.local:11434/api
+        resources:
+          requests:
+            cpu: 200m
+          limits:
+            memory: 2Gi
+
+service:
+  openweb-ui:
+    controller: *app
+    ports:
+      http:
+        port: &port 8080
+
+ingress:
+  openweb-ui:
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+    hosts:
+      - host: openweb-ui.atoca.house
+        paths:
+          - path: /
+            pathType: Prefix
+            service:
+              identifier: openweb-ui
+              port: http
+    tls:
+      - hosts:
+          - openweb-ui.atoca.house
+        secretName: openweb-ui-tls
+
+persistence:
+  config:
+    existingClaim: *app
+    globalMounts:
+      - path: /app/backend/data

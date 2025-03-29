@@ -1,0 +1,52 @@
+controllers:
+  ollama:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      ollama:
+        image:
+          repository: docker.io/ollama/ollama
+          tag: 0.6.2
+        env:
+          - name: OLLAMA_HOST
+            value: 0.0.0.0
+          - name: OLLAMA_ORIGINS
+            value: "*"
+          - name: OLLAMA_MODELS
+            value: &modelPath "/models"
+          - name: OLLAMA_KEEP_ALIVE
+            value: "24h"
+          - name: OLLAMA_LOAD_TIMEOUT
+            value: "600"
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: 12
+            memory: 28Gi
+service:
+  ollama:
+    controller: ollama
+    ports:
+      http:
+        port: 11434
+
+persistence:
+  ollama-models:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    globalMounts:
+      - path: *modelPath
+
+  ollama-config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /root/.ollama

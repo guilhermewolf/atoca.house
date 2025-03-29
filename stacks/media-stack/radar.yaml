@@ -11,7 +11,7 @@ services:
     volumes:
       - /mnt/user/media-files/movies:/movies
       - /mnt/user/media-downloads/complete:/downloads/complete
-      - /mnt/cache/appdata/radarr:/config
+      - /mnt/user/appdata/radarr:/config
     environment:
       - PUID=99
       - PGID=100

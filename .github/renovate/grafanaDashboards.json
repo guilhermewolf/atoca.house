@@ -1,21 +1,25 @@
 {
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "customDatasources": {
-      "grafana-dashboards": {
-        "defaultRegistryUrlTemplate": "https://grafana.com/api/dashboards/{{packageName}}",
-        "format": "json",
-        "transformTemplates": ["{\"releases\":[{\"version\": $string(revision)}]}"]
-      }
-    },
-    "customManagers": [
-      {
-        "customType": "regex",
-        "description": ["Process Grafana dashboards"],
-        "fileMatch": ["(^|/)values/.+\\.ya?ml$"],
-        "matchStrings": ["depName=\"(?<depName>.*)\"\\n(?<indentation>\\s+)gnetId: (?<packageName>\\d+)\\n.+revision: (?<currentValue>\\d+)"],
-        "autoReplaceStringTemplate": "depName=\"{{{depName}}}\"\n{{{indentation}}}gnetId: {{{packageName}}}\n{{{indentation}}}revision: {{{newValue}}}",
-        "datasourceTemplate": "custom.grafana-dashboards",
-        "versioningTemplate": "regex:^(?<major>\\d+)$"
-      }
-    ]
-  }
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customDatasources": {
+    "grafana-dashboards": {
+      "defaultRegistryUrlTemplate": "https://grafana.com/api/dashboards/{{packageName}}",
+      "format": "json",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\": $string(revision)}]}"
+      ]
+    }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": ["Process Grafana dashboards"],
+      "fileMatch": ["^infra/helm/grafana/values\\.ya?ml$"],
+      "matchStrings": [
+        "# renovate: depName=\"(?<depName>.*?)\"\\n\\s*gnetId: (?<packageName>\\d+)\\n\\s*revision: (?<currentValue>\\d+)"
+      ],
+      "autoReplaceStringTemplate": "  # renovate: depName=\"{{{depName}}}\"\n  gnetId: {{{packageName}}}\n  revision: {{{newValue}}}",
+      "datasourceTemplate": "custom.grafana-dashboards",
+      "versioningTemplate": "regex:^(?<major>\\d+)$"
+    }
+  ]
+}

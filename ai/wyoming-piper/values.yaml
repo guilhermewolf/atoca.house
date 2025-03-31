@@ -22,6 +22,7 @@ controllers:
 service:
   wyoming-piper:
     controller: wyoming-piper
+    type: LoadBalancer
     ports:
       whisper:
         enabled: true

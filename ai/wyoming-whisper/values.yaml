@@ -24,6 +24,7 @@ controllers:
 service:
   wyoming-whisper:
     controller: wyoming-whisper
+    type: LoadBalancer
     ports:
       whisper:
         enabled: true

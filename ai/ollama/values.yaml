@@ -1,67 +1,49 @@
-controllers:
-  ollama:
-    annotations:
-      reloader.stakater.com/auto: "true"
-    pod:
-      nodeSelector:
-        kubernetes.io/hostname: rpi-k8s-5
-    containers:
-      ollama:
-        image:
-          repository: docker.io/ollama/ollama
-          tag: 0.6.2
-        env:
-          - name: OLLAMA_HOST
-            value: "0.0.0.0"
-          - name: OLLAMA_ORIGINS
-            value: "*"
-          - name: OLLAMA_MODELS
-            value: "/models"
-          - name: OLLAMA_KEEP_ALIVE
-            value: "24h"
-          - name: OLLAMA_LOAD_TIMEOUT
-            value: "600"
-          - name: OLLAMA_MODEL
-            value: "mistral:7b-instruct-q4_K_M"
-          - name: OLLAMA_CONTEXT_LENGTH
-            value: "2048"
-          - name: OLLAMA_BATCH_SIZE
-            value: "64"
-          - name: OLLAMA_THREADS
-            value: "6"
-          - name: OLLAMA_NUM_PARALLEL
-            value: "6"
-          - name: OLLAMA_NO_MMAP
-            value: "false"
-        resources:
-          requests:
-            cpu: 500m
-            memory: 2Gi
-          limits:
-            cpu: 6
-            memory: 20Gi
-service:
-  ollama:
-    controller: ollama
-    ports:
-      http:
-        port: 11434
+ollama:
+  gpu:
+    enabled: false
+  models:
+    pull:
+      - llama3:8b-instruct-q4_K_M
+    run:
+      - llama3:8b-instruct-q4_K_M
+  nodeSelector:
+    kubernetes.io/hostname: rpi-k8s-5
 
-persistence:
-  ollama-models:
-    enabled: true
-    type: persistentVolumeClaim
-    storageClass: longhorn
-    accessMode: ReadWriteOnce
-    size: 20Gi
-    globalMounts:
-      - path: /models
+extraEnv:
+  - name: OLLAMA_DEBUG
+    value: "1"
+  - name: OLLAMA_NUM_PARALLEL
+    value: "12"
+  - name: OLLAMA_NUM_CTX
+    value: "4096"
+  - name: OLLAMA_NUM_THREADS
+    value: "12"
+  - name: OLLAMA_NUM_BATCH
+    value: "512"
+  - name: OLLAMA_KEEP_ALIVE
+    value: "5m"
 
-  ollama-config:
-    enabled: true
-    type: persistentVolumeClaim
-    storageClass: longhorn
-    accessMode: ReadWriteOnce
-    size: 1Gi
-    globalMounts:
-      - path: /root/.ollama
+podAnnotations:
+  hugepages-2Mi: "1Gi"
+
+resources:
+  requests:
+    cpu: "1"
+    memory: "512Mi"
+  limits:
+    cpu: "12"
+    memory: "16Gi"
+# ingress:
+#   enabled: true
+#   className: nginx
+#   annotations:
+#     cert-manager.io/cluster-issuer: "cloudflare-prod"
+#   hosts:
+#     - host: ollama.atoca.house
+#       paths:
+#         - path: /
+#           pathType: Prefix
+#   tls:
+#     - secretName: ollama-tls
+#       hosts:
+#         - ollama.atoca.house

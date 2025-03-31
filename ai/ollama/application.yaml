@@ -9,9 +9,9 @@ spec:
     server: https://kubernetes.default.svc
   project: applications
   sources:
-    - chart: app-template
-      repoURL: https://bjw-s.github.io/helm-charts/
-      targetRevision: 3.4.0
+    - chart: ollama
+      repoURL: https://otwld.github.io/ollama-helm/
+      targetRevision: 1.12.0
       helm:
         releaseName: ollama
         valueFiles:
@@ -19,11 +19,6 @@ spec:
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
-    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
-      targetRevision: HEAD
-      path: ai/ollama/
-      directory:
-        exclude: '{application.yaml,values.yaml}'
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

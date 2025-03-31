@@ -1,0 +1,128 @@
+version: v1alpha1
+debug: false
+persist: true
+machine:
+  type: worker
+  token: ENC[AES256_GCM,data:9QqIGJWN8iN4izOhqqOAFAFjMtySqXI=,iv:BkTrRJnYQBN8VO6fiaeeyLX9s0PXX5i1MRrUcOAeb2c=,tag:yPfvszSF50CzZovbx9iM8Q==,type:str]
+  ca:
+    crt: ENC[AES256_GCM,data:YugwZrN8D39ZBd75uu5le1JoAJdQ4LZNVpgmwGvu6U3mJGKNNcC8rVGJl+zW1VcaYeTlzg6k2CAC1f4h0ISLYy9IS5Kv9cS7KvpzanZs2T7qzl42PFEYa1zGYnOouEcrPxplYX+AJBequ+nsr7J4BwE/5vXQZy53kws7RwFTLtFpofa6htfCL1OX46SSsl2DxyDL9bOya5DbKaqsWaBVj5qq2naehrFkl13wbYsog0xKPCRPqj4qfs3Y20+5cqInlT0KeEI9LiOJ1yH8DxXW4NLFEkbkSYZ/Y4MpWiDMeOX8iFTlB+94CYjU3vgXdmTPONTkuPca6wViYwj4fRgiPK/cnrBFmlRhiXrTDRUzQfw7FLEmAOW0ZI2NcsR0Mbe8962xg1RQzE8zOwS369qfAavTnNJQc3kDCFZxrgXdc6WiNEZn+a6UU9ad9OvPSbeYI4qFjVAZJbQDnuM6fXtKlK3AeFWVsaHN2pLXAiQlp3jjYU/7HMT8DVJk4xcWRwnbjHtheffNuphV3X6vQyDKhTBvDAKL3jNKsAou/oPwF9CyuHPf0Eopboy8+xYVSjjk7nf69/SvE6m5jIn2rQ+oh+e0EZv1yf4VxJd3x93xsYmqx6V1YzJczAcXkH+3DS5vqS5sjCq1G2Sm8l9HF9JHVAf3FMrMcMENhpfKQHXyaPIKq4J6WZjfYEa/HXaJ+2Y0GVhf2Y+AVAzoVYvqz7DqOIt5xBruWdtc5QmXEDHPuqz5edMy4yia8fHLLDGC132Tr+3Tt1oQeP6dT0ilHAwuB79dUtkI/6I/XzlbasPLKiPTDxtD4zqCj/e0Woh3Dp1VKQmDZXkwy3stBMcSOzxE+rMJ6vG8vurGBCLjqyUzkeWnxChk,iv:5+hIMz8yw4QY9OtHbNAHBSXkmjAIA4mDW6GqD3IWflw=,tag:DAR6ZHGWePP1MMXEAkernQ==,type:str]
+    key: ""
+  certSANs: []
+  kubelet:
+    image: ghcr.io/siderolabs/kubelet:v1.32.1
+    defaultRuntimeSeccompProfileEnabled: true
+    disableManifestsDirectory: true
+    extraMounts:
+      - destination: /var/lib/longhorn
+        type: bind
+        source: /var/lib/longhorn
+        options:
+          - bind
+          - rshared
+          - rw
+  network:
+    hostname: rpi-k8s-5
+    interfaces:
+      - interface: enp2s0
+        addresses:
+          - 192.168.178.205/24
+        mtu: 1500
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 192.168.178.1
+        dhcp: false
+    nameservers:
+      - 192.168.178.22
+      - 8.8.4.4
+      - 8.8.8.8
+      - 1.1.1.1
+  install:
+    disk: /dev/nvme0n1
+    image: factory.talos.dev/installer/613e1592b2da41ae5e265e8789429f22e121aab91cb4deb6bc3c0b6262961245:v1.9.4
+    bootloader: true
+    wipe: false
+    extraKernelArgs:
+      - intel_pstate=disable
+      - cpufreq.default_governor=performance
+      - systemd.unified_cgroup_hierarchy=1
+      - isolcpus=2-5
+  time:
+    servers:
+      - 192.168.178.22
+      - time.cloudflare.com
+  files:
+    - content: |
+        [ NFSMount_Global_Options ]
+        nfsvers=4.2
+        rsize=65536
+        wsize=65536
+        nconnect=4
+      permissions: 420
+      path: /etc/nfsmount.conf
+      op: overwrite
+    - path: /etc/cri/conf.d/20-customization.part
+      op: create
+      content: |
+        [plugins."io.containerd.cri.v1.images"]
+          discard_unpacked_layers = false
+  sysctls:
+    fs.inotify.max_queued_events: "16384"
+    fs.inotify.max_user_instances: "1024"
+    fs.inotify.max_user_watches: "131072"
+    net.core.rmem_max: "4194304"
+    net.core.wmem_max: "4194304"
+    vm.nr_hugepages: "1024"
+  features:
+    rbac: true
+    stableHostname: true
+    apidCheckExtKeyUsage: true
+    diskQuotaSupport: true
+    kubePrism:
+      enabled: true
+      port: 7445
+    hostDNS:
+      enabled: true
+      forwardKubeDNSToHost: true
+cluster:
+  id: ENC[AES256_GCM,data:HF4kYCFah3J5KZHTVT86/BHYFTWwQlmFfEIsWqHxcwuIFMYHiC57uu9wvhQ=,iv:NlGAPCi060dz0ONkE8TsC/QASWeMmmkvF/wWIEp9lrk=,tag:LygdLtxsdNhiLfTeJ3ykRQ==,type:str]
+  secret: ENC[AES256_GCM,data:+kQ9fHxt1MxFTcUpiBw+CBfho0puOVJ9xQwyDtGajd4WYXFIGbLyTK+sQBw=,iv:IffzvoEY2dsq0bDQ2HWrq3bau7yav3BYB+Hm6xYvM+c=,tag:ppWgfQfqYeFEn/ci/pDYTw==,type:str]
+  controlPlane:
+    endpoint: https://192.168.178.201:6443
+  clusterName: atoca-k8s
+  network:
+    dnsDomain: cluster.local
+    podSubnets:
+      - 10.244.0.0/16
+    serviceSubnets:
+      - 10.96.0.0/12
+  token: ENC[AES256_GCM,data:bazAyE10CcOQfa5ZN2MeOUYSi24rS6M=,iv:aOCnlKJCYvE6wM0EMGEX8FEMiVgIQu7SJilqT44w0aw=,tag:rBAZcCy3F28F/bFdUr8xQw==,type:str]
+  ca:
+    crt: ENC[AES256_GCM,data:c75XD6EEayoDnb3CkI4HbxIoI0vxymJAg4EnZc0VekYkbGvBuwCUA5by2F7mkdprJRuBCeQ2pSyUJJ9jYj+eNTnQP+QH9tdIhT+Bi/KL3Rs9HQ9DI3af8haTShs77Xs6cyjI3rE2ynuZmJ+nqBj3qPg62vM3Vz9dVnL2ZkX8+Pcjevc1EIJoy9ixcX+lw6yUkMbm9qShhH//y6Kfli3OcbAW7pIw18h7ngG5TqJlVdJ1+p3NbWOXWzcAeBm9drPPIh5+KOGCXdLRW6jwg8NAtH6GNj6hfWWfH0rDxAVJBe/E1d0aQft0e0CEveKJgxxntBhKptK1M/dKCA0OfQ7I1JLTFAG8YVrlrJlChZEPljEcScD8vkUcfKQ/zh+F9RHFidUEXbnkmLmjQ0UV/nNBl5adf8/QWtBJreAPFx0qigrhra/oxgHHjFo5+78YAQLJRpujuy6Z8DMVNdeEcQVKNiqgFXBsa10tqaM0ZVUmgY+YIieJ0bnR/F/QBHpBDuzeAp98xEWMyNQYot5I9veD92PX0BqJye55ObVBT9ZY73oMlmmQOB7IzrAF1MXgTj9kdmo/014pQV0iNAdPguDPBf6g8b0/OzjYVZFdeVWZgbulc0ttt3ziOG03wBC/0EeXhmfbTeWaVoYrLmh46d1/4EanzIw0lPvQgtXg4nBcgYj2YzCQOSnNzdikuBcwVCXLFXecBkGLubhJ1EULCM4qgK6LfzDfOZ3ewy1dhIWi736AFnQBKx3XvwnGoTWX57B8mWREB0XSGQyj59yTbNOFM9vVNmssIwS9q3I7egmRzFsFf5QtrlXjvmHiqZIUSKdtLE5n9gFQTCPJr911pZs2f1Lu9paM4yNNz53vbP3NFJ/dhK8Ws1sWeu60De6pWIxsD50gRLsYHoANz4QQcfsykxPaWBxou86RxbkVEmCZTrRRLB95Ffzx/J+Js9M+wEUC8oqSqjpLE08SkrXpkbYg9D3Qm7H9HrnypZjj0XaZJ0maP/PPoUm+LtKtPkxkilOTuqD9DEiWYObbG11gJvi8TvY0azM=,iv:8XZ5TfF0nP8MgPPPDl0DixZYYh1e1qIjVJWoLhELlXY=,tag:fPramXDjjhazQ4QR9UcQVQ==,type:str]
+    key: ""
+  discovery:
+    enabled: true
+    registries:
+      kubernetes:
+        disabled: true
+      service: {}
+sops:
+  kms: []
+  gcp_kms: []
+  azure_kv: []
+  hc_vault: []
+  age:
+    - recipient: age1zx0z00jmqr26put69qssz3rpguwtfwnptgdn2wq6pd2axhhxepdqvfdhhu
+      enc: |
+        -----BEGIN AGE ENCRYPTED FILE-----
+        YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBhZHN4cW5qcFBSc2RjY3Na
+        MU0wZC9qRWVlWkpBQmdBbG0rZGFhcDdZM0VnClM2TGRLVHc1UTZybmVMRVZ6bHVu
+        b0plTjBnQWhYUU5xOGxLZnZPWmZmcjQKLS0tIHpxZ0VUeTU1SjdVMDU1dDd1S1gr
+        aW1zb3lIbzlEeXRMMWN4NkVFODAxUkEKh83z6IpvkNlzio4eCPk8K9tMS4d4Nfdy
+        xYtykSZkwviUqnms2JjYoPMC8haqi9OONl+J68itSE0h5xn8Gj8MHw==
+        -----END AGE ENCRYPTED FILE-----
+  lastmodified: "2025-03-31T15:58:14Z"
+  mac: ENC[AES256_GCM,data:euuh0xPKX2Iw5MkQEF1KSXBvoY8DjRwH54XVHEn8LmAxb5wHHcquwiP1S48vdqcoesqvSusRlU3HcQvxts5DC1pYJsCmOy5c0JxM/7k5qsjhHNkgsoXTHshUshteijU2YBXqXaAkBhsz8wydbgZkW3X7/ZFXstmZjT/kw75go0A=,iv:EEbjxsDCraYmuzSDfY6xyrmUJAPqFkg6ArBHOKTqFE8=,tag:3+N87xPiuDgYXYjAd1qeww==,type:str]
+  pgp: []
+  encrypted_regex: ^(token|crt|key|id|secret|secretboxEncryptionSecret|ca)$
+  mac_only_encrypted: true
+  version: 3.9.4

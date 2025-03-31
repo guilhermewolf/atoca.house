@@ -1,5 +1,7 @@
 controllers:
   wyoming-whisper:
+    nodeSelector:
+      kubernetes.io/hostname: rpi-k8s-5
     containers:
       wyoming-whisper:
         image:

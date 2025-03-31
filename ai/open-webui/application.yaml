@@ -15,13 +15,13 @@ spec:
       helm:
         releaseName: open-webui
         valueFiles:
-        - $values/apps/open-webui/values.yaml
+        - $values/ai/open-webui/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
-      path: apps/open-webui/
+      path: ai/open-webui/
       directory:
         exclude: '{application.yaml,values.yaml}'
   syncPolicy:

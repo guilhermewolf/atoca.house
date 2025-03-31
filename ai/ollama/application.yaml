@@ -15,13 +15,13 @@ spec:
       helm:
         releaseName: ollama
         valueFiles:
-        - $values/apps/ollama/values.yaml
+        - $values/ai/ollama/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
-      path: apps/ollama/
+      path: ai/ollama/
       directory:
         exclude: '{application.yaml,values.yaml}'
   syncPolicy:

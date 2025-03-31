@@ -1,12 +1,13 @@
 controllers:
   wyoming-whisper:
-    nodeSelector:
-      kubernetes.io/hostname: rpi-k8s-5
+    pod:
+      nodeSelector:
+        kubernetes.io/hostname: rpi-k8s-5
     containers:
       wyoming-whisper:
         image:
           repository: rhasspy/wyoming-whisper
-          tag: v2.4.0
+          tag: 2.4.0
         args:
           - --model
           - tiny.en

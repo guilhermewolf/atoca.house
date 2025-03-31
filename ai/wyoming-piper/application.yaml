@@ -15,13 +15,13 @@ spec:
       helm:
         releaseName: wyoming-piper
         valueFiles:
-        - $values/apps/wyoming-piper/values.yaml
+        - $values/ai/wyoming-piper/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
-      path: apps/wyoming-piper/
+      path: ai/wyoming-piper/
       directory:
         exclude: '{application.yaml,values.yaml}'
   syncPolicy:

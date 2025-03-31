@@ -2,8 +2,9 @@ controllers:
   ollama:
     annotations:
       reloader.stakater.com/auto: "true"
-    nodeSelector:
-      kubernetes.io/hostname: rpi-k8s-5
+    pod:
+      nodeSelector:
+        kubernetes.io/hostname: rpi-k8s-5
     containers:
       ollama:
         image:

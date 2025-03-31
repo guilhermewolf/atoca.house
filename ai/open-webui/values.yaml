@@ -6,9 +6,9 @@ controllers:
       openweb-ui:
         image:
           repository: ghcr.io/open-webui/open-webui
-          tag: 0.5@sha256:92b238e6c27dc6dacda7769062444044ed71b78628e0a9810ba5cea25e0e1ba0
+          tag: 0.5.20
         env:
-          OLLAMA_API_BASE_URL: http://ollama.ollama.svc.cluster.local:11434/api
+          OLLAMA_BASE_URL: http://ollama.ollama.svc.cluster.local:11434
         resources:
           requests:
             cpu: 200m
@@ -17,7 +17,7 @@ controllers:
 
 service:
   openweb-ui:
-    controller: *app
+    controller: openweb-ui
     ports:
       http:
         port: &port 8080
@@ -41,7 +41,11 @@ ingress:
         secretName: openweb-ui-tls
 
 persistence:
-  config:
-    existingClaim: *app
+  openweb-ui:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 5Gi
     globalMounts:
       - path: /app/backend/data

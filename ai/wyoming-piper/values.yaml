@@ -1,0 +1,40 @@
+controllers:
+  wyoming-piper:
+    nodeSelector:
+      kubernetes.io/hostname: rpi-k8s-5
+    containers:
+      app:
+        image:
+          repository: rhasspy/wyoming-piper
+          tag: 1.5.0
+        args:
+          - --voice
+          - en-us-lessac-low
+        env:
+          TZ: Europe/Amsterdam
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1
+            memory: 2Gi
+service:
+  wyoming-piper:
+    controller: wyoming-piper
+    type: LoadBalancer
+    ports:
+      whisper:
+        enabled: true
+        primary: true
+        port: 10200
+        protocol: TCP
+persistence:
+  wyoming-piper:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 15Gi
+    globalMounts:
+      - path: /data

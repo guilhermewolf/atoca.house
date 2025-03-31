@@ -1,0 +1,42 @@
+controllers:
+  wyoming-whisper:
+    nodeSelector:
+      kubernetes.io/hostname: rpi-k8s-5
+    containers:
+      wyoming-whisper:
+        image:
+          repository: rhasspy/wyoming-whisper
+          tag: v2.4.0
+        args:
+          - --model
+          - tiny.en
+          - --language
+          - en
+        env:
+          TZ: Europe/Amsterdam
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: 2
+            memory: 6Gi
+service:
+  wyoming-whisper:
+    controller: wyoming-whisper
+    type: LoadBalancer
+    ports:
+      whisper:
+        enabled: true
+        primary: true
+        port: 10300
+        protocol: TCP
+persistence:
+  wyoming-whisper:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 15Gi
+    globalMounts:
+      - path: /data

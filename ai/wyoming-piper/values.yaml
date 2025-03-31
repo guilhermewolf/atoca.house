@@ -1,7 +1,8 @@
 controllers:
   wyoming-piper:
-    nodeSelector:
-      kubernetes.io/hostname: rpi-k8s-5
+    pod:
+      nodeSelector:
+        kubernetes.io/hostname: rpi-k8s-5
     containers:
       app:
         image:

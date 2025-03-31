@@ -2,8 +2,9 @@ controllers:
   ollama:
     annotations:
       reloader.stakater.com/auto: "true"
-    nodeSelector:
-      kubernetes.io/hostname: rpi-k8s-5
+    pod:
+      nodeSelector:
+        kubernetes.io/hostname: rpi-k8s-5
     containers:
       ollama:
         image:
@@ -11,17 +12,27 @@ controllers:
           tag: 0.6.2
         env:
           - name: OLLAMA_HOST
-            value: 0.0.0.0
+            value: "0.0.0.0"
           - name: OLLAMA_ORIGINS
             value: "*"
           - name: OLLAMA_MODELS
-            value: &modelPath "/models"
+            value: "/models"
           - name: OLLAMA_KEEP_ALIVE
             value: "24h"
           - name: OLLAMA_LOAD_TIMEOUT
             value: "600"
           - name: OLLAMA_MODEL
             value: "mistral:7b-instruct-q4_K_M"
+          - name: OLLAMA_CONTEXT_LENGTH
+            value: "2048"
+          - name: OLLAMA_BATCH_SIZE
+            value: "64"
+          - name: OLLAMA_THREADS
+            value: "6"
+          - name: OLLAMA_NUM_PARALLEL
+            value: "6"
+          - name: OLLAMA_NO_MMAP
+            value: "false"
         resources:
           requests:
             cpu: 500m
@@ -44,7 +55,7 @@ persistence:
     accessMode: ReadWriteOnce
     size: 20Gi
     globalMounts:
-      - path: *modelPath
+      - path: /models
 
   ollama-config:
     enabled: true

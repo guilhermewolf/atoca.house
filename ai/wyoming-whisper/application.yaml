@@ -15,13 +15,13 @@ spec:
       helm:
         releaseName: wyoming-whisper
         valueFiles:
-        - $values/apps/wyoming-whisper/values.yaml
+        - $values/ai/wyoming-whisper/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
-      path: apps/wyoming-whisper/
+      path: ai/wyoming-whisper/
       directory:
         exclude: '{application.yaml,values.yaml}'
   syncPolicy:

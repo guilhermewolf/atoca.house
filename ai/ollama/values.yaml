@@ -9,7 +9,7 @@ controllers:
       ollama:
         image:
           repository: docker.io/ollama/ollama
-          tag: 0.6.2
+          tag: 0.6.3
         env:
           - name: OLLAMA_HOST
             value: 0.0.0.0

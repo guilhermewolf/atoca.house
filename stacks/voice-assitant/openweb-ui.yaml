@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  openweb-ui:
+    image: ghcr.io/open-webui/open-webui:0.5.20
+    container_name: openweb-ui
+    environment:
+      - OLLAMA_BASE_URL=http://$GENMACHINE_IP:11434
+    volumes:
+      - openwebui_data:/app/backend/data
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  openwebui_data:
+

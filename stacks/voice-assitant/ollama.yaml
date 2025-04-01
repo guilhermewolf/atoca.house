@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    environment:
+      - OLLAMA_DEBUG=1
+      - OLLAMA_NUM_PARALLEL=5
+      - OLLAMA_NUM_CTX=4096
+      - OLLAMA_NUM_THREADS=6
+      - OLLAMA_NUM_BATCH=256
+      - OLLAMA_KEEP_ALIVE=5m
+
+    deploy:
+      resources:
+        limits:
+          cpus: '5.0'
+          memory: 16g
+        reservations:
+          cpus: '1.0'
+          memory: 1g
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    shm_size: "512mb"
+    
+volumes:
+  ollama_data:

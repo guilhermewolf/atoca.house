@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  wyoming-whisper:
+    image: rhasspy/wyoming-whisper:2.4.0
+    container_name: wyoming-whisper
+    environment:
+      - TZ=Europe/Amsterdam
+    command: [ "--model", "tiny.en", "--language", "en" ]
+    ports:
+      - "10300:10300"
+    volumes:
+      - wyoming_whisper_data:/data
+    restart: unless-stopped
+
+volumes:
+  wyoming_whisper_data:
+

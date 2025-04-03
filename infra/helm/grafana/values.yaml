@@ -63,13 +63,13 @@ dashboards:
       datasource: Prometheus
     kubernetes-nodes:
         # renovate: depName="Kubernetes / Views / Nodes"
-  gnetId: 15759
-  revision: 35
+      gnetId: 15759
+      revision: 35
       datasource: Prometheus
     kubernetes-pods:
         # renovate: depName="Kubernetes / Views / Pods"
-  gnetId: 15760
-  revision: 36
+      gnetId: 15760
+      revision: 36
       datasource: Prometheus
     nginx:
       url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/grafana/dashboards/nginx.json
@@ -88,7 +88,7 @@ dashboards:
     prometheus:
       # renovate: depName="Prometheus"
       gnetId: 19105
-      revision: 6
+      revision: 7
       datasource: Prometheus
     arc-dashboard:
       url: https://raw.githubusercontent.com/actions/actions-runner-controller/refs/heads/master/docs/gha-runner-scale-set-controller/samples/grafana-dashboard/ARC-Autoscaling-Runner-Set-Monitoring_1692627561838.json

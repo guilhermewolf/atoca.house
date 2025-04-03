@@ -11,13 +11,13 @@
   },
   "customManagers": [
     {
-      "customType": "regex",
       "description": ["Process Grafana dashboards"],
+      "customType": "regex",
       "fileMatch": ["^infra/helm/grafana/values\\.ya?ml$"],
       "matchStrings": [
-        "# renovate: depName=\"(?<depName>.*?)\"\\n\\s*gnetId: (?<packageName>\\d+)\\n\\s*revision: (?<currentValue>\\d+)"
+        "# renovate: depName=\"(?<depName>[^\"]+)\"\\n(?<indent1>\\s+)gnetId: (?<packageName>\\d+)\\n(?<indent2>\\s+)revision: (?<currentValue>\\d+)"
       ],
-      "autoReplaceStringTemplate": "  # renovate: depName=\"{{{depName}}}\"\n  gnetId: {{{packageName}}}\n  revision: {{{newValue}}}",
+      "autoReplaceStringTemplate": "# renovate: depName=\"{{{depName}}}\"\n{{{indent1}}}gnetId: {{{packageName}}}\n{{{indent2}}}revision: {{{newValue}}}",
       "datasourceTemplate": "custom.grafana-dashboards",
       "versioningTemplate": "regex:^(?<major>\\d+)$"
     }

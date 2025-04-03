@@ -15,6 +15,7 @@ locals {
     "minio-data",
     "n8n",
     "npm",
+    "openweb-ui",
     "portainer",
     "radar",
     "readar",

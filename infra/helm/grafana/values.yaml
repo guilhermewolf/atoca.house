@@ -88,7 +88,7 @@ dashboards:
     prometheus:
       # renovate: depName="Prometheus"
       gnetId: 19105
-      revision: 6
+      revision: 7
       datasource: Prometheus
     arc-dashboard:
       url: https://raw.githubusercontent.com/actions/actions-runner-controller/refs/heads/master/docs/gha-runner-scale-set-controller/samples/grafana-dashboard/ARC-Autoscaling-Runner-Set-Monitoring_1692627561838.json

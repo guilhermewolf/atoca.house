@@ -1,9 +1,13 @@
 configs:
   params:
-    server.insecure: true
+    server.insecure: false
   cm:
     statusbadge.enabled: true
-    # Adding Applications health check
+
+    repositories: |
+      - url: https://github.com/guilhermewolf/atoca.house
+        type: git
+
     resource.customizations.health.argoproj.io_Application: |
       hs = {}
       hs.status = "Progressing"
@@ -17,35 +21,53 @@ configs:
         end
       end
       return hs
-    # Kustomize build options
-    # --enable-helm: Enabling Helm chart rendering with Kustomize
-    # --load-restrictor LoadRestrictionsNone: Local kustomizations may load files from outside their root
+
     kustomize.buildOptions: --enable-helm --load-restrictor LoadRestrictionsNone
 
 crds:
   install: true
-  # -- Keep CRDs on chart uninstall
-  keep: false
+  keep: true
 
-# Disable Redis Secret Initialization
 redisSecretInit:
   enabled: false
 
 server:
-  # Ingress Resource.
   ingress:
-    ## Enable creation of ingress resource
     enabled: true
-    ## Add ingressClassName to the Ingress
     ingressClassName: nginx
-    # ingress host
     hostname: argocd.atoca.house
-    ## Default ingress path
     path: /
     pathType: Prefix
-    # Enable tls. argocd-server-tls secret is created automatically for hostname
     tls: true
 
-    ## Ingress annotations
     annotations:
       cert-manager.io/cluster-issuer: cloudflare-prod
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+
+repoServer:
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+controller:
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+applicationSet:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi

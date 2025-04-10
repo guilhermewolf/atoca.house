@@ -1,7 +1,7 @@
 image:
     registry: ghcr.io
     repository: stirling-tools/stirling-pdf
-    tag: 0.45.2
+    tag: 0.45.3
 envs:
   - name: SYSTEM_DEFAULTLOCALE
     value: nl-NL

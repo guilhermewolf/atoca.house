@@ -17,12 +17,19 @@ ingress:
     path: /
     tls: true
     tlsSecret: pdf-tls
-resources:
-  requests:
-    cpu: 10m
-    memory: 600Mi
+# resources:
+#   requests:
+#     cpu: 100m
+#     memory: 600Mi
+#   limits:
+#     cpu: 500m
+#     memory: 1Gi
 probes:
   liveness:
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    failureThreshold: 5
   readiness:
-    initialDelaySeconds: 30
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    failureThreshold: 5

@@ -1,0 +1,24 @@
+---
+version: '3.8'
+
+services:
+  sonarr-anime:
+    image: lscr.io/linuxserver/sonarr:4.0.14
+    container_name: sonarr-anime
+    network_mode: bridge
+    ports:
+      - "8889:8989"
+    volumes:
+      - /mnt/user/media-files/anime:/anime
+      - /mnt/user/media-downloads/complete:/downloads/complete
+      - /mnt/user/appdata/sonarr-anime:/config
+    environment:
+      - PUID=99
+      - PGID=100
+      - UMASK=022
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G

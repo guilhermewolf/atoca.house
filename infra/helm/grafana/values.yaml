@@ -93,6 +93,11 @@ dashboards:
     arc-dashboard:
       url: https://raw.githubusercontent.com/actions/actions-runner-controller/refs/heads/master/docs/gha-runner-scale-set-controller/samples/grafana-dashboard/ARC-Autoscaling-Runner-Set-Monitoring_1692627561838.json
       datasource: Prometheus
+    cadvisor:
+      # renovate: depName="Cadvisor exporter"
+      gnetId: 14282
+      revision: 1
+      datasource: Prometheus
 sidecar:
   dashboards:
     enabled: true

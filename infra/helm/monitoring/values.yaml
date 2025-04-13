@@ -62,6 +62,11 @@ prometheus:
         static_configs:
           - targets:
             - '192.168.178.160:9100'  # Node Exporter running on NAS
+      - job_name: 'compartilhado-cadvisor'
+        scrape_interval: 5s
+        static_configs:
+          - targets:
+            - '192.168.178.160:8083'  # CAdvisor running on NAS
       - job_name: 'hass-node-exporter'
         scrape_interval: 30s
         static_configs:

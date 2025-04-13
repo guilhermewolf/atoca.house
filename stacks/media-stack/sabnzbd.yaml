@@ -2,7 +2,7 @@ version: "3.8" # Updated version
 
 services:
   sabnzbd:
-    image: lscr.io/linuxserver/sabnzbd:4.5.0
+    image: lscr.io/linuxserver/sabnzbd:4.5.1
     container_name: sabnzbd
     network_mode: bridge
     ports:

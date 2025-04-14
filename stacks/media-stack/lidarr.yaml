@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  lidarr:
+    image: ghcr.io/hotio/lidarr
+    container_name: lidarr
+    environment:
+      - PUID=99
+      - PGID=100
+      - UMASK=022
+      - TZ=Europe/Amsterdam
+    volumes:
+      - /mnt/user/appdata/lidarr:/config
+      - /mnt/user/media-downloads/complete/music:/complete/music
+      - /mnt/user/media-files/music:/music
+    ports:
+      - 8686:8686
+    deploy:
+       resources:
+         limits:
+           cpus: '1'
+           memory: 1G
+    restart: unless-stopped

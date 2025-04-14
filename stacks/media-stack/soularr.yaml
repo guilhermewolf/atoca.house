@@ -1,0 +1,24 @@
+---
+version: "3.8"
+services:
+  soularr:
+    image: mrusse08/soularr:latest
+    container_name: soularr
+    hostname: soularr
+    environment:
+      - PUID=99
+      - PGID=100
+      - UMASK=022
+      - TZ=Etc/UTC
+      #Script interval in seconds
+      - SCRIPT_INTERVAL=300
+    user: "99:100"
+    deploy:
+       resources:
+         limits:
+           cpus: '0.5'
+           memory: 512M
+    volumes:
+      - /mnt/user/media-downloads/complete/music:/downloads/complete/music
+      - /mnt/user/appdata/soularr:/data
+    restart: unless-stopped

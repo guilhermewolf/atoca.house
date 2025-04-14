@@ -5,7 +5,12 @@ services:
     image: ghcr.io/music-assistant/server:2.5.1
     container_name: music-assistant
     network_mode: host
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Amsterdam
     volumes:
       - /mnt/user/appdata/music-assistant:/data
+      - /mnt/user/media-files/music:/music
     privileged: true
     restart: unless-stopped

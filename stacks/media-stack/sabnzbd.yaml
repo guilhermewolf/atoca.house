@@ -1,24 +1,22 @@
-version: "3.8" # Updated version
+version: "3.8"
 
 services:
   sabnzbd:
     image: lscr.io/linuxserver/sabnzbd:4.5.1
     container_name: sabnzbd
-    network_mode: bridge
-    ports:
-      - "8080:8080"
-    volumes:
-      - /mnt/user/appdata/sabnzbd:/data
-      - /mnt/user/media-downloads/complete:/downloads/complete
-      - /mnt/user/media-downloads/incomplete:/incomplete-downloads
+    network_mode: "container:GlueTun-Nord"
     environment:
-      - PUID=1001
+      - PUID=99
       - PGID=100
-      - UMASK=0002 
+      - UMASK=022
       - TZ=Europe/Amsterdam
+    volumes:
+      - /mnt/user/appdata/sabnzbd:/config
+      - /mnt/user/media-downloads/complete:/downloads/complete
+      - /mnt/user/media-downloads/incomplete:/downloads/incomplete
     deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
+       resources:
+         limits:
+           cpus: '1.0'
+           memory: 1G
     restart: always

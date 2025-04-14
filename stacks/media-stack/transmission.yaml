@@ -6,10 +6,10 @@ services:
     network_mode: "container:GlueTun-Nord"
     container_name: Transmission-Nord
     environment:
-      - PUID=1001
+      - PUID=99
       - PGID=100
       - TZ=Europe/Amsterdam
-      - UMASK=0002
+      - UMASK=022
     volumes:
       - "/mnt/user/media-downloads/complete:/downloads/complete"
       - "/mnt/user/media-downloads/incomplete:/downloads/incomplete"

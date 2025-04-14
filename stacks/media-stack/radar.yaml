@@ -10,7 +10,7 @@ services:
       - "7878:7878"
     volumes:
       - /mnt/user/media-files/movies:/movies
-      - /mnt/user/media-downloads/complete:/downloads/complete
+      - /mnt/user/media-downloads/complete/movies:/downloads/complete/movies
       - /mnt/user/appdata/radarr:/config
     environment:
       - PUID=99

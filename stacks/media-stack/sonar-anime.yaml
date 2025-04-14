@@ -10,7 +10,7 @@ services:
       - "8889:8989"
     volumes:
       - /mnt/user/media-files/anime:/anime
-      - /mnt/user/media-downloads/complete:/downloads/complete
+      - /mnt/user/media-downloads/complete/anime:/downloads/complete/anime
       - /mnt/user/appdata/sonarr-anime:/config
     environment:
       - PUID=99

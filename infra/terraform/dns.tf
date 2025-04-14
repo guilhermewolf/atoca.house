@@ -2,6 +2,7 @@
 locals {
   subdomains = [
     "adguard",
+    "anime",
     "bazar",
     "compartilhado",
     "hass",

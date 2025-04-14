@@ -13,6 +13,7 @@ services:
     volumes:
       - "/mnt/user/media-downloads/complete:/downloads/complete"
       - "/mnt/user/media-downloads/incomplete:/downloads/incomplete"
+      - /mnt/user/appdata/tranmission:/config
     deploy:
       resources:
         limits:

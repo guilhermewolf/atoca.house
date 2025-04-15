@@ -10,7 +10,7 @@ services:
       - UMASK=022
       - TZ=Europe/Amsterdam
     volumes:
-      - /mnt/user/appdata/lidarr:/config
+      - /mnt/cache/appdata/lidarr:/config
       - /mnt/user/media-downloads/complete/music:/complete/music
       - /mnt/user/media-files/music:/music
     ports:

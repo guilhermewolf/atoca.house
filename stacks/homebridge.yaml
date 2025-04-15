@@ -12,5 +12,5 @@ services:
       - PGID=100
       - UMASK=0000
     volumes:
-      - /mnt/user/appdata/homebridge:/homebridge
+      - /mnt/cache/appdata/homebridge:/homebridge
     restart: unless-stopped

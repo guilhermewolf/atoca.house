@@ -11,7 +11,7 @@ services:
       - GENERIC_TIMEZONE=Europe/Amsterdam
       - WEBHOOK_URL=$WEBHOOK_URL
     volumes:
-      - /mnt/user/appdata/n8n:/home/node/.n8n
+      - /mnt/cache/appdata/n8n:/home/node/.n8n
     user: "1000:1000"
     networks:
       - n8n_network

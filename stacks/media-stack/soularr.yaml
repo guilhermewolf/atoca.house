@@ -20,5 +20,5 @@ services:
            memory: 512M
     volumes:
       - /mnt/user/media-downloads/complete/music:/downloads/complete/music
-      - /mnt/user/appdata/soularr:/data
+      - /mnt/cache/appdata/soularr:/data
     restart: unless-stopped

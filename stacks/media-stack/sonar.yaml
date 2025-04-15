@@ -11,7 +11,7 @@ services:
     volumes:
       - /mnt/user/media-files/tv:/tv
       - /mnt/user/media-downloads/complete/tv:/downloads/complete/tv
-      - /mnt/user/appdata/sonarr:/config
+      - /mnt/cache/appdata/sonarr:/config
     environment:
       - PUID=99
       - PGID=100

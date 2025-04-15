@@ -9,7 +9,7 @@ services:
       - PGID=100
       - UMASK=022
     volumes:
-      - /mnt/user/appdata/bazarr:/config
+      - /mnt/cache/appdata/bazarr:/config
       - /mnt/user/media-files/movies:/media
       - /mnt/user/media-files/tv:/series
     ports:

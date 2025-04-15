@@ -13,7 +13,7 @@ services:
       - UMASK=022
       - LOG_LEVEL=info
     volumes:
-      - /mnt/user/appdata/jellyseerr:/app/config
+      - /mnt/cache/appdata/jellyseerr:/app/config
     networks:
       - jellyseerr_network
     deploy:

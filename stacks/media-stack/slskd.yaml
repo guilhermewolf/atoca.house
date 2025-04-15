@@ -20,7 +20,7 @@ services:
       - SLSKD_INCOMPLETE_DIR=/downloads/incomplete
       - PORT=5030
     volumes:
-      - /mnt/user/appdata/slskd:/app
+      - /mnt/cache/appdata/slskd:/app
       - /mnt/user/media-downloads/complete/music:/downloads/complete/music
       - /mnt/user/media-downloads/incomplete/:/downloads/incomplete
     deploy:

@@ -23,7 +23,7 @@ services:
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
       TZ: Europe/Amsterdam
     volumes:
-      - /mnt/user/appdata:/appdata:ro
+      - /mnt/cache/appdata/:/appdata:ro
 
   prune:
     image: mazzolino/restic

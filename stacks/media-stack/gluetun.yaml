@@ -11,7 +11,6 @@ services:
       - "9092:9091"            # qBittorrent or similar
       - "51413:51413"
       - "51413:51413/udp"
-      - "5030:5030"            # slskd web UI
       - "2234:2234"            # slskd P2P port
       - "8080:8080"            # SABnzbd Web UI
     environment:

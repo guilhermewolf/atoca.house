@@ -10,7 +10,7 @@ spec:
   project: applications
   sources:
     - chart: app-template
-      repoURL: https://bjw-s.github.io/helm-charts/
+      repoURL: ghcr.io/bjw-s/helm
       targetRevision: 3.4.0
       helm:
         releaseName: kromgo

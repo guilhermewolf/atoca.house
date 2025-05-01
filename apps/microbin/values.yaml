@@ -19,17 +19,19 @@ controllers:
           readiness:
             enabled: true
         resources:
-          limits:
-            memory: 80Mi
           requests:
-            cpu: 10m
-            memory: 10Mi
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
             drop:
               - ALL
           readOnlyRootFilesystem: true
+
 defaultPodOptions:
   securityContext:
     fsGroup: 568

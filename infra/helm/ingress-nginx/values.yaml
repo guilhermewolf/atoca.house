@@ -5,7 +5,13 @@ controller:
       loadBalancerIP: 192.168.178.210
     annotations:
       external-dns.alpha.kubernetes.io/hostname: &hostname atoca.house
-
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
 
   config:
     allow-snippet-annotations: "true"

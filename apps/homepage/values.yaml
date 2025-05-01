@@ -18,10 +18,12 @@ controllers:
               name: homepage-secrets
         resources:
           requests:
-            cpu: 15m
-            memory: 200M
+            cpu: 100m
+            memory: 128Mi
           limits:
-            memory: 2G
+            cpu: 250m
+            memory: 256Mi
+
 service:
   homepage:
     controller: homepage

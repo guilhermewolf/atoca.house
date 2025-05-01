@@ -1,4 +1,3 @@
-
 defaultSettings:
   defaultDataPath: "/var/lib/longhorn"
   backupTarget: "s3://longhorn@eu-west-1/"
@@ -10,8 +9,32 @@ defaultSettings:
   replicaAutoBalance: true
   nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
 
-preUpgradeChecker:
-  jobEnabled: false
+longhornManager:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+longhornDriver:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+longhornUI:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
 
 ingress:
   enabled: true
@@ -22,3 +45,6 @@ ingress:
   path: /
   annotations:
     cert-manager.io/cluster-issuer: "cloudflare-prod"
+
+preUpgradeChecker:
+  jobEnabled: false

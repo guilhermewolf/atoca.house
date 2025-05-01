@@ -5,3 +5,8 @@ spegel:
 service:
   registry:
     hostPort: 29999
+resources:
+  requests:
+    memory: 64Mi
+  limits:
+    memory: 128Mi

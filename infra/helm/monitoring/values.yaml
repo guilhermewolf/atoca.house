@@ -6,6 +6,13 @@ cleanPrometheusOperatorObjectNames: true
 
 alertmanager:
   alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
     config:
       global:
         resolve_timeout: 5m
@@ -52,6 +59,13 @@ prometheus:
       registry: quay.io
       repository: prometheus/prometheus
       tag: v3.3.0
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
     serviceMonitorSelector:
       matchLabels: {}
     serviceMonitorNamespaceSelector:
@@ -61,17 +75,17 @@ prometheus:
         scrape_interval: 30s
         static_configs:
           - targets:
-            - '192.168.178.160:9100'  # Node Exporter running on NAS
+              - '192.168.178.160:9100'  # Node Exporter on NAS
       - job_name: 'compartilhado-cadvisor'
         scrape_interval: 5s
         static_configs:
           - targets:
-            - '192.168.178.160:8083'  # CAdvisor running on NAS
+              - '192.168.178.160:8083'  # cAdvisor on NAS
       - job_name: 'hass-node-exporter'
         scrape_interval: 30s
         static_configs:
           - targets:
-            - '192.168.178.22:9100'  # Node Exporter running on Home Assistant
+              - '192.168.178.22:9100'  # Node Exporter on Home Assistant
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -80,7 +94,6 @@ prometheus:
           resources:
             requests:
               storage: 20Gi
-    # Retention period
     retention: 3d
     retentionSize: "20GB"
   ingress:
@@ -97,9 +110,23 @@ prometheus:
 
 kubeStateMetrics:
   nameOverride: kube-state-metrics
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
 
 prometheus-node-exporter:
   fullnameOverride: node-exporter
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
   prometheus:
     monitor:
       enabled: true

@@ -1,12 +1,17 @@
 global:
   deploymentAnnotations:
-    secret.reloader.stakater.com/reload: &secret authentik-secret
+    secret.reloader.stakater.com/auto: "true"
   env:
     - name: AUTHENTIK_SESSION_STORAGE
       value: db
   envFrom:
     - secretRef:
-        name: *secret
+        name: authentik-secret
+    - secretRef:
+        name: authentik-db-secret
+redis:
+  enabled: true
+
 server:
   replicas: 1
   metrics:
@@ -19,18 +24,16 @@ server:
       annotations:
           cert-manager.io/cluster-issuer: cloudflare-prod
       hosts:
-          - authentik.atoca.house
+          - sso.atoca.house
       paths:
           - "/"
       tls:
         - hosts:
-            - authentik.atoca.house
+            - sso.atoca.house
           secretName: authentik-tls
 worker:
   replicas: 1
 authentik:
-  log_level: debug
+  log_level: error
   error_reporting:
-    enabled: true
-redis:
     enabled: true

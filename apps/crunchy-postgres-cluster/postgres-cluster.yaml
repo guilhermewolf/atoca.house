@@ -135,7 +135,11 @@ spec:
       replicas: *replica
       metadata:
         labels:
-          app.kubernetes.io/name: crunchy-postgres
+          app.kubernetes.io/name: crunchy-postgres-pgbouncer
+      config:
+        global:
+          pool_mode: "transaction" # pgBouncer is set to transaction for Authentik.
+          client_tls_sslmode: prefer
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: "kubernetes.io/hostname"

@@ -15,7 +15,8 @@
   },
   "argocd": {
     "fileMatch": [
-      "^infra/helm/.*?/application\\.yaml$"
+      "^infra/helm/.*?/application\\.yaml$",
+      "^apps/.*?/application\\.yaml$"
       ]
   }
 }

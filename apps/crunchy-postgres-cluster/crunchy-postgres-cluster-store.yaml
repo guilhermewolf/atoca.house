@@ -1,0 +1,19 @@
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: crunchy-postgres-cluster-store
+spec:
+  provider:
+    kubernetes:
+      remoteNamespace: crunchy-postgres-cluster
+      server:
+        caProvider:
+          type: ConfigMap
+          name: "kube-root-ca.crt"
+          key: "ca.crt"
+          namespace: crunchy-postgres-cluster
+      auth:
+        serviceAccount:
+          name: external-secrets
+          namespace: external-secrets

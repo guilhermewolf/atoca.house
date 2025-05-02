@@ -1,25 +1,26 @@
 controllers:
-  kromgo:
+  ntfy:
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
-      kromgo:
+      ntfy:
         image:
-          repository: ghcr.io/kashalls/kromgo
-          tag: v0.6.0@sha256:4b908ea0be5acd61e67ce38d8f1342d0731296b00b8ca2c35533aa519d804cc6
+          repository: binwiederhier/ntfy
+          tag: v2.11.0
         env:
-          PROMETHEUS_URL: http://monitoring-prometheus.monitoring.svc.cluster.local:9090
-          SERVER_HOST: 0.0.0.0
-          SERVER_PORT: 8080
+          NTFY_BASE_URL: https://ntfy.atoca.house
+          NTFY_UPSTREAM_BASE_URL: "https://ntfy.sh"
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
           capabilities: { drop: ["ALL"] }
         resources:
           requests:
-            cpu: 10m
+            cpu: 100m
+            memory: 128Mi
           limits:
-            memory: 64Mi
+            cpu: 250m
+            memory: 256Mi
 defaultPodOptions:
   securityContext:
     runAsNonRoot: true
@@ -27,31 +28,23 @@ defaultPodOptions:
     runAsGroup: 65534
     seccompProfile: { type: RuntimeDefault }
 service:
-  kromgo:
-    controller: kromgo
+  ntfy:
+    controller: ntfy
     ports:
       http:
         primary: true
         port: 80
-        targetPort: 8080
+        targetPort: 80
 ingress:
-  krongo:
+  ntfy:
     className: cloudflare-tunnel
     hosts:
-      - host: kromgo.atoca.house
+      - host: ntfy.atoca.house
         paths:
         - backend:
             service:
-              name: kromgo
+              name: ntfy
               port:
                 number: 80
           path: /
           pathType: Prefix
-persistence:
-  config-file:
-    type: configMap
-    name: kromgo-configmap
-    globalMounts:
-      - path: /kromgo/config.yaml
-        subPath: config.yaml
-        readOnly: true

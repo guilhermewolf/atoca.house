@@ -9,11 +9,16 @@ spec:
     server: https://kubernetes.default.svc
   project: applications
   sources:
+    - chart: app-template
+      repoURL: ghcr.io/bjw-s/helm
+      targetRevision: 3.4.0
+      helm:
+        releaseName: whoami
+        valueFiles:
+        - $values/apps/whoami/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
-      path: apps/whoami/
-      directory:
-        exclude: '{application.yaml}'
+      ref: values
   syncPolicy:
     syncOptions:
       - CreateNamespace=true

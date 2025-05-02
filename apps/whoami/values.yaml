@@ -1,16 +1,12 @@
 controllers:
-  kromgo:
+  whoami:
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
-      kromgo:
+      whoami:
         image:
-          repository: ghcr.io/kashalls/kromgo
-          tag: v0.6.0@sha256:4b908ea0be5acd61e67ce38d8f1342d0731296b00b8ca2c35533aa519d804cc6
-        env:
-          PROMETHEUS_URL: http://monitoring-prometheus.monitoring.svc.cluster.local:9090
-          SERVER_HOST: 0.0.0.0
-          SERVER_PORT: 8080
+          repository: containous/whoami
+          tag: v1.5.0
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -27,31 +23,23 @@ defaultPodOptions:
     runAsGroup: 65534
     seccompProfile: { type: RuntimeDefault }
 service:
-  kromgo:
-    controller: kromgo
+  whoami:
+    controller: whoami
     ports:
       http:
         primary: true
         port: 80
-        targetPort: 8080
+        targetPort: 80
 ingress:
-  krongo:
+  whoami:
     className: cloudflare-tunnel
     hosts:
-      - host: kromgo.atoca.house
+      - host: whoami.atoca.house
         paths:
         - backend:
             service:
-              name: kromgo
+              name: whoami
               port:
                 number: 80
           path: /
           pathType: Prefix
-persistence:
-  config-file:
-    type: configMap
-    name: kromgo-configmap
-    globalMounts:
-      - path: /kromgo/config.yaml
-        subPath: config.yaml
-        readOnly: true

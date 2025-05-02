@@ -13,11 +13,10 @@ controllers:
             value: "Europe/Amsterdam"
         resources:
           requests:
-            cpu: 50m
-            memory: 64Mi
+            cpu: 10m
+            memory: 150Mi
           limits:
-            cpu: 100m
-            memory: 128Mi
+            memory: 500Mi
 
 service:
   flaresolverr:

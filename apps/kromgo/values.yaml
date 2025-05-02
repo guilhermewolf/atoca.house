@@ -35,14 +35,14 @@ service:
         port: 80
         targetPort: 8080
 ingress:
-  krongo:
+  kromgo:
     className: cloudflare-tunnel
     hosts:
       - host: kromgo.atoca.house
         paths:
           - path: /
             service:
-              identifier: ntfy
+              identifier: kromgo
               port: http
 persistence:
   config-file:

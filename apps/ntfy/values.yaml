@@ -32,19 +32,15 @@ service:
     controller: ntfy
     ports:
       http:
-        primary: true
         port: 80
-        targetPort: 80
+
 ingress:
   ntfy:
     className: cloudflare-tunnel
     hosts:
       - host: ntfy.atoca.house
         paths:
-        - backend:
+          - path: /
             service:
-              name: ntfy
-              port:
-                number: 80
-          path: /
-          pathType: Prefix
+              identifier: ntfy
+              port: http

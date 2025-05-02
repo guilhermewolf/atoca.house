@@ -40,13 +40,10 @@ ingress:
     hosts:
       - host: kromgo.atoca.house
         paths:
-        - backend:
+          - path: /
             service:
-              name: kromgo
-              port:
-                number: 80
-          path: /
-          pathType: Prefix
+              identifier: ntfy
+              port: http
 persistence:
   config-file:
     type: configMap

@@ -27,19 +27,15 @@ service:
     controller: whoami
     ports:
       http:
-        primary: true
         port: 80
-        targetPort: 80
+
 ingress:
   whoami:
     className: cloudflare-tunnel
     hosts:
       - host: whoami.atoca.house
         paths:
-        - backend:
+          - path: /
             service:
-              name: whoami
-              port:
-                number: 80
-          path: /
-          pathType: Prefix
+              identifier: whoami
+              port: http

@@ -11,7 +11,7 @@ spec:
   sources:
     - chart: app-template
       repoURL: ghcr.io/bjw-s/helm
-      targetRevision: 3.4.0
+      targetRevision: 3.7.3
       helm:
         releaseName: homepage
         valueFiles:

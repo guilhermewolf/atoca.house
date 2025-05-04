@@ -25,6 +25,7 @@ services:
       - /mnt/cache/appdata/slskd:/app
       - /mnt/user/media-downloads/complete/music:/downloads/complete/music
       - /mnt/user/media-downloads/incomplete/:/downloads/incomplete
+      - /mnt/user/musics/playlists:/playlists:ro
     deploy:
        resources:
          limits:

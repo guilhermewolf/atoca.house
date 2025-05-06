@@ -31,8 +31,8 @@ server:
         - hosts:
             - sso.atoca.house
           secretName: authentik-tls
-worker:
-  replicas: 1
+# worker:
+#   replicas: 1
 authentik:
   log_level: error
   error_reporting:

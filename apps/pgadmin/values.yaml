@@ -1,0 +1,93 @@
+controllers:
+  pgadmin:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: dpage/pgadmin4
+          tag: "9.2"
+        env:
+          PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
+          PGADMIN_DISABLE_POSTFIX: "true"
+          PGADMIN_LISTEN_PORT: &port 80
+          PGADMIN_DEFAULT_EMAIL:
+            valueFrom:
+              secretKeyRef:
+                name: pgadmin-secret
+                key: PGADMIN_DEFAULT_EMAIL
+          PGADMIN_DEFAULT_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: pgadmin-secret
+                key: PGADMIN_DEFAULT_PASSWORD
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /misc/ping
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+        resources:
+          requests:
+            cpu: 50m
+            memory: 100Mi
+          limits:
+            memory: 500Mi
+defaultPodOptions:
+  securityContext:
+    runAsUser: 5050
+    runAsGroup: 5050
+    fsGroup: 5050
+    fsGroupChangePolicy: OnRootMismatch
+service:
+  app:
+    controller: *app
+    ports:
+      http:
+        port: *port
+ingress:
+  app:
+    enabled: true
+    className: nginx
+    hosts:
+      - host: "pg.atoca.house"
+        paths:
+          - path: /
+            service:
+              identifier: app
+              port: http
+persistence:
+  config:
+    enabled: true
+    existingClaim: pgadmin
+    advancedMounts:
+      pgadmin:
+        app:
+          - path: /var/lib/pgadmin
+  oauth:
+    enabled: true
+    type: secret
+    name: pgadmin-secret-auth
+    advancedMounts:
+      pgadmin:
+        app:
+          - path: /pgadmin4/config_local.py
+            subPath: config_local.py
+  pgpass:
+    enabled: true
+    type: secret
+    name: pgadmin-servers
+    advancedMounts:
+      pgadmin:
+        app:
+          - path: /pgadmin4/servers.json
+            subPath: servers.json
+          - path: /pgadmin4/pgpass
+            subPath: pgpass

@@ -14,6 +14,17 @@ redis:
 
 server:
   replicas: 1
+  livenessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    periodSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    periodSeconds: 10
+    failureThreshold: 6
+
   metrics:
     enabled: true
     serviceMonitor:
@@ -31,8 +42,19 @@ server:
         - hosts:
             - sso.atoca.house
           secretName: authentik-tls
-# worker:
-#   replicas: 1
+worker:
+  replicas: 1
+  livenessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    periodSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    periodSeconds: 10
+    failureThreshold: 6
+    
 authentik:
   log_level: error
   error_reporting:

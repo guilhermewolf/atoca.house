@@ -14,13 +14,11 @@ deschedulerPolicy:
         - name: LowNodeUtilization
           args:
             targetThresholds:
-              cpu: 50
-              memory: 50
-              pods: 50
+              cpu: 45
+              memory: 55
             thresholds:
-              cpu: 30
+              cpu: 25
               memory: 30
-              pods: 30
             useDeviationThresholds: true
         - name: RemovePodsViolatingInterPodAntiAffinity
         - name: RemovePodsViolatingNodeAffinity
@@ -33,6 +31,10 @@ deschedulerPolicy:
             constraints:
               - DoNotSchedule
               - ScheduleAnyway
+        - name: RemovePodsHavingTooManyRestarts
+          args:
+            podRestartThreshold: 3
+            includingInitContainers: true
       plugins:
         balance:
           enabled:
@@ -43,6 +45,7 @@ deschedulerPolicy:
             - RemovePodsViolatingNodeTaints
             - RemovePodsViolatingNodeAffinity
             - RemovePodsViolatingInterPodAntiAffinity
+            - RemovePodsHavingTooManyRestarts
 service:
   enabled: true
 serviceMonitor:

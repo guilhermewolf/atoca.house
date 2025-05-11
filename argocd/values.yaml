@@ -1,8 +1,15 @@
 configs:
-  params:
-    server.insecure: false
+  # params:
+  #   server.insecure: false
   cm:
     statusbadge.enabled: true
+    url: https://argocd.atoca.house
+    oidc.config: |
+      name: authentik
+      issuer: https://sso.atoca.house/application/o/argocd/
+      clientID: $authentik.clientID
+      clientSecret: $authentik.clientSecret
+      requestedScopes: ["openid", "profile", "email", "groups"]
 
     repositories: |
       - url: https://github.com/guilhermewolf/atoca.house
@@ -30,12 +37,18 @@ configs:
       return hs
 
     kustomize.buildOptions: --enable-helm --load-restrictor LoadRestrictionsNone
-
+  rbac:
+    policy.csv: | 
+      g, ArgoCD Admins, role:admin
+      g, ArgoCD Viewers, role:readonly
 crds:
   install: true
   keep: true
 
 redisSecretInit:
+  enabled: false
+
+dex:
   enabled: false
 
 server:
@@ -49,7 +62,8 @@ server:
 
     annotations:
       cert-manager.io/cluster-issuer: cloudflare-prod
-      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+      #nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 
 repoServer:

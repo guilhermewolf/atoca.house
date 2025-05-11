@@ -1,6 +1,8 @@
 controller:
   replicaCount: 2
-
+  
+  extraArgs:
+    enable-ssl-passthrough: "true"
   # Set specific LoadBalancer IP
   service:
     spec:

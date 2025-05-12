@@ -12,7 +12,7 @@ services:
       - TZ=Europe/Amsterdam
     volumes:
       - /mnt/cache/appdata/sabnzbd:/config
-      - /mnt/user/data/usenet/:/downloads/
+      - /mnt/user/data/usenet/:/data/usenet/
     deploy:
        resources:
          limits:

@@ -23,8 +23,8 @@ services:
       - PORT=5030
     volumes:
       - /mnt/cache/appdata/slskd:/app
-      - /mnt/user/media-downloads/complete/music:/downloads/complete/music
-      - /mnt/user/media-downloads/incomplete/:/downloads/incomplete
+      - /mnt/user/data/slskd/complete:/downloads/complete/music
+      - /mnt/user/data/slskd/incomplete/:/downloads/incomplete
       - /mnt/user/musics/playlists:/playlists:ro
     deploy:
        resources:

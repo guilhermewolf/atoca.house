@@ -9,9 +9,7 @@ services:
       - "8096:8096"
       - "1900:1900/udp"
     volumes:
-      - /mnt/user/media-files/tv:/data/tvshows
-      - /mnt/user/media-files/movies:/data/movies
-      - /mnt/user/media-files/anime:/data/anime
+      - /mnt/user/data/:/data
       - /mnt/cache/appdata/jellyfin:/config
     environment:
       - PUID=99

@@ -9,8 +9,7 @@ services:
     ports:
       - "8989:8989"
     volumes:
-      - /mnt/user/media-files/tv:/tv
-      - /mnt/user/media-downloads/complete/tv:/downloads/complete/tv
+      - /mnt/user/data/:/data
       - /mnt/cache/appdata/sonarr:/config
     environment:
       - PUID=99

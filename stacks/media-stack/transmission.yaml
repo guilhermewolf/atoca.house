@@ -11,8 +11,7 @@ services:
       - TZ=Europe/Amsterdam
       - UMASK=022
     volumes:
-      - "/mnt/user/media-downloads/complete:/downloads/complete"
-      - "/mnt/user/media-downloads/incomplete:/downloads/incomplete"
+      - "/mnt/user/data/torrents:/downloads"
       - /mnt/cache/appdata/tranmission:/config
     deploy:
       resources:

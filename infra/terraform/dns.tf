@@ -19,13 +19,13 @@ locals {
     "npm",
     "openweb-ui",
     "portainer",
+    "qbittorrent",
     "radar",
     "readar",
     "sabnzbd",
     "slskd",
     "sonar",
     "tandoor",
-    "transmission",
     "wyl"
   ]
   domain = "atoca.house"

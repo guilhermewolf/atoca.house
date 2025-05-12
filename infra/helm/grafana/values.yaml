@@ -6,10 +6,21 @@ env:
   GF_DATE_FORMATS_USE_BROWSER_LOCALE: true
   GF_EXPLORE_ENABLED: true
   GF_SECURITY_ANGULAR_SUPPORT_ENABLED: true
-  GF_SERVER_ROOT_URL: https://grafana.atoca.houses
+  GF_SERVER_ROOT_URL: https://grafana.atoca.house
 grafana.ini:
   news:
     news_feed_enabled: false
+  auth:
+    singout_redirect_url: https://sso.atoca.house/application/o/grafana/end-session/
+    oauth_auto_login: true
+    auth.generic_oauth:
+        name: authentik
+        enabled: true
+        scopes: "openid profile email"
+        auth_url: "https://sso.atoca.house/application/o/authorize/"
+        token_url: "https://sso.atoca.house/application/o/token/"
+        api_url: "https://sso.atoca.house/application/o/userinfo/"
+        role_attribute_path: contains(groups, 'Grafana Admins') && 'Admin' || 'Viewer'
 datasources:
   datasources.yaml:
     apiVersion: 1

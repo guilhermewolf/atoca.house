@@ -1,19 +1,20 @@
 version: "3.8" # Updated version
 
 services:
-  transmission:
-    image: ghcr.io/linuxserver/transmission:4.0.6
+  qbittorrent:
+    image: ghcr.io/linuxserver/qbittorrent:5.1.0
     network_mode: "container:GlueTun-Nord"
-    container_name: Transmission-Nord
+    container_name: qBittorrent-Nord
     environment:
       - PUID=99
       - PGID=100
       - TZ=Europe/Amsterdam
       - UMASK=022
+      - WEBUI_PORT=8082
+      - TORRENTING_PORT=6881
     volumes:
-      - "/mnt/user/media-downloads/complete:/downloads/complete"
-      - "/mnt/user/media-downloads/incomplete:/downloads/incomplete"
-      - /mnt/cache/appdata/tranmission:/config
+      - "/mnt/user/data/torrents:/downloads"
+      - /mnt/cache/appdata/qbittorent:/config
     deploy:
       resources:
         limits:

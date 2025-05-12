@@ -8,9 +8,9 @@ services:
       - NET_ADMIN
     ports:
       - "8888:8888/tcp"        # HTTP proxy
-      - "9092:9091"            # qBittorrent or similar
-      - "51413:51413"
-      - "51413:51413/udp"
+      - "8082:8082"            # qBittorrent
+      - "6881:6881"            # qBittorrent
+      - "6881:6881/udp"        # qBittorrent 
       - "2234:2234"            # slskd P2P port
       - "8080:8080"            # SABnzbd Web UI
     environment:

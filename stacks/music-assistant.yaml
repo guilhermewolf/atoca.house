@@ -11,6 +11,6 @@ services:
       - TZ=Europe/Amsterdam
     volumes:
       - /mnt/cache/appdata/music-assistant:/data
-      - /mnt/user/media-files/music:/music
+      - /mnt/user/data/media/music:/music
     privileged: true
     restart: unless-stopped

@@ -9,8 +9,7 @@ services:
     ports:
       - "8889:8989"
     volumes:
-      - /mnt/user/media-files/anime:/anime
-      - /mnt/user/media-downloads/complete/anime:/downloads/complete/anime
+      - /mnt/user/data/:/data
       - /mnt/cache/appdata/sonarr-anime:/config
     environment:
       - PUID=99

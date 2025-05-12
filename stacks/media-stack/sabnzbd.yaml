@@ -12,11 +12,11 @@ services:
       - TZ=Europe/Amsterdam
     volumes:
       - /mnt/cache/appdata/sabnzbd:/config
-      - /mnt/user/media-downloads/complete:/downloads/complete
-      - /mnt/user/media-downloads/incomplete:/downloads/incomplete
+      - /mnt/user/data/usenet/:/downloads/
     deploy:
        resources:
          limits:
            cpus: '1.0'
            memory: 1G
     restart: always
+ 

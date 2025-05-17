@@ -58,7 +58,7 @@ prometheus:
     image:
       registry: quay.io
       repository: prometheus/prometheus
-      tag: v3.3.1
+      tag: v3.4.0
     resources:
       requests:
         cpu: 250m

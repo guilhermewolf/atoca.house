@@ -1,8 +1,3 @@
-serviceAccounts:
-  system-upgrade-controller:
-    create: false
-    name: system-upgrade-controller
-
 controllers:
   system-upgrade-controller:
     replicas: 2
@@ -23,7 +18,6 @@ controllers:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
-          SYSTEM_UPGRADE_JOB_BACKOFF_LIMIT: "99"
           SYSTEM_UPGRADE_JOB_PRIVILEGED: false
         securityContext:
           allowPrivilegeEscalation: false
@@ -31,4 +25,9 @@ controllers:
           capabilities:
             drop: ["ALL"]
     serviceAccount:
-      identifier: system-upgrade-controller
+      name: system-upgrade-controller
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 568
+    runAsGroup: 568

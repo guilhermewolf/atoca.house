@@ -1,0 +1,17 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: system-upgrade-plans
+spec:
+  project: infra
+  source:
+    path: infra/helm/system-upgrade-plans/
+    repoURL: 'https://github.com/guilhermewolf/atoca.house'
+    targetRevision: HEAD
+  destination:
+    namespace: system-upgrade-plans
+    server: 'https://kubernetes.default.svc'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

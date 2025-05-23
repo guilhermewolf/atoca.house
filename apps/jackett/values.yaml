@@ -2,7 +2,7 @@ controllers:
   jackett:
     pod:
       securityContext:
-        fsGroup: 997
+        fsGroup: 1000
         fsGroupChangePolicy: "OnRootMismatch"
     containers:
       jackett:

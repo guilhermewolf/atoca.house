@@ -54,7 +54,7 @@
 
     - name: Wait for Kubernetes controlplane to be ready
       shell: |
-        talosctl kubeconfig -f -n {{ control_plane_node }}
+        talosctl kubeconfig {{ lookup('env', 'HOME') }} -f -n {{ control_plane_node }}
         kubectl --kubeconfig={{ lookup('env', 'HOME') }}//kubeconfig get nodes --selector node-role.kubernetes.io/control-plane -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' | grep True
       retries: 15
       delay: 60
@@ -82,13 +82,6 @@
       environment:
         SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
-    - name: Decrypt Talos worker-4 file
-      shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-4.enc.yaml > {{ talos_dir }}/worker-4.yaml"
-      args:
-        creates: "{{ talos_dir }}/worker-4.yaml"
-      environment:
-        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
-
     - name: Apply Talos worker-1 config
       shell: "talosctl apply-config --insecure --nodes 192.168.178.202 --file {{ talos_dir }}/worker-1.yaml"
 
@@ -97,9 +90,6 @@
 
     - name: Apply Talos worker-3 config
       shell: "talosctl apply-config --insecure --nodes 192.168.178.204 --file {{ talos_dir }}/worker-3.yaml"
-
-    - name: Apply Talos worker-4 config
-      shell: "talosctl apply-config --insecure --nodes 192.168.178.205 --file {{ talos_dir }}/worker-4.yaml"
 
     - name: Generate kubeconfig for the controlplane
       shell: "talosctl kubeconfig -f -n {{ control_plane_node }}"
@@ -135,21 +125,14 @@
         cmd: "op read op://{{ op_argocd_authentik_id }}/clientSecret"
       register: authentik_client_secret
 
-    - name: Patch argocd-secret with Authentik client credentials
-      command: >
-        kubectl -n argocd patch secret argocd-secret
-        --type merge
-        --patch
-        '{"stringData": {"authentik.clientID": "{{ authentik_client_id.stdout }}", "authentik.clientSecret": "{{ authentik_client_secret.stdout }}"}}'
+    - name: create argocd namespace
+      ansible.builtin.command:
+        cmd: "kubectl create namespace {{ argocd_namespace }}"
+        _uses_shell: true
 
     - name: Create a Kubernetes secret for argocd-redis
       ansible.builtin.command:
         cmd: "kubectl -n {{ argocd_namespace }} create secret generic {{ argocd_redis_token_name }} --dry-run=client --from-file=auth=/tmp/op_argocd_redis.txt -o yaml > /tmp/{{ argocd_redis_token_name }}.yaml" 
-        _uses_shell: true
-
-    - name: create argocd namespace
-      ansible.builtin.command:
-        cmd: "kubectl create namespace {{ argocd_namespace }}"
         _uses_shell: true
 
     - name: Apply argocd-redis manifest
@@ -174,6 +157,13 @@
       delay: 30
       register: argocd_ready
       until: argocd_ready.rc == 0
+
+    - name: Patch argocd-secret with Authentik client credentials
+      command: >
+        kubectl -n argocd patch secret argocd-secret
+        --type merge
+        --patch
+        '{"stringData": {"authentik.clientID": "{{ authentik_client_id.stdout }}", "authentik.clientSecret": "{{ authentik_client_secret.stdout }}"}}'
 
     - name: Apply additional kustomize set configurations
       shell: "kubectl kustomize {{ lookup('env', 'PWD') }}/sets/ | kubectl apply -f -"

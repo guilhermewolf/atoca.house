@@ -76,6 +76,10 @@ machine:
     hostDNS:
       enabled: true
       forwardKubeDNSToHost: true
+    kubernetesTalosAPIAccess:
+      enabled: true
+      allowedRoles: ["os:admin"]
+      allowedKubernetesNamespaces: ["system-upgrade-plans", "system-upgrade-controller"]
 cluster:
   id: ENC[AES256_GCM,data:CGcW7rBYj9sOQByzpgiH7oxDwlFVMJ+SghWw7LP0TP2ZaJT3ZLzUtAmBPHM=,iv:8hTt9Hg4W4M90Tj1TI0bgtF3EZSudKwkBrN0MKPFO4U=,tag:UmVLxurpwQo5PdahS3mnmg==,type:str]
   secret: ENC[AES256_GCM,data:TWgPGCq+KsnNpb23BoaTpBDue0XPYfE8r3KdG3NEB+fNpy+B30P8vRBKE04=,iv:sd3r1qgNnN2hyrsT2yczefUHJUnzz14JQW/GtdWiKqo=,tag:RO6ehV0L6LWmirlWnRCwDg==,type:str]

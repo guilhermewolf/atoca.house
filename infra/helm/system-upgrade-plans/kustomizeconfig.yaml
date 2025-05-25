@@ -1,0 +1,7 @@
+varReference:
+  - kind: Plan
+    path: spec/version
+  - kind: Plan
+    path: spec/upgrade/image
+  - kind: Plan
+    path: spec/upgrade/args

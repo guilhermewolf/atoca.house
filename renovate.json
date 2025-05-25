@@ -2,11 +2,37 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended",
-    ":automergePatch",
+    "docker:enableMajor",
+    ":automergeBranch",
+    ":disableRateLimiting",
     ":dependencyDashboard",
     ":semanticCommits",
     ":timezone(Europe/Amsterdam)",
     "github>guilhermewolf/atoca.house//.github/renovate/grafanaDashboards.json"
+  ],
+  "packageRules": [
+    {
+      "description": "Auto-merge OCI Charts",
+      "matchDatasources": ["docker"],
+      "automerge": true,
+      "automergeType": "pr",
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchPackageNames": ["/kube-prometheus-stack/", "/grafana/"],
+      "ignoreTests": false
+    },
+    {
+      "description": "Auto-merge trusted GitHub Actions",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": [
+        "/^actions\//",
+        "/^renovatebot\//"
+      ],
+      "automerge": true,
+      "automergeType": "branch",
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "minimumReleaseAge": "1 minute",
+      "ignoreTests": true
+    }
   ],
   "docker-compose": {
     "fileMatch": [
@@ -18,5 +44,20 @@
       "^infra/helm/.*?/application\\.yaml$",
       "^apps/.*?/application\\.yaml$"
       ]
-  }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Process annotated dependencies",
+      "managerFilePatterns": [
+        "/(^|/).+\\.env$/",
+        "/(^|/).+\\.ya?ml(?:\\.j2)?$/"
+      ],
+      "matchStrings": [
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( repository=(?<registryUrl>\\S+))?\\n.+(:\\s|=)(&\\S+\\s)?(?<currentValue>\\S+)",
+        "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n.+/(?<currentValue>(v|\\d)[^/]+)"
+      ],
+      "datasourceTemplate": "{{#if datasource}}{{{datasource}}}{{else}}github-releases{{/if}}"
+    }
+  ]
 }

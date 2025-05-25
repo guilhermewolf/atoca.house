@@ -11,15 +11,27 @@
   },
   "customManagers": [
     {
-      "description": ["Process Grafana dashboards"],
+      "description": "Process Grafana dashboards",
       "customType": "regex",
-      "fileMatch": ["^infra/helm/grafana/values\\.ya?ml$"],
-      "matchStrings": [
-        "# renovate: depName=\"(?<depName>[^\"]+)\"\\n(?<indent1>\\s+)gnetId: (?<packageName>\\d+)\\n(?<indent2>\\s+)revision: (?<currentValue>\\d+)"
+      "managerFilePatterns": [
+        "/(^|/)infra/helm/grafana/values\\.ya?ml$/"
       ],
-      "autoReplaceStringTemplate": "# renovate: depName=\"{{{depName}}}\"\n{{{indent1}}}gnetId: {{{packageName}}}\n{{{indent2}}}revision: {{{newValue}}}",
+      "matchStrings": [
+        "depName=\"(?<depName>.*)\"\\n(?<indentation>\\s+)gnetId: (?<packageName>\\d+)\\n.+revision: (?<currentValue>\\d+)"
+      ],
+      "autoReplaceStringTemplate": "depName=\"{{{depName}}}\"\n{{{indentation}}}gnetId: {{{packageName}}}\n{{{indentation}}}revision: {{{newValue}}}",
       "datasourceTemplate": "custom.grafana-dashboards",
       "versioningTemplate": "regex:^(?<major>\\d+)$"
+    }
+  ],
+  "packageRules": [
+    {
+      "addLabels": ["renovate/grafana-dashboard"],
+      "automerge": true,
+      "automergeType": "branch",
+      "ignoreTests": true,
+      "matchDatasources": ["custom.grafana-dashboards"],
+      "matchUpdateTypes": ["major"]
     }
   ]
 }

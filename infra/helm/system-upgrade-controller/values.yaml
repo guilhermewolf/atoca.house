@@ -1,12 +1,13 @@
+---
 controllers:
   system-upgrade-controller:
-    replicas: 2
     strategy: RollingUpdate
+    replicas: 2
     containers:
       app:
         image:
           repository: docker.io/rancher/system-upgrade-controller
-          tag: v0.15.2
+          tag: v0.15.2@sha256:3e899833afcea9a8788d384ce976df9a05be84636fe5c01ec2307b5bd8fe9810
         env:
           SYSTEM_UPGRADE_CONTROLLER_LEADER_ELECT: true
           SYSTEM_UPGRADE_CONTROLLER_NAME: system-upgrade-controller
@@ -18,16 +19,34 @@ controllers:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
+          SYSTEM_UPGRADE_JOB_BACKOFF_LIMIT: "99"
           SYSTEM_UPGRADE_JOB_PRIVILEGED: false
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          capabilities:
-            drop: ["ALL"]
+          capabilities: { drop: ["ALL"] }
     serviceAccount:
-      name: system-upgrade-controller
+      identifier: system-upgrade-controller
 defaultPodOptions:
   securityContext:
     runAsNonRoot: true
-    runAsUser: 568
-    runAsGroup: 568
+    runAsUser: 1000
+    runAsGroup: 1000
+rawResources:
+  talosServiceAccount:
+    apiVersion: talos.dev/v1alpha1
+    kind: ServiceAccount
+    spec:
+      spec:
+        roles: ["os:admin"]
+rbac:
+  bindings:
+    system-upgrade-controller:
+      type: ClusterRoleBinding
+      roleRef:
+        kind: ClusterRole
+        name: cluster-admin
+      subjects:
+        - identifier: system-upgrade-controller
+serviceAccount:
+  system-upgrade-controller: {}

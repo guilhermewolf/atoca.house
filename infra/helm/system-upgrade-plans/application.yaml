@@ -10,8 +10,5 @@ spec:
     repoURL: 'https://github.com/guilhermewolf/atoca.house'
     targetRevision: HEAD
   destination:
-    namespace: system-upgrade-plans
+    namespace: system-upgrade-controller
     server: 'https://kubernetes.default.svc'
-  syncPolicy:
-    syncOptions:
-      - CreateNamespace=true

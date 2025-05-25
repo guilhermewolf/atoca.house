@@ -4,3 +4,8 @@ kind: Kustomization
 resources:
   - ./kubernetes.yaml
   - ./talos.yaml
+configMapGenerator:
+  - name: versions
+    env: ./versions.env
+configurations:
+  - ./kustomizeconfig.yaml

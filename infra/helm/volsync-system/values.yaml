@@ -1,6 +1,12 @@
 manageCRDs: true
 metrics:
   disableAuth: true
+image:
+  repository: ghcr.io/onedr0p/volsync
+  tag: 0.12.0
+restic:
+  repository: restic/restic
+  tag: 0.18.0
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 1000

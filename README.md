@@ -107,18 +107,18 @@ While most of my infrastructure and workloads are self-hosted I do rely upon the
 
 ## 🔧 Hardware
 
-| Device                          | Count | OS Disk Size | Data Disk Size              | Ram  | Operating System  | Purpose             |
-|---------------------------------|-------|--------------|-----------------------------|------|-------------------|---------------------|
-| Raspberry Pi 4                  | 3     | 128GB (SD)   | -                           | 4GB  | Talos Linux 1.8.0 | K8s nodes           |
-| Raspberry Pi 4                  | 1     | 128GB (SD)   | -                           | 8GB  | Talos Linux 1.8.0 | K8s node            |
-| Raspberry PoE Hat               | 4     | -            | -                           | -    | -                 | Power the Pi's      |
-| TP-Link TL-SG108PE              | 1     | -            | -                           | -    | -                 | Network PoE Switch  |
-| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB Nvme + 1x 2TB SSD    | 8GB  | Unraid 7.0.0      | NAS                 |
+| Device                          | Count | OS Disk Size | Data Disk Size              | Ram  | Operating System   | Purpose             |
+|---------------------------------|-------|--------------|-----------------------------|------|--------------------|---------------------|
+| Raspberry Pi 4                  | 3     | 128GB (SD)   | -                           | 4GB  | Talos Linux 1.10.2 | K8s nodes           |
+| Raspberry Pi 4                  | 1     | 128GB (SD)   | -                           | 8GB  | Talos Linux 1.10.2 | K8s node            |
+| Raspberry PoE Hat               | 4     | -            | -                           | -    | -                  | Power the Pi's      |
+| TP-Link TL-SG108PE              | 1     | -            | -                           | -    | -                  | Network PoE Switch  |
+| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB Nvme + 1x 2TB SSD    | 8GB  | Unraid 7.0.0       | NAS                 |
 
 ---
 ## 💪 TO-DO 
 
-- [ ] Ansible playbook for deploying the cluster
+- [x] Ansible playbook for deploying the cluster
 - [x] Implement terraform for managing cloud resources
 
 ---

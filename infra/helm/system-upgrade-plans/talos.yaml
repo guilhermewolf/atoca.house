@@ -9,8 +9,12 @@ spec:
   exclusive: true
   nodeSelector:
     matchExpressions:
-      - key: kubernetes.io/hostname
+      - key: kubernetes.io/os
         operator: Exists
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
   secrets:
     - name: system-upgrade-controller
       path: /var/run/secrets/talos.dev
@@ -18,6 +22,11 @@ spec:
   serviceAccountName: system-upgrade-controller
   upgrade:
     image: ghcr.io/jfroy/tnu:0.4.2
+    envs:
+      - name: NODE_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP
     args:
-      - --node=$(SYSTEM_UPGRADE_NODE_NAME)
+      - --node=$(NODE_IP)
       - --tag=$(SYSTEM_UPGRADE_PLAN_LATEST_VERSION)

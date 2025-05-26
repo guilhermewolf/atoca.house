@@ -2,11 +2,11 @@ manageCRDs: true
 metrics:
   disableAuth: true
 image:
-  repository: ghcr.io/onedr0p/volsync
-  tag: 0.12.0
+  repository: ghcr.io/guilhermewolf/volsync
+  tag: 0.12.1
 restic:
-  repository: restic/restic
-  tag: 0.18.0
+  repository: ghcr.io/guilhermewolf/volsync
+  tag: 0.12.1
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 1000

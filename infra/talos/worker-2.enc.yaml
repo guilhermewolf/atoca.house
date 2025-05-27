@@ -41,6 +41,10 @@ machine:
     image: ghcr.io/siderolabs/installer:v1.10.2
     bootloader: true
     wipe: false
+    extensions:
+      - image: ghcr.io/siderolabs/iscsi-tools:v0.2.0
+      - image: ghcr.io/siderolabs/util-linux-tools:2.40.4
+      
   time:
     servers:
         - 192.168.178.22

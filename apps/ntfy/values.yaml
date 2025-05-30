@@ -6,7 +6,7 @@ controllers:
       ntfy:
         image:
           repository: binwiederhier/ntfy
-          tag: v2.11.0
+          tag: v2.12.0
         args: ["serve"]
         env:
           NTFY_BASE_URL: https://ntfy.atoca.house

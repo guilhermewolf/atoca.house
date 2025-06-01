@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   music-assistant:
-    image: ghcr.io/music-assistant/server:2.5.2
+    image: ghcr.io/music-assistant/server:2.5.4
     container_name: music-assistant
     network_mode: host
     environment:

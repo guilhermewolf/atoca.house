@@ -12,6 +12,7 @@ services:
       - UMASK=022
       - WEBUI_PORT=8082
       - TORRENTING_PORT=6881
+      - DOCKER_MODS=ghcr.io/vuetorrent/vuetorrent-lsio-mod:v2.25.0
     volumes:
       - /mnt/user/data/torrents:/data/torrents
       - /mnt/cache/appdata/qbittorent:/config

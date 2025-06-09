@@ -14,7 +14,7 @@ permissions:
 jobs:
   label-sync:
     name: Label Sync
-    runs-on: ubuntu-latest
+    runs-on: arc-runners
     steps:
       - name: Checkout
         uses: actions/checkout@v4

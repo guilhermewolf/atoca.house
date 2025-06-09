@@ -4,7 +4,7 @@ controllers:
       flaresolverr:
         image:
           repository: flaresolverr/flaresolverr
-          tag: v3.3.21
+          tag: v3.3.24
           pullPolicy: IfNotPresent
         env:
           - name: LOG_LEVEL

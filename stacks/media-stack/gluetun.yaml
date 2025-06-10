@@ -13,6 +13,7 @@ services:
       - "6881:6881/udp"        # qBittorrent 
       - "2234:2234"            # slskd P2P port
       - "8080:8080"            # SABnzbd Web UI
+      - "1080:1080/tcp"        # socks5
     environment:
       - HTTPPROXY=on
       - VPN_SERVICE_PROVIDER=nordvpn

@@ -8,7 +8,7 @@ controllers:
       jackett:
         image:
           repository: linuxserver/jackett
-          tag: 0.22.2011
+          tag: 0.22.2020
           pullPolicy: IfNotPresent
         env:
           - name: TZ

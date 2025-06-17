@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   wyoming-whisper:
-    image: rhasspy/wyoming-whisper:2.4.0
+    image: rhasspy/wyoming-whisper:2.5.0
     container_name: wyoming-whisper
     environment:
       - TZ=Europe/Amsterdam

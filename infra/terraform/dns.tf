@@ -3,6 +3,7 @@ locals {
   subdomains = [
     "adguard",
     "anime",
+    "autobrr",
     "bazar",
     "compartilhado",
     "hass",
@@ -26,6 +27,7 @@ locals {
     "slskd",
     "sonar",
     "tandoor",
+    "vscode",
     "wyl"
   ]
   domain = "atoca.house"

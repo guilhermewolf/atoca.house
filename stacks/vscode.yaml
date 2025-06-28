@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  openvscode-server:
+    image: lscr.io/linuxserver/openvscode-server:1.101.2
+    container_name: openvscode-server
+    ports:
+      - "3000:3000"
+    volumes:
+      - /mnt/cache/appdata:/appdata
+    environment:
+      - SUDO_PASSWORD=$VSCODE_SUDO_PASSWORD
+    restart: unless-stopped
+    labels:
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/openvscode-server-logo.png"

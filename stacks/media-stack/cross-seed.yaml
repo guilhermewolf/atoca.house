@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  cross-seed:
+    image: ghcr.io/cross-seed/cross-seed:6.12.7
+    container_name: cross-seed
+    user: 99:100
+    ports:
+      - "2468:2468"
+    volumes:
+      - /mnt/cache/appdata/cross-seed:/config
+      - /mnt/user/data:/data
+    restart: unless-stopped
+    command: daemon
+    labels:
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/cross-seed/cross-seed.org/master/static/img/cross-seed.png"

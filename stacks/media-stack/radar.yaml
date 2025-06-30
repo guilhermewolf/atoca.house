@@ -15,6 +15,7 @@ services:
       - PUID=99
       - PGID=100
       - UMASK=022
+      - TZ=Europe/Amsterdam
     deploy:
       resources:
         limits:

@@ -12,6 +12,7 @@ services:
       - PGID=100
       - UMASK=022
       - LOG_LEVEL=info
+      - TZ=Europe/Amsterdam
     volumes:
       - /mnt/cache/appdata/jellyseerr:/app/config
     networks:

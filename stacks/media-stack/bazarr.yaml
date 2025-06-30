@@ -8,6 +8,7 @@ services:
       - PUID=99
       - PGID=100
       - UMASK=022
+      - TZ=Europe/Amsterdam
     volumes:
       - /mnt/cache/appdata/bazarr:/config
       - /mnt/user/data/:/data

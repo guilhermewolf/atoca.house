@@ -11,6 +11,7 @@ services:
       - PUID=99
       - PGID=100
       - UMASK=0000
+      - TZ=Europe/Amsterdam
     volumes:
       - /mnt/cache/appdata/homebridge:/homebridge
     restart: unless-stopped

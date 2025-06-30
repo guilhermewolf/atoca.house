@@ -21,6 +21,7 @@ services:
       - WIREGUARD_PRIVATE_KEY=$NORD_KEY
       - SERVER_COUNTRIES=Netherlands
       - FIREWALL_VPN_INPUT_PORTS=2234
+      - TZ=Europe/Amsterdam
     deploy:
       resources:
         limits:

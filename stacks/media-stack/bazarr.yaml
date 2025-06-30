@@ -20,3 +20,5 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+    labels:
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/bazarr-logo.png"

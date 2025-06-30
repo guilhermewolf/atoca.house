@@ -22,3 +22,5 @@ services:
         limits:
           cpus: '4.0'
           memory: 6G
+    labels:
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/jellyfin-icon.png"

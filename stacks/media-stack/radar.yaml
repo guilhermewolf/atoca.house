@@ -22,3 +22,5 @@ services:
           cpus: '1.0'
           memory: 1G
     restart: unless-stopped
+    labels:
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/radarr-icon.png"

@@ -22,3 +22,5 @@ services:
         limits:
           cpus: '1.0'
           memory: 1G
+    labels:
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/sonarr-icon.png"

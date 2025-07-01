@@ -12,6 +12,7 @@ services:
       - "6881:6881"            # qBittorrent
       - "6881:6881/udp"        # qBittorrent 
       - "2234:2234"            # slskd P2P port
+      - "5030:5030"            # slskd Web UI
       - "8080:8080"            # SABnzbd Web UI
       - "1080:1080/tcp"        # socks5
     environment:

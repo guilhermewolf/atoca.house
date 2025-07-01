@@ -27,3 +27,4 @@ services:
       timeout: 10s
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/sabnzbd-icon.png"
+      - "deunhealth.restart.on.unhealthy=true"

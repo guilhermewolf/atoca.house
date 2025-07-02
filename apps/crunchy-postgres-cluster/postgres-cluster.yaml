@@ -104,7 +104,7 @@ spec:
         - name: repo2 # R2
           s3: &r2
             bucket: "crunchy-postgres"
-            endpoint: "https://10703aaeb553ac067d0a5d6edef8a44b.r2.cloudflarestorage.com/rpi-k8s-crunchy-postgres"
+            endpoint: 10703aaeb553ac067d0a5d6edef8a44b.r2.cloudflarestorage.com
             region: "us-east-1"
           schedules:
             full: "0 2 * * 0" # Sunday at 02:00

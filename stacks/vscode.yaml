@@ -11,6 +11,9 @@ services:
     environment:
       - SUDO_PASSWORD=$VSCODE_SUDO_PASSWORD
       - TZ=Europe/Amsterdam
+      - PUID=99
+      - PGID=100
+      - UMASK=022
     restart: unless-stopped
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/openvscode-server-logo.png"

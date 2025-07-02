@@ -5,8 +5,6 @@ services:
     image: slskd/slskd:latest
     container_name: slskd
     network_mode: "container:GlueTun-Nord"
-    ports:
-      - "5030:5030"
     environment:
       - PUID=99
       - PGID=100

@@ -7,16 +7,16 @@ services:
     cap_add:
       - NET_ADMIN
     ports:
-      - "8888:8888/tcp"        # HTTP proxy
+      - "8388:8388/tcp"        # Shadowsocks proxy
+      - "8388:8388/udp"        # Shadowsocks proxy
       - "8082:8082"            # qBittorrent
       - "6881:6881"            # qBittorrent
       - "6881:6881/udp"        # qBittorrent 
       - "2234:2234"            # slskd P2P port
       - "5030:5030"            # slskd Web UI
       - "8080:8080"            # SABnzbd Web UI
-      - "1080:1080/tcp"        # socks5
     environment:
-      - HTTPPROXY=on
+      - SHADOWSOCKSPROXY=on
       - VPN_SERVICE_PROVIDER=nordvpn
       - VPN_TYPE=wireguard
       - WIREGUARD_PRIVATE_KEY=$NORD_KEY

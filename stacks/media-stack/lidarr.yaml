@@ -1,0 +1,26 @@
+---
+version: '3.8'
+
+services:
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:2.12.4
+    container_name: lidarr
+    network_mode: bridge
+    ports:
+      - "8686:8686"
+    volumes:
+      - /mnt/user/data/:/data
+      - /mnt/cache/appdata/lidarr:/config
+    environment:
+      - PUID=99
+      - PGID=100
+      - UMASK=022
+      - TZ=Europe/Amsterdam
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    labels:
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/binhex/docker-templates/master/binhex/images/lidarr-icon.png"

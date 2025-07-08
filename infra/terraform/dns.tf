@@ -27,6 +27,7 @@ locals {
     "slskd",
     "sonar",
     "tandoor",
+    "thelounge",
     "vscode",
     "wyl"
   ]

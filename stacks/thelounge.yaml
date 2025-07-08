@@ -1,0 +1,16 @@
+---
+version: "3.8"
+
+services:
+  thelounge:
+    image: thelounge/thelounge:4.4.3
+    container_name: thelounge
+    environment:
+      - PUID=99
+      - PGID=100
+      - TZ=Europe/Amsterdam
+    ports:
+      - "9002:9000"
+    volumes:
+      - /mnt/cache/appdata/thelounge:/var/opt/thelounge
+    restart: unless-stopped

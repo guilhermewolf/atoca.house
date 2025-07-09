@@ -17,6 +17,7 @@ locals {
     "minio",
     "minio-data",
     "n8n",
+    "nextcloud",
     "npm",
     "openweb-ui",
     "portainer",

@@ -5,4 +5,4 @@ services:
       image: serjs/go-socks5-proxy:latest
       container_name: socks5
       restart: unless-stopped
-      network_mode: "container:GlueTun-Nord"
+      network_mode: "container:GlueTun-PIA"

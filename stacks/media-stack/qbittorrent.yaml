@@ -3,7 +3,7 @@ version: "3.8" # Updated version
 services:
   qbittorrent:
     image: ghcr.io/linuxserver/qbittorrent:5.1.2
-    network_mode: "container:GlueTun-Nord"
+    network_mode: "container:GlueTun-PIA"
     container_name: qBittorrent-Nord
     environment:
       - PUID=99

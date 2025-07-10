@@ -4,7 +4,7 @@ services:
   sabnzbd:
     image: lscr.io/linuxserver/sabnzbd:4.5.1
     container_name: sabnzbd
-    network_mode: "container:GlueTun-Nord"
+    network_mode: "container:GlueTun-PIA"
     environment:
       - PUID=99
       - PGID=100

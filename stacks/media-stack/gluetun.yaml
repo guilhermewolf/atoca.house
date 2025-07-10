@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   gluetun:
-    container_name: GlueTun-Nord
+    container_name: GlueTun-PIA
     image: qmcgaw/gluetun:v3.40.0
     cap_add:
       - NET_ADMIN
@@ -17,12 +17,19 @@ services:
       - "1080:1080"            # SOCKS5 proxy
     environment:
       - HTTPPROXY=on
-      - VPN_SERVICE_PROVIDER=nordvpn
-      - VPN_TYPE=wireguard
-      - WIREGUARD_PRIVATE_KEY=$NORD_KEY
-      - SERVER_COUNTRIES=Netherlands
-      - FIREWALL_VPN_INPUT_PORTS=2234
+      - VPN_SERVICE_PROVIDER=private internet access
+      - OPENVPN_USER=$OPENVPN_USER
+      - OPENVPN_PASSWORD=$OPENVPN_PASSWORD
+      - VPN_PORT_FORWARDING=true
+      - VPN_PORT_FORWARDING_STATUS_FILE=/gluetun_config/forwarded_port
+      - SERVER_REGIONS=Netherlands
+      - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":{{PORTS}}}" http://$IP_SERVER:8082/api/v2/app/setPreferences 2>&1'
       - TZ=Europe/Amsterdam
+      - PUID=99
+      - PGID=100
+      - UMASK=022
+    volumes:
+      - /mnt/cache/appdata/gluetun:/gluetun_config
     deploy:
       resources:
         limits:

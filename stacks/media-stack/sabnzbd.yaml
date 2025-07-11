@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   sabnzbd:
-    image: lscr.io/linuxserver/sabnzbd:4.5.1
+    image: lscr.io/linuxserver/sabnzbd:4.5.2
     container_name: sabnzbd
     network_mode: "container:GlueTun-PIA"
     environment:

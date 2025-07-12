@@ -15,19 +15,23 @@ services:
       - "1080:1080"            # SOCKS5 proxy
     environment:
       - HTTPPROXY=on
-      - VPN_SERVICE_PROVIDER=private internet access
-      - OPENVPN_USER=$OPENVPN_USER
-      - OPENVPN_PASSWORD=$OPENVPN_PASSWORD
-      - VPN_PORT_FORWARDING=true
-      - VPN_PORT_FORWARDING_STATUS_FILE=/gluetun_config/forwarded_port
-      - SERVER_REGIONS=Netherlands
-      - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":{{PORTS}}}" http://$IP_SERVER:8082/api/v2/app/setPreferences 2>&1'
       - TZ=Europe/Amsterdam
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+      - VPN_PORT_FORWARDING=on
+      - VPN_PORT_FORWARDING_PROVIDER=private internet access
+      - VPN_PORT_FORWARDING_USERNAME=$USERNAME
+      - VPN_PORT_FORWARDING_PASSWORD=$PASSWORD
+      - VPN_PORT_FORWARDING_STATUS_FILE=/gluetun/forwarded_port
+      - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":{{PORTS}}}" http://$IP_SERVER:8082/api/v2/app/setPreferences 2>&1'
+      - SERVER_NAMES=$SERVER_NAMES
+      - DOT=off
+      - HEALTH_TARGET_ADDRESS=cloudflare.com:443
       - PUID=99
       - PGID=100
       - UMASK=022
     volumes:
-      - /mnt/cache/appdata/gluetun:/gluetun_config
+      - /mnt/cache/appdata/gluetun:/gluetun/
     deploy:
       resources:
         limits:

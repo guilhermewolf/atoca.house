@@ -17,4 +17,8 @@ services:
       - UN_FOLDER_0_PATH=/data/torrents
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/wiki/davidnewhall/unpackerr/images/logo.png"
-      
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G

@@ -22,5 +22,5 @@ services:
       resources:
         limits:
           cpus: '1.0'
-          memory: 1G
+          memory: 2G
     command: server /data --console-address ":9001"

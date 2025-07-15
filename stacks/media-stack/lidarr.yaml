@@ -10,7 +10,7 @@ services:
       - "8686:8686"
     volumes:
       - /mnt/user/data/:/data
-      - /mnt/cache/appdata/lidarr:/config
+      - /mnt/cache_pool/appdata/lidarr:/config
     environment:
       - PUID=99
       - PGID=100

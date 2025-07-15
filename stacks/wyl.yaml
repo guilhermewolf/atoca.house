@@ -6,7 +6,7 @@ services:
     container_name: watchyourlan
     network_mode: host
     volumes:
-      - /mnt/cache/appdata/wyl:/data
+      - /mnt/cache_pool/appdata/wyl:/data
     environment:
       GUIPORT: $GUIPORT
       TZ: $TZ

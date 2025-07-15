@@ -13,5 +13,5 @@ services:
       - UMASK=0000
       - TZ=Europe/Amsterdam
     volumes:
-      - /mnt/cache/appdata/homebridge:/homebridge
+      - /mnt/cache_pool/appdata/homebridge:/homebridge
     restart: unless-stopped

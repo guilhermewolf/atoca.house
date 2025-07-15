@@ -4,7 +4,7 @@ services:
     container_name: unpackerr
     volumes:
       - /mnt/user/data/torrents:/data/torrents
-      - /mnt/cache/appdata/unpackerr:/config
+      - /mnt/cache_pool/appdata/unpackerr:/config
     restart: always
     user: 99:100
     environment:

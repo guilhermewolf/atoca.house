@@ -31,7 +31,7 @@ services:
       - PGID=100
       - UMASK=022
     volumes:
-      - /mnt/cache/appdata/gluetun:/gluetun/
+      - /mnt/cache_pool/appdata/gluetun:/gluetun/
     deploy:
       resources:
         limits:

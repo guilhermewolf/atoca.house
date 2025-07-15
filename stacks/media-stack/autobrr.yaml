@@ -9,7 +9,7 @@ services:
     ports:
       - "7474:7474"
     volumes:
-      - /mnt/cache/appdata/autobrr:/config
+      - /mnt/cache_pool/appdata/autobrr:/config
     restart: unless-stopped
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/autobrr/autobrr/develop/.github/images/logo.png"

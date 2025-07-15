@@ -7,7 +7,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - /mnt/cache/appdata:/appdata
+      - /mnt/cache_pool/appdata:/appdata
     environment:
       - SUDO_PASSWORD=$VSCODE_SUDO_PASSWORD
       - TZ=Europe/Amsterdam

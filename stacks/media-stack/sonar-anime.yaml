@@ -10,7 +10,7 @@ services:
       - "8889:8989"
     volumes:
       - /mnt/user/data/:/data
-      - /mnt/cache/appdata/sonarr-anime:/config
+      - /mnt/cache_pool/appdata/sonarr-anime:/config
     environment:
       - PUID=99
       - PGID=100

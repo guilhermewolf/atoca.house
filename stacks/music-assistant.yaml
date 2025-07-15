@@ -10,7 +10,7 @@ services:
       - PGID=100
       - TZ=Europe/Amsterdam
     volumes:
-      - /mnt/cache/appdata/music-assistant:/data
+      - /mnt/cache_pool/appdata/music-assistant:/data
       - /mnt/user/data/media/music:/music
     privileged: true
     restart: unless-stopped

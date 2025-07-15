@@ -12,5 +12,5 @@ services:
     ports:
       - "9002:9000"
     volumes:
-      - /mnt/cache/appdata/thelounge:/var/opt/thelounge
+      - /mnt/cache_pool/appdata/thelounge:/var/opt/thelounge
     restart: unless-stopped

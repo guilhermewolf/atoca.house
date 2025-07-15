@@ -10,7 +10,7 @@ services:
     ports:
       - "2468:2468"
     volumes:
-      - /mnt/cache/appdata/cross-seed:/config
+      - /mnt/cache_pool/appdata/cross-seed:/config
       - /mnt/user/data:/data
     restart: unless-stopped
     command: daemon

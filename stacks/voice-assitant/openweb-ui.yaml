@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   openweb-ui:
-    image: ghcr.io/open-webui/open-webui:v0.6.15
+    image: ghcr.io/open-webui/open-webui:0.6.16
     container_name: openweb-ui
     environment:
       - OLLAMA_BASE_URL=http://$GENMACHINE_IP:11434

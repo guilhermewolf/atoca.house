@@ -6,6 +6,7 @@ locals {
     "autobrr",
     "bazar",
     "compartilhado",
+    "duplicati",
     "hass",
     "homebridge",
     "jellyfin",

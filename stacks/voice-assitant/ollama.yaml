@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.9.6
     container_name: ollama
     environment:
       - OLLAMA_DEBUG=1

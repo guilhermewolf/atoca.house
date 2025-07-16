@@ -10,15 +10,16 @@ services:
       - PGID=100
       - TZ=Europe/Amsterdam
       - UMASK=022
+      - SLSKD_DOWNLOADS_DIR=/downloads/complete/music
+      - SLSKD_INCOMPLETE_DIR=/downloads/incomplete
+      - SLSKD_REMOTE_CONFIGURATION=false
+      - SLSKD_CLIENT_PORT=450300
+      - PORT=5030
       - SLSKD_SLSK_USERNAME=$SLSKD_SLSK_USERNAME
       - SLSKD_SLSK_PASSWORD=$SLSKD_SLSK_PASSWORD
       - SLSKD_SLSK_DESCRIPTION=A Soulseek user
-      - SLSKD_SLSK_LISTEN_PORT=2234
       - SLSKD_USERNAME=$SLSKD_USERNAME
       - SLSKD_PASSWORD=$SLSKD_PASSWORD
-      - SLSKD_DOWNLOADS_DIR=/downloads/complete/music
-      - SLSKD_INCOMPLETE_DIR=/downloads/incomplete
-      - PORT=5030
     volumes:
       - /mnt/cache_pool/appdata/slskd:/app
       - /mnt/user/data/slskd/complete:/downloads/complete/music
@@ -38,3 +39,4 @@ services:
       timeout: 10s
     labels:
       - "deunhealth.restart.on.unhealthy=true"
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/manuel-rw/unraid-templates/master/templates/slskd/logo.png"  

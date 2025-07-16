@@ -24,3 +24,5 @@ services:
           cpus: '1.0'
           memory: 2G
     command: server /data --console-address ":9001"
+    labels:
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/cheesemarathon/docker-templates/master/images/minio.png"

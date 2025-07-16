@@ -14,3 +14,5 @@ services:
     volumes:
       - /mnt/cache_pool/appdata/thelounge:/var/opt/thelounge
     restart: unless-stopped
+    labels:
+      - "net.unraid.docker.icon=https://avatars.githubusercontent.com/u/14336958?s=200&v=4"

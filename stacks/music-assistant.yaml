@@ -14,3 +14,5 @@ services:
       - /mnt/user/data/media/music:/music
     privileged: true
     restart: unless-stopped
+    labels:
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/alex3305/unraid-docker-templates/master/images/music-assistant.png"

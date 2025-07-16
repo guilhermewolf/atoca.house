@@ -15,3 +15,6 @@ services:
     volumes:
       - /mnt/cache_pool/appdata/homebridge:/homebridge
     restart: unless-stopped
+    labels:
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/homebridge/branding/master/logos/homebridge-color-round-stylized.png"
+

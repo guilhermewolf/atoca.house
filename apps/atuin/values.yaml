@@ -13,6 +13,8 @@ controllers:
             value: &port 80
           - name: ATUIN_OPEN_REGISTRATION
             value: "true"
+          - name: RUST_LOG 
+            value: info,atuin_server=debug
           - name: ATUIN_DB_URI
             valueFrom:
               secretKeyRef:

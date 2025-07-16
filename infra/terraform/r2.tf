@@ -29,19 +29,3 @@ resource "cloudflare_r2_bucket" "rpi_k8s_crunchy_postgres" {
     ]
   }
 }
-
-resource "cloudflare_r2_bucket" "compartilhado_user_backups" {
-  account_id     = var.account_id
-  name           = "compartilhado-user-backups"
-  jurisdiction   = "default"
-  location       = "WEUR"
-  storage_class  = "Standard"
-  lifecycle {
-    prevent_destroy = true
-    ignore_changes  = [
-      jurisdiction,
-      location,
-      storage_class
-    ]
-  }
-}

@@ -16,10 +16,9 @@ services:
       - PGID=100
       - UMASK=022
       - TZ=Europe/Amsterdam
+      - DOCKER_MODS=linuxserver/mods:jellyfin-opencl-intel
     devices:
       - /dev/dri:/dev/dri
-    group_add:
-      - "18"
     restart: unless-stopped
     deploy:
       resources:

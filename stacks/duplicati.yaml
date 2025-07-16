@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   duplicati:
-    image: lscr.io/linuxserver/duplicati:2.1.0
+    image: duplicati/duplicati:2.1.0.125
     container_name: duplicati
     network_mode: bridge
     ports:
@@ -12,12 +12,12 @@ services:
       - PGID=100
       - UMASK=022
       - TZ=Europe/Amsterdam
-      - SETTINGS__ENCRYPTION__KEY=your_encryption_key_here  # Replace with your actual key
-      - DUPLICATI__WEBSERVICE__PASSWORD=your_password_here  # Optional, or set in Web UI
+      - SETTINGS_ENCRYPTION_KEY=$SETTINGS_ENCRYPTION_KEY
+      - DUPLICATI_WEBSERVICE_PASSWORD=$DUPLICATI_WEBSERVICE_PASSWORD
     volumes:
       - /mnt/user/backups:/backups
       - /mnt/user:/source
-      - /mnt/cache/appdata/duplicati:/config
+      - /mnt/cache_pool/appdata/duplicati:/config
     restart: unless-stopped
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/duplicati-logo.png"

@@ -13,7 +13,7 @@ services:
       - UMASK=022
       - TZ=Europe/Amsterdam
       - SETTINGS_ENCRYPTION_KEY=$SETTINGS_ENCRYPTION_KEY
-      - DUPLICATI_WEBSERVICE_PASSWORD=$DUPLICATI_WEBSERVICE_PASSWORD
+      - DUPLICATI__WEBSERVICE_PASSWORD=$DUPLICATI_WEBSERVICE_PASSWORD
     volumes:
       - /mnt/user/backups:/backups
       - /mnt/user:/source

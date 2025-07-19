@@ -5,15 +5,21 @@ services:
     image: duplicati/duplicati:2.1.0.125
     container_name: duplicati
     network_mode: bridge
+    user: "99:100"
     ports:
       - "8200:8200"
     environment:
-      - PUID=99
-      - PGID=100
-      - UMASK=022
       - TZ=Europe/Amsterdam
       - SETTINGS_ENCRYPTION_KEY=$SETTINGS_ENCRYPTION_KEY
       - DUPLICATI__WEBSERVICE_PASSWORD=$DUPLICATI_WEBSERVICE_PASSWORD
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
     volumes:
       - /mnt/user/backups:/backups
       - /mnt/user:/source

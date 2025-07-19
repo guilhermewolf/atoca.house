@@ -8,6 +8,14 @@ services:
       - TZ=Europe/Amsterdam
     ports:
       - "7474:7474"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
     volumes:
       - /mnt/cache_pool/appdata/autobrr:/config
     restart: unless-stopped

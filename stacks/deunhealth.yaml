@@ -7,6 +7,14 @@ services:
       - LOG_LEVEL=info
       - HEALTH_SERVER_ADDRESS=127.0.0.1:9999
       - TZ=Europe/Amsterdam
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 64M
+        reservations:
+          cpus: "0.05"
+          memory: 16M
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

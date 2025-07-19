@@ -7,6 +7,14 @@ services:
     user: 99:100
     environment:
       - TZ=Europe/Amsterdam
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
     ports:
       - "2468:2468"
     volumes:

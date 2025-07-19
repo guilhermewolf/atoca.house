@@ -14,6 +14,14 @@ services:
       - PUID=99
       - PGID=100
       - UMASK=022
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1.5G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
     restart: unless-stopped
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/openvscode-server-logo.png"

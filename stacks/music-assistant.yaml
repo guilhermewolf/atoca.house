@@ -9,6 +9,14 @@ services:
       - PUID=99
       - PGID=100
       - TZ=Europe/Amsterdam
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
     volumes:
       - /mnt/cache_pool/appdata/music-assistant:/data
       - /mnt/user/data/media/music:/music

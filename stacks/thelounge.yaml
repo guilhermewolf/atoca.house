@@ -9,6 +9,14 @@ services:
       - PUID=99
       - PGID=100
       - TZ=Europe/Amsterdam
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
     ports:
       - "9002:9000"
     volumes:

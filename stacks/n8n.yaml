@@ -11,9 +11,17 @@ services:
     environment:
       - GENERIC_TIMEZONE=Europe/Amsterdam
       - WEBHOOK_URL=$WEBHOOK_URL
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 256M
     volumes:
       - /mnt/cache_pool/appdata/n8n:/home/node/.n8n
-    user: "1000:1000"
+    user: "99:100"
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/tmchow/unraid-docker-templates/master/img/n8n-icon.png"
 

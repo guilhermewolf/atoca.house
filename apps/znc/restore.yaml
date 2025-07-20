@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: znc-restore
+  namespace: znc
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: znc-r2-secret
+    copyMethod: Direct
+    destinationPVC: znc
+    storageClassName: longhorn
+    volumeSnapshotClassName: longhorn-snapshot-vsc
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

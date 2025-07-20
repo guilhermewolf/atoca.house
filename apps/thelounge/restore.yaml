@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: thelounge-restore
+  namespace: thelounge
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: thelounge-r2-secret
+    copyMethod: Direct
+    destinationPVC: thelounge
+    storageClassName: longhorn
+    volumeSnapshotClassName: longhorn-snapshot-vsc
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

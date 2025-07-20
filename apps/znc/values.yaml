@@ -1,0 +1,53 @@
+controllers:
+  znc:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      znc:
+        image:
+          repository: lscr.io/linuxserver/znc
+          tag: 1.10.1
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+          limits:
+            memory: 64Mi
+
+service:
+  znc:
+    controller: znc
+    ports:
+      http:
+        port: 6501
+
+ingress:
+  znc:
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+    hosts:
+      - host: znc.atoca.house
+        paths:
+          - path: /
+            pathType: Prefix
+            service:
+              identifier: znc
+              port: http
+    tls:
+      - hosts:
+          - znc.atoca.house
+        secretName: znc-tls
+        
+persistence:
+  znc:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /config

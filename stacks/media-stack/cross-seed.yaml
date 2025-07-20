@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   cross-seed:
-    image: ghcr.io/cross-seed/cross-seed:6.13.0
+    image: ghcr.io/cross-seed/cross-seed:6.13.1
     container_name: cross-seed
     user: 99:100
     environment:

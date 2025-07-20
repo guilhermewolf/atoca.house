@@ -2,20 +2,32 @@ controllers:
   znc:
     annotations:
       reloader.stakater.com/auto: "true"
+    pod:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
     containers:
       znc:
         image:
           repository: lscr.io/linuxserver/znc
           tag: 1.10.1
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities: { drop: ["ALL"] }
+          pullPolicy: IfNotPresent
+        env:
+          - name: TZ
+            value: "Europe/Amsterdam"
+          - name: AUTO_UPDATE
+            value: "true"
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
         resources:
           requests:
-            cpu: 10m
+            memory: "128Mi"
+            cpu: "100m"
           limits:
-            memory: 64Mi
+            memory: "250Mi"
+            cpu: "500m"
 
 service:
   znc:

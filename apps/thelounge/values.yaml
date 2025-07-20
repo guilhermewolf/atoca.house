@@ -2,20 +2,33 @@ controllers:
   thelounge:
     annotations:
       reloader.stakater.com/auto: "true"
+    pod:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: "OnRootMismatch"
     containers:
       thelounge:
         image:
           repository: thelounge/thelounge
           tag: 4.4.3
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities: { drop: ["ALL"] }
+          pullPolicy: IfNotPresent
+        env:
+          - name: TZ
+            value: "Europe/Amsterdam"
+          - name: AUTO_UPDATE
+            value: "true"
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
         resources:
           requests:
-            cpu: 500m
+            memory: "128Mi"
+            cpu: "100m"
           limits:
-            memory: 256Mi
+            memory: "256Mi"
+            cpu: "500m"
+
 
 service:
   thelounge:

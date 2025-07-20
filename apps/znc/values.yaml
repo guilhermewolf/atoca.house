@@ -41,6 +41,14 @@ ingress:
     className: nginx
     annotations:
       cert-manager.io/cluster-issuer: "cloudflare-prod"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
     hosts:
       - host: znc.atoca.house
         paths:

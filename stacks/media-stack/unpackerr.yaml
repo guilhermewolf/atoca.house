@@ -3,7 +3,7 @@ services:
     image: golift/unpackerr:0.14
     container_name: unpackerr
     volumes:
-      - /mnt/user/data/torrents:/data/torrents
+      - /mnt/user/data/:/data
       - /mnt/cache_pool/appdata/unpackerr:/config
     restart: always
     user: 99:100
@@ -14,7 +14,16 @@ services:
       - UN_SONARR_0_API_KEY=$SONARR_API_KEY
       - UN_RADARR_0_URL=$RADARR_URL
       - UN_RADARR_0_API_KEY=$RADARR_API_KEY
-      - UN_FOLDER_0_PATH=/data/torrents
+
+      # Watch Usenet Downloads
+      - UN_FOLDER_0_PATH=/data/usenet
+      - UN_FOLDER_0_EXTRACT_PATH=/data/usenet
+      - UN_FOLDER_0_DELETE_ORIGINAL=true
+
+      # Watch Torrent Downloads
+      - UN_FOLDER_1_PATH=/data/torrents
+      - UN_FOLDER_1_EXTRACT_PATH=/data/torrents
+      - UN_FOLDER_1_DELETE_ORIGINAL=true
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/wiki/davidnewhall/unpackerr/images/logo.png"
     deploy:

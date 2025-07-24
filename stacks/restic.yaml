@@ -7,7 +7,7 @@ services:
     container_name: restic-backup
     environment:
       RUN_ON_STARTUP: "true"
-      BACKUP_CRON: "0 30 1 * * *"
+      BACKUP_CRON: "0 30 8 * * *"
       RESTIC_REPOSITORY: $RESTIC_REPOSITORY #s3:s3.amazonaws.com/bucketname
       RESTIC_PASSWORD: $RESTIC_PASSWORD #insert-here
       RESTIC_BACKUP_SOURCES: /appdata
@@ -23,7 +23,7 @@ services:
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
       TZ: Europe/Amsterdam
     volumes:
-      - /mnt/cache_pool/appdata/:/appdata:ro
+      - /mnt/user/appdata_backup:/appdata:ro
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/nwithan8/unraid_templates/master/images/restic-icon.png"
 

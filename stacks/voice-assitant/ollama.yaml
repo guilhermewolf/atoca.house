@@ -2,15 +2,24 @@ version: "3.8"
 
 services:
   ollama:
-    image: ollama/ollama:0.9.6
+    image: ollama/ollama:0.9.6-rocm
     container_name: ollama
     environment:
-      - OLLAMA_DEBUG=1
-      - OLLAMA_NUM_PARALLEL=5
-      - OLLAMA_NUM_CTX=4096
-      - OLLAMA_NUM_THREADS=6
-      - OLLAMA_NUM_BATCH=256
-      - OLLAMA_KEEP_ALIVE=5m
+      - OLLAMA_DEBUG=0
+      # - OLLAMA_NUM_PARALLEL=5
+      # - OLLAMA_NUM_CTX=4096
+      # - OLLAMA_NUM_THREADS=6
+      # - OLLAMA_NUM_BATCH=256
+      # - OLLAMA_KEEP_ALIVE=5m
+      - OLLAMA_FLASH_ATTENTION=true 
+      - OLLAMA_LLM_LIBRARY=rocm
+      - HIP_VISIBLE_DEVICES=0
+      - ROCR_VISIBLE_DEVICES=0
+      - HSA_OVERRIDE_GFX_VERSION=9.0.12
+    #  - OLLAMA_KV_CACHE_TYPE="q8_0" 
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
 
     deploy:
       resources:

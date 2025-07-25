@@ -3,7 +3,7 @@ version: "3.8"
 
 services:
   thelounge:
-    image: thelounge/thelounge:4.4.3
+    image: thelounge/thelounge:4.4.3@sha256:c2aa0916203b298ffaf3a36c4eb60ef73c1006448d430e218d37840472e84e50
     container_name: thelounge
     environment:
       - PUID=99

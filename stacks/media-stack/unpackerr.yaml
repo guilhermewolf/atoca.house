@@ -1,6 +1,6 @@
 services:
   unpackerr:
-    image: golift/unpackerr:0.14
+    image: golift/unpackerr:0.14@sha256:4214ee36961837aed614048ac88ad6ab72407e630935b1cba9011194d414c34e
     container_name: unpackerr
     volumes:
       - /mnt/user/data/:/data

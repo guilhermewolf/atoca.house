@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backup:
-    image: mazzolino/restic
+    image: mazzolino/restic@sha256:41103688cb08889c301a3d1fdf82dc141ba71a6be477e9c4f95f426fa128542e
     restart: unless-stopped
     container_name: restic-backup
     environment:
@@ -29,7 +29,7 @@ services:
 
 
   prune:
-    image: mazzolino/restic
+    image: mazzolino/restic@sha256:41103688cb08889c301a3d1fdf82dc141ba71a6be477e9c4f95f426fa128542e
     container_name: restic-prune
     restart: unless-stopped
     environment:

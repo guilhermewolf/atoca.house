@@ -11,7 +11,7 @@ template:
   spec:
     containers:
       - name: runner
-        image: ghcr.io/guilhermewolf/arm-actions-runner/arm-actions-runner:2.325.0
+        image: ghcr.io/guilhermewolf/arm-actions-runner/arm-actions-runner:2.325.0@sha256:7e2753812e88374689897dec84961ce1cb344729d3049cb05ffdfc858b0e3def
         command: ["/home/runner/run.sh"]
         envFrom:
           - secretRef:

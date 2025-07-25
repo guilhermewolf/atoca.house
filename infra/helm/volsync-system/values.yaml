@@ -3,7 +3,7 @@ metrics:
   disableAuth: true
 image:
   repository: ghcr.io/guilhermewolf/volsync
-  tag: v0.12.1
+  tag: v0.12.1@sha256:dddb9b17efa1945d338b4368c276b28fbdc4792f401fd5b3207035fdd7fe5c35
 restic:
   repository: ghcr.io/guilhermewolf/volsync
   tag: v0.12.1

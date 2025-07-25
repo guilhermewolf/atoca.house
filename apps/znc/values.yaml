@@ -10,7 +10,7 @@ controllers:
       znc:
         image:
           repository: lscr.io/linuxserver/znc
-          tag: 1.10.1
+          tag: 1.10.1@sha256:1d9e9bc30a1a61d41481e3c6f7ca58cbe30c38c3a67af1cc43720ceda18ca3aa
           pullPolicy: IfNotPresent
         env:
           - name: TZ

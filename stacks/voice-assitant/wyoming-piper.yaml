@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   wyoming-piper:
-    image: rhasspy/wyoming-piper:1.6.2
+    image: rhasspy/wyoming-piper:1.6.2@sha256:b2963d60fb3e3591894f3b8e899d1c35c2cb4b28513e596874126c68920a7525
     container_name: wyoming-piper
     environment:
       - TZ=Europe/Amsterdam

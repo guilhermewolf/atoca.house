@@ -6,7 +6,7 @@ controllers:
       whoami:
         image:
           repository: containous/whoami
-          tag: v1.5.0
+          tag: v1.5.0@sha256:7d6a3c8f91470a23ef380320609ee6e69ac68d20bc804f3a1c6065fb56cfa34e
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

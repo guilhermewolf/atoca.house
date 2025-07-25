@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   deunhealth:
-    image: qmcgaw/deunhealth:v0.3.0
+    image: qmcgaw/deunhealth:v0.3.0@sha256:4102bf5d788fd0580ee5adb367cf48fc269a154b8fd284e6315e0dd8b24bb03c
     container_name: deunhealth
     environment:
       - LOG_LEVEL=info

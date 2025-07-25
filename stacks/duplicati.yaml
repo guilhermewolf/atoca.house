@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   duplicati:
-    image: lscr.io/linuxserver/duplicati:2.1.0
+    image: lscr.io/linuxserver/duplicati:2.1.0@sha256:9930a77fb0a9c9d7973e961e46ee83d87e8f0a4e27637099b9f9bc953445856c
     container_name: duplicati
     network_mode: bridge
     ports:

@@ -23,7 +23,7 @@ services:
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
       TZ: Europe/Amsterdam
     volumes:
-      - /mnt/user/appdata_backup:/appdata:ro
+      - /mnt/user/backups/appdata:/appdata:ro
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/nwithan8/unraid_templates/master/images/restic-icon.png"
 

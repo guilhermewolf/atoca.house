@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  qbit_manage:
+    image: bobokun/qbit_manage:v4.5.1
+    container_name: qbit_manage
+    restart: unless-stopped
+    network_mode: bridge
+    user: 99:100
+    environment:
+      - QBT_CONFIG=conf/qbt
+      - QBT_LOGFILE=activity.log
+      - QBT_RUN=False
+      - QBT_SCHEDULE=60
+      - QBT_WEB_SERVER=False
+      - QBT_PORT=8080
+      - QBT_METHOD=None
+      - QBT_CAT_UPDATE=False
+      - QBT_TAG_UPDATE=False
+      - QBT_TAG_TRACKER=False
+      - QBT_SHARE_LIMITS=False
+      - QBT_API_UNREGISTERED=False
+      - QBT_RM_ORPHANED=False
+      - QBT_TAG_NOHL=False
+      - QBT_SKIP_CLEANUP=False
+      - QBT_DRY_RUN=False
+    volumes:
+      - /mnt/user/data/torrents:/data/torrents
+      - /mnt/cache_pool/appdata/qbit_manage:/conf
+      - /mnt/cache_pool/appdata/qbittorent/qBittorrent/BT_backup:/torrentDir
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 128M
+    labels:
+      - "net.unraid.docker.icon=https://github.com/StuffedPenguin/qbit_manage/raw/main/icon.png"

@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  syncthing:
+    image: lscr.io/linuxserver/syncthing:v1.30.0-ls188
+    container_name: syncthing
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - "8384:8384"
+      - 22000:22000/tcp
+      - 22000:22000/udp
+      - 21027:21027/udp
+    volumes:
+      - /mnt/user/music:/data1
+      - /mnt/cache_pool/appdata/syncthing:/config
+    environment:
+      - PUID=99
+      - PGID=100
+      - UMASK=022
+      - TZ=Europe/Amsterdam
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 128M
+    labels:
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/syncthing-icon.png"

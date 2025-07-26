@@ -5,12 +5,10 @@ services:
     image: fallenbagel/jellyseerr:2.7.2@sha256:98296861cf3caebe8ada72e5dbe2729fb10cdb2042d2b82e86065bf870418587
     container_name: jellyseerr
     restart: unless-stopped
+    user: 99:100
     ports:
       - "5055:5055"
     environment:
-      - PUID=99
-      - PGID=100
-      - UMASK=022
       - LOG_LEVEL=info
       - TZ=Europe/Amsterdam
     volumes:

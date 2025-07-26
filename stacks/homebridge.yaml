@@ -8,9 +8,6 @@ services:
     environment:
       - HOMEBRIDGE_CONFIG_UI=1
       - HOMEBRIDGE_CONFIG_UI_PORT=8581
-      - PUID=99
-      - PGID=100
-      - UMASK=0000
       - TZ=Europe/Amsterdam
     deploy:
       resources:

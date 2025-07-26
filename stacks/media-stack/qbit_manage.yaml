@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   qbit_manage:
-    image: ghcr.io/stuffanthings/qbit_manage:v4.5.1
+    image: ghcr.io/stuffanthings/qbit_manage:v4.5.1@sha256:ef72226614d8edc2f0c3ddb1bfd9c413cff032824131279d146e0b748b4f5077
     container_name: qbit_manage
     restart: on-failure:2
     network_mode: bridge

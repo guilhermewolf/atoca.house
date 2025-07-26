@@ -14,6 +14,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /mnt/cache_pool/appdata/glances:/glances
       - /etc/ssl/certs:/etc/ssl/certs:ro
+      - /:/rootfs
+      - /etc/os-release:/etc/os-release
+    pid: "host"
     deploy:
       resources:
         limits:
@@ -23,4 +26,4 @@ services:
           cpus: "0.5"
           memory: 128M
     labels:
-      - "net.unraid.docker.icon=https://github.com/nicolargo/glances/raw/master/docs/_static/glances.png"
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/nicolargo/glances/master/glances/outputs/static/images/glances.png"

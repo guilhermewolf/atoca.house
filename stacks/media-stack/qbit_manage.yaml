@@ -49,4 +49,4 @@ services:
           cpus: "0.5"
           memory: 128M
     labels:
-      - "net.unraid.docker.icon=https://github.com/StuffedPenguin/qbit_manage/raw/main/icon.png"
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/StuffAnThings/qbit_manage/refs/heads/master/qbm_logo.png"

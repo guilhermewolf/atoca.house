@@ -2,32 +2,44 @@ version: '3.8'
 
 services:
   qbit_manage:
-    image: bobokun/qbit_manage:v4.5.1@sha256:ef72226614d8edc2f0c3ddb1bfd9c413cff032824131279d146e0b748b4f5077
+    image: ghcr.io/stuffanthings/qbit_manage:v4.5.1
     container_name: qbit_manage
-    restart: unless-stopped
+    restart: on-failure:2
     network_mode: bridge
-    user: 99:100
+    ports:
+      - "8084:8080"
     environment:
-      - QBT_CONFIG=conf/qbt
-      - QBT_LOGFILE=activity.log
-      - QBT_RUN=False
-      - QBT_SCHEDULE=60
-      - QBT_WEB_SERVER=False
       - QBT_PORT=8080
-      - QBT_METHOD=None
-      - QBT_CAT_UPDATE=False
-      - QBT_TAG_UPDATE=False
-      - QBT_TAG_TRACKER=False
-      - QBT_SHARE_LIMITS=False
-      - QBT_API_UNREGISTERED=False
-      - QBT_RM_ORPHANED=False
-      - QBT_TAG_NOHL=False
-      - QBT_SKIP_CLEANUP=False
-      - QBT_DRY_RUN=False
+      # Scheduler Configuration
+      - QBT_RUN=false
+      - QBT_SCHEDULE=1440
+      - QBT_CONFIG=/config/config.yml
+      - QBT_LOGFILE=activity.log
+      # Command Flags
+      - QBT_RECHECK=false
+      - QBT_CAT_UPDATE=false
+      - QBT_TAG_UPDATE=false
+      - QBT_REM_UNREGISTERED=false
+      - QBT_REM_ORPHANED=false
+      - QBT_TAG_TRACKER_ERROR=false
+      - QBT_TAG_NOHARDLINKS=false
+      - QBT_SHARE_LIMITS=false
+      - QBT_SKIP_CLEANUP=false
+      - QBT_DRY_RUN=false
+      - QBT_STARTUP_DELAY=0
+      - QBT_SKIP_QB_VERSION_CHECK=false
+      - QBT_DEBUG=false
+      - QBT_TRACE=false
+      # Logging Configuration
+      - QBT_LOG_LEVEL=INFO
+      - QBT_LOG_SIZE=10
+      - QBT_LOG_COUNT=5
+      - QBT_DIVIDER==
+      - QBT_WIDTH=100
     volumes:
-      - /mnt/user/data/torrents:/data/torrents
-      - /mnt/cache_pool/appdata/qbit_manage:/conf
-      - /mnt/cache_pool/appdata/qbittorent/qBittorrent/BT_backup:/torrentDir
+      - /mnt/user/data/torrents:/data/torrents:rw
+      - /mnt/cache_pool/appdata/qbit_manage:/config:rw
+      - /mnt/cache_pool/appdata/qbittorent/qBittorrent/BT_backup:/torrentDir:ro
     deploy:
       resources:
         limits:

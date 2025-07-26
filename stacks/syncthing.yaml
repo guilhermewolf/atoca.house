@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   syncthing:
-    image: lscr.io/linuxserver/syncthing:v1.30.0-ls188
+    image: lscr.io/linuxserver/syncthing:v1.30.0-ls188@sha256:a2787b40b89a04b33cea95e7304bb2efc0a126c2676d9e6291b59cfb9ced4b88
     container_name: syncthing
     restart: unless-stopped
     network_mode: bridge

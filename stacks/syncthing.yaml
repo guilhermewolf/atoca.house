@@ -12,7 +12,7 @@ services:
       - 22000:22000/udp
       - 21027:21027/udp
     volumes:
-      - /mnt/user/music:/data1
+      - /mnt/user/musics:/data1
       - /mnt/cache_pool/appdata/syncthing:/config
     environment:
       - PUID=99

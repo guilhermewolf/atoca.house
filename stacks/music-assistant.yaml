@@ -4,23 +4,19 @@ services:
   music-assistant:
     image: ghcr.io/music-assistant/server:2.5.4@sha256:d6fd6085583e6df9490874cf626ca43cb06e381f6a47b7361d03719bb32c4e46
     container_name: music-assistant
+    restart: unless-stopped
     network_mode: host
+    user: "99:100"
     environment:
-      - PUID=99
-      - PGID=100
       - TZ=Europe/Amsterdam
-    deploy:
-      resources:
-        limits:
-          cpus: "1.5"
-          memory: 512M
-        reservations:
-          cpus: "0.5"
-          memory: 256M
+      - LOG_LEVEL=debug
+    cap_add:
+      - SYS_ADMIN
+      - DAC_READ_SEARCH
+    security_opt:
+      - apparmor:unconfined
     volumes:
       - /mnt/cache_pool/appdata/music-assistant:/data
       - /mnt/user/data/media/music:/music
-    privileged: true
-    restart: unless-stopped
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/alex3305/unraid-docker-templates/master/images/music-assistant.png"

@@ -10,20 +10,19 @@ services:
     environment:
       - TZ=Europe/Amsterdam
       - UN_LOG_FILE=/config/unpackerr.log
+      #Sonarr
       - UN_SONARR_0_URL=$SONARR_URL
       - UN_SONARR_0_API_KEY=$SONARR_API_KEY
+      - UN_SONARR_0_PATHS_0=/data/torrents/tv
+      - UN_SONARR_0_PROTOCOLS=torrents
+      - UN_SONARR_0_DELETE_ORIG=false
+      #Radarr
       - UN_RADARR_0_URL=$RADARR_URL
       - UN_RADARR_0_API_KEY=$RADARR_API_KEY
-
-      # Watch Usenet Downloads
-      - UN_FOLDER_0_PATH=/data/usenet
-      - UN_FOLDER_0_EXTRACT_PATH=/data/usenet
-      - UN_FOLDER_0_DELETE_ORIGINAL=true
-
-      # Watch Torrent Downloads
-      - UN_FOLDER_1_PATH=/data/torrents
-      - UN_FOLDER_1_EXTRACT_PATH=/data/torrents
-      - UN_FOLDER_1_DELETE_ORIGINAL=true
+      - UN_RADARR_0_PATHS_0=/data/torrents/movies
+      - UN_RADARR_0_PROTOCOLS=torrents
+      - UN_RADARR_0_DELETE_ORIG=false
+      
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/wiki/davidnewhall/unpackerr/images/logo.png"
     deploy:

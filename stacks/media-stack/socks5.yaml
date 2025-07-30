@@ -2,7 +2,12 @@ version: "3.8"
 
 services:
   socks5:
-      image: serjs/go-socks5-proxy:latest@sha256:aad36c623f16850d7cea0171d1aa79d706129191db9e270b6dfd7db6b552c734
-      container_name: socks5
-      restart: unless-stopped
-      network_mode: "container:GlueTun-PIA"
+    image: ghcr.io/guilhermewolf/go-socks5-proxy:latest
+    restart: unless-stopped
+    network_mode: "container:GlueTun-PIA"
+    healthcheck:
+      test: ping -c 1 www.google.com || exit 1
+      interval: 60s
+      retries: 3
+      start_period: 20s
+      timeout: 10s

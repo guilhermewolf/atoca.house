@@ -20,6 +20,7 @@ services:
     volumes:
       - /mnt/cache_pool/appdata/cross-seed:/config
       - /mnt/user/data:/data
+      - /mnt/cache_pool/appdata/qbittorent/qBittorrent/BT_backup:/torrentDir
     restart: unless-stopped
     command: daemon
     labels:

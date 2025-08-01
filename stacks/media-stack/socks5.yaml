@@ -3,6 +3,7 @@ version: "3.8"
 services:
   socks5:
     image: ghcr.io/guilhermewolf/go-socks5-proxy:latest
+    container_name: socks5
     restart: unless-stopped
     network_mode: "container:GlueTun-PIA"
     healthcheck:
@@ -11,3 +12,5 @@ services:
       retries: 3
       start_period: 20s
       timeout: 10s
+    labels:
+      - "deunhealth.restart.on.unhealthy=true"

@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   socks5:
-    image: ghcr.io/guilhermewolf/go-socks5-proxy:latest
+    image: ghcr.io/guilhermewolf/go-socks5-proxy:latest@sha256:b6935a02d4a868869d00d00fd2945674b83ffb9591b7c3a610514e18ef3b32dc
     container_name: socks5
     restart: unless-stopped
     network_mode: "container:GlueTun-PIA"

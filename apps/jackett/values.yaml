@@ -8,7 +8,7 @@ controllers:
       jackett:
         image:
           repository: linuxserver/jackett
-          tag: 0.22.2223@sha256:0478d6d178e40f66f2aeec6a1b72eb0ecc9eacf66538dc2dfa8755cceb514043
+          tag: 0.22.2231@sha256:1269b3cef43190b64831241153f83a4e5f73f748fbf97a6f292c74c19b78d2cd
           pullPolicy: IfNotPresent
         env:
           - name: TZ

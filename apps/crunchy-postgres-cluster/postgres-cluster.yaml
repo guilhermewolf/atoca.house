@@ -32,11 +32,6 @@ spec:
         - authentik
       password:
         type: AlphaNumeric
-    - name: atuin
-      databases:
-        - atuin
-      password:
-        type: AlphaNumeric
 
 
   instances:

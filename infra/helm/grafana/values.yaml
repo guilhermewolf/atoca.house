@@ -12,15 +12,6 @@ grafana.ini:
     news_feed_enabled: false
   auth:
     singout_redirect_url: https://sso.atoca.house/application/o/grafana/end-session/
-    oauth_auto_login: true
-    auth.generic_oauth:
-        name: authentik
-        enabled: true
-        scopes: "openid profile email"
-        auth_url: "https://sso.atoca.house/application/o/authorize/"
-        token_url: "https://sso.atoca.house/application/o/token/"
-        api_url: "https://sso.atoca.house/application/o/userinfo/"
-        role_attribute_path: contains(groups, 'Grafana Admins') && 'Admin' || 'Viewer'
 datasources:
   datasources.yaml:
     apiVersion: 1

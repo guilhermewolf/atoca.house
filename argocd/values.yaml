@@ -4,12 +4,6 @@ configs:
   cm:
     statusbadge.enabled: true
     url: https://argocd.atoca.house
-    oidc.config: |
-      name: authentik
-      issuer: https://sso.atoca.house/application/o/argocd/
-      clientID: $authentik.clientID
-      clientSecret: $authentik.clientSecret
-      requestedScopes: ["openid", "profile", "email", "groups"]
 
     repositories: |
       - url: https://github.com/guilhermewolf/atoca.house
@@ -20,7 +14,6 @@ configs:
         ignoreDifferences: |
           jsonPointers:
           - /spec/preserveUnknownFields
-
 
     resource.customizations.health.argoproj.io_Application: |
       hs = {}
@@ -41,6 +34,7 @@ configs:
     policy.csv: | 
       g, ArgoCD Admins, role:admin
       g, ArgoCD Viewers, role:readonly
+      
 crds:
   install: true
   keep: true

@@ -27,12 +27,6 @@ spec:
         - terraform
       password:
         type: AlphaNumeric
-    - name: authentik
-      databases:
-        - authentik
-      password:
-        type: AlphaNumeric
-
 
   instances:
     - name: postgres
@@ -138,7 +132,7 @@ spec:
           app.kubernetes.io/name: crunchy-postgres-pgbouncer
       config:
         global:
-          pool_mode: "transaction" # pgBouncer is set to transaction for Authentik.
+          pool_mode: "transaction"
           client_tls_sslmode: prefer
       topologySpreadConstraints:
         - maxSkew: 1

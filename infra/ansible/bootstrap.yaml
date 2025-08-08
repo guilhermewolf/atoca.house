@@ -8,9 +8,7 @@
     age_config_dir: "{{ ansible_env.HOME }}/.config/age"
     talos_config_file: "{{ ansible_env.HOME }}/.talos/config"
     op_argocd_redis_id: "Private/atoca-house-k8s-argocd-redis/credential"
-    op_argocd_authentik_id: "Private/atoca-house-k8s-argocd-authentik"
     argocd_redis_token_name: "argocd-redis"
-    argocd_authentik_token_name: "argocd-authentik-oauth-secret"
     argocd_namespace: "argocd"
     control_plane_node: 192.168.178.201
     worker_nodes:
@@ -115,16 +113,6 @@
         dest: /tmp/op_argocd_redis.txt
         force: yes
 
-    - name: Retrieve ArgoCD Authentik clientID from 1Password
-      ansible.builtin.command:
-        cmd: "op read op://{{ op_argocd_authentik_id }}/clientID"
-      register: authentik_client_id
-
-    - name: Retrieve ArgoCD Authentik clientSecret from 1Password
-      ansible.builtin.command:
-        cmd: "op read op://{{ op_argocd_authentik_id }}/clientSecret"
-      register: authentik_client_secret
-
     - name: create argocd namespace
       ansible.builtin.command:
         cmd: "kubectl create namespace {{ argocd_namespace }}"
@@ -157,13 +145,6 @@
       delay: 30
       register: argocd_ready
       until: argocd_ready.rc == 0
-
-    - name: Patch argocd-secret with Authentik client credentials
-      command: >
-        kubectl -n argocd patch secret argocd-secret
-        --type merge
-        --patch
-        '{"stringData": {"authentik.clientID": "{{ authentik_client_id.stdout }}", "authentik.clientSecret": "{{ authentik_client_secret.stdout }}"}}'
 
     - name: Apply additional kustomize set configurations
       shell: "kubectl kustomize {{ lookup('env', 'PWD') }}/sets/ | kubectl apply -f -"

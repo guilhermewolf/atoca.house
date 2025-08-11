@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   music-assistant:
-    image: ghcr.io/music-assistant/server:2.5.4@sha256:d6fd6085583e6df9490874cf626ca43cb06e381f6a47b7361d03719bb32c4e46
+    image: ghcr.io/music-assistant/server:2.5.8@sha256:f534116c53d49b3120961c908a5fa24f28684806bf222ccd74add9e16b105aa4
     container_name: music-assistant
     restart: unless-stopped
     network_mode: host

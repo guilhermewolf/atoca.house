@@ -24,6 +24,7 @@ services:
       - VPN_PORT_FORWARDING_PASSWORD=$PASSWORD
       - VPN_PORT_FORWARDING_STATUS_FILE=/gluetun/forwarded_port
       - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- --retry-connrefused --post-data "json={\"listen_port\":{{PORTS}}}" http://$IP_SERVER:8082/api/v2/app/setPreferences 2>&1'
+      - FIREWALL_OUTBOUND_SUBNETS=$FIREWALL_OUTBOUND_SUBNETS
       - SERVER_NAMES=$SERVER_NAMES
       - DOT=off
       - HEALTH_TARGET_ADDRESS=cloudflare.com:443
@@ -32,6 +33,7 @@ services:
       - UMASK=022
     volumes:
       - /mnt/cache_pool/appdata/gluetun:/gluetun/
+      - /mnt/cache_pool/appdata/gluetun_iptables:/iptables/
     deploy:
       resources:
         limits:

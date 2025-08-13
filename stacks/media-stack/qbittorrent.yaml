@@ -15,7 +15,7 @@ services:
       - DOCKER_MODS=ghcr.io/vuetorrent/vuetorrent-lsio-mod:v2.25.0
     volumes:
       - /mnt/user/data/torrents:/data/torrents
-      - /mnt/cache_pool/appdata/qbittorent:/config
+      - /mnt/blaze/appdata/qbittorent:/config
       - /mnt/user/free-leech/:/free-leech
     deploy:
       resources:

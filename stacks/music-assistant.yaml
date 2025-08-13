@@ -16,7 +16,7 @@ services:
     security_opt:
       - apparmor:unconfined
     volumes:
-      - /mnt/cache_pool/appdata/music-assistant:/data
+      - /mnt/blaze/appdata/music-assistant:/data
       - /mnt/user/data/media/music:/music
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/alex3305/unraid-docker-templates/master/images/music-assistant.png"

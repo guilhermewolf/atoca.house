@@ -113,7 +113,7 @@ While most of my infrastructure and workloads are self-hosted I do rely upon the
 | Raspberry Pi 4                  | 1     | 128GB (SD)   | -                           | 8GB  | Talos Linux 1.10.2 | K8s node            |
 | Raspberry PoE Hat               | 4     | -            | -                           | -    | -                  | Power the Pi's      |
 | TP-Link TL-SG108PE              | 1     | -            | -                           | -    | -                  | Network PoE Switch  |
-| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB Nvme + 1x 2TB SSD    | 32GB | Unraid 7.1.2       | NAS                 |
+| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB Nvme + 4x 12TB HDD   | 32GB | Unraid 7.1.4       | NAS                 |
 
 ---
 ## 💪 TO-DO

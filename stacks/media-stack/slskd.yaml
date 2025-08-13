@@ -19,7 +19,7 @@ services:
       - SLSKD_USERNAME=$SLSKD_USERNAME
       - SLSKD_PASSWORD=$SLSKD_PASSWORD
     volumes:
-      - /mnt/cache_pool/appdata/slskd:/app
+      - /mnt/blaze/appdata/slskd:/app
       - /mnt/user/data/slskd/complete:/downloads/complete/music
       - /mnt/user/data/slskd/incomplete/:/downloads/incomplete
       - /mnt/user/musics/playlists:/playlists:ro
@@ -37,4 +37,4 @@ services:
       timeout: 10s
     labels:
       - "deunhealth.restart.on.unhealthy=true"
-      - "net.unraid.docker.icon=https://raw.githubusercontent.com/manuel-rw/unraid-templates/master/templates/slskd/logo.png"  
+      - "net.unraid.docker.icon=https://raw.githubusercontent.com/manuel-rw/unraid-templates/master/templates/slskd/logo.png"

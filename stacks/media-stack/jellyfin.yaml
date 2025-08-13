@@ -10,7 +10,7 @@ services:
       - "1900:1900/udp"
     volumes:
       - /mnt/user/data/media/:/data/media/
-      - /mnt/cache_pool/appdata/jellyfin:/config
+      - /mnt/blaze/appdata/jellyfin:/config
     environment:
       - PUID=99
       - PGID=100

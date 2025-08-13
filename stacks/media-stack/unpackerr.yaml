@@ -4,7 +4,7 @@ services:
     container_name: unpackerr
     volumes:
       - /mnt/user/data/:/data
-      - /mnt/cache_pool/appdata/unpackerr:/config
+      - /mnt/blaze/appdata/unpackerr:/config
     restart: always
     user: 99:100
     environment:
@@ -22,7 +22,7 @@ services:
       - UN_RADARR_0_PATHS_0=/data/torrents/movies
       - UN_RADARR_0_PROTOCOLS=torrents
       - UN_RADARR_0_DELETE_ORIG=false
-      
+
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/wiki/davidnewhall/unpackerr/images/logo.png"
     deploy:

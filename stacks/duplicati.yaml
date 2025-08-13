@@ -24,8 +24,8 @@ services:
           memory: 256M
     volumes:
       - /mnt/user/backups:/backups
-      - /mnt/user:/source
-      - /mnt/cache_pool/appdata/duplicati:/config
+      - /mnt/bulk:/source
+      - /mnt/blaze/appdata/duplicati:/config
     restart: unless-stopped
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/duplicati-logo.png"

@@ -12,7 +12,7 @@ services:
       - LOG_LEVEL=info
       - TZ=Europe/Amsterdam
     volumes:
-      - /mnt/cache_pool/appdata/jellyseerr:/app/config
+      - /mnt/blaze/appdata/jellyseerr:/app/config
     deploy:
       resources:
         limits:

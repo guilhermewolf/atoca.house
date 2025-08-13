@@ -18,9 +18,9 @@ services:
     ports:
       - "2468:2468"
     volumes:
-      - /mnt/cache_pool/appdata/cross-seed:/config
+      - /mnt/blaze/appdata/cross-seed:/config
       - /mnt/user/data:/data
-      - /mnt/cache_pool/appdata/qbittorent/qBittorrent/BT_backup:/torrentDir
+      - /mnt/blaze/appdata/qbittorent/qBittorrent/BT_backup:/torrentDir
     restart: unless-stopped
     command: daemon
     labels:

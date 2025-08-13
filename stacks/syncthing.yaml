@@ -13,7 +13,7 @@ services:
       - 21027:21027/udp
     volumes:
       - /mnt/user/musics:/data1
-      - /mnt/cache_pool/appdata/syncthing:/config
+      - /mnt/blaze/appdata/syncthing:/config
     environment:
       - PUID=99
       - PGID=100

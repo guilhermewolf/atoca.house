@@ -10,7 +10,7 @@ services:
       - "8989:8989"
     volumes:
       - /mnt/user/data/:/data
-      - /mnt/cache_pool/appdata/sonarr:/config
+      - /mnt/blaze/appdata/sonarr:/config
     environment:
       - PUID=99
       - PGID=100

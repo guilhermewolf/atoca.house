@@ -12,7 +12,7 @@ services:
       - GLANCES_OPT=-w
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /mnt/cache_pool/appdata/glances:/glances
+      - /mnt/blaze/appdata/glances:/glances
       - /etc/ssl/certs:/etc/ssl/certs:ro
       - /:/rootfs
       - /etc/os-release:/etc/os-release

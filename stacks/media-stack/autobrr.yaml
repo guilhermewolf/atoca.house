@@ -18,7 +18,7 @@ services:
           cpus: "0.1"
           memory: 64M
     volumes:
-      - /mnt/cache_pool/appdata/autobrr:/config
+      - /mnt/blaze/appdata/autobrr:/config
     restart: unless-stopped
     labels:
       - "net.unraid.docker.icon=https://raw.githubusercontent.com/autobrr/autobrr/develop/.github/images/logo.png"

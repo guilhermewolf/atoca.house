@@ -10,7 +10,7 @@ services:
       - UMASK=022
       - TZ=Europe/Amsterdam
     volumes:
-      - /mnt/cache_pool/appdata/bazarr:/config
+      - /mnt/blaze/appdata/bazarr:/config
       - /mnt/user/data/:/data
     ports:
       - "6767:6767"

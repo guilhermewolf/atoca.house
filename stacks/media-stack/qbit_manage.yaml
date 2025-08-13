@@ -38,8 +38,8 @@ services:
       - QBT_WIDTH=100
     volumes:
       - /mnt/user/data/torrents:/data/torrents:rw
-      - /mnt/cache_pool/appdata/qbit_manage:/config:rw
-      - /mnt/cache_pool/appdata/qbittorent/qBittorrent/BT_backup:/torrentDir:ro
+      - /mnt/blaze/appdata/qbit_manage:/config:rw
+      - /mnt/blaze/appdata/qbittorent/qBittorrent/BT_backup:/torrentDir:ro
     deploy:
       resources:
         limits:

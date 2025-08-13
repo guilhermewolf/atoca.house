@@ -11,7 +11,7 @@ services:
       - UMASK=022
       - TZ=Europe/Amsterdam
     volumes:
-      - /mnt/cache_pool/appdata/sabnzbd:/config
+      - /mnt/blaze/appdata/sabnzbd:/config
       - /mnt/user/data/usenet/:/data/usenet/
     deploy:
        resources:

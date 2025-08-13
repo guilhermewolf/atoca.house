@@ -10,7 +10,7 @@ services:
       - "9769:9001"
     volumes:
       - /mnt/user/minio:/data
-      - /mnt/cache_pool/appdata/minio:/root/.minio
+      - /mnt/blaze/appdata/minio:/root/.minio
     environment:
       - MINIO_ROOT_USER=$MINIO_USER
       - MINIO_ROOT_PASSWORD=$MINIO_PASSWORD

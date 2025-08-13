@@ -32,8 +32,8 @@ services:
       - PGID=100
       - UMASK=022
     volumes:
-      - /mnt/cache_pool/appdata/gluetun:/gluetun/
-      - /mnt/cache_pool/appdata/gluetun_iptables:/iptables/
+      - /mnt/blaze/appdata/gluetun:/gluetun/
+      - /mnt/blaze/appdata/gluetun_iptables:/iptables/
     deploy:
       resources:
         limits:

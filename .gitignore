@@ -1,5 +1,6 @@
 # Ignore .terraform folder
 .terraform/
+.taks/
 
 .DS_Store
 **/charts/

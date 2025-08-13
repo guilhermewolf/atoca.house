@@ -10,7 +10,7 @@ services:
       - "7878:7878"
     volumes:
       - /mnt/user/data/:/data
-      - /mnt/cache_pool/appdata/radarr:/config
+      - /mnt/blaze/appdata/radarr:/config
     environment:
       - PUID=99
       - PGID=100

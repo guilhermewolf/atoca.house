@@ -40,7 +40,7 @@ alertmanager:
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 10Gi
+              storage: 1Gi
   ingress:
     enabled: true
     ingressClassName: nginx
@@ -93,7 +93,7 @@ prometheus:
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 20Gi
+              storage: 22Gi
     retention: 3d
     retentionSize: "20GB"
   ingress:

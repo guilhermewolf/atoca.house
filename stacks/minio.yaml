@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   minio:
-    image: minio/minio:RELEASE.2025-06-13T11-33-47Z@sha256:064117214caceaa8d8a90ef7caa58f2b2aeb316b5156afe9ee8da5b4d83e12c8
+    image: minio/minio:RELEASE.2025-07-18T21-56-31Z
     container_name: minio
     network_mode: bridge
     ports:

@@ -1,0 +1,41 @@
+{
+  "editor.bracketPairColorization.enabled": true,
+  "editor.fontFamily": "FiraCode Nerd Font",
+  "editor.fontLigatures": true,
+  "editor.guides.bracketPairs": true,
+  "editor.guides.bracketPairsHorizontal": true,
+  "editor.guides.highlightActiveBracketPair": true,
+  "editor.hover.delay": 1500,
+  "editor.stickyScroll.enabled": true,
+  "explorer.autoReveal": true,
+  "files.associations": {
+    "**/*.json5": "json5",
+    "**/*.yaml.j2": "yaml"
+  },
+  "files.trimTrailingWhitespace": true,
+  "material-icon-theme.files.associations": {
+    "*.sops.yaml": "lock",
+    "helmfile.yaml": "helm",
+    "kubeconfig": "kubernetes",
+    "talosconfig": "kubernetes"
+  },
+  "material-icon-theme.folders.associations": {
+    // top level
+    ".github/workflows": "ci",
+    ".private": "archive",
+    ".renovate": "robot",
+    "bootstrap": "seeders",
+    "talos": "linux",
+    // namespaces
+    "actions-runner-system": "github",
+    "cert-manager": "guard",
+    "external-secrets": "secure",
+    "system-upgrade": "update",
+    "volsync-system": "cloudflare"
+  },
+  "sops.defaults.ageKeyFile": "~/.config/age/age.key",
+  "vs-kubernetes": {
+    "vs-kubernetes.kubeconfig": "~/kubeconfig",
+    "vs-kubernetes.knownKubeconfigs": []
+  },
+}

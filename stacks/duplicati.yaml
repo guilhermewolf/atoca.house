@@ -24,7 +24,7 @@ services:
           memory: 256M
     volumes:
       - /mnt/user/backups:/backups
-      - /mnt/bulk:/source
+      - /mnt/user:/source
       - /mnt/blaze/appdata/duplicati:/config
     restart: unless-stopped
     labels:

@@ -17,6 +17,7 @@ services:
       - /mnt/user/data/torrents:/data/torrents
       - /mnt/blaze/appdata/qbittorent:/config
       - /mnt/user/free-leech/:/free-leech
+      - /mnt/user/data/:/mnt/user/data
     deploy:
       resources:
         limits:

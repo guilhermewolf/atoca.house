@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   ollama:
-    image: ollama/ollama:0.11.4-rocm@sha256:536a1ab654d06ee2c8bc10bd439ba22c491dc524ac1eaa3302216d789390cc30
+    image: ollama/ollama:0.11.6-rocm@sha256:a9d0d075b3529d11fc97e86c334434ee7eb1b5de10424ce39a1d58d9d013f24c
     container_name: ollama
     environment:
       - OLLAMA_DEBUG=0

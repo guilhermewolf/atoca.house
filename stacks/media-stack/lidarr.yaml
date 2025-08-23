@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   lidarr:
-    image: blampe/lidarr:lidarr-plugins-2.13.1.4678@sha256:88a8c36035a15488b6cdb9c8f801c501ebfdbee4c9a9c6848bfcae947d1b1a77
+    image: lscr.io/linuxserver/lidarr:2.12.4.4658-ls50
     container_name: lidarr
     network_mode: bridge
     ports:

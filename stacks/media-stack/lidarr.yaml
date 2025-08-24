@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   lidarr:
-    image: lscr.io/linuxserver/lidarr:2.12.4.4658-ls50
+    image: lscr.io/linuxserver/lidarr:2.12.4.4658-ls50@sha256:9f14ac890945e8964e2d2fa3eff6dc8d52fdfdb70502bdf8d6cdd369bd1aaca1
     container_name: lidarr
     network_mode: bridge
     ports:

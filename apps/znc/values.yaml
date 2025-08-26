@@ -35,6 +35,12 @@ service:
     ports:
       http:
         port: 6501
+      irc-tls:
+        port: 6697
+        targetPort: 6697
+      irc:
+        port: 6667
+        targetPort: 6667
 
 ingress:
   znc:
@@ -61,7 +67,7 @@ ingress:
       - hosts:
           - znc.atoca.house
         secretName: znc-tls
-        
+
 persistence:
   znc:
     enabled: true

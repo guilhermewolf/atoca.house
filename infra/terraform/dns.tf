@@ -21,7 +21,6 @@ locals {
     "n8n",
     "nextcloud",
     "npm",
-    "openweb-ui",
     "portainer",
     "qbittorrent",
     "radar",

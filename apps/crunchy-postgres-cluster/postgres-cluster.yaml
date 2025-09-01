@@ -27,6 +27,11 @@ spec:
         - terraform
       password:
         type: AlphaNumeric
+    - name: vikunja
+      databases:
+        - vikunja
+      password:
+        type: AlphaNumeric
 
   instances:
     - name: postgres

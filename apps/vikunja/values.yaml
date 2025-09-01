@@ -1,0 +1,93 @@
+controllers:
+  vikunja:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      vikunja:
+        image:
+          repository: docker.io/vikunja/vikunja
+          tag: 0.24.6@sha256:ed1f3ed467fecec0b57e9de7bc6607f8bbcbb23ffced6a81f5dfefc794cdbe3b
+        env:
+          VIKUNJA_SERVICE_PUBLICURL: https://vikunja.atoca.house
+          VIKUNJA_SERVICE_TIMEZONE: "Europe/Amsterdam"
+          POSTGRES_ENABLED: "true"
+          VIKUNJA_MAILER_ENABLED: true
+          VIKUNJA_METRICS_ENABLED: true
+          VIKUNJA_DEFAULTSETTINGS_DISCOVERABLE_BY_NAME: true
+          VIKUNJA_DEFAULTSETTINGS_EMAIL_REMINDERS_ENABLED: true
+          discoverable_by_email: true
+          overdue_tasks_reminders_time: '11:00'
+          VIKUNJA_DEFAULTSETTINGS_WEEK_START: 1
+
+          # Redis
+          VIKUNJA_REDIS_ENABLED: false
+
+          # postgres
+          VIKUNJA_DATABASE_TYPE: postgres
+        envFrom:
+          - secretRef:
+              name: vikunja-db-secret
+          - secretRef:
+              name: vikunja-secret
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: 3456
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 100m
+            memory: 20Mi
+          limits:
+            memory: 150Mi
+    pod:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: Always
+        seccompProfile: { type: RuntimeDefault }
+service:
+  vikunja:
+    controller: vikunja
+    ports:
+      http:
+        port: 3456
+ingress:
+  vikunja:
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare-prod"
+    hosts:
+      - host: vikunja.atoca.house
+        paths:
+          - path: /
+            service:
+              identifier: vikunja
+              port: http
+    tls:
+      - hosts:
+          - vikunja.atoca.house
+        secretName: vikunja-tls
+persistence:
+  files:
+    enabled: true
+    size: 5Gi
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    globalMounts:
+      - path:  /app/vikunja/files

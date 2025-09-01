@@ -28,7 +28,19 @@ controllers:
           limits:
             memory: "256Mi"
             cpu: "500m"
-
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - "nc -z 192.168.178.160 1080"
+              initialDelaySeconds: 10
+              periodSeconds: 30
+              failureThreshold: 3
 
 service:
   thelounge:

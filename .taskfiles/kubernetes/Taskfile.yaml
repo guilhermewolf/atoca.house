@@ -60,3 +60,8 @@ tasks:
       - flux -n actions-runner-system reconcile hr home-ops-runner
     preconditions:
       - which flux helm
+
+  port-forward-db:
+    desc: Port Forward Crunchy Postgres
+    cmds:
+      - kubectl -n crunchy-postgres-cluster port-forward "$(kubectl get pod -n crunchy-postgres-cluster -o name -l postgres-operator.crunchydata.com/cluster=postgres,postgres-operator.crunchydata.com/role=master)" 5432:5432

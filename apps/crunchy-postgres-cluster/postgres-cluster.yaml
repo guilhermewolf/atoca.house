@@ -27,9 +27,22 @@ spec:
         - terraform
       password:
         type: AlphaNumeric
+
     - name: vikunja
       databases:
         - vikunja
+      password:
+        type: AlphaNumeric
+
+    - name: authelia
+      databases:
+        - authelia
+      password:
+        type: AlphaNumeric
+
+    - name: lldap
+      databases:
+        - lldap
       password:
         type: AlphaNumeric
 

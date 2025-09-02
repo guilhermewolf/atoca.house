@@ -1,0 +1,105 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authelia-configmap
+  namespace: authelia
+data:
+  configuration.yaml: |
+    authentication_backend:
+      ldap:
+        implementation: lldap
+        address: ldap://lldap.lldap.svc.cluster.local:389
+        base_dn: dc=atoca,dc=house
+        additional_users_dn: ou=people
+        additional_groups_dn: ou=groups
+        user: uid=authelia,ou=people,dc=atoca,dc=house
+        users_filter: '(&(|({username_attribute}={input})({mail_attribute}={input}))(|(objectClass=person)(objectClass=inetOrgPerson)))'
+        groups_filter: '(&(member={dn})(objectClass=groupOfNames))'
+        group_search_mode: filter
+        attributes:
+          username: uid
+          display_name: cn
+          group_name: cn
+          mail: mail
+          member_of: memberOf
+      password_reset:
+        disable: true
+      refresh_interval: 1m
+
+    session:
+      same_site: lax
+      inactivity: 5m
+      expiration: 1h
+      remember_me: 1M
+      cookies:
+        - name: atoca_session
+          domain: atoca.house
+          authelia_url: https://auth.atoca.house
+          default_redirection_url: https://atoca.house
+
+    totp:
+      disable: false
+      issuer: authelia.com
+
+    webauthn:
+      disable: true
+
+    duo_api:
+      disable: true
+
+    access_control:
+      default_policy: two_factor
+      networks:
+        - name: internal
+          networks: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "192.168.178.0/24"]
+      rules:
+        # This just reduces logging noise in authelia
+        - domain:
+            - whoami.atoca.house
+          resources:
+            - ^/health$
+            - ^/health/
+          policy: bypass
+
+    identity_providers:
+      oidc:
+        hmac_secret: '{{ env "AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET" }}'
+        jwks:
+          - key_id: authelia-rsa-1
+            use: sig
+            algorithm: RS256
+            key: |
+    {{ env "OIDC_ISSUER_PRIVATE_KEY" | indent 10 }}
+        cors:
+          endpoints: ["authorization", "token", "revocation", "introspection"]
+          allowed_origins_from_client_redirect_uris: true
+        clients:
+          - client_id: grafana
+            client_name: Grafana
+            client_secret: '{{ secret "/config/secret/GRAFANA_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            authorization_policy: two_factor
+            pre_configured_consent_duration: 1y
+            scopes: ["openid", "profile", "groups", "email"]
+            redirect_uris: ["https://grafana.atoca.house/login/generic_oauth"]
+            token_endpoint_auth_method: client_secret_post
+            userinfo_signed_response_alg: none
+          - client_id: vikunja
+            client_name: Vikunja
+            client_secret: '{{ secret "/config/secret/VIKUNJA_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            authorization_policy: two_factor
+            pre_configured_consent_duration: 1y
+            scopes: ["openid", "profile", "groups", "email"]
+            redirect_uris: ["https://vikunja.atoca.house/auth/openid/authelia"]
+            userinfo_signed_response_alg: none
+          - client_id: argocd
+            client_name: Argo CD
+            client_secret: '{{ secret "/config/secret/GRAFANA_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            authorization_policy: two_factor
+            pre_configured_consent_duration: 1y
+            scopes: ["openid", "profile", "groups", "email"]
+            redirect_uris: ["https://argocd.atoca.house/auth/callback"]
+            userinfo_signed_response_alg: none

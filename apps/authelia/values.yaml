@@ -18,7 +18,7 @@ controllers:
       authelia:
         image:
           repository: ghcr.io/authelia/authelia
-          tag: 4.39.7@sha256:00fdbe0f4fe6120b1ba00bd3d618a8cbfc1a59aba68fb6b411ee3efb796cc054
+          tag: 4.39.8
         env:
           AUTHELIA_SERVER_ADDRESS: tcp://0.0.0.0:8888
           AUTHELIA_SERVER_DISABLE_HEALTHCHECK: "false"

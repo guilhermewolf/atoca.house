@@ -58,7 +58,7 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 105Gi
+            storage: 10Gi
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:

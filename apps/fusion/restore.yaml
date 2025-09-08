@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: fusion-restore
+  namespace: fusion
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: fusion-r2-secret
+    copyMethod: Direct
+    destinationPVC: fusion
+    storageClassName: longhorn
+    volumeSnapshotClassName: longhorn-snapshot-vsc
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

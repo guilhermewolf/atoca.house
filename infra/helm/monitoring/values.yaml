@@ -58,7 +58,7 @@ prometheus:
     image:
       registry: quay.io
       repository: prometheus/prometheus
-      tag: v3.5.0@sha256:63805ebb8d2b3920190daf1cb14a60871b16fd38bed42b857a3182bc621f4996
+      tag: v3.5.0
     resources:
       requests:
         cpu: 250m
@@ -70,54 +70,22 @@ prometheus:
       matchLabels: {}
     serviceMonitorNamespaceSelector:
       matchLabels: {}
-    podMonitorSelector:
-       matchExpressions: []
-    podMonitorNamespaceSelector: 
-      matchExpressions: []
     additionalScrapeConfigs:
       - job_name: 'compartilhado-node-exporter'
         scrape_interval: 30s
         static_configs:
           - targets:
               - '192.168.178.160:9100'  # Node Exporter on NAS
-
       - job_name: 'compartilhado-cadvisor'
         scrape_interval: 5s
         static_configs:
           - targets:
               - '192.168.178.160:8083'  # cAdvisor on NAS
-
       - job_name: 'hass-node-exporter'
         scrape_interval: 30s
         static_configs:
           - targets:
               - '192.168.178.22:9100'  # Node Exporter on Home Assistant
-                  
-      - job_name: 'crunchy-postgres-exporter'
-        kubernetes_sd_configs:
-        - role: pod
-          selectors:
-          - role: pod
-            label: postgres-operator.crunchydata.com/crunchy-postgres-exporter=true
-        relabel_configs:
-        - source_labels: [__meta_kubernetes_pod_container_port_number]
-          action: keep
-          regex: 9187
-        - source_labels: [__meta_kubernetes_namespace]
-          target_label: kubernetes_namespace
-        - source_labels: [__meta_kubernetes_pod_name]
-          target_label: pod
-        - source_labels: [__meta_kubernetes_namespace,__meta_kubernetes_pod_label_postgres_operator_crunchydata_com_cluster]
-          target_label: pg_cluster
-          separator: ":"
-          replacement: '$1$2'
-        - source_labels: [__meta_kubernetes_pod_ip]
-          target_label: ip
-        - source_labels: [__meta_kubernetes_pod_label_postgres_operator_crunchydata_com_instance]
-          target_label: deployment
-        - source_labels: [__meta_kubernetes_pod_label_postgres_operator_crunchydata_com_role]
-          target_label: role
-
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -125,7 +93,7 @@ prometheus:
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 22Gi
+              storage: 20Gi
     retention: 3d
     retentionSize: "20GB"
   ingress:

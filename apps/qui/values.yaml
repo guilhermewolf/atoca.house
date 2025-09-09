@@ -42,6 +42,10 @@ ingress:
     className: nginx
     annotations:
       cert-manager.io/cluster-issuer: "cloudflare-prod"
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        proxy_intercept_errors off;
+      nginx.ingress.kubernetes.io/custom-http-errors: ""
+      nginx.ingress.kubernetes.io/proxy-intercept-errors: "false"
     hosts:
       - host: qui.atoca.house
         paths:

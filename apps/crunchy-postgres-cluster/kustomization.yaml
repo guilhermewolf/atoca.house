@@ -6,3 +6,4 @@ resources:
   - ./rbac.yaml
   - ./crunchy-postgres-cluster-store.yaml
   - ./postgres-cluster.yaml
+  - ./podmonitor.yaml

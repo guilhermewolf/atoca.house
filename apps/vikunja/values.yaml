@@ -91,3 +91,10 @@ persistence:
     accessMode: ReadWriteOnce
     globalMounts:
       - path:  /app/vikunja/files
+  config:
+    type: secret
+    name: vikunja-secret
+    globalMounts:
+      - path: /etc/vikunja/config.yml
+        subPath: config.yml
+        readOnly: true

@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   sonarr-anime:
-    image: lscr.io/linuxserver/sonarr:4.0.15@sha256:e00e87e0e7c24fdc992093756f120a6ab292790b6a637ff3641bf813091cd726
+    image: lscr.io/linuxserver/sonarr:4.0.15@sha256:bb50bac26881613af15deb4df891e4a7cb09e3333aec20a0522cb188fb22b11d
     container_name: sonarr-anime
     network_mode: bridge
     ports:

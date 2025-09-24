@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   n8n:
-    image: n8nio/n8n:1.112.3@sha256:c5fe3ff0b79f7831dc21f9c709bdb7eee4fff4453a28ce84c8e9fa5b9f562686
+    image: n8nio/n8n:1.113.1@sha256:e9ef47b4bbacbb0c4ff6c84f706ad536df98a6daed9f12a4ea2933796ec3ae8d
     container_name: n8n
     restart: unless-stopped
     network_mode: bridge

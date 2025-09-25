@@ -56,9 +56,9 @@ alertmanager:
 prometheus:
   prometheusSpec:
     image:
-      registry: quay.io
-      repository: prometheus/prometheus
-      tag: v3.6.0@sha256:76947e7ef22f8a698fc638f706685909be425dbe09bd7a2cd7aca849f79b5f64
+      registry: docker.io
+      repository: prompp/prompp
+      tag: 2.53.2-0.4.0
     resources:
       requests:
         cpu: 250m
@@ -117,7 +117,17 @@ kubeStateMetrics:
     limits:
       cpu: 100m
       memory: 128Mi
-
+  prometheus:
+    monitor:
+      enabled: true
+      relabelings:
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: kubernetes_node
+          
 prometheus-node-exporter:
   fullnameOverride: node-exporter
   resources:
@@ -130,6 +140,13 @@ prometheus-node-exporter:
   prometheus:
     monitor:
       enabled: true
+      relabelings:
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: kubernetes_node
   rbac:
     pspEnabled: true
 

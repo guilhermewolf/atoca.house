@@ -58,7 +58,7 @@ prometheus:
     image:
       registry: docker.io
       repository: prompp/prompp
-      tag: 2.53.2-0.4.0
+      tag: 2.53.2-0.4.0@sha256:3cfa681cf8857dae3a29e9722e491581a219d3b7aa923fbceca48d7598739704
     resources:
       requests:
         cpu: 250m

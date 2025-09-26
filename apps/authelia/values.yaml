@@ -54,6 +54,7 @@ controllers:
             memory: 32Mi
           limits:
             memory: 128Mi
+
 service:
   authelia:
     controller: authelia

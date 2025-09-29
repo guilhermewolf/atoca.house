@@ -4,3 +4,8 @@
 
 .DS_Store
 **/charts/
+
+controlplane.yaml
+worker-1.yaml
+worker-2.yaml
+worker-3.yaml

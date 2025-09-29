@@ -60,10 +60,10 @@ prometheus:
       fsGroup: 64535
     resources:
       requests:
-        cpu: 250m
-        memory: 256Mi
+        cpu: 500m
+        memory: 512Mi
       limits:
-        cpu: 1000m
+        #cpu: 1000m
         memory: 1Gi
     podMonitorSelectorNilUsesHelmValues: false
     probeSelectorNilUsesHelmValues: false
@@ -140,7 +140,7 @@ prometheus-node-exporter:
       cpu: 50m
       memory: 64Mi
     limits:
-      cpu: 100m
+      #cpu: 100m
       memory: 128Mi
   prometheus:
     monitor:
@@ -152,6 +152,80 @@ prometheus-node-exporter:
           sourceLabels:
             - __meta_kubernetes_pod_node_name
           targetLabel: kubernetes_node
+<<<<<<< HEAD
+=======
+
+# kubeEtcd:
+#   service:
+#     selector:
+#       component: kube-apiserver # etcd runs on control plane nodes
+kubeEtcd:
+  enabled: true
+  endpoints:
+    - 192.168.178.201
+  service:
+    enabled: true
+    port: 2381
+    targetPort: 2381
+  serviceMonitor:
+    enabled: true
+    scheme: http
+
+kubeProxy:
+  enabled: false
+
+kubeControllerManager:
+  enabled: true
+  endpoints:
+    - 192.168.178.201
+  service:
+    enabled: true
+    port: 10257
+    targetPort: 10257
+  serviceMonitor:
+    enabled: true
+    scheme: https
+    tlsConfig:
+      insecureSkipVerify: true
+
+kubeScheduler:
+  enabled: true
+  endpoints:
+    - 192.168.178.201
+  service:
+    enabled: true
+    port: 10259
+    targetPort: 10259
+  serviceMonitor:
+    enabled: true
+    scheme: https
+    tlsConfig:
+      insecureSkipVerify: true
+
+kube-state-metrics:
+  fullnameOverride: kube-state-metrics
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      #cpu: 100m
+      memory: 128Mi
+  metricLabelsAllowlist:
+    - pods=[*]
+    - deployments=[*]
+    - persistentvolumeclaims=[*]
+  prometheus:
+    monitor:
+      enabled: true
+      relabelings:
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: kubernetes_node
+>>>>>>> ba0b6b5 (update the monitoring solution values)
 
 grafana:
   enabled: false

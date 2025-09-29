@@ -136,22 +136,46 @@ cluster:
         - level: Metadata
   controllerManager:
     image: k8s.gcr.io/kube-controller-manager:v1.33.0
+    extraArgs:
+      bind-address: 0.0.0.0
   proxy:
     image: k8s.gcr.io/kube-proxy:v1.33.0
+    extraArgs:
+      bind-address: 0.0.0.0
   scheduler:
+    config:
+      apiVersion: kubescheduler.config.k8s.io/v1
+      kind: KubeSchedulerConfiguration
+      profiles:
+        - schedulerName: default-scheduler
+          plugins:
+            score:
+              disabled:
+                - name: ImageLocality
+          pluginConfig:
+            - name: PodTopologySpread
+              args:
+                defaultingType: List
+                defaultConstraints:
+                  - maxSkew: 1
+                    topologyKey: kubernetes.io/hostname
+                    whenUnsatisfiable: ScheduleAnyway
+    extraArgs:
+      bind-address: 0.0.0.0
     image: k8s.gcr.io/kube-scheduler:v1.33.0
   discovery:
     enabled: true
     registries:
       kubernetes:
         disabled: true
-      service: {}
+      service:
+        disabled: false
   etcd:
     ca:
       crt: ENC[AES256_GCM,data:TkbrvDkR4/MWUG4pRjDdIP02rwnDUazVd9lwv2p5mpXpNIDyJqdWI7gWe8EhC6f+s+vFbAGd0Fn4Gsb8eS6IuEmXUeNZWIfq9I5FmVH9uOjKCQbsZfUckEP9XQd0z02QrlurNmo9t4xAV7TZ+13UY857yOOkBCPqhWZZSGu1RrrqVtxwmf5GHhHiCTMQ6RD7D1Jv6JxWziIinFNlksedIRvGNBgBNojh5f1QJ8mMFSqO+Wi1J53cd24Jpr+9VtLrPVpVRyQzk0SqxBxN+3xddsPdQr/poVwGsFXk2WyUY+37MkdgyqBjlVuXR2qFftzguAyWrAp922khC3b1egEHUv6pq3+XjouLLeUTqBf+fh6K7vEWGib2iXADD3hpPFK52feMtk2Gd32ms+whrChIdTibeyPxpqMKEb90hrSGEWhjObdxCbCwAyZpt5QJdcjP3mGae4P6I2uN7eP8UQiXFcGlfd4zvep+h2VryHVr0CaQxLqqtuQZqezYivdEPhFB5Vepzo7Q6NgTFGUlkk0sjjrjLekyVqzUK4Dufz7k3nigAe+kILmDmA+78eh9qn9vwxIYA+3mmYttmsH2rDjAVczhB2WiB3CkoZLusUpqrGJgpOQZP2A64YzDe+RuYgfTpNi/Vx3NRXR/3qpC3XLhBG1UWXXd0COrBVs5CP/QNdLK5dnvpm0IiUxsBCsG8t8HNUt2TxdSslEfp8tcGACUckicWfzwlmWiXlTxRJxEl54FW7nhEOCn5JAoX9S9b8O/OuHyYJy6f47X2G7dAW37Nu9ACMLKtQ79ek3lRjkE1qtfF4rSmJ9KyqBqdaSbBKiISqu1RCGRZVpjXS/NyX/VP1l2mXPViOK64eoo4G+XkwP1YZfr/r44wHxyT7IEcTWFXrkmL505bC1i6MDupDwnPHfobYR9XDUfQvdL9YtpKMxLe4cAZPrWoL+d6aRmcOqH4hG9S2Uej0fdjMhMvewvn7e2CmC1zukpOoqWyxCqwa4QbRhV3vpI2bLvKcirU8qDTTHrWA==,iv:csaDv62Syy3XVmaLdhzdnzq8OLquotE74scnIADV/kI=,tag:raSA/d9ETk3cvmoYcvj9qw==,type:str]
       key: ENC[AES256_GCM,data:SDbBn7YeCQ3LirZVvlALwOUXydId03cSrSOPOWXubuvXBxM0jsSnOPvLYqTRwETUof8q2gRGylJaCHbs22K8miWDa3GaVpwTk4+R36VFkfbicMyFYiQWJF0c6Z/2K7DU6d86iFrdkN43FmKWx+3wkiTFvvc8QFM9Z9RkbqZ+ksYNoztlJQiSt8fAo6M3cmPClIHi9mArPSYw1D/uWgLa58kbbbInjTLBXL2iUL+klSIjNf/OM9Bo3Wh5sv2M0eS0oQqlBERox8w1W40zXVYxr5kFMGnzxwTpbF8ugsJ7w56mKxqr4phFNFq4zmSysZ0+KWz1TaBQ4jqrVt5AKtFyfyhtMEG6EphPS6DjseuTi2L24E65iScS01BmDUPVEYXdtP+mhObq47StqsRt/Hh7Hg==,iv:YFmNHhSlFFDFUGvILLwftYMgfnyP3TbpDJiUWbpxTak=,tag:x41fwkTDnmgCKQhGRc/viw==,type:str]
-  extraManifests: []
-  inlineManifests: []
+    extraArgs:
+      listen-metrics-urls: http://0.0.0.0:2381
 sops:
   kms: []
   gcp_kms: []

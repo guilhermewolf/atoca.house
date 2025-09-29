@@ -13,26 +13,11 @@ alertmanager:
       limits:
         cpu: 250m
         memory: 256Mi
-    config:
+    alertmanagerConfiguration:
+      name: alertmanager
       global:
-        resolve_timeout: 5m
-      route:
-        group_wait: 30s
-        group_interval: 5m
-        repeat_interval: 1h
-        receiver: 'ntfy-receiver'
-        routes:
-          - match:
-              alertname: Watchdog
-            receiver: 'ntfy-receiver'
-          - match_re:
-              alertname: .*
-            receiver: 'ntfy-receiver'
-      receivers:
-        - name: 'ntfy-receiver'
-          webhook_configs:
-            - url: 'https://ntfy.atoca.house/rpi-k8s'
-              send_resolved: true
+        resolveTimeout: 5m
+    externalUrl: https://alertmanager.atoca.house
     storage:
       volumeClaimTemplate:
         spec:
@@ -53,12 +38,26 @@ alertmanager:
         hosts:
           - alertmanager.atoca.house
 
+kubeEtcd:
+  service:
+    selector:
+      component: kube-apiserver # etcd runs on control plane nodes
+kubeProxy:
+  enabled: false
+
+
 prometheus:
   prometheusSpec:
+    externalUrl: https://prometheus.atoca.house
     image:
-      registry: quay.io
-      repository: prometheus/prometheus
-      tag: v3.6.0
+      registry: docker.io
+      repository: prompp/prompp
+      tag: 2.53.2-0.4.0-arm64
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 64535
+      runAsGroup: 64535
+      fsGroup: 64535
     resources:
       requests:
         cpu: 250m
@@ -66,10 +65,11 @@ prometheus:
       limits:
         cpu: 1000m
         memory: 1Gi
-    serviceMonitorSelector:
-      matchLabels: {}
-    serviceMonitorNamespaceSelector:
-      matchLabels: {}
+    podMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    scrapeConfigSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
     additionalScrapeConfigs:
       - job_name: 'compartilhado-node-exporter'
         scrape_interval: 30s
@@ -94,8 +94,9 @@ prometheus:
           resources:
             requests:
               storage: 20Gi
-    retention: 3d
-    retentionSize: "20GB"
+    retention: 2d
+    retentionSize: "15GB"
+    walCompression: true
   ingress:
     enabled: true
     ingressClassName: nginx
@@ -108,8 +109,8 @@ prometheus:
         hosts:
           - prometheus.atoca.house
 
-kubeStateMetrics:
-  nameOverride: kube-state-metrics
+kube-state-metrics:
+  fullnameOverride: kube-state-metrics
   resources:
     requests:
       cpu: 50m
@@ -117,6 +118,10 @@ kubeStateMetrics:
     limits:
       cpu: 100m
       memory: 128Mi
+  metricLabelsAllowlist:
+    - pods=[*]
+    - deployments=[*]
+    - persistentvolumeclaims=[*]
   prometheus:
     monitor:
       enabled: true
@@ -127,7 +132,7 @@ kubeStateMetrics:
           sourceLabels:
             - __meta_kubernetes_pod_node_name
           targetLabel: kubernetes_node
-          
+
 prometheus-node-exporter:
   fullnameOverride: node-exporter
   resources:
@@ -147,8 +152,6 @@ prometheus-node-exporter:
           sourceLabels:
             - __meta_kubernetes_pod_node_name
           targetLabel: kubernetes_node
-  rbac:
-    pspEnabled: true
 
 grafana:
   enabled: false

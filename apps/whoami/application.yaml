@@ -10,8 +10,8 @@ spec:
   project: applications
   sources:
     - chart: app-template
-      repoURL: ghcr.io/bjw-s/helm
-      targetRevision: 3.7.3
+      repoURL: ghcr.io/bjw-s-labs/helm
+      targetRevision: 4.3.0
       helm:
         releaseName: whoami
         valueFiles:

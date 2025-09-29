@@ -16,6 +16,7 @@ spec:
         releaseName: lldap
         valueFiles:
           - $values/apps/lldap/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'

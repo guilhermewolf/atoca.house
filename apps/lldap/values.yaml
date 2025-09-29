@@ -48,7 +48,6 @@ controllers:
           labelSelector:
             matchLabels:
               app.kubernetes.io/name: lldap
-
 service:
   lldap:
     controller: lldap

@@ -38,14 +38,6 @@ alertmanager:
         hosts:
           - alertmanager.atoca.house
 
-kubeEtcd:
-  service:
-    selector:
-      component: kube-apiserver # etcd runs on control plane nodes
-kubeProxy:
-  enabled: false
-
-
 prometheus:
   prometheusSpec:
     externalUrl: https://prometheus.atoca.house
@@ -109,14 +101,14 @@ prometheus:
         hosts:
           - prometheus.atoca.house
 
-kube-state-metrics:
-  fullnameOverride: kube-state-metrics
+prometheus-node-exporter:
+  fullnameOverride: node-exporter
   resources:
     requests:
       cpu: 50m
       memory: 64Mi
     limits:
-      cpu: 100m
+      #cpu: 100m
       memory: 128Mi
   metricLabelsAllowlist:
     - pods=[*]
@@ -133,8 +125,8 @@ kube-state-metrics:
             - __meta_kubernetes_pod_node_name
           targetLabel: kubernetes_node
 
-prometheus-node-exporter:
-  fullnameOverride: node-exporter
+kube-state-metrics:
+  fullnameOverride: kube-state-metrics
   resources:
     requests:
       cpu: 50m
@@ -142,6 +134,10 @@ prometheus-node-exporter:
     limits:
       #cpu: 100m
       memory: 128Mi
+  metricLabelsAllowlist:
+    - pods=[*]
+    - deployments=[*]
+    - persistentvolumeclaims=[*]
   prometheus:
     monitor:
       enabled: true
@@ -152,13 +148,11 @@ prometheus-node-exporter:
           sourceLabels:
             - __meta_kubernetes_pod_node_name
           targetLabel: kubernetes_node
-<<<<<<< HEAD
-=======
-
 # kubeEtcd:
 #   service:
 #     selector:
 #       component: kube-apiserver # etcd runs on control plane nodes
+
 kubeEtcd:
   enabled: true
   endpoints:
@@ -170,9 +164,6 @@ kubeEtcd:
   serviceMonitor:
     enabled: true
     scheme: http
-
-kubeProxy:
-  enabled: false
 
 kubeControllerManager:
   enabled: true
@@ -202,30 +193,8 @@ kubeScheduler:
     tlsConfig:
       insecureSkipVerify: true
 
-kube-state-metrics:
-  fullnameOverride: kube-state-metrics
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      #cpu: 100m
-      memory: 128Mi
-  metricLabelsAllowlist:
-    - pods=[*]
-    - deployments=[*]
-    - persistentvolumeclaims=[*]
-  prometheus:
-    monitor:
-      enabled: true
-      relabelings:
-        - action: replace
-          regex: (.*)
-          replacement: $1
-          sourceLabels:
-            - __meta_kubernetes_pod_node_name
-          targetLabel: kubernetes_node
->>>>>>> ba0b6b5 (update the monitoring solution values)
+kubeProxy:
+  enabled: false
 
 grafana:
   enabled: false

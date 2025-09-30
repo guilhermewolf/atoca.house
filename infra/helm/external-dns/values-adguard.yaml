@@ -47,9 +47,7 @@ provider:
         memory: 128Mi
 
 extraArgs:
-  ingress-class: nginx
-  webhook-provider-url: http://localhost:8080
-  txt-owner-id: "rpi-adguard"
+  - --webhook-provider-url=http://localhost:8080
 
 sources:
   - ingress

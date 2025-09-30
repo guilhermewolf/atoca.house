@@ -121,8 +121,8 @@ While most of my infrastructure and workloads are self-hosted I do rely upon the
 
 | Device                          | Count | OS Disk Size | Data Disk Size              | Ram  | Operating System   | Purpose             |
 |---------------------------------|-------|--------------|-----------------------------|------|--------------------|---------------------|
-| Raspberry Pi 4                  | 3     | 128GB (SD)   | -                           | 4GB  | Talos Linux 1.10.2 | K8s nodes           |
-| Raspberry Pi 4                  | 1     | 128GB (SD)   | -                           | 8GB  | Talos Linux 1.10.2 | K8s node            |
+| Raspberry Pi 4                  | 3     | 128GB (SD)   | -                           | 4GB  | Talos Linux 1.11.2 | K8s nodes           |
+| Raspberry Pi 4                  | 1     | 128GB (SD)   | -                           | 8GB  | Talos Linux 1.11.2 | K8s node            |
 | Raspberry PoE Hat               | 4     | -            | -                           | -    | -                  | Power the Pi's      |
 | TP-Link TL-SG108PE              | 1     | -            | -                           | -    | -                  | Network PoE Switch  |
 | Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB Nvme + 4x 12TB HDD   | 32GB | Unraid 7.1.4       | NAS                 |

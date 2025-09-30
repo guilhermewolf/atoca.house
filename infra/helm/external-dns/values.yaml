@@ -9,22 +9,21 @@ provider:
   name: cloudflare
 
 env:
-  - name: CF_API_TOKEN
+  - name: CF_API_KEY
     valueFrom:
       secretKeyRef:
         name: cloudflare-ed-key
         key: cloudflare_api_key
-
+  - name: CF_API_EMAIL
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-email
+        key: cloudflare-email
 sources:
   - ingress
 
 domainFilters:
   - atoca.house
-
-extraArgs:
-  ingress-class: nginx
-  cloudflare-proxied: "false"
-  txt-owner-id: "rpi-k8s-cluster"
 
 resources:
   requests:

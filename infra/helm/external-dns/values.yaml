@@ -2,27 +2,29 @@ serviceAccount:
   create: true
   name: external-dns
 
-ingressClassFilters: ["nginx"]
-
 rbac:
   create: true
 
-crd:
-  create: true
+provider:
+  name: cloudflare
 
-provider: cloudflare
+env:
+  - name: CF_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-ed-key
+        key: cloudflare_api_key
 
 sources:
   - ingress
-domainFilters: ["atoca.house"]
 
-cloudflare:
-  secretName: "cloudflare-ed-key"
-  email: "guilhermewolf@outlook.com"
-  proxied: false
+domainFilters:
+  - atoca.house
 
 extraArgs:
-  webhook-provider-url: http://localhost:8888
+  ingress-class: nginx
+  cloudflare-proxied: "false"
+  txt-owner-id: "rpi-k8s-cluster"
 
 resources:
   requests:
@@ -34,5 +36,5 @@ resources:
 
 metrics:
   enabled: true
-  serviceMonitor:
-    enabled: true
+serviceMonitor:
+  enabled: true

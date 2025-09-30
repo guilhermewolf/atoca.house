@@ -120,7 +120,7 @@
 
     - name: Create a Kubernetes secret for argocd-redis
       ansible.builtin.command:
-        cmd: "kubectl -n {{ argocd_namespace }} create secret generic {{ argocd_redis_token_name }} --dry-run=client --from-file=auth=/tmp/op_argocd_redis.txt -o yaml > /tmp/{{ argocd_redis_token_name }}.yaml" 
+        cmd: "kubectl -n {{ argocd_namespace }} create secret generic {{ argocd_redis_token_name }} --dry-run=client --from-file=auth=/tmp/op_argocd_redis.txt -o yaml > /tmp/{{ argocd_redis_token_name }}.yaml"
         _uses_shell: true
 
     - name: Apply argocd-redis manifest

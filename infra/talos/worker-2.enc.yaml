@@ -9,7 +9,7 @@ machine:
     key: ""
   certSANs: []
   kubelet:
-    image: ghcr.io/siderolabs/kubelet:v1.33.0
+    image: ghcr.io/siderolabs/kubelet:v1.34.1
     defaultRuntimeSeccompProfileEnabled: true
     disableManifestsDirectory: true
     extraMounts:
@@ -44,7 +44,7 @@ machine:
     extensions:
       - image: ghcr.io/siderolabs/iscsi-tools:v0.2.0
       - image: ghcr.io/siderolabs/util-linux-tools:2.40.4
-      
+
   time:
     servers:
         - 192.168.178.22

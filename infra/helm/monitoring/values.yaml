@@ -62,22 +62,6 @@ prometheus:
     ruleSelectorNilUsesHelmValues: false
     scrapeConfigSelectorNilUsesHelmValues: false
     serviceMonitorSelectorNilUsesHelmValues: false
-    additionalScrapeConfigs:
-      - job_name: 'compartilhado-node-exporter'
-        scrape_interval: 30s
-        static_configs:
-          - targets:
-              - '192.168.178.160:9100'  # Node Exporter on NAS
-      - job_name: 'compartilhado-cadvisor'
-        scrape_interval: 5s
-        static_configs:
-          - targets:
-              - '192.168.178.160:8083'  # cAdvisor on NAS
-      - job_name: 'hass-node-exporter'
-        scrape_interval: 30s
-        static_configs:
-          - targets:
-              - '192.168.178.22:9100'  # Node Exporter on Home Assistant
     storageSpec:
       volumeClaimTemplate:
         spec:

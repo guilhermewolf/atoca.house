@@ -1,0 +1,42 @@
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: &name compartilhado-node-exporter
+spec:
+  staticConfigs:
+    - targets:
+        - compartilhado.local:9100
+  metricsPath: /metrics
+  relabelings:
+    - action: replace
+      targetLabel: job
+      replacement: *name
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: &name compartilhado-cadvisor
+spec:
+  staticConfigs:
+    - targets:
+        - compartilhado.local:8083
+  metricsPath: /metrics
+  relabelings:
+    - action: replace
+      targetLabel: job
+      replacement: *name
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: &name hass-node-exporter
+spec:
+  staticConfigs:
+    - targets:
+        - home-assistant.local:9100
+  metricsPath: /api/export/prometheus/metrics
+  relabelings:
+    - action: replace
+      targetLabel: job
+      replacement: *name

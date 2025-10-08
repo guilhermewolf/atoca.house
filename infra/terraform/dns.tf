@@ -29,9 +29,8 @@ locals {
     "slskd",
     "syncthing",
     "sonar",
-    "tandoor",
     "vscode",
-    "wyl"
+    "znc"
   ]
   domain = "atoca.house"
 }

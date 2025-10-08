@@ -12,6 +12,7 @@ services:
       - "2234:2234"            # slskd P2P port
       - "5030:5030"            # slskd Web UI
       - "8080:8080"            # SABnzbd Web UI
+      - "6501:6501"            # ZNC
       - "1080:1080"            # SOCKS5 proxy
     environment:
       - HTTPPROXY=on

@@ -44,7 +44,7 @@ prometheus:
     image:
       registry: docker.io
       repository: prompp/prompp
-      tag: 2.53.2-0.4.0-arm64
+      tag: 2.53.2-0.4.0-arm64@sha256:f2fc387c087a3887045bf374eab9004e724e297743f47bfb3a552ccc8310815f
     securityContext:
       runAsNonRoot: true
       runAsUser: 64535

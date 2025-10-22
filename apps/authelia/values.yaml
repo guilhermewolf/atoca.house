@@ -54,6 +54,36 @@ controllers:
             memory: 32Mi
           limits:
             memory: 128Mi
+    pod:
+      annotations:
+        k8s.ksgate.org/postgres-ready: |
+          {
+            "apiVersion": "postgres-operator.crunchydata.com/v1beta1",
+            "kind": "PostgresCluster",
+            "name": "postgres",
+            "namespace": "crunchy-postgres-cluster",
+            "expression": "has(resource.status.instances) && resource.status.instances.exists(i, i.readyReplicas >= 1)"
+          }
+        k8s.ksgate.org/postgres-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "postgres-pgbouncer",
+            "namespace": "crunchy-postgres-cluster"
+          }
+
+        k8s.ksgate.org/lldap-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "lldap",
+            "namespace": "lldap",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+      schedulingGates:
+        - name: k8s.ksgate.org/postgres-ready
+        - name: k8s.ksgate.org/postgres-service
+        - name: k8s.ksgate.org/lldap-deployment
 
 service:
   authelia:

@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: filebrowser
+  namespace: argocd
+spec:
+  destination:
+    namespace: filebrowser
+    server: https://kubernetes.default.svc
+  project: applications
+  sources:
+    - chart: app-template
+      repoURL: ghcr.io/bjw-s-labs/helm
+      targetRevision: 4.4.0
+      helm:
+        releaseName: filebrowser
+        valueFiles:
+        - $values/apps/filebrowser/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: apps/filebrowser/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

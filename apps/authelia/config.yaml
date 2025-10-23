@@ -85,6 +85,7 @@ data:
             redirect_uris: ["https://grafana.atoca.house/login/generic_oauth"]
             token_endpoint_auth_method: client_secret_post
             userinfo_signed_response_alg: none
+
           - client_id: vikunja
             client_name: Vikunja
             client_secret: '{{ secret "/config/secret/VIKUNJA_OAUTH_CLIENT_SECRET" }}'
@@ -94,6 +95,22 @@ data:
             scopes: ["openid", "profile", "groups", "email"]
             redirect_uris: ["https://vikunja.atoca.house/auth/openid/authelia"]
             userinfo_signed_response_alg: none
+
+          - client_id: filebrowser
+            client_name: 'FileBrowser Quantum'
+            client_secret: '{{ secret "/config/secret/FILEBROWSER_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            authorization_policy: two_factor
+            require_pkce: false
+            pkce_challenge_method: ''
+            redirect_uris: ["https://filebrowser.atoca.house/api/auth/oidc/callback"]
+            scopes: ["openid", "profile", "groups", "email"]
+            response_types: ["code"]
+            grant_types: ["authorization_code"]
+            access_token_signed_response_alg: 'none'
+            userinfo_signed_response_alg: 'none'
+            token_endpoint_auth_method: 'client_secret_basic'
+
           - client_id: argocd
             client_name: Argo CD
             client_secret: '{{ secret "/config/secret/GRAFANA_OAUTH_CLIENT_SECRET" }}'

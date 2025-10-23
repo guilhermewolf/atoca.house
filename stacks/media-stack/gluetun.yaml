@@ -9,8 +9,8 @@ services:
     ports:
       - "8888:8888/tcp"        # HTTP proxy
       - "8082:8082"            # qBittorrent
-      - "2234:2234"            # slskd P2P port
-      - "5030:5030"            # slskd Web UI
+      #- "2234:2234"            # slskd P2P port
+      #- "5030:5030"            # slskd Web UI
       - "8080:8080"            # SABnzbd Web UI
       - "6501:6501"            # ZNC
       - "1080:1080"            # SOCKS5 proxy
@@ -27,7 +27,7 @@ services:
       - FIREWALL_OUTBOUND_SUBNETS=$FIREWALL_OUTBOUND_SUBNETS
       - SERVER_NAMES=$SERVER_NAMES
       - DOT=off
-      - HEALTH_TARGET_ADDRESS=cloudflare.com:443
+      #- HEALTH_TARGET_ADDRESS=google.com:443
       - PUID=99
       - PGID=100
       - UMASK=022

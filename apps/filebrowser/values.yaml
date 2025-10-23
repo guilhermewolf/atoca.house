@@ -1,0 +1,75 @@
+controllers:
+  filebrowser:
+    containers:
+      filebrowser:
+        image:
+          repository: ghcr.io/gtsteffaniak/filebrowser
+          tag: 0.8.10-beta@sha256:58feab9f89dcdf28b6e69c422a6cfcff75d89673c2108368bfdf66ecbb2d76a6
+          pullPolicy: IfNotPresent
+        env:
+          TZ: "Europe/Amsterdam"
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            memory: 2Gi
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: 8080
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+service:
+  filebrowser:
+    controller: filebrowser
+    ports:
+      http:
+        primary: true
+        port: 80
+        targetPort: 8080
+
+ingress:
+  filebrowser:
+    className: cloudflare-tunnel
+    hosts:
+      - host: filebrowser.atoca.house
+        paths:
+          - path: /
+            pathType: Prefix
+            service:
+              identifier: filebrowser
+              port: http
+    tls:
+      - hosts:
+          - filebrowser.atoca.house
+        secretName: filebrowser-tls
+
+persistence:
+  database:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 2Gi
+    globalMounts:
+      - path: /home/filebrowser/database
+  config:
+    type: secret
+    name: filebrowser-secret
+    globalMounts:
+      - path: /home/filebrowser/config.yaml
+        subPath: config.yml
+  media:
+    enabled: true
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/media
+    globalMounts:
+      - path: /mnt/media

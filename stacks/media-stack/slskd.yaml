@@ -4,12 +4,8 @@ services:
   slskd:
     image: slskd/slskd:0.23.2@sha256:28df5325f301537ea8669b2ef90112a30cc9f2efd3eb714c9a778460b5dc6288
     container_name: slskd
-    #network_mode: "container:GlueTun-PIA"
-
+    network_mode: "container:GlueTun-PIA"
     user: 99:100
-    ports:
-      - "2234:2234"            # slskd P2P port
-      - "5030:5030"            # slskd Web UI
     environment:
       - TZ=Europe/Amsterdam
       - SLSKD_DOWNLOADS_DIR=/downloads/complete/music

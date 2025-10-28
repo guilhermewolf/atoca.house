@@ -8,11 +8,18 @@ controllers:
           pullPolicy: IfNotPresent
         env:
           TZ: "Europe/Amsterdam"
+          FILEBROWSER_CONFIG: /config/config.yaml
         resources:
           requests:
             cpu: 100m
+            memory: 256Mi
           limits:
             memory: 2Gi
+            cpu: 1000m
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
         probes:
           liveness: &probes
             enabled: true
@@ -26,6 +33,28 @@ controllers:
               timeoutSeconds: 1
               failureThreshold: 3
           readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: 8080
+              initialDelaySeconds: 0
+              periodSeconds: 5
+              timeoutSeconds: 1
+              failureThreshold: 30
+    pod:
+      securityContext:
+        runAsUser: 99
+        runAsGroup: 100
+        runAsNonRoot: true
+        fsGroup: 100
+        fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups: [100]
+        seccompProfile:
+          type: RuntimeDefault
+
 service:
   filebrowser:
     controller: filebrowser
@@ -34,6 +63,7 @@ service:
         primary: true
         port: 80
         targetPort: 8080
+        protocol: HTTP
 
 ingress:
   filebrowser:
@@ -52,6 +82,13 @@ ingress:
         secretName: filebrowser-tls
 
 persistence:
+  config:
+    type: secret
+    name: filebrowser-secret
+    globalMounts:
+      - path: /config
+        readOnly: true
+
   database:
     enabled: true
     type: persistentVolumeClaim
@@ -60,12 +97,15 @@ persistence:
     size: 2Gi
     globalMounts:
       - path: /home/filebrowser/database
-  config:
-    type: secret
-    name: filebrowser-secret
+
+  cache:
+    enabled: true
+    type: emptyDir
+    medium: Memory
+    sizeLimit: 1Gi
     globalMounts:
-      - path: /home/filebrowser/config.yaml
-        subPath: config.yml
+      - path: /home/filebrowser/tmp
+
   media:
     enabled: true
     type: nfs
@@ -73,3 +113,4 @@ persistence:
     path: /mnt/user/media
     globalMounts:
       - path: /mnt/media
+        readOnly: false

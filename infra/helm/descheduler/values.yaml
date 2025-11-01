@@ -11,14 +11,15 @@ deschedulerPolicy:
             evictFailedBarePods: true
             evictLocalStoragePods: true
             evictSystemCriticalPods: true
+            ignorePvcPods: false
         - name: LowNodeUtilization
           args:
             targetThresholds:
-              cpu: 45
-              memory: 55
+              cpu: 50
+              memory: 65
             thresholds:
-              cpu: 25
-              memory: 30
+              cpu: 20
+              memory: 25
             useDeviationThresholds: true
         - name: RemovePodsViolatingInterPodAntiAffinity
         - name: RemovePodsViolatingNodeAffinity

@@ -23,7 +23,7 @@ services:
         limits:
           cpus: '1.0'
           memory: 1G
-    restart: always
+    restart: unless-stopped
     healthcheck:
       test: ping -c 1 www.google.com || exit 1
       interval: 60s

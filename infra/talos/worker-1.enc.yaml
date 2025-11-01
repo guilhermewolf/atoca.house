@@ -38,7 +38,7 @@ machine:
       - 1.1.1.1
   install:
     disk: /dev/mmcblk0
-    image: ghcr.io/siderolabs/installer:v1.10.2
+    image: ghcr.io/siderolabs/installer:v1.11.2
     bootloader: true
     wipe: false
     extensions:

@@ -80,6 +80,13 @@
       environment:
         SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
+    - name: Decrypt Talos worker-4 file
+      shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-4.enc.yaml > {{ talos_dir }}/worker-4.yaml"
+      args:
+        creates: "{{ talos_dir }}/worker-4.yaml"
+      environment:
+        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
+
     - name: Apply Talos worker-1 config
       shell: "talosctl apply-config --insecure --nodes 192.168.178.202 --file {{ talos_dir }}/worker-1.yaml"
 
@@ -88,6 +95,9 @@
 
     - name: Apply Talos worker-3 config
       shell: "talosctl apply-config --insecure --nodes 192.168.178.204 --file {{ talos_dir }}/worker-3.yaml"
+
+    - name: Apply Talos worker-4 config
+      shell: "talosctl apply-config --insecure --nodes 192.168.178.205 --file {{ talos_dir }}/worker-4.yaml"
 
     - name: Generate kubeconfig for the controlplane
       shell: "talosctl kubeconfig -f -n {{ control_plane_node }}"
@@ -101,6 +111,7 @@
         - "{{ talos_dir }}/worker-1.yaml"
         - "{{ talos_dir }}/worker-2.yaml"
         - "{{ talos_dir }}/worker-3.yaml"
+        - "{{ talos_dir }}/worker-4.yaml"
 
     - name: Retrieve the ArgoCD Redis secret from One Password
       ansible.builtin.command:

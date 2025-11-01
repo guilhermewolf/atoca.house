@@ -29,9 +29,13 @@ defaultSettings:
 
   # Priority class so Longhorn daemons don’t get evicted first
   priorityClass: system-cluster-critical
+  systemManagedComponentsNodeSelector:
+    longhorn: "enabled"
 
 # Keep the runtime footprints modest for RPis
 longhornManager:
+  nodeSelector:
+    longhorn: "enabled"
   resources:
     requests:
       cpu: 100m
@@ -41,6 +45,8 @@ longhornManager:
       memory: 256Mi
 
 longhornDriver:
+  nodeSelector:
+    longhorn: "enabled"
   resources:
     requests:
       cpu: 100m
@@ -50,6 +56,8 @@ longhornDriver:
       memory: 256Mi
 
 longhornUI:
+  nodeSelector:
+    longhorn: "enabled"
   resources:
     requests:
       cpu: 50m

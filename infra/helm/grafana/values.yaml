@@ -71,7 +71,7 @@ dashboards:
     kubernetes-pods:
         # renovate: depName="Kubernetes / Views / Pods"
       gnetId: 15760
-      revision: 36
+      revision: 37
       datasource: Prometheus
     nginx:
       url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/grafana/dashboards/nginx.json

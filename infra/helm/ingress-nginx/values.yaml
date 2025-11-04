@@ -73,7 +73,7 @@ defaultBackend:
   enabled: true
   image:
     repository: ghcr.io/tarampampam/error-pages
-    tag: 3.7.0@sha256:771b82591d98b663a38fe011b475b78e169edf691e4b9c5a85ccf9fb5a843f72
+    tag: 3.7.1@sha256:0ce7e3798b1180d74432c38f4edd3e5072c672926646d79770b7aa48eb3a2d2f
   extraEnvs:
     - { name: TEMPLATE_NAME, value: orient }
     - { name: SHOW_DETAILS, value: "false" }

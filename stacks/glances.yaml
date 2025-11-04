@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   glances:
-    image: nicolargo/glances:4.3.3@sha256:fae2cee5c9497b46a72e52261b2e825fe6c0e5de2f295829411e3d5ccf24ee5c
+    image: nicolargo/glances:4.4.1@sha256:61ebee509671ff6cda921b057dda9783c53e3e31673a89d988ef2d53572196ab
     container_name: glances
     restart: unless-stopped
     network_mode: bridge

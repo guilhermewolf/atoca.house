@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   slskd:
-    image: slskd/slskd:0.23.2@sha256:28df5325f301537ea8669b2ef90112a30cc9f2efd3eb714c9a778460b5dc6288
+    image: slskd/slskd:0.24.0@sha256:239ccb871fa1a624aa8ad4f11a712b4ec6c7a2ff570bf5800abae2cf91030834
     container_name: slskd
     network_mode: "container:GlueTun-PIA"
     user: 99:100

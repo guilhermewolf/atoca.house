@@ -36,23 +36,20 @@ service:
       http:
         port: 9000
 
-ingress:
+route:
   thelounge:
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts:
-      - host: thelounge.atoca.house
-        paths:
-          - path: /
-            pathType: Prefix
-            service:
-              identifier: thelounge
-              port: http
-    tls:
-      - hosts:
-          - thelounge.atoca.house
-        secretName: thelounge-tls
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: envoy-gateway-system
+        sectionName: https
+    hostnames:
+      - thelounge.atoca.house
+    rules:
+      - backendRefs:
+          - name: thelounge
+            port: 9000
 
 persistence:
   thelounge:

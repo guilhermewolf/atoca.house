@@ -76,22 +76,20 @@ service:
         primary: true
       ldap:
         port: *ldapPort
-ingress:
+route:
   lldap:
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts:
-      - host: lldap.atoca.house
-        paths:
-          - path: /
-            service:
-              identifier: lldap
-              port: http
-    tls:
-      - hosts:
-          - lldap.atoca.house
-        secretName: lldap-tls
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: envoy-gateway-system
+        sectionName: https
+    hostnames:
+      - lldap.atoca.house
+    rules:
+      - backendRefs:
+          - name: lldap
+            port: 80
 persistence:
   data:
     type: emptyDir

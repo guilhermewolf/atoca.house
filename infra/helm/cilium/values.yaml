@@ -1,0 +1,164 @@
+# Cilium configuration for Talos Linux on Raspberry Pi 4
+# This configuration enables kube-proxy replacement and L2 announcements
+
+# Kube-proxy replacement configuration
+kubeProxyReplacement: true
+k8sServiceHost: 127.0.0.1  # KubePrism endpoint
+k8sServicePort: 7445       # KubePrism port
+
+# IPAM configuration - use Kubernetes mode
+ipam:
+  mode: kubernetes
+
+# Operator configuration
+operator:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+# Cilium agent resources
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Enable Hubble for observability
+hubble:
+  enabled: true
+  metrics:
+    enabled:
+      - dns
+      - drop
+      - tcp
+      - flow
+      - icmp
+      - http
+    serviceMonitor:
+      enabled: true
+    dashboards:
+      enabled: true
+      annotations:
+        grafana_folder: "Cilium"
+
+  relay:
+    enabled: true
+    replicas: 1
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+  ui:
+    enabled: true
+    replicas: 1
+    ingress:
+      enabled: false  # We'll create a Gateway API route later
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+
+# L2 Announcements for LoadBalancer support (replaces MetalLB)
+l2announcements:
+  enabled: true
+
+# External IPs configuration
+externalIPs:
+  enabled: true
+
+# LoadBalancer IP pool configuration
+# This will be configured via LB IPAM CRDs below
+bgpControlPlane:
+  enabled: false  # Not using BGP, using L2 instead
+
+# Enable Gateway API support
+gatewayAPI:
+  enabled: true
+
+# Security context for Talos Linux
+securityContext:
+  capabilities:
+    ciliumAgent:
+      - CHOWN
+      - KILL
+      - NET_ADMIN
+      - NET_RAW
+      - IPC_LOCK
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    cleanCiliumState:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+
+# Talos-specific configuration
+cgroup:
+  autoMount:
+    enabled: false  # Talos manages cgroup mounts
+  hostRoot: /sys/fs/cgroup
+
+# Container runtime configuration
+containerRuntime:
+  integration: containerd
+
+# Encryption (optional - can be enabled later)
+encryption:
+  enabled: false
+  type: wireguard
+
+# Monitoring
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+
+# Enable IPv4 (IPv6 can be added later if needed)
+ipv4:
+  enabled: true
+ipv6:
+  enabled: false
+
+# Tunnel protocol
+tunnelProtocol: vxlan
+
+# Enable host firewall
+hostFirewall:
+  enabled: false  # Talos handles host firewall
+
+# Auto direct node routes (for better performance)
+autoDirectNodeRoutes: true
+
+# Enable bandwidth manager for better performance
+bandwidthManager:
+  enabled: true
+  bbr: true
+
+# Enable local redirect policy
+localRedirectPolicy: true
+
+# Disable CNI chaining (Cilium is the primary CNI)
+cni:
+  exclusive: true
+  chainingMode: none
+
+# Enable endpoint routes for better performance
+endpointRoutes:
+  enabled: true

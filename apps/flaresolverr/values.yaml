@@ -26,20 +26,17 @@ service:
         primary: true
         port: 80
         targetPort: 8191
-ingress:
+route:
   flaresolverr:
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts:
-      - host: flaresolverr.atoca.house
-        paths:
-          - path: /
-            pathType: Prefix
-            service:
-              identifier: flaresolverr
-              port: http
-    tls:
-      - hosts:
-          - flaresolverr.atoca.house
-        secretName: flaresolverr-tls
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: envoy-gateway-system
+        sectionName: https
+    hostnames:
+      - flaresolverr.atoca.house
+    rules:
+      - backendRefs:
+          - name: flaresolverr
+            port: 80

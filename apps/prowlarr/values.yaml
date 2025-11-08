@@ -21,23 +21,20 @@ service:
       http:
         port: 9696
 
-ingress:
+route:
   prowlarr:
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts:
-      - host: prowlarr.atoca.house
-        paths:
-          - path: /
-            pathType: Prefix
-            service:
-              identifier: prowlarr
-              port: http
-    tls:
-      - hosts:
-          - prowlarr.atoca.house
-        secretName: prowlarr-tls
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: envoy-gateway-system
+        sectionName: https
+    hostnames:
+      - prowlarr.atoca.house
+    rules:
+      - backendRefs:
+          - name: prowlarr
+            port: 9696
 
 persistence:
   prowlarr:

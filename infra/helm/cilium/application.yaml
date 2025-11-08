@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cilium
+  namespace: argocd
+spec:
+  destination:
+    namespace: kube-system
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - chart: cilium
+      repoURL: https://helm.cilium.io/
+      targetRevision: 1.16.5
+      helm:
+        releaseName: cilium
+        valueFiles:
+          - $values/infra/helm/cilium/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

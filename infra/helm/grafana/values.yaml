@@ -130,16 +130,7 @@ plugins:
 serviceMonitor:
   enabled: true
 ingress:
-  enabled: true
-  annotations:
-    cert-manager.io/cluster-issuer: "cloudflare-prod"
-  ingressClassName: nginx
-  hosts:
-    - grafana.atoca.house
-  tls:
-    - secretName: grafana-tls
-      hosts:
-        - grafana.atoca.house
+  enabled: false
 persistence:
   enabled: false
 testFramework:

@@ -35,23 +35,20 @@ service:
       http:
         port: *port
 
-ingress:
+route:
   fusion:
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts:
-      - host: fusion.atoca.house
-        paths:
-          - path: /
-            pathType: Prefix
-            service:
-              identifier: fusion
-              port: http
-    tls:
-      - hosts:
-          - fusion.atoca.house
-        secretName: fusion-tls
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: envoy-gateway-system
+        sectionName: https
+    hostnames:
+      - fusion.atoca.house
+    rules:
+      - backendRefs:
+          - name: fusion
+            port: 80
 
 persistence:
   fusion:

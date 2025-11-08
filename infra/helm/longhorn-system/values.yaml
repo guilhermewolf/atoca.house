@@ -68,14 +68,7 @@ persistence:
   defaultFsType: ext4
 
 ingress:
-  enabled: true
-  ingressClassName: nginx
-  host: longhorn.atoca.house
-  tls: true
-  tlsSecret: longhorn-tls
-  path: /
-  annotations:
-    cert-manager.io/cluster-issuer: "cloudflare-prod"
+  enabled: false
 
 # Optional: enable for upgrade pre-flight checks, otherwise keep disabled
 preUpgradeChecker:

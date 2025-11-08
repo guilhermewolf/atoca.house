@@ -20,8 +20,7 @@ env:
         name: cloudflare-email
         key: cloudflare-email
 sources:
-  - ingress
-  - gateway-httproute  # Support Gateway API HTTPRoutes
+  - gateway-httproute
 
 domainFilters:
   - atoca.house

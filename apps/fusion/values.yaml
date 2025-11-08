@@ -41,15 +41,17 @@ route:
     kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: envoy-gateway-system
-        sectionName: https
+        namespace: kube-system
     hostnames:
       - fusion.atoca.house
     rules:
       - backendRefs:
           - name: fusion
             port: 80
-
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 persistence:
   fusion:
     enabled: true

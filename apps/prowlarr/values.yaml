@@ -27,14 +27,17 @@ route:
     kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: envoy-gateway-system
-        sectionName: https
+        namespace: kube-system
     hostnames:
       - prowlarr.atoca.house
     rules:
       - backendRefs:
           - name: prowlarr
             port: 9696
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 
 persistence:
   prowlarr:

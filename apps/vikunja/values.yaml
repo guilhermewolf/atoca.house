@@ -72,14 +72,18 @@ route:
     kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: envoy-gateway-system
-        sectionName: https
+        namespace: kube-system
     hostnames:
       - vikunja.atoca.house
     rules:
       - backendRefs:
           - name: vikunja
             port: 3456
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
 persistence:
   files:
     enabled: true

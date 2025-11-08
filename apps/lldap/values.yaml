@@ -82,14 +82,17 @@ route:
     kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: envoy-gateway-system
-        sectionName: https
+        namespace: kube-system
     hostnames:
       - lldap.atoca.house
     rules:
       - backendRefs:
           - name: lldap
             port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 persistence:
   data:
     type: emptyDir

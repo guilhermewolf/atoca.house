@@ -106,14 +106,17 @@ route:
     kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: envoy-gateway-system
-        sectionName: https
+        namespace: kube-system
     hostnames:
       - auth.atoca.house
     rules:
       - backendRefs:
           - name: authelia
             port: 8888
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 persistence:
   config:
     type: configMap

@@ -22,6 +22,6 @@ spec:
   nodeSelector:
     matchLabels: {}  # Announce from all nodes
   interfaces:
-    - ^eth0  # Raspberry Pi network interface
+    - ^end0  # Raspberry Pi Talos network interface (end0 for RPi)
   externalIPs: true
   loadBalancerIPs: true

@@ -9,8 +9,7 @@ metadata:
 spec:
   parentRefs:
     - name: atoca-gateway
-      namespace: envoy-gateway-system
-      sectionName: https
+      namespace: kube-system
   hostnames:
     - grafana.atoca.house
   rules:

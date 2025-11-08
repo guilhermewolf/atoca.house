@@ -22,6 +22,7 @@ spec:
       targetRevision: 1.19.0
       helm:
         releaseName: external-dns-adguard
+        skipCrds: true
         valueFiles:
           - $values/infra/helm/external-dns/values-adguard.yaml
 

@@ -17,101 +17,101 @@
       - 192.168.178.204
 
   tasks:
-    - name: Create age config directory
-      ansible.builtin.file:
-        path: "{{ age_config_dir }}"
-        state: directory
-        mode: '0700'
+    # - name: Create age config directory
+    #   ansible.builtin.file:
+    #     path: "{{ age_config_dir }}"
+    #     state: directory
+    #     mode: '0700'
 
-    - name: Read age key from 1Password and store it in the config
-      shell: "op read op://K8s/age-key/age.key > {{ age_config_dir }}/age.key"
-      args:
-        creates: "{{ age_config_dir }}/age.key"
+    # - name: Read age key from 1Password and store it in the config
+    #   shell: "op read op://K8s/age-key/age.key > {{ age_config_dir }}/age.key"
+    #   args:
+    #     creates: "{{ age_config_dir }}/age.key"
 
-    - name: Set permissions for age key
-      ansible.builtin.file:
-        path: "{{ age_config_dir }}/age.key"
-        mode: '0600'
+    # - name: Set permissions for age key
+    #   ansible.builtin.file:
+    #     path: "{{ age_config_dir }}/age.key"
+    #     mode: '0600'
 
-    - name: Decrypt Talos controlplane file
-      shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/controlplane.enc.yaml > {{ talos_dir }}/controlplane.yaml"
-      args:
-        creates: "{{ talos_dir }}/controlplane.yaml"
-      environment:
-        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
+    # - name: Decrypt Talos controlplane file
+    #   shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/controlplane.enc.yaml > {{ talos_dir }}/controlplane.yaml"
+    #   args:
+    #     creates: "{{ talos_dir }}/controlplane.yaml"
+    #   environment:
+    #     SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
-    - name: Apply Talos controlplane config
-      shell: "talosctl apply-config --insecure --nodes {{ control_plane_node }} --file {{ talos_dir }}/controlplane.yaml"
+    # - name: Apply Talos controlplane config
+    #   shell: "talosctl apply-config --insecure --nodes {{ control_plane_node }} --file {{ talos_dir }}/controlplane.yaml"
 
-    - name: Wait for 20 seconds
-      ansible.builtin.pause:
-        seconds: 20
+    # - name: Wait for 20 seconds
+    #   ansible.builtin.pause:
+    #     seconds: 20
 
-    - name: Bootstrap Talos controlplane
-      shell: "talosctl bootstrap -n {{ control_plane_node }}"
+    # - name: Bootstrap Talos controlplane
+    #   shell: "talosctl bootstrap -n {{ control_plane_node }}"
 
-    - name: Wait for Kubernetes controlplane to be ready
-      shell: |
-        talosctl kubeconfig {{ lookup('env', 'HOME') }} -f -n {{ control_plane_node }}
-        kubectl --kubeconfig={{ lookup('env', 'HOME') }}//kubeconfig get nodes --selector node-role.kubernetes.io/control-plane -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' | grep True
-      retries: 15
-      delay: 60
-      register: kube_ready
-      until: kube_ready.rc == 0
+    # - name: Wait for Kubernetes controlplane to be ready
+    #   shell: |
+    #     talosctl kubeconfig {{ lookup('env', 'HOME') }} -f -n {{ control_plane_node }}
+    #     kubectl --kubeconfig={{ lookup('env', 'HOME') }}//kubeconfig get nodes --selector node-role.kubernetes.io/control-plane -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' | grep True
+    #   retries: 15
+    #   delay: 60
+    #   register: kube_ready
+    #   until: kube_ready.rc == 0
 
-    - name: Decrypt Talos worker-1 file
-      shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-1.enc.yaml > {{ talos_dir }}/worker-1.yaml"
-      args:
-        creates: "{{ talos_dir }}/worker-1.yaml"
-      environment:
-        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
+    # - name: Decrypt Talos worker-1 file
+    #   shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-1.enc.yaml > {{ talos_dir }}/worker-1.yaml"
+    #   args:
+    #     creates: "{{ talos_dir }}/worker-1.yaml"
+    #   environment:
+    #     SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
-    - name: Decrypt Talos worker-2 file
-      shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-2.enc.yaml > {{ talos_dir }}/worker-2.yaml"
-      args:
-        creates: "{{ talos_dir }}/worker-2.yaml"
-      environment:
-        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
+    # - name: Decrypt Talos worker-2 file
+    #   shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-2.enc.yaml > {{ talos_dir }}/worker-2.yaml"
+    #   args:
+    #     creates: "{{ talos_dir }}/worker-2.yaml"
+    #   environment:
+    #     SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
-    - name: Decrypt Talos worker-3 file
-      shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-3.enc.yaml > {{ talos_dir }}/worker-3.yaml"
-      args:
-        creates: "{{ talos_dir }}/worker-3.yaml"
-      environment:
-        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
+    # - name: Decrypt Talos worker-3 file
+    #   shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-3.enc.yaml > {{ talos_dir }}/worker-3.yaml"
+    #   args:
+    #     creates: "{{ talos_dir }}/worker-3.yaml"
+    #   environment:
+    #     SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
-    - name: Decrypt Talos worker-4 file
-      shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-4.enc.yaml > {{ talos_dir }}/worker-4.yaml"
-      args:
-        creates: "{{ talos_dir }}/worker-4.yaml"
-      environment:
-        SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
+    # # - name: Decrypt Talos worker-4 file
+    # #   shell: "sops --config {{ lookup('env', 'PWD') }}/.sops.yaml -d {{ talos_dir }}/worker-4.enc.yaml > {{ talos_dir }}/worker-4.yaml"
+    # #   args:
+    # #     creates: "{{ talos_dir }}/worker-4.yaml"
+    # #   environment:
+    # #     SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
 
-    - name: Apply Talos worker-1 config
-      shell: "talosctl apply-config --insecure --nodes 192.168.178.202 --file {{ talos_dir }}/worker-1.yaml"
+    # - name: Apply Talos worker-1 config
+    #   shell: "talosctl apply-config --insecure --nodes 192.168.178.202 --file {{ talos_dir }}/worker-1.yaml"
 
-    - name: Apply Talos worker-2 config
-      shell: "talosctl apply-config --insecure --nodes 192.168.178.203 --file {{ talos_dir }}/worker-2.yaml"
+    # - name: Apply Talos worker-2 config
+    #   shell: "talosctl apply-config --insecure --nodes 192.168.178.203 --file {{ talos_dir }}/worker-2.yaml"
 
-    - name: Apply Talos worker-3 config
-      shell: "talosctl apply-config --insecure --nodes 192.168.178.204 --file {{ talos_dir }}/worker-3.yaml"
+    # - name: Apply Talos worker-3 config
+    #   shell: "talosctl apply-config --insecure --nodes 192.168.178.204 --file {{ talos_dir }}/worker-3.yaml"
 
-    - name: Apply Talos worker-4 config
-      shell: "talosctl apply-config --insecure --nodes 192.168.178.205 --file {{ talos_dir }}/worker-4.yaml"
+    # # - name: Apply Talos worker-4 config
+    # #   shell: "talosctl apply-config --insecure --nodes 192.168.178.205 --file {{ talos_dir }}/worker-4.yaml"
 
-    - name: Generate kubeconfig for the controlplane
-      shell: "talosctl kubeconfig -f -n {{ control_plane_node }}"
+    # - name: Generate kubeconfig for the controlplane
+    #   shell: "talosctl kubeconfig -f -n {{ control_plane_node }}"
 
-    - name: Remove decrypted Talos YAML files
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop:
-        - "{{ talos_dir }}/controlplane.yaml"
-        - "{{ talos_dir }}/worker-1.yaml"
-        - "{{ talos_dir }}/worker-2.yaml"
-        - "{{ talos_dir }}/worker-3.yaml"
-        - "{{ talos_dir }}/worker-4.yaml"
+    # - name: Remove decrypted Talos YAML files
+    #   ansible.builtin.file:
+    #     path: "{{ item }}"
+    #     state: absent
+    #   loop:
+    #     - "{{ talos_dir }}/controlplane.yaml"
+    #     - "{{ talos_dir }}/worker-1.yaml"
+    #     - "{{ talos_dir }}/worker-2.yaml"
+    #     - "{{ talos_dir }}/worker-3.yaml"
+    #     # - "{{ talos_dir }}/worker-4.yaml"
 
     - name: Retrieve the ArgoCD Redis secret from One Password
       ansible.builtin.command:

@@ -1,5 +1,5 @@
 controllers:
-  flaresolverr:    
+  flaresolverr:
     containers:
       flaresolverr:
         image:
@@ -32,11 +32,14 @@ route:
     kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: envoy-gateway-system
-        sectionName: https
+        namespace: kube-system
     hostnames:
       - flaresolverr.atoca.house
     rules:
       - backendRefs:
           - name: flaresolverr
             port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /

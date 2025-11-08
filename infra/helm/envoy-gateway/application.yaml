@@ -9,9 +9,9 @@ spec:
     server: https://kubernetes.default.svc
   project: infra
   sources:
-    - chart: gateway-helm
-      repoURL: oci://docker.io/envoyproxy
-      targetRevision: v1.2.4
+    - chart: envoyproxy/gateway-helm
+      repoURL: oci://registry-1.docker.io
+      targetRevision: 1.4.5
       helm:
         releaseName: envoy-gateway
         valueFiles:

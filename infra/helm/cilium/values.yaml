@@ -41,8 +41,8 @@ hubble:
       - flow
       - icmp
       - http
-    serviceMonitor:
-      enabled: true
+    # serviceMonitor:
+    #   enabled: true
     dashboards:
       enabled: true
       annotations:
@@ -116,8 +116,8 @@ cgroup:
   hostRoot: /sys/fs/cgroup
 
 # Container runtime configuration
-containerRuntime:
-  integration: containerd
+# containerRuntime:
+#   integration: containerd
 
 # Encryption (optional - can be enabled later)
 encryption:
@@ -125,10 +125,10 @@ encryption:
   type: wireguard
 
 # Monitoring
-prometheus:
-  enabled: true
-  serviceMonitor:
-    enabled: true
+# prometheus:
+#   enabled: true
+#   serviceMonitor:
+#     enabled: true
 
 # Enable IPv4 (IPv6 can be added later if needed)
 ipv4:
@@ -144,7 +144,7 @@ hostFirewall:
   enabled: false  # Talos handles host firewall
 
 # Auto direct node routes (for better performance)
-autoDirectNodeRoutes: true
+autoDirectNodeRoutes: false
 
 # Enable bandwidth manager for better performance
 bandwidthManager:

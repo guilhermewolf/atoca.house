@@ -1,0 +1,52 @@
+# Main Gateway resource for atoca.house
+# This Gateway will handle all HTTPS traffic and replace ingress-nginx
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: atoca-gateway
+  namespace: envoy-gateway-system
+  annotations:
+    cert-manager.io/cluster-issuer: cloudflare-prod
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+    # HTTPS listener on port 443
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: "*.atoca.house"
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: atoca-house-tls
+            kind: Secret
+    # HTTP listener on port 80 (for redirects)
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: "*.atoca.house"
+      allowedRoutes:
+        namespaces:
+          from: All
+  addresses:
+    - type: IPAddress
+      value: 192.168.178.210  # From the MetalLB pool
+---
+# Certificate for wildcard domain
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: atoca-house-tls
+  namespace: envoy-gateway-system
+spec:
+  secretName: atoca-house-tls
+  issuerRef:
+    name: cloudflare-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - "*.atoca.house"
+    - "atoca.house"

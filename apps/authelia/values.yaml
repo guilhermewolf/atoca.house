@@ -100,22 +100,20 @@ serviceMonitor:
     serviceName: authelia
     endpoints:
       - port: metrics
-ingress:
+route:
   authelia:
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts:
-      - host: auth.atoca.house
-        paths:
-          - path: /
-            service:
-              identifier: authelia
-              port: http
-    tls:
-      - hosts:
-          - auth.atoca.house
-        secretName: authelia-tls
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: envoy-gateway-system
+        sectionName: https
+    hostnames:
+      - auth.atoca.house
+    rules:
+      - backendRefs:
+          - name: authelia
+            port: 8888
 persistence:
   config:
     type: configMap

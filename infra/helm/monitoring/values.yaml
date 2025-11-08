@@ -27,16 +27,7 @@ alertmanager:
             requests:
               storage: 1Gi
   ingress:
-    enabled: true
-    ingressClassName: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts:
-      - alertmanager.atoca.house
-    tls:
-      - secretName: alertmanager-tls
-        hosts:
-          - alertmanager.atoca.house
+    enabled: false
 
 prometheus:
   prometheusSpec:
@@ -74,16 +65,7 @@ prometheus:
     retentionSize: "15GB"
     walCompression: true
   ingress:
-    enabled: true
-    ingressClassName: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-prod"
-    hosts:
-      - prometheus.atoca.house
-    tls:
-      - secretName: prometheus-tls
-        hosts:
-          - prometheus.atoca.house
+    enabled: false
 
 prometheus-node-exporter:
   fullnameOverride: node-exporter

@@ -92,6 +92,8 @@ cluster:
   clusterName: atoca-k8s
   allowSchedulingOnControlPlanes: true
   network:
+    cni:
+      name: none
     dnsDomain: cluster.local
     podSubnets:
       - 10.244.0.0/16
@@ -139,9 +141,8 @@ cluster:
     extraArgs:
       bind-address: 0.0.0.0
   proxy:
+    disabled: true
     image: k8s.gcr.io/kube-proxy:v1.34.1
-    extraArgs:
-      bind-address: 0.0.0.0
   scheduler:
     config:
       apiVersion: kubescheduler.config.k8s.io/v1

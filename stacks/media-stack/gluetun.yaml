@@ -14,6 +14,7 @@ services:
       - "8080:8080"            # SABnzbd Web UI
       - "6501:6501"            # ZNC
       - "1080:1080"            # SOCKS5 proxy
+      - "5010:5010"            # Mousehole
     environment:
       - HTTPPROXY=on
       - TZ=Europe/Amsterdam

@@ -57,18 +57,17 @@ My cluster provisioned overtop bare-metal Talos Linux. This is a semi-hyper-conv
 
 ### Core Components
 
-- [1Password Controler](https://github.com/1Password/onepassword-operator): Secrets storage using [1Password Connect](https://github.com/1Password/connect).
-- [actions-runner-controller](https://github.com/actions/actions-runner-controller): self-hosted Github runners
-- [ArgoCD](https://argoproj.github.io/argo-cd/): GitOps continuous delivery tool for Kubernetes
-- [cert-manager](https://cert-manager.io/docs/): creates SSL certificates for services in my cluster
-- [Cloudfrare-Controler](https://github.com/adyanth/cloudflare-operator): External tunnel for exposing services on my cluster to the internet
-- [Cloud Native Postgres](https://cloudnative-pg.io/): Operator to deploy highly available PostgreSQL database cluster
-- [external-dns](https://github.com/kubernetes-sigs/external-dns): automatically syncs DNS records from my cluster ingresses to a DNS provider
-- [ingress-nginx](https://github.com/kubernetes/ingress-nginx/): ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer
-- [MetalLB](https://metallb.universe.tf/): load balancer for bare metal Kubernetes clusters
-- [Longhorn](https://longhorn.io/): distributed block storage for Kubernetes
-- [Prometheus](https://prometheus.io/): monitoring and alerting toolkit
-- [sealed-secrets](https://github.com/bitnami-labs/sealed-secrets): encrypted secrets for Kubernetes
+**Networking & Ingress:** [cilium](https://cilium.io/) provides eBPF-based networking with Gateway API support and L2 announcements for LoadBalancer IPs. [cloudflare-ingress](https://github.com/STRRL/cloudflare-tunnel-ingress-controller) secures external access via Cloudflare Tunnel, while [external-dns](https://github.com/kubernetes-sigs/external-dns) automatically syncs DNS records to Cloudflare and AdGuard Home.
+
+**Security & Secrets:** [cert-manager](https://cert-manager.io/) automates SSL/TLS certificate management using Cloudflare DNS-01 challenges. For secrets, [external-secrets](https://external-secrets.io/) integrates with [1Password Connect](https://github.com/1Password/connect-helm-charts) to inject secrets into Kubernetes, while [sealed-secrets](https://github.com/bitnami-labs/sealed-secrets) stores encrypted secrets safely in Git.
+
+**Storage & Backup:** [longhorn](https://longhorn.io/) provides distributed block storage for persistent volumes, with [volsync](https://volsync.readthedocs.io/) handling volume snapshots and replication for backup/restore. [spegel](https://github.com/spegel-org/spegel) improves reliability by running a stateless cluster-local OCI image mirror. [crunchy-postgres-operator](https://github.com/CrunchyData/postgres-operator) manages highly available PostgreSQL clusters.
+
+**Monitoring & Observability:** [kube-prometheus-stack](https://github.com/prometheus-operator/kube-prometheus) delivers comprehensive monitoring with Prometheus, Alertmanager, and Grafana. [metrics-server](https://github.com/kubernetes-sigs/metrics-server) provides resource metrics for autoscaling and kubectl top commands.
+
+**Automation & CI/CD:** [actions-runner-controller](https://github.com/actions/actions-runner-controller) runs self-hosted GitHub Actions runners directly in the cluster for continuous integration workflows.
+
+**Cluster Utilities:** [descheduler](https://github.com/kubernetes-sigs/descheduler) optimizes pod placement, while [reloader](https://github.com/stakater/Reloader) automatically restarts pods when ConfigMaps or Secrets change.
 
 ---
 
@@ -96,11 +95,12 @@ This Git repository contains the following directories.
 
 ### Networking
 
-| Name                  | CIDR              |
-|-----------------------|-------------------|
-| Server VLAN           | `192.168.178.0/24` |
-| Kubernetes pods       | `10.244.0.0/16`    |
-| Kubernetes services   | `10.96.0.0/16`    |
+| Name                      | CIDR                |
+|---------------------------|---------------------|
+| Server VLAN               | `192.168.178.0/24`  |
+| Kubernetes pods (Cilium)  | `10.244.0.0/16`     |
+| Kubernetes services       | `10.96.0.0/12`      |
+| Gateway LoadBalancer IP   | `192.168.178.210`   |
 
 ---
 
@@ -122,8 +122,8 @@ While most of my infrastructure and workloads are self-hosted I do rely upon the
 
 | Device                          | Count | OS Disk Size | Data Disk Size              | Ram  | Operating System   | Purpose             |
 |---------------------------------|-------|--------------|-----------------------------|------|--------------------|---------------------|
-| Raspberry Pi 4                  | 3     | 128GB (SD)   | -                           | 4GB  | Talos Linux 1.11.2 | K8s nodes           |
-| Raspberry Pi 4                  | 1     | 128GB (SD)   | -                           | 8GB  | Talos Linux 1.11.2 | K8s node            |
+| Raspberry Pi 4                  | 3     | 128GB (SD)   | -                           | 4GB  | Talos Linux 1.11.5 | K8s nodes           |
+| Raspberry Pi 4                  | 1     | 128GB (SD)   | -                           | 8GB  | Talos Linux 1.11.5 | K8s node            |
 | Raspberry PoE Hat               | 4     | -            | -                           | -    | -                  | Power the Pi's      |
 | TP-Link TL-SG108PE              | 1     | -            | -                           | -    | -                  | Network PoE Switch  |
 | Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB Nvme + 4x 12TB HDD   | 32GB | Unraid 7.1.4       | NAS                 |

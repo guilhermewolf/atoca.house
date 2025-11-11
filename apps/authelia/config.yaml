@@ -31,7 +31,7 @@ data:
       same_site: lax
       inactivity: 5m
       expiration: 1h
-      remember_me: 1M
+      remember_me: 2w
       cookies:
         - name: atoca_session
           domain: atoca.house
@@ -42,8 +42,17 @@ data:
       disable: false
       issuer: authelia.com
 
+    regulation:
+      max_retries: 3
+      find_time: 10m
+      ban_time: 1h
+
     webauthn:
-      disable: true
+      disable: false
+      display_name: Atoca House
+      attestation_conveyance_preference: indirect
+      user_verification: preferred
+      timeout: 60s
 
     duo_api:
       disable: true
@@ -61,6 +70,14 @@ data:
             - ^/health$
             - ^/health/
           policy: bypass
+
+        # FileBrowser - Require two-factor authentication and group membership
+        - domain:
+            - filebrowser.atoca.house
+          policy: two_factor
+          subject:
+            - ["group:filebrowser_users"]
+            - ["group:filebrowser_admins"]
 
     identity_providers:
       oidc:

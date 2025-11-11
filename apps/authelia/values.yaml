@@ -100,23 +100,22 @@ serviceMonitor:
     serviceName: authelia
     endpoints:
       - port: metrics
-route:
+
+ingress:
   authelia:
-    enabled: true
-    kind: HTTPRoute
-    parentRefs:
-      - name: atoca-gateway
-        namespace: kube-system
-    hostnames:
-      - auth.atoca.house
-    rules:
-      - backendRefs:
-          - name: authelia
-            port: 8888
-        matches:
-          - path:
-              type: PathPrefix
-              value: /
+    className: cloudflare-tunnel
+    hosts:
+      - host: auth.atoca.house
+        paths:
+          - path: /
+            service:
+              identifier: authelia
+              port: http
+    tls:
+      - hosts:
+          - auth.atoca.house
+        secretName: authelia-tls
+
 persistence:
   config:
     type: configMap

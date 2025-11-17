@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   radarr:
-    image: lscr.io/linuxserver/radarr:5.28.0@sha256:c984533510abe0219a70e80d15bd0d212b7df21baa0913759c4ce6cc9092240b
+    image: lscr.io/linuxserver/radarr:6.0.4@sha256:e26fbfd3782520c0bb820666f041ca056acfe187a8b95214ee1f47512cc05a29
     container_name: radarr
     network_mode: bridge
     ports:

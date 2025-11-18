@@ -130,7 +130,7 @@ data:
 
           - client_id: argocd
             client_name: Argo CD
-            client_secret: '{{ secret "/config/secret/GRAFANA_OAUTH_CLIENT_SECRET" }}'
+            client_secret: '{{ secret "/config/secret/ARGOCD_OAUTH_CLIENT_SECRET" }}'
             public: false
             authorization_policy: two_factor
             pre_configured_consent_duration: 1y

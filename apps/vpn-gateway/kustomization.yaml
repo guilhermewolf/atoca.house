@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: vpn-gateway
+
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml
+  # NOTE: Uncomment these after Cilium is updated with egress gateway enabled
+  # - cilium-egress-gateway.yaml
+  # - network-policies.yaml
+  - configmap.yaml
+  - external-secret.yaml
+  - pvc.yaml

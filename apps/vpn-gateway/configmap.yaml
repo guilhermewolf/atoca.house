@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gluetun-config
+  namespace: vpn-gateway
+data:
+  server_names: "netherlands"
+  # Allow access from Cilium pod network and service network
+  firewall_outbound_subnets: "192.168.178.0/24,10.0.0.0/8,172.16.0.0/12"

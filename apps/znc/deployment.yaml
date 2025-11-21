@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: znc
+  namespace: media
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: znc
+  template:
+    metadata:
+      labels:
+        app: znc
+        vpn-egress: "true"  # This label routes all traffic through VPN gateway
+    spec:
+      containers:
+        - name: znc
+          image: lscr.io/linuxserver/znc:latest
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "1000"
+            - name: TZ
+              value: "Europe/Amsterdam"
+
+            # Option 1: Use Cilium Egress Gateway (requires vpn-egress label - already set above)
+            # Option 2: Use HTTP proxy directly (uncomment below if egress gateway not ready)
+            # - name: HTTP_PROXY
+            #   value: "http://gluetun-http-proxy.vpn-gateway.svc.cluster.local:8888"
+            # - name: HTTPS_PROXY
+            #   value: "http://gluetun-http-proxy.vpn-gateway.svc.cluster.local:8888"
+            # - name: NO_PROXY
+            #   value: "localhost,127.0.0.1,.svc,.cluster.local"
+
+          ports:
+            - name: irc
+              containerPort: 6501
+              protocol: TCP
+
+          volumeMounts:
+            - name: config
+              mountPath: /config
+
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+
+          livenessProbe:
+            tcpSocket:
+              port: 6501
+            initialDelaySeconds: 30
+            periodSeconds: 30
+
+          readinessProbe:
+            tcpSocket:
+              port: 6501
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: znc-config

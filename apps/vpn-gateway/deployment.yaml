@@ -1,0 +1,154 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gluetun
+  namespace: vpn-gateway
+  labels:
+    app: gluetun
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate  # Only one replica can hold VPN connection
+  selector:
+    matchLabels:
+      app: gluetun
+  template:
+    metadata:
+      labels:
+        app: gluetun
+        vpn-gateway: "true"
+    spec:
+      # Node affinity to pin to specific node (optional but recommended)
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - pi-node-1  # Replace with your node name
+
+      containers:
+        - name: gluetun
+          image: qmcgaw/gluetun:v3.40.3
+          imagePullPolicy: IfNotPresent
+
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+            privileged: false
+
+          env:
+            - name: VPN_SERVICE_PROVIDER
+              value: "custom"
+            - name: VPN_TYPE
+              value: "wireguard"
+            - name: VPN_PORT_FORWARDING
+              value: "on"
+            - name: VPN_PORT_FORWARDING_PROVIDER
+              value: "private internet access"
+            - name: VPN_PORT_FORWARDING_STATUS_FILE
+              value: "/gluetun/forwarded_port"
+
+            # Enable both HTTP and SOCKS5 proxies
+            - name: HTTPPROXY
+              value: "on"
+            - name: HTTPPROXY_LOG
+              value: "on"
+            - name: HTTPPROXY_LISTENING_ADDRESS
+              value: ":8888"
+            - name: SHADOWSOCKS
+              value: "off"
+
+            - name: TZ
+              value: "Europe/Amsterdam"
+            - name: DOT
+              value: "off"
+            - name: HEALTH_TARGET_ADDRESS
+              value: "google.com:443"
+            - name: HEALTH_VPN_DURATION_INITIAL
+              value: "30s"
+
+            # Allow local network access
+            - name: FIREWALL_VPN_INPUT_PORTS
+              value: "8888,1080"
+
+            # Credentials from secrets
+            - name: VPN_PORT_FORWARDING_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: gluetun-credentials
+                  key: username
+            - name: VPN_PORT_FORWARDING_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gluetun-credentials
+                  key: password
+            - name: SERVER_NAMES
+              valueFrom:
+                configMapKeyRef:
+                  name: gluetun-config
+                  key: server_names
+            - name: FIREWALL_OUTBOUND_SUBNETS
+              valueFrom:
+                configMapKeyRef:
+                  name: gluetun-config
+                  key: firewall_outbound_subnets
+
+          ports:
+            - name: http-proxy
+              containerPort: 8888
+              protocol: TCP
+            - name: socks5-proxy
+              containerPort: 1080
+              protocol: TCP
+
+          volumeMounts:
+            - name: gluetun-data
+              mountPath: /gluetun
+            - name: dev-net-tun
+              mountPath: /dev/net/tun
+
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "wget -qO- -T 5 https://api.ipify.org 2>&1 | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$'"
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 15
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "wget -qO- -T 5 https://api.ipify.org 2>&1 | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$'"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+
+      volumes:
+        - name: gluetun-data
+          persistentVolumeClaim:
+            claimName: gluetun-data
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always

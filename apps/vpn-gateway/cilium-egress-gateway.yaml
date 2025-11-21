@@ -1,0 +1,29 @@
+apiVersion: cilium.io/v2
+kind: CiliumEgressGatewayPolicy
+metadata:
+  name: vpn-egress-gateway
+  namespace: vpn-gateway
+spec:
+  # Select pods that should route through VPN
+  selectors:
+    - podSelector:
+        matchLabels:
+          vpn-egress: "true"
+
+  # Define which traffic should go through the gateway
+  destinationCIDRs:
+    - 0.0.0.0/0  # All external traffic
+
+  # Exclude local cluster traffic from VPN routing
+  excludedCIDRs:
+    - 10.0.0.0/8      # Private networks
+    - 172.16.0.0/12   # Private networks
+    - 192.168.0.0/16  # Private networks
+    - 127.0.0.0/8     # Localhost
+
+  # Gateway configuration - uses node with specific label
+  egressGateway:
+    nodeSelector:
+      matchLabels:
+        vpn-gateway-node: "true"  # Label your node with: kubectl label node <node-name> vpn-gateway-node=true
+    interface: end0  # Network interface on Raspberry Pi

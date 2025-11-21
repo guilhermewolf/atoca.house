@@ -1,0 +1,88 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: gluetun-vpn-access
+  namespace: vpn-gateway
+spec:
+  endpointSelector:
+    matchLabels:
+      app: gluetun
+
+  ingress:
+    # Allow proxy connections from VPN-enabled pods
+    - fromEndpoints:
+        - matchLabels:
+            vpn-egress: "true"
+      toPorts:
+        - ports:
+            - port: "8888"
+              protocol: TCP
+            - port: "1080"
+              protocol: TCP
+
+    # Allow health checks from Kubernetes
+    - fromEntities:
+        - cluster
+
+  egress:
+    # Allow DNS
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+          rules:
+            dns:
+              - matchPattern: "*"
+
+    # Allow VPN provider access
+    - toFQDNs:
+        - matchPattern: "*.privateinternetaccess.com"
+    - toCIDRSet:
+        - cidr: 0.0.0.0/0
+          except:
+            - 10.0.0.0/8
+            - 172.16.0.0/12
+            - 192.168.0.0/16
+---
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: vpn-client-policy
+spec:
+  endpointSelector:
+    matchLabels:
+      vpn-egress: "true"
+
+  egress:
+    # Allow DNS
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+
+    # Allow access to VPN proxy
+    - toEndpoints:
+        - matchLabels:
+            app: gluetun
+            io.kubernetes.pod.namespace: vpn-gateway
+      toPorts:
+        - ports:
+            - port: "8888"
+              protocol: TCP
+            - port: "1080"
+              protocol: TCP
+
+    # Allow local cluster access
+    - toEntities:
+        - cluster
+
+    # Block direct internet access (must go through proxy)
+    # This is enforced by the egress gateway policy

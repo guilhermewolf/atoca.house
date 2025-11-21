@@ -1,5 +1,7 @@
 controllers:
   flaresolverr:
+    replicas: 1
+    strategy: RollingUpdate
     containers:
       flaresolverr:
         image:

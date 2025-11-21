@@ -1,0 +1,83 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: grafana
+  namespace: grafana
+  labels:
+    grafana.internal/instance: grafana
+spec:
+  config:
+    analytics:
+      check_for_updates: "false"
+      check_for_plugin_updates: "false"
+      feedback_links_enabled: "false"
+      reporting_enabled: "false"
+    log:
+      mode: "console"
+    server:
+      enable_gzip: "true"
+      root_url: "https://grafana.atoca.house"
+    news:
+      news_feed_enabled: "false"
+    # auth:
+    #   singout_redirect_url: "https://auth.atoca.house/application/o/grafana/end-session/"
+    date_formats:
+      use_browser_locale: "true"
+    explore:
+      enabled: "true"
+    security:
+      angular_support_enabled: "true"
+    plugins:
+      plugin_admin_enabled: "false"
+    # auth.generic_oauth:
+    #   enabled: "true"
+    #   client_id: "$__env{GF_AUTH_GENERIC_OAUTH_CLIENT_ID}"
+    #   client_secret: "$__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}"
+
+  deployment:
+    spec:
+      strategy:
+        type: Recreate
+      template:
+        spec:
+          containers:
+            - name: grafana
+              env:
+                - name: GF_SECURITY_ADMIN_USER
+                  valueFrom:
+                    secretKeyRef:
+                      key: admin-user
+                      name: grafana-secrets
+                - name: GF_SECURITY_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: admin-password
+                      name: grafana-secrets
+  service:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      ports:
+        - name: http
+          port: 3000
+          protocol: TCP
+          targetPort: 3000
+      type: ClusterIP
+
+  serviceAccount:
+    metadata:
+      labels:
+        app: grafana
+
+  client:
+    preferIngress: false
+
+  persistentVolumeClaim:
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi

@@ -162,3 +162,14 @@ cni:
 # Enable endpoint routes for better performance
 endpointRoutes:
   enabled: true
+
+# Enable Egress Gateway for VPN routing
+egressGateway:
+  enabled: true
+  reconciliationTriggerInterval: 1s
+
+# Enable masquerading for egress gateway (required for egress gateway to work)
+bpf:
+  masquerade: true
+
+enableIPv4Masquerade: true

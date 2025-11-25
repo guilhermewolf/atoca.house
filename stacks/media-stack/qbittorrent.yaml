@@ -2,7 +2,7 @@ version: "3.8" # Updated version
 
 services:
   qbittorrent:
-    image: ghcr.io/linuxserver/qbittorrent:5.1.0@sha256:ca6325989299ff807ab94c9505c138b6cadfe8a77c4ef14c5690094cbbe40d7d
+    image: ghcr.io/linuxserver/qbittorrent:5.1.4@sha256:26a08cd60d81e632aba8947b2c64dfd5f870a5f4a837ec4abedf2e1d174df891
     network_mode: "container:GlueTun-PIA"
     container_name: qBittorrent
     environment:

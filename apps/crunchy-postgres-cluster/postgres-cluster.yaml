@@ -46,6 +46,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: twenty
+      databases:
+        - twenty
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

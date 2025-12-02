@@ -85,7 +85,7 @@ controllers:
       redis:
         image:
           repository: docker.io/redis
-          tag: 7-alpine
+          tag: 8-alpine@sha256:6cbef353e480a8a6e7f10ec545f13d7d3fa85a212cdcc5ffaf5a1c818b9d3798
           pullPolicy: IfNotPresent
         env:
           REDIS_MAXMEMORY_POLICY: noeviction

@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: znc
+  namespace: argocd
+spec:
+  destination:
+    namespace: znc
+    server: https://kubernetes.default.svc
+  project: applications
+  sources:
+    - chart: app-template
+      repoURL: ghcr.io/bjw-s-labs/helm
+      targetRevision: 4.4.0
+      helm:
+        releaseName: znc
+        valueFiles:
+        - $values/apps/znc/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: apps/znc/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

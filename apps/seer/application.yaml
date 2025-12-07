@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: seer
+  namespace: argocd
+spec:
+  destination:
+    namespace: seer
+    server: https://kubernetes.default.svc
+  project: applications
+  sources:
+    - chart: app-template
+      repoURL: ghcr.io/bjw-s-labs/helm
+      targetRevision: 4.4.0
+      helm:
+        releaseName: seer
+        valueFiles:
+        - $values/apps/seer/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: apps/seer/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -1,0 +1,89 @@
+controllers:
+  qbittorrent:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/onedr0p/qbittorrent-beta
+          tag: 5.0.2@sha256:2dab641cd7399c896db120f8f4b8c0e9fce2744810a391e89591c6ab546c922a
+        env:
+          TZ: America/New_York
+          QBT_WEBUI_PORT: &port 80
+          QBT_TORRENTING_PORT: &torrentPort 50413
+          CROSS_SEED_ENABLED: false
+          CROSS_SEED_HOST: cross-seed.default.svc.cluster.local
+          CROSS_SEED_PORT: 80
+          CROSS_SEED_SLEEP_INTERVAL: 0
+          PUSHOVER_ENABLED: true
+        envFrom:
+          - secretRef:
+              name: qbittorrent-secret
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            memory: 8Gi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 568
+    runAsGroup: 568
+    fsGroup: 568
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile: { type: RuntimeDefault }
+service:
+  app:
+    controller: qbittorrent
+    type: LoadBalancer
+    annotations:
+      lbipam.cilium.io/ips: 192.168.42.122
+    ports:
+      http:
+        port: *port
+      bittorrent:
+        enabled: true
+        port: *torrentPort
+        protocol: TCP
+ingress:
+  app:
+    className: internal
+    hosts:
+      - host: qb.devbu.io
+        paths:
+          - path: /
+            service:
+              identifier: app
+              port: http
+persistence:
+  config:
+    existingClaim: qbittorrent
+  tmp:
+    type: emptyDir
+  scripts:
+    type: configMap
+    name: qbittorrent-scripts
+    defaultMode: 0775
+    globalMounts:
+      - readOnly: true
+  media:
+    type: nfs
+    server: expanse.internal
+    path: /mnt/eros/Media
+    globalMounts:
+      - path: /media/Downloads/qbittorrent
+        subPath: Downloads/qbittorrent

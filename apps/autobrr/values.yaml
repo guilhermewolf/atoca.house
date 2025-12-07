@@ -1,0 +1,97 @@
+controllers:
+  autobrr:
+    replicas: 1
+    strategy: RollingUpdate
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      autobrr:
+        image:
+          repository: ghcr.io/autobrr/autobrr
+          tag: v1.69.0@sha256:b14f129e3c6293a595e7a03e025e5c7dd4095bd96100f2889a226816ae39ee0a
+          pullPolicy: IfNotPresent
+        env:
+          TZ: "Europe/Amsterdam"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 2Gi
+            cpu: 1000m
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: 4747
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: 8080
+              initialDelaySeconds: 0
+              periodSeconds: 5
+              timeoutSeconds: 1
+              failureThreshold: 30
+    pod:
+      securityContext:
+        runAsUser: 99
+        runAsGroup: 100
+        runAsNonRoot: true
+        fsGroup: 100
+        fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups: [100]
+        seccompProfile:
+          type: RuntimeDefault
+
+service:
+  autobrr:
+    controller: autobrr
+    ports:
+      http:
+        primary: true
+        port: 80
+        targetPort: 7474
+        protocol: HTTP
+
+route:
+  autobrr:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: kube-system
+    hostnames:
+      - autobrr.atoca.house
+    rules:
+      - backendRefs:
+          - name: autobrr
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  autobrr:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /config

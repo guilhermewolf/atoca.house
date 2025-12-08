@@ -1,7 +1,6 @@
 controllers:
   lldap:
     replicas: 1
-    strategy: Recreate
     annotations:
       reloader.stakater.com/auto: "true"
     initContainers:

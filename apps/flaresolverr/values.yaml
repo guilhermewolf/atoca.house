@@ -1,7 +1,6 @@
 controllers:
   flaresolverr:
     replicas: 1
-    strategy: Recreate
     containers:
       flaresolverr:
         image:

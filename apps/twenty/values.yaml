@@ -1,7 +1,6 @@
 controllers:
   server:
     replicas: 1
-    strategy: Recreate
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
@@ -47,7 +46,6 @@ controllers:
 
   worker:
     replicas: 1
-    strategy: Recreate
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
@@ -80,7 +78,6 @@ controllers:
 
   redis:
     replicas: 1
-    strategy: Recreate
     containers:
       redis:
         image:

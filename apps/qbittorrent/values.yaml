@@ -5,25 +5,25 @@ controllers:
     containers:
       app:
         image:
-          repository: ghcr.io/onedr0p/qbittorrent-beta
-          tag: 5.0.2@sha256:2dab641cd7399c896db120f8f4b8c0e9fce2744810a391e89591c6ab546c922a
+          repository: ghcr.io/home-operations/qbittorrent
+          tag: 5.1.4@sha256:25fc7caf22101f85276ede9b1f76a46b7a93971bb6b70b6c58d14d6ab7f51415
         env:
-          TZ: America/New_York
+          TZ: Europe/Amsterdam
           QBT_WEBUI_PORT: &port 80
-          QBT_TORRENTING_PORT: &torrentPort 50413
-          CROSS_SEED_ENABLED: false
-          CROSS_SEED_HOST: cross-seed.default.svc.cluster.local
-          CROSS_SEED_PORT: 80
-          CROSS_SEED_SLEEP_INTERVAL: 0
-          PUSHOVER_ENABLED: true
-        envFrom:
-          - secretRef:
-              name: qbittorrent-secret
+          QBT_TORRENTING_PORT: 50469
         probes:
-          liveness:
+          liveness: &probes
             enabled: true
-          readiness:
-            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v2/app/version
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
           startup:
             enabled: true
             spec:
@@ -39,51 +39,66 @@ controllers:
           limits:
             memory: 8Gi
 defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.10/24"],
+        "mac": "32:0b:d8:1f:b6:e4"
+      }]
   securityContext:
     runAsNonRoot: true
-    runAsUser: 568
-    runAsGroup: 568
-    fsGroup: 568
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
-    seccompProfile: { type: RuntimeDefault }
+
 service:
   app:
-    controller: qbittorrent
-    type: LoadBalancer
-    annotations:
-      lbipam.cilium.io/ips: 192.168.42.122
     ports:
       http:
         port: *port
-      bittorrent:
-        enabled: true
-        port: *torrentPort
-        protocol: TCP
-ingress:
+route:
   app:
-    className: internal
-    hosts:
-      - host: qb.devbu.io
-        paths:
-          - path: /
-            service:
-              identifier: app
-              port: http
+    hostnames:
+      - qbittorrent.atoca.house
+    parentRefs:
+      - name: atoca-gateway
+        namespace: network
+    rules:
+      - backendRefs:
+          - identifier: app
+            port: *port
+
+configMaps:
+  config:
+    data:
+      .qbt.toml: |-
+        [qbittorrent]
+        addr = "http://localhost:80"
+
 persistence:
   config:
     existingClaim: qbittorrent
+  config-file:
+    type: configMap
+    identifier: config
+    globalMounts:
+      - path: /config/.qbt.toml
+        subPath: .qbt.toml
   tmp:
     type: emptyDir
-  scripts:
-    type: configMap
-    name: qbittorrent-scripts
-    defaultMode: 0775
-    globalMounts:
-      - readOnly: true
+  # scripts:
+  #   type: configMap
+  #   name: qbittorrent-scripts
+  #   defaultMode: 0775
+  #   globalMounts:
+  #     - readOnly: true
   media:
     type: nfs
     server: expanse.internal
-    path: /mnt/eros/Media
+    path: /mnt/user/data/torrents
     globalMounts:
-      - path: /media/Downloads/qbittorrent
-        subPath: Downloads/qbittorrent
+      - path: /data/torrents
+        subPath: torrents

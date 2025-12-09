@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: bazarr
+  name: radarr
   namespace: argocd
 spec:
   destination:
-    namespace: bazarr
+    namespace: radarr
     server: https://kubernetes.default.svc
   project: applications
   sources:
@@ -13,15 +13,15 @@ spec:
       repoURL: ghcr.io/bjw-s-labs/helm
       targetRevision: 4.5.0
       helm:
-        releaseName: bazarr
+        releaseName: radarr
         valueFiles:
-        - $values/apps/bazarr/values.yaml
+        - $values/apps/radarr/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
-      path: apps/bazarr/
+      path: apps/radarr/
       directory:
         exclude: '{application.yaml,values.yaml}'
   syncPolicy:

@@ -1,25 +1,25 @@
 controllers:
-  sonarr-anime:
+  radarr:
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
-      sonarr-anime:
+      app:
         image:
-          repository: ghcr.io/home-operations/sonarr
-          tag: 4.0.16.2943@sha256:0a1b8f5cb5b072f7ad8c6ff64a25dc512115d1a114ecf19a58a3b4f870207ddd
+          repository: ghcr.io/home-operations/radarr
+          tag: 6.1.0.10293@sha256:22bbf7e924dd929b756147d8110664c3e2da37c59516b249945ab1d63657be29
         env:
-          SONARR__APP__INSTANCENAME: "Sonarr Anime"
-          SONARR__APP__THEME: dark
-          SONARR__AUTH__METHOD: External
-          SONARR__AUTH__REQUIRED: DisabledForLocalAddresses
-          SONARR__LOG__DBENABLED: "False"
-          SONARR__LOG__LEVEL: info
-          SONARR__SERVER__PORT: &port 80
-          SONARR__UPDATE__BRANCH: develop
+          RADARR__APP__INSTANCENAME: Radarr
+          RADARR__APP__THEME: dark
+          RADARR__AUTH__METHOD: External
+          RADARR__AUTH__REQUIRED: DisabledForLocalAddresses
+          RADARR__LOG__DBENABLED: "False"
+          RADARR__LOG__LEVEL: info
+          RADARR__SERVER__PORT: &port 80
+          RADARR__UPDATE__BRANCH: develop
           TZ: Europe/Amsterdam
         envFrom:
           - secretRef:
-              name: "sonarr-anime-secret"
+              name: "radarr-secret"
         probes:
           liveness: &probes
             enabled: true
@@ -50,26 +50,20 @@ defaultPodOptions:
     fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
 service:
-  sonarr-anime:
+  app:
     ports:
       http:
         port: *port
 route:
-  sonarr-anime:
+  app:
     hostnames:
-      - sonarr.atoca.house
+      - radarr.atoca.house
     parentRefs:
       - name: atoca-gateway
         namespace: network
 persistence:
   config:
     existingClaim: "{{ .Release.Name }}"
-  scripts:
-    type: configMap
-    name: sonarr-configmap
-    defaultMode: 0775
-    globalMounts:
-      - readOnly: true
   media:
     type: nfs
     server: expanse.internal

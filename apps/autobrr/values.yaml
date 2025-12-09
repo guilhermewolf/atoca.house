@@ -1,72 +1,79 @@
 controllers:
   autobrr:
-    replicas: 1
-    strategy: RollingUpdate
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
       autobrr:
         image:
           repository: ghcr.io/autobrr/autobrr
-          tag: v1.69.0@sha256:b14f129e3c6293a595e7a03e025e5c7dd4095bd96100f2889a226816ae39ee0a
+          tag: v1.70.0@sha256:c691d8ddd5184c155d1732244519f0c09dc44559a7a0da14c6d0dc3edf7fcfb3
           pullPolicy: IfNotPresent
         env:
+          AUTOBRR__HOST: 0.0.0.0
+          AUTOBRR__PORT: &port 80
+          AUTOBRR__METRICS_ENABLED: true
+          AUTOBRR__METRICS_HOST: 0.0.0.0
+          AUTOBRR__METRICS_PORT: &metricsPort 9094
+          AUTOBRR__CHECK_FOR_UPDATES: false
+          AUTOBRR__LOG_LEVEL: INFO
           TZ: "Europe/Amsterdam"
+        envFrom:
+          - secretRef:
+              name: "autobrr-secret"
         resources:
           requests:
-            cpu: 100m
-            memory: 256Mi
+            cpu: 10m
           limits:
-            memory: 2Gi
-            cpu: 1000m
+            memory: 256Mi
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
           capabilities: { drop: ["ALL"] }
         probes:
-          liveness: &probes
+          liveness:
             enabled: true
             custom: true
             spec:
               httpGet:
-                path: /health
-                port: 4747
+                path: /api/healthz/liveness
+                port: *port
               initialDelaySeconds: 0
               periodSeconds: 10
               timeoutSeconds: 1
               failureThreshold: 3
-          readiness: *probes
-          startup:
+          readiness:
             enabled: true
             custom: true
             spec:
               httpGet:
-                path: /health
-                port: 8080
+                path: /api/healthz/readiness
+                port: *port
               initialDelaySeconds: 0
-              periodSeconds: 5
+              periodSeconds: 10
               timeoutSeconds: 1
-              failureThreshold: 30
-    pod:
-      securityContext:
-        runAsUser: 99
-        runAsGroup: 100
-        runAsNonRoot: true
-        fsGroup: 100
-        fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups: [100]
-        seccompProfile:
-          type: RuntimeDefault
+              failureThreshold: 3
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
 
 service:
   autobrr:
     controller: autobrr
     ports:
       http:
-        primary: true
-        port: 80
-        targetPort: 7474
-        protocol: HTTP
+        port: *port
+      metrics:
+        port: *metricsPort
+
+serviceMonitor:
+  app:
+    endpoints:
+      - port: metrics
 
 route:
   autobrr:
@@ -95,3 +102,5 @@ persistence:
     size: 1Gi
     globalMounts:
       - path: /config
+  tmp:
+    type: emptyDir

@@ -1,27 +1,27 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: sabnzbd
+  name: nzbget
   namespace: argocd
 spec:
   destination:
-    namespace: sabnzbd
+    namespace: nzbget
     server: https://kubernetes.default.svc
   project: applications
   sources:
     - chart: app-template
       repoURL: ghcr.io/bjw-s-labs/helm
-      targetRevision: 4.4.0
+      targetRevision: 4.5.0
       helm:
-        releaseName: sabnzbd
+        releaseName: nzbget
         valueFiles:
-        - $values/apps/sabnzbd/values.yaml
+        - $values/apps/nzbget/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
-      path: apps/sabnzbd/
+      path: apps/nzbget/
       directory:
         exclude: '{application.yaml,values.yaml}'
   syncPolicy:

@@ -1,32 +1,20 @@
 controllers:
-  sonarr-anime:
-    annotations:
-      reloader.stakater.com/auto: "true"
+  nzbget:
     containers:
-      sonarr-anime:
+      app:
         image:
-          repository: ghcr.io/home-operations/sonarr
-          tag: 4.0.16.2943@sha256:0a1b8f5cb5b072f7ad8c6ff64a25dc512115d1a114ecf19a58a3b4f870207ddd
+          repository: ghcr.io/home-operations/nzbget
+          tag: 25.4.0@sha256:7afaa93e1992f86a033a310eb0f012f1e4c6bd406caa608146df951e85298ff1
         env:
-          SONARR__APP__INSTANCENAME: "Sonarr Anime"
-          SONARR__APP__THEME: dark
-          SONARR__AUTH__METHOD: External
-          SONARR__AUTH__REQUIRED: DisabledForLocalAddresses
-          SONARR__LOG__DBENABLED: "False"
-          SONARR__LOG__LEVEL: info
-          SONARR__SERVER__PORT: &port 80
-          SONARR__UPDATE__BRANCH: develop
+          NZBGET__PORT: &port 80
           TZ: Europe/Amsterdam
-        envFrom:
-          - secretRef:
-              name: "sonarr-anime-secret"
         probes:
           liveness: &probes
             enabled: true
             custom: true
             spec:
               httpGet:
-                path: /ping
+                path: /jsonrpc/status
                 port: *port
               initialDelaySeconds: 0
               periodSeconds: 10
@@ -41,8 +29,16 @@ controllers:
           requests:
             cpu: 100m
           limits:
-            memory: 4Gi
+            memory: 8Gi
 defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.11/24"],
+        "mac": "a6:3e:4f:09:e4:9c"
+      }]
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
@@ -50,31 +46,26 @@ defaultPodOptions:
     fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
 service:
-  sonarr-anime:
+  app:
     ports:
       http:
         port: *port
 route:
-  sonarr-anime:
+  app:
     hostnames:
-      - sonarr.atoca.house
+      - nzbget.atoca.house
     parentRefs:
       - name: atoca-gateway
         namespace: network
 persistence:
   config:
     existingClaim: "{{ .Release.Name }}"
-  scripts:
-    type: configMap
-    name: sonarr-configmap
-    defaultMode: 0775
-    globalMounts:
-      - readOnly: true
   media:
     type: nfs
-    server: expanse.internal
-    path: /mnt/eros/Media
+    server: nas.atoca.house
+    path: /mnt/user/data/usenet
     globalMounts:
-      - path: /media
+      - path: /media/Downloads/nzbget
+        subPath: Downloads/nzbget
   tmp:
     type: emptyDir

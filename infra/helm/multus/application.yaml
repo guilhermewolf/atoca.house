@@ -1,27 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: bazarr
+  name: multus
   namespace: argocd
 spec:
   destination:
-    namespace: bazarr
+    namespace: kube-system
     server: https://kubernetes.default.svc
-  project: applications
+  project: infra
   sources:
-    - chart: app-template
-      repoURL: ghcr.io/bjw-s-labs/helm
-      targetRevision: 4.5.0
+    - chart: multus
+      repoURL: oci://ghcr.io/bjw-s-labs/helm
+      targetRevision: 1.0.2
       helm:
-        releaseName: bazarr
         valueFiles:
-        - $values/apps/bazarr/values.yaml
+        - $values/infra/helm/multus/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
-      path: apps/bazarr/
+      path: infra/helm/multus/
       directory:
         exclude: '{application.yaml,values.yaml}'
   syncPolicy:

@@ -11,14 +11,13 @@ controllers:
           tag: 1.5.3@sha256:a42fef2a5ffa1dca8714e12892ba0b8de5c6c513f1bcdb1ffe4143e715cffb45
           pullPolicy: IfNotPresent
         env:
+          BAZARR__PORT: &port 80
           TZ: "Europe/Amsterdam"
         resources:
           requests:
-            cpu: 100m
-            memory: 256Mi
+            cpu: 10m
           limits:
             memory: 1Gi
-            cpu: 1000m
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -30,43 +29,27 @@ controllers:
             spec:
               httpGet:
                 path: /health
-                port: 6767
+                port: *port
               initialDelaySeconds: 0
               periodSeconds: 10
               timeoutSeconds: 1
               failureThreshold: 3
           readiness: *probes
-          startup:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /health
-                port: 6767
-              initialDelaySeconds: 0
-              periodSeconds: 5
-              timeoutSeconds: 1
-              failureThreshold: 30
-    pod:
-      securityContext:
-        runAsUser: 99
-        runAsGroup: 100
-        runAsNonRoot: true
-        fsGroup: 100
-        fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups: [100]
-        seccompProfile:
-          type: RuntimeDefault
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
 
 service:
   bazarr:
     controller: bazarr
     ports:
       http:
-        primary: true
-        port: 80
-        targetPort: 6767
-        protocol: HTTP
+        port: *port
 
 route:
   bazarr:
@@ -104,3 +87,6 @@ persistence:
     globalMounts:
       - path: /data
         readOnly: false
+
+  tmp:
+    type: emptyDir

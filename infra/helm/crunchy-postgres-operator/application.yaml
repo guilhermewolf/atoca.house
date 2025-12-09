@@ -11,7 +11,7 @@ spec:
   sources:
     - chart: pgo
       repoURL: registry.developers.crunchydata.com/crunchydata
-      targetRevision: 5.8.4
+      targetRevision: 5.8.5
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       path: infra/helm/crunchy-postgres-operator/

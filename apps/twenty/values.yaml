@@ -1,0 +1,161 @@
+controllers:
+  server:
+    replicas: 1
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      server:
+        image:
+          repository: docker.io/twentycrm/twenty
+          tag: latest
+          pullPolicy: IfNotPresent
+        env:
+          NODE_PORT: &port 3000
+          NODE_TLS_REJECT_UNAUTHORIZED: "0"
+          SERVER_URL: https://twenty.atoca.house
+          REDIS_URL: "redis://twenty-redis.twenty.svc.cluster.local:6379"
+          SING_IN_PREFILLED: "false"
+          ACCESS_TOKEN_EXPIRES_IN: "7d"
+          LOGIN_TOKEN_EXPIRES_IN: "1h"
+          STORAGE_TYPE: local
+          STORAGE_LOCAL_PATH: .local-storage
+        envFrom:
+          - secretRef:
+              name: twenty-db-secret
+          - secretRef:
+              name: twenty-secret
+        # probes:
+        #   liveness: &probes
+        #     enabled: true
+        #     custom: true
+        #     spec:
+        #       httpGet:
+        #         path: /healthz
+        #         port: *port
+        #       initialDelaySeconds: 30
+        #       periodSeconds: 10
+        #       timeoutSeconds: 5
+        #       failureThreshold: 3
+        #   readiness: *probes
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
+
+  worker:
+    replicas: 1
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      worker:
+        image:
+          repository: docker.io/twentycrm/twenty
+          tag: latest
+          pullPolicy: IfNotPresent
+        command:
+          - yarn
+          - worker:prod
+        env:
+          NODE_TLS_REJECT_UNAUTHORIZED: "0"
+          SERVER_URL: https://twenty.atoca.house
+          REDIS_URL: "redis://twenty-redis.twenty.svc.cluster.local:6379"
+          DISABLE_DB_MIGRATIONS: "false"
+          STORAGE_TYPE: local
+          TZ: Europe/Amsterdam
+        envFrom:
+          - secretRef:
+              name: twenty-db-secret
+          - secretRef:
+              name: twenty-secret
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+
+  redis:
+    replicas: 1
+    containers:
+      redis:
+        image:
+          repository: docker.io/redis
+          tag: 8-alpine@sha256:6cbef353e480a8a6e7f10ec545f13d7d3fa85a212cdcc5ffaf5a1c818b9d3798
+          pullPolicy: IfNotPresent
+        env:
+          REDIS_MAXMEMORY_POLICY: noeviction
+        probes:
+          liveness: &redis-probes
+            enabled: true
+            custom: true
+            spec:
+              exec:
+                command:
+                  - redis-cli
+                  - ping
+              initialDelaySeconds: 5
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *redis-probes
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+
+service:
+  server:
+    controller: server
+    ports:
+      http:
+        port: *port
+
+  redis:
+    controller: redis
+    ports:
+      redis:
+        port: 6379
+
+route:
+  twenty:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: kube-system
+    hostnames:
+      - twenty.atoca.house
+    rules:
+      - backendRefs:
+          - name: twenty-server
+            port: 3000
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  storage:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    advancedMounts:
+      server:
+        server:
+          - path: /app/packages/twenty-server/.local-storage
+  docker-data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    advancedMounts:
+      server:
+        server:
+          - path: /app/docker-data

@@ -1,7 +1,6 @@
 controllers:
   lldap:
     replicas: 1
-    strategy: RollingUpdate
     annotations:
       reloader.stakater.com/auto: "true"
     initContainers:

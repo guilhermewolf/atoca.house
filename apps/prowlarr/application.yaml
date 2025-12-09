@@ -11,7 +11,7 @@ spec:
   sources:
     - chart: app-template
       repoURL: ghcr.io/bjw-s-labs/helm
-      targetRevision: 4.4.0
+      targetRevision: 4.5.0
       helm:
         releaseName: prowlarr
         valueFiles:

@@ -1,11 +1,12 @@
+---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: vikunja
+  name: twenty
   namespace: argocd
 spec:
   destination:
-    namespace: vikunja
+    namespace: twenty
     server: https://kubernetes.default.svc
   project: applications
   sources:
@@ -13,15 +14,15 @@ spec:
       repoURL: ghcr.io/bjw-s-labs/helm
       targetRevision: 4.5.0
       helm:
-        releaseName: vikunja
+        releaseName: twenty
         valueFiles:
-        - $values/apps/vikunja/values.yaml
+        - $values/apps/twenty/values.yaml
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
       ref: values
     - repoURL: 'https://github.com/guilhermewolf/atoca.house'
       targetRevision: HEAD
-      path: apps/vikunja/
+      path: apps/twenty/
       directory:
         exclude: '{application.yaml,values.yaml}'
   syncPolicy:

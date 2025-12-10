@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arc-systems
+  namespace: argocd
+spec:
+  destination:
+    namespace: arc-systems
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - chart: gha-runner-scale-set-controller
+      repoURL: ghcr.io/actions/actions-runner-controller-charts
+      targetRevision: 0.13.0
+      helm:
+        valueFiles:
+        - $values/infra/k8s/operators/arc-systems/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/template/spec/containers/0/resources

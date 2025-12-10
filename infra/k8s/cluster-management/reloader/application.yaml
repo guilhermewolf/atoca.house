@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: reloader
+  namespace: argocd
+spec:
+  destination:
+    namespace: reloader
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - chart: reloader
+      repoURL: https://stakater.github.io/stakater-charts
+      targetRevision: 2.2.5
+      helm:
+        valueFiles:
+        - $values/infra/k8s/cluster-management/reloader/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: reloader
+      namespace: reloader
+      jsonPointers:
+        - /spec/template/spec/containers/0/env/0/valueFrom/resourceFieldRef/divisor
+        - /spec/template/spec/containers/0/env/1/valueFrom/resourceFieldRef/divisor

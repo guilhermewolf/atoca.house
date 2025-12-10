@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bazarr
+  namespace: argocd
+spec:
+  destination:
+    namespace: bazarr
+    server: https://kubernetes.default.svc
+  project: applications
+  sources:
+    - chart: app-template
+      repoURL: ghcr.io/bjw-s-labs/helm
+      targetRevision: 4.5.0
+      helm:
+        releaseName: bazarr
+        valueFiles:
+        - $values/apps/media/bazarr/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: apps/media/bazarr/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

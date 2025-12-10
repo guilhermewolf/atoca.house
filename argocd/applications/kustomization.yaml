@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd
+
+resources:
+  - argocd.yaml
+  - project.yaml
+  - infra-project.yaml
+  - applications-project.yaml
+  # Category-based parent apps - Infrastructure (infra/k8s)
+  - infra-networking.yaml
+  - infra-storage.yaml
+  - infra-security.yaml
+  - infra-monitoring.yaml
+  - infra-cluster-management.yaml
+  - infra-operators.yaml
+  # Category-based parent apps - Applications
+  - apps-media.yaml
+  - apps-data.yaml
+  - apps-auth.yaml
+  - apps-communication.yaml
+  - apps-productivity.yaml
+  - apps-monitoring.yaml
+  - apps-home-automation.yaml

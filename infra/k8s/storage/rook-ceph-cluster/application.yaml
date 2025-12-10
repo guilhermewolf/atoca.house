@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: rook-ceph-cluster
+  namespace: argocd
+spec:
+  destination:
+    namespace: rook-ceph
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - chart: rook-ceph-cluster
+      repoURL: https://charts.rook.io/release
+      targetRevision: v1.15.8
+      helm:
+        valueFiles:
+        - $values/infra/k8s/storage/rook-ceph-cluster/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: infra/k8s/storage/rook-ceph-cluster/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    automated:
+      prune: false  # Never auto-prune Ceph cluster!

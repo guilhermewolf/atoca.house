@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: envoy-gateway
+  namespace: argocd
+spec:
+  project: infra
+  destination:
+    namespace: envoy-gateway-system
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: registry-1.docker.io/envoyproxy
+      chart: gateway-helm
+      targetRevision: 1.6.1
+      helm:
+        releaseName: envoy-gateway
+        valueFiles:
+          - $values/infra/k8s/networking/envoy-gateway/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: infra/k8s/networking/envoy-gateway
+      directory:
+        exclude: '{application.yaml,values.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

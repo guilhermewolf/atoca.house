@@ -1,16 +1,16 @@
 ---
-# Parent app that discovers all monitoring infrastructure apps
+# Parent app that discovers all media applications
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: infra-monitoring
+  name: apps-media
   namespace: argocd
 spec:
-  project: infra
+  project: applications
   source:
     repoURL: https://github.com/guilhermewolf/atoca.house
     targetRevision: HEAD
-    path: infra/k8s/monitoring
+    path: apps/media
     directory:
       recurse: true
       include: '*/application.yaml'

@@ -1,0 +1,135 @@
+---
+- name: Upgrade Talos Linux and Kubernetes on all nodes
+  hosts: kubernetes
+  gather_facts: false
+
+  vars:
+    talosctl_path: /opt/homebrew/bin/talosctl
+    arch: amd64
+    platform: metal
+    # Factory schematic ID for custom Talos image with extensions
+    # Generate at: https://factory.talos.dev/
+    # Update this value with your schematic ID
+    factory_schematic_id: "{{ lookup('env', 'TALOS_FACTORY_SCHEMATIC_ID') | default('', true) }}"
+
+  pre_tasks:
+    - name: Verify talosctl is installed
+      ansible.builtin.command:
+        cmd: "which {{ talosctl_path }}"
+      changed_when: false
+
+    - name: Fail if factory_schematic_id is not set
+      ansible.builtin.fail:
+        msg: |
+          Factory schematic ID not set!
+
+          Set environment variable:
+            export TALOS_FACTORY_SCHEMATIC_ID="your-schematic-id"
+
+          Or edit this playbook and set factory_schematic_id directly.
+
+          Generate schematic at: https://factory.talos.dev/
+      when: factory_schematic_id == ""
+
+  tasks:
+    - name: Get latest Talos version from GitHub
+      ansible.builtin.uri:
+        url: https://api.github.com/repos/siderolabs/talos/releases/latest
+        return_content: true
+      register: latest_release
+
+    - name: Extract latest Talos version
+      ansible.builtin.set_fact:
+        latest_talos_version: "{{ (latest_release.json.tag_name | regex_replace('^v', '')) }}"
+
+    - name: Display upgrade information
+      ansible.builtin.debug:
+        msg:
+          - "============================================================================"
+          - "Talos Upgrade Plan"
+          - "============================================================================"
+          - "Target Version: {{ latest_talos_version }}"
+          - "Factory Image: factory.talos.dev/installer/{{ factory_schematic_id }}:v{{ latest_talos_version }}"
+          - "Nodes to upgrade:"
+          - "{% for node in control_plane_nodes %}"
+          - "  - {{ node.name }} ({{ node.ip }})"
+          - "{% endfor %}"
+          - ""
+          - "This will upgrade nodes ONE AT A TIME to maintain cluster availability."
+          - "Each node will:"
+          - "  1. Download new Talos image"
+          - "  2. Reboot into new version"
+          - "  3. Rejoin cluster"
+          - "  4. Wait for node to be Ready before proceeding to next node"
+          - ""
+          - "============================================================================"
+
+    - name: Confirm upgrade
+      ansible.builtin.pause:
+        prompt: "Press Enter to continue or Ctrl+C to abort"
+
+    - name: Upgrade Talos on each control plane node (one at a time)
+      ansible.builtin.command:
+        cmd: >
+          {{ talosctl_path }} upgrade
+          --nodes {{ item.ip }}
+          --image factory.talos.dev/installer/{{ factory_schematic_id }}:v{{ latest_talos_version }}
+          --preserve
+          --wait
+      loop: "{{ control_plane_nodes }}"
+      register: upgrade_results
+
+    - name: Wait for each node to rejoin and be Ready
+      ansible.builtin.shell:
+        cmd: >
+          kubectl get node {{ item.name }}
+          -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+          | grep True
+      environment:
+        KUBECONFIG: "{{ kubeconfig }}"
+      loop: "{{ control_plane_nodes }}"
+      retries: 20
+      delay: 15
+      register: node_ready
+      until: node_ready.rc == 0
+      changed_when: false
+
+    - name: Display upgrade results
+      ansible.builtin.debug:
+        msg:
+          - "============================================================================"
+          - "✅ Talos Upgrade Complete"
+          - "============================================================================"
+          - "All nodes successfully upgraded to Talos {{ latest_talos_version }}"
+          - ""
+          - "Verify cluster health:"
+          - "  kubectl get nodes -o wide"
+          - "  talosctl -n {{ bootstrap_node_ip }} health"
+          - ""
+          - "Next steps (optional):"
+          - "  1. Upgrade Kubernetes if a new version is available"
+          - "     Run: talosctl upgrade-k8s --to <version>"
+          - "  2. Monitor cluster for any issues"
+          - "  3. Update factory_schematic_id if extensions changed"
+          - ""
+          - "============================================================================"
+
+    # Kubernetes upgrade is commented out by default - uncomment and specify version
+    # - name: Confirm Kubernetes upgrade
+    #   ansible.builtin.pause:
+    #     prompt: |
+    #       ============================================================================
+    #       Ready to upgrade Kubernetes?
+    #       Current version: (check with: kubectl version)
+    #       Target version: Specify in the task below
+    #
+    #       Press Enter to continue or Ctrl+C to skip
+    #       ============================================================================
+    #
+    # - name: Upgrade Kubernetes
+    #   ansible.builtin.command:
+    #     cmd: >
+    #       {{ talosctl_path }} upgrade-k8s
+    #       --nodes {{ bootstrap_node_ip }}
+    #       --to <VERSION>
+    #   register: k8s_upgrade_result

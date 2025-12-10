@@ -1,0 +1,131 @@
+---
+- name: Bootstrap Talos Kubernetes cluster with ArgoCD GitOps
+  hosts: kubernetes
+  gather_facts: yes
+
+  pre_tasks:
+    - name: Verify required tools are installed
+      ansible.builtin.command:
+        cmd: "which {{ item }}"
+      loop:
+        - talosctl
+        - kubectl
+        - sops
+        - op
+        - kubeseal
+      changed_when: false
+
+    - name: Display bootstrap information
+      ansible.builtin.debug:
+        msg:
+          - "============================================================================"
+          - "Kubernetes Cluster Bootstrap"
+          - "============================================================================"
+          - "Cluster: {{ cluster_name }}"
+          - "Nodes: {{ control_plane_nodes | length }} control planes"
+          - "Bootstrap Node: {{ bootstrap_node_ip }}"
+          - ""
+          - "This playbook will:"
+          - "  1. Setup Age encryption for SOPS"
+          - "  2. Deploy and bootstrap Talos Linux"
+          - "  3. Install Cilium CNI (networking)"
+          - "  4. Install Sealed Secrets (secret management)"
+          - "  5. Install ArgoCD (GitOps)"
+          - "  6. Deploy infrastructure applications"
+          - "  7. Verify Rook-Ceph storage"
+          - ""
+          - "Estimated time: 30-45 minutes"
+          - "============================================================================"
+
+  roles:
+    - role: talos
+      tags: [bootstrap, talos, phase1]
+
+    - role: cilium
+      tags: [bootstrap, cilium, cni, phase2]
+
+    - role: sealed_secrets
+      tags: [bootstrap, sealed-secrets, phase3]
+
+    - role: argocd
+      tags: [bootstrap, argocd, gitops, phase4]
+
+    - role: rook_ceph
+      tags: [bootstrap, rook-ceph, storage, phase5]
+
+  post_tasks:
+    - name: Display bootstrap completion message
+      ansible.builtin.debug:
+        msg:
+          - "============================================================================"
+          - "🎉 Bootstrap Complete! 🎉"
+          - "============================================================================"
+          - ""
+          - "Cluster Configuration:"
+          - "  • {{ control_plane_nodes | length }}-node HA control plane cluster"
+          - "  • Nodes: {{ control_plane_nodes | map(attribute='name') | join(', ') }}"
+          - "  • All nodes are control planes (no dedicated workers)"
+          - "  • Distributed storage with Rook-Ceph"
+          - ""
+          - "Core Infrastructure Installed:"
+          - "  ✓ Cilium CNI (eBPF networking with Gateway API)"
+          - "  ✓ Sealed Secrets (encrypted secret storage)"
+          - "  ✓ ArgoCD (GitOps continuous deployment)"
+          - "  ✓ Cert-Manager (automated TLS certificate management)"
+          - "  ✓ External Secrets (secret injection from 1Password)"
+          - "  ✓ 1Password Operator (secure secret management)"
+          - "  ✓ Rook-Ceph Operator (distributed storage orchestration)"
+          - "  ✓ Rook-Ceph Cluster (block/filesystem/object storage)"
+          - ""
+          - "ArgoCD is now managing all infrastructure and applications via GitOps."
+          - ""
+          - "============================================================================"
+          - "Quick Start Commands"
+          - "============================================================================"
+          - ""
+          - "Verify Cluster:"
+          - "  kubectl get nodes -o wide"
+          - "  kubectl get pods --all-namespaces"
+          - "  talosctl -n {{ bootstrap_node_ip }} health"
+          - ""
+          - "Access ArgoCD:"
+          - "  kubectl port-forward svc/argocd-server -n argocd 8080:443"
+          - "  # Username: admin"
+          - "  # Password: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath=\"{.data.password}\" | base64 -d"
+          - "  # Or via ingress: https://argocd.atoca.house"
+          - ""
+          - "Monitor Applications:"
+          - "  kubectl get applications -n argocd"
+          - "  kubectl get applications -n argocd -w  # Watch mode"
+          - ""
+          - "Check Ceph Storage:"
+          - "  kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph status"
+          - "  kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph df"
+          - "  kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph osd tree"
+          - ""
+          - "View Storage Classes:"
+          - "  kubectl get storageclass"
+          - "  # ceph-block (default) - RWO block storage for databases"
+          - "  # ceph-filesystem - RWX shared filesystem for media"
+          - "  # ceph-bucket - S3-compatible object storage"
+          - ""
+          - "============================================================================"
+          - "Next Steps"
+          - "============================================================================"
+          - ""
+          - "1. Change ArgoCD admin password (default is auto-generated)"
+          - "2. Monitor ArgoCD for application sync status"
+          - "3. Verify Ceph cluster is HEALTH_OK (may take 10-15 minutes)"
+          - "4. Configure ingress DNS records for exposed services"
+          - "5. Deploy applications via ArgoCD"
+          - ""
+          - "============================================================================"
+          - "Useful Taskfile Commands"
+          - "============================================================================"
+          - ""
+          - "  task cluster:verify-cluster      # Verify cluster health"
+          - "  task cluster:port-forward-argocd # Access ArgoCD UI"
+          - "  task cluster:ceph-status         # Check Ceph status"
+          - "  task cluster:argocd-apps         # List all ArgoCD apps"
+          - ""
+          - "============================================================================"

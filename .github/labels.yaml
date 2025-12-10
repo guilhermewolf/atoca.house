@@ -1,28 +1,266 @@
 ---
-# Areas
+# GitHub Labels Configuration
+# Synced automatically via labels-sync.yaml workflow
+
+# =============================================================================
+# Area Labels - What part of the repo is affected
+# =============================================================================
+- name: area/argocd
+  description: ArgoCD configuration and GitOps
+  color: "0e8a16"
+
 - name: area/docs
+  description: Documentation updates
   color: "0e8a16"
+
 - name: area/github
+  description: GitHub Actions and configuration
   color: "0e8a16"
-- name: area/kubernetes
+
+# Infrastructure Categories (new structure)
+- name: area/networking
+  description: Networking infrastructure (Cilium, Envoy, DNS)
   color: "027fa0"
-- name: area/docker
+
+- name: area/storage
+  description: Storage infrastructure (Rook-Ceph, CSI)
   color: "027fa0"
+
+- name: area/security
+  description: Security infrastructure (cert-manager, sealed-secrets)
+  color: "d73a4a"
+
+- name: area/monitoring
+  description: Monitoring infrastructure (Prometheus, Grafana)
+  color: "027fa0"
+
+- name: area/cluster-management
+  description: Cluster management utilities
+  color: "027fa0"
+
+- name: area/operators
+  description: Kubernetes operators
+  color: "027fa0"
+
+# Applications
 - name: area/apps
+  description: User applications
   color: "0e8a16"
-- name: "area/terraform"
+
+- name: area/media
+  description: Media applications (Radarr, Sonarr, etc.)
+  color: "8b008b"
+
+- name: area/data
+  description: Data and databases
+  color: "0e8a16"
+
+- name: area/auth
+  description: Authentication and authorization
+  color: "d73a4a"
+
+# Other Infrastructure
+- name: area/ansible
+  description: Ansible playbooks and automation
   color: "800080"
-# Clusters
-- name: cluster/main
-  color: "ffc300"
-# Renovate Types
+
+- name: area/talos
+  description: Talos Linux configuration
+  color: "027fa0"
+
+- name: area/terraform
+  description: Terraform/OpenTofu infrastructure
+  color: "800080"
+
+- name: area/docker
+  description: Docker Compose stacks
+  color: "027fa0"
+
+- name: area/taskfile
+  description: Taskfile automation
+  color: "0e8a16"
+
+# =============================================================================
+# Type Labels - What kind of change
+# =============================================================================
+- name: type/feature
+  description: New feature or functionality
+  color: "a2eeef"
+
+- name: type/enhancement
+  description: Enhancement to existing functionality
+  color: "a2eeef"
+
+- name: type/bug
+  description: Bug fix
+  color: "d73a4a"
+
+- name: type/refactor
+  description: Code refactoring without functionality change
+  color: "fbca04"
+
+- name: type/docs
+  description: Documentation only changes
+  color: "0075ca"
+
+- name: type/chore
+  description: Maintenance tasks, dependencies
+  color: "fef2c0"
+
+- name: type/ci
+  description: CI/CD and automation changes
+  color: "00ff00"
+
+# =============================================================================
+# Priority Labels - How urgent
+# =============================================================================
+- name: priority/critical
+  description: Critical priority - immediate attention required
+  color: "b60205"
+
+- name: priority/high
+  description: High priority - should be addressed soon
+  color: "d93f0b"
+
+- name: priority/medium
+  description: Medium priority - normal queue
+  color: "fbca04"
+
+- name: priority/low
+  description: Low priority - nice to have
+  color: "0e8a16"
+
+# =============================================================================
+# Size Labels - How big is the change (auto-added by labeler)
+# =============================================================================
+- name: size/XS
+  description: Extra small PR (0-9 lines)
+  color: "c2e0c6"
+
+- name: size/S
+  description: Small PR (10-29 lines)
+  color: "7ae779"
+
+- name: size/M
+  description: Medium PR (30-99 lines)
+  color: "fef2c0"
+
+- name: size/L
+  description: Large PR (100-499 lines)
+  color: "fbca04"
+
+- name: size/XL
+  description: Extra large PR (500-999 lines)
+  color: "d93f0b"
+
+- name: size/XXL
+  description: Huge PR (1000+ lines)
+  color: "b60205"
+
+# =============================================================================
+# Status Labels - Current state
+# =============================================================================
+- name: status/blocked
+  description: Blocked by dependencies or other issues
+  color: "d73a4a"
+
+- name: status/wip
+  description: Work in progress - not ready for review
+  color: "fbca04"
+
+- name: status/ready-for-review
+  description: Ready for review
+  color: "0e8a16"
+
+- name: status/needs-changes
+  description: Changes requested by reviewer
+  color: "d93f0b"
+
+- name: status/approved
+  description: Approved and ready to merge
+  color: "0e8a16"
+
+- name: status/on-hold
+  description: On hold - waiting for something
+  color: "fbca04"
+
+# =============================================================================
+# Renovate Labels - Automated dependency updates
+# =============================================================================
+- name: renovate
+  description: Renovate bot PRs
+  color: "1d76db"
+
 - name: renovate/container
+  description: Container image updates
   color: "027fa0"
+
 - name: renovate/github-action
+  description: GitHub Actions updates
   color: "027fa0"
-- name: renovate/grafana-dashboard
-  color: "027fa0"
-- name: renovate/github-release
-  color: "027fa0"
+
 - name: renovate/helm
+  description: Helm chart updates
   color: "027fa0"
+
+- name: renovate/grafana-dashboard
+  description: Grafana dashboard updates
+  color: "027fa0"
+
+- name: renovate/github-release
+  description: GitHub release updates
+  color: "027fa0"
+
+# =============================================================================
+# Special Labels
+# =============================================================================
+- name: security
+  description: Security vulnerability or fix
+  color: "d73a4a"
+
+- name: breaking-change
+  description: Contains breaking changes
+  color: "b60205"
+
+- name: major-update
+  description: Major version update (may need testing)
+  color: "d93f0b"
+
+- name: good-first-issue
+  description: Good for newcomers
+  color: "7057ff"
+
+- name: help-wanted
+  description: Extra attention is needed
+  color: "008672"
+
+- name: duplicate
+  description: Duplicate issue or PR
+  color: "cfd3d7"
+
+- name: invalid
+  description: Invalid issue or PR
+  color: "e4e669"
+
+- name: wontfix
+  description: Won't be fixed/implemented
+  color: "ffffff"
+
+- name: dependencies
+  description: Dependency updates
+  color: "0366d6"
+
+- name: critical
+  description: Critical infrastructure (requires extra care)
+  color: "b60205"
+
+# =============================================================================
+# Cluster Labels
+# =============================================================================
+- name: cluster/main
+  description: Main production cluster
+  color: "ffc300"
+
+- name: cluster/staging
+  description: Staging cluster
+  color: "fbca04"

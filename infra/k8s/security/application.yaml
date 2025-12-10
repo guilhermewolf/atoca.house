@@ -1,16 +1,16 @@
 ---
-# Parent app that discovers all monitoring infrastructure apps
+# Parent app that discovers all security infrastructure apps
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: infra-monitoring
+  name: infra-security
   namespace: argocd
 spec:
   project: infra
   source:
     repoURL: https://github.com/guilhermewolf/atoca.house
     targetRevision: HEAD
-    path: infra/k8s/monitoring
+    path: infra/k8s/security
     directory:
       recurse: true
       include: '*/application.yaml'

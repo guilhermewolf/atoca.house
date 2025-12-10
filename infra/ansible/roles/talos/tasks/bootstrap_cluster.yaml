@@ -1,0 +1,56 @@
+---
+# Bootstrap Talos Kubernetes cluster
+
+- name: Bootstrap first control plane node
+  ansible.builtin.command:
+    cmd: "talosctl bootstrap -n {{ bootstrap_node_ip }}"
+  register: bootstrap_result
+  changed_when: bootstrap_result.rc == 0
+  failed_when: false  # May fail if already bootstrapped
+
+- name: Generate kubeconfig for the cluster
+  ansible.builtin.command:
+    cmd: "talosctl kubeconfig {{ kubeconfig }} -f -n {{ bootstrap_node_ip }}"
+  register: kubeconfig_result
+  changed_when: kubeconfig_result.rc == 0
+
+- name: Set KUBECONFIG environment variable
+  ansible.builtin.set_fact:
+    ansible_env: "{{ ansible_env | combine({'KUBECONFIG': kubeconfig}) }}"
+
+- name: Wait for first control plane node to be Ready
+  ansible.builtin.shell:
+    cmd: >
+      kubectl --kubeconfig={{ kubeconfig }}
+      get nodes {{ control_plane_nodes[0].name }}
+      -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+      | grep -q True
+  retries: "{{ default_retries }}"
+  delay: "{{ default_delay }}"
+  register: first_node_ready
+  until: first_node_ready.rc == 0
+  changed_when: false
+
+- name: Wait for all control plane nodes to be Ready
+  ansible.builtin.shell:
+    cmd: >
+      kubectl --kubeconfig={{ kubeconfig }}
+      get nodes --selector node-role.kubernetes.io/control-plane
+      -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}'
+      | grep -v False | grep True
+  retries: "{{ default_retries }}"
+  delay: "{{ default_delay }}"
+  register: all_nodes_ready
+  until: all_nodes_ready.rc == 0
+  changed_when: false
+
+- name: Display nodes status
+  ansible.builtin.command:
+    cmd: "kubectl --kubeconfig={{ kubeconfig }} get nodes -o wide"
+  register: nodes_status
+  changed_when: false
+
+- name: Show nodes status
+  ansible.builtin.debug:
+    msg: "{{ nodes_status.stdout_lines }}"
+  when: enable_detailed_output

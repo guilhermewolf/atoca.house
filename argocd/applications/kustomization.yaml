@@ -3,22 +3,15 @@ kind: Kustomization
 namespace: argocd
 
 resources:
+  # ArgoCD self-management
   - argocd.yaml
+
+  # Projects
   - project.yaml
   - infra-project.yaml
   - applications-project.yaml
-  # Category-based parent apps - Infrastructure (infra/k8s)
-  - infra-networking.yaml
-  - infra-storage.yaml
-  - infra-security.yaml
-  - infra-monitoring.yaml
-  - infra-cluster-management.yaml
-  - infra-operators.yaml
-  # Category-based parent apps - Applications
-  - apps-media.yaml
-  - apps-data.yaml
-  - apps-auth.yaml
-  - apps-communication.yaml
-  - apps-productivity.yaml
-  - apps-monitoring.yaml
-  - apps-home-automation.yaml
+
+  # Root app-of-apps (discovers all category parent apps)
+  # Each category (infra/k8s/* and apps/*) has its own application.yaml
+  # that discovers child apps in that category
+  - root.yaml

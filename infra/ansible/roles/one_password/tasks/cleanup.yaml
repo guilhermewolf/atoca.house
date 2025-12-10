@@ -1,0 +1,18 @@
+---
+# Cleanup temporary files
+
+- name: Remove temporary files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/op_token.txt
+    - /tmp/1password-credentials
+    - /tmp/1password-credentials.json
+    - /tmp/onepassword-token-unsealed.yaml
+    - /tmp/op-credentials-unsealed.yaml
+  no_log: true
+
+- name: Verify cleanup
+  ansible.builtin.debug:
+    msg: "Temporary secret files removed for security"

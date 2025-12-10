@@ -1,0 +1,21 @@
+# Ignore generated directory containing unencrypted configs
+generated/
+
+# Ignore old cluster backup (Raspberry Pi configs - for reference only)
+old-cluster-backup/
+
+# Ignore any decrypted YAML files (not encrypted)
+*.yaml
+!patches/*.yaml
+
+# Only commit encrypted files
+!*.enc.yaml
+
+# Ignore backup files
+*.bak
+*.backup
+*~
+
+# Ignore temporary files
+*.tmp
+.DS_Store

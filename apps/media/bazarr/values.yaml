@@ -1,0 +1,92 @@
+controllers:
+  bazarr:
+    replicas: 1
+    strategy: RollingUpdate
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      bazarr:
+        image:
+          repository: ghcr.io/lscr.io/linuxserver/bazarr
+          tag: 1.5.3@sha256:a42fef2a5ffa1dca8714e12892ba0b8de5c6c513f1bcdb1ffe4143e715cffb45
+          pullPolicy: IfNotPresent
+        env:
+          BAZARR__PORT: &port 80
+          TZ: "Europe/Amsterdam"
+        resources:
+          requests:
+            cpu: 10m
+          limits:
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  bazarr:
+    controller: bazarr
+    ports:
+      http:
+        port: *port
+
+route:
+  bazarr:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: kube-system
+    hostnames:
+      - bazarr.atoca.house
+    rules:
+      - backendRefs:
+          - name: bazarr
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  bazarr:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /config
+
+  data:
+    enabled: true
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/data
+    globalMounts:
+      - path: /data
+        readOnly: false
+
+  tmp:
+    type: emptyDir

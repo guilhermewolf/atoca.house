@@ -1,0 +1,66 @@
+---
+# Install and verify Cilium CNI
+
+- name: Apply Cilium CNI manifests
+  ansible.builtin.command:
+    cmd: >
+      kubectl kustomize --enable-helm {{ k8s_infra_dir }}/networking/cilium
+      | kubectl apply -f -
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  register: cilium_apply
+  changed_when: "'configured' in cilium_apply.stdout or 'created' in cilium_apply.stdout"
+
+- name: Wait for Cilium agent pods to be ready
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=ready pod
+      -l k8s-app=cilium
+      -n kube-system
+      --timeout={{ cilium_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 10
+  delay: "{{ default_delay }}"
+  register: cilium_agents_ready
+  until: cilium_agents_ready.rc == 0
+  changed_when: false
+
+- name: Wait for Cilium operator pods to be ready
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=ready pod
+      -l k8s-app=cilium-operator
+      -n kube-system
+      --timeout={{ cilium_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 10
+  delay: "{{ default_delay }}"
+  register: cilium_operator_ready
+  until: cilium_operator_ready.rc == 0
+  changed_when: false
+
+- name: Verify all nodes are Ready after CNI installation
+  ansible.builtin.shell:
+    cmd: >
+      kubectl --kubeconfig={{ kubeconfig }}
+      get nodes
+      -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}'
+      | grep -v False | grep True
+  retries: 10
+  delay: 15
+  register: nodes_ready_cni
+  until: nodes_ready_cni.rc == 0
+  changed_when: false
+
+- name: Get Cilium status
+  ansible.builtin.command:
+    cmd: "kubectl --kubeconfig={{ kubeconfig }} get pods -n kube-system -l k8s-app=cilium"
+  register: cilium_pods
+  changed_when: false
+
+- name: Display Cilium status
+  ansible.builtin.debug:
+    msg: "{{ cilium_pods.stdout_lines }}"
+  when: enable_detailed_output

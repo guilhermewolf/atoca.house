@@ -1,0 +1,18 @@
+---
+# Main tasks for Talos role
+
+- name: Setup Age encryption
+  ansible.builtin.import_tasks: setup_age.yaml
+  tags: [talos, age, encryption]
+
+- name: Deploy Talos configuration
+  ansible.builtin.import_tasks: deploy_talos.yaml
+  tags: [talos, deploy]
+
+- name: Bootstrap Talos cluster
+  ansible.builtin.import_tasks: bootstrap_cluster.yaml
+  tags: [talos, bootstrap]
+
+- name: Cleanup decrypted files
+  ansible.builtin.import_tasks: cleanup.yaml
+  tags: [talos, cleanup]

@@ -1,26 +1,223 @@
 ---
-# Areas
+# Auto-labeler configuration
+# Labels PRs based on changed files
+
+# =============================================================================
+# Area Labels - Infrastructure Categories (new structure)
+# =============================================================================
+area/networking:
+  - changed-files:
+      - any-glob-to-any-file: "infra/k8s/networking/**/*"
+
+area/storage:
+  - changed-files:
+      - any-glob-to-any-file: "infra/k8s/storage/**/*"
+
+area/security:
+  - changed-files:
+      - any-glob-to-any-file: "infra/k8s/security/**/*"
+
+area/monitoring:
+  - changed-files:
+      - any-glob-to-any-file: "infra/k8s/monitoring/**/*"
+
+area/cluster-management:
+  - changed-files:
+      - any-glob-to-any-file: "infra/k8s/cluster-management/**/*"
+
+area/operators:
+  - changed-files:
+      - any-glob-to-any-file: "infra/k8s/operators/**/*"
+
+# =============================================================================
+# Area Labels - Application Categories
+# =============================================================================
+area/media:
+  - changed-files:
+      - any-glob-to-any-file: "apps/media/**/*"
+
+area/data:
+  - changed-files:
+      - any-glob-to-any-file: "apps/data/**/*"
+
+area/auth:
+  - changed-files:
+      - any-glob-to-any-file: "apps/auth/**/*"
+
+# Generic apps (when not in specific category)
+area/apps:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "apps/**/*"
+          - "!apps/media/**/*"
+          - "!apps/data/**/*"
+          - "!apps/auth/**/*"
+
+# =============================================================================
+# Area Labels - Infrastructure Components
+# =============================================================================
+area/argocd:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "argocd/**/*"
+          - "**/application.yaml"
+
+area/ansible:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "infra/ansible/**/*"
+          - "**/*.yaml"  # Ansible playbooks
+        all-globs-to-all-files:
+          - "!**/.github/**/*"
+          - "!**/argocd/**/*"
+
+area/talos:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "infra/talos/**/*"
+          - "**/*talos*"
+
+area/terraform:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "infra/terraform/**/*"
+          - "terraform/**/*"
+          - "**/*.tf"
+          - "**/*.tfvars"
+
+area/docker:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "stacks/**/*"
+          - "**/docker-compose*.yaml"
+          - "**/Dockerfile"
+
+area/taskfile:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "Taskfile*.yaml"
+          - ".taskfiles/**/*"
+
+# =============================================================================
+# Area Labels - Documentation and GitHub
+# =============================================================================
 area/docs:
   - changed-files:
       - any-glob-to-any-file:
           - "docs/**/*"
-          - "README.md"
+          - "**/*.md"
+          - "!.github/**/*.md"
+
 area/github:
   - changed-files:
-      - any-glob-to-any-file: ".github/**/*"
-area/kubernetes:
+      - any-glob-to-any-file:
+          - ".github/**/*"
+          - "!.github/renovate/**/*"  # Exclude renovate (handled separately)
+
+# =============================================================================
+# Type Labels - Based on file patterns
+# =============================================================================
+type/docs:
   - changed-files:
-      - any-glob-to-any-file: "infra/helm/**/*"
-area/apps:
+      - any-glob-to-any-file:
+          - "**/*.md"
+          - "docs/**/*"
+
+type/ci:
   - changed-files:
-      - any-glob-to-any-file: "apps/**/*"
-area/docker:
+      - any-glob-to-any-file:
+          - ".github/workflows/**/*"
+          - ".github/actions/**/*"
+          - "**/.gitlab-ci.yml"
+
+# =============================================================================
+# Renovate Labels
+# =============================================================================
+renovate/container:
   - changed-files:
-      - any-glob-to-any-file: "stacks/**/*"
-area/terraform:
+      - any-glob-to-any-file:
+          - "**/values.yaml"  # Likely container updates
+          - "**/docker-compose*.yaml"
+    head-branch:
+      - "^renovate/.*"
+
+renovate/helm:
   - changed-files:
-      - any-glob-to-any-file: "infra/terraform/**/*"
-# Clusters
+      - any-glob-to-any-file:
+          - "**/application.yaml"
+          - "**/Chart.yaml"
+    head-branch:
+      - "^renovate/.*"
+
+renovate/github-action:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/workflows/**/*"
+    head-branch:
+      - "^renovate/.*"
+
+# =============================================================================
+# Size Labels - Based on lines changed
+# =============================================================================
+size/XS:
+  - changed-files:
+      - count: 0-9
+
+size/S:
+  - changed-files:
+      - count: 10-29
+
+size/M:
+  - changed-files:
+      - count: 30-99
+
+size/L:
+  - changed-files:
+      - count: 100-499
+
+size/XL:
+  - changed-files:
+      - count: 500-999
+
+size/XXL:
+  - changed-files:
+      - count: 1000+
+
+# =============================================================================
+# Special Labels
+# =============================================================================
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/*secret*"
+          - "**/*security*"
+          - "**/*auth*"
+          - "infra/k8s/security/**/*"
+    head-branch:
+      - ".*security.*"
+      - ".*cve.*"
+      - ".*vulnerability.*"
+
+dependencies:
+  - head-branch:
+      - "^renovate/.*"
+      - "^dependabot/.*"
+      - ".*deps.*"
+      - ".*dependencies.*"
+
+breaking-change:
+  - body-contains:
+      - "BREAKING CHANGE"
+      - "breaking change"
+  - title-contains:
+      - "!"  # Conventional commits breaking change indicator
+
+# =============================================================================
+# Cluster Labels
+# =============================================================================
 cluster/main:
   - changed-files:
-      - any-glob-to-any-file: "infra/**/*"
+      - any-glob-to-any-file:
+          - "infra/**/*"
+          - "apps/**/*"
+          - "argocd/**/*"

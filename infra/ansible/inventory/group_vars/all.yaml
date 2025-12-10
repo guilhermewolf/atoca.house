@@ -1,0 +1,35 @@
+---
+# Global variables for all hosts
+
+# Paths
+repo_root: "{{ lookup('env', 'PWD') }}"
+talos_dir: "{{ repo_root }}/infra/talos"
+k8s_infra_dir: "{{ repo_root }}/infra/k8s"
+argocd_dir: "{{ repo_root }}/argocd"
+age_config_dir: "{{ ansible_env.HOME }}/.config/age"
+talos_config_file: "{{ ansible_env.HOME }}/.talos/config"
+kubeconfig: "{{ ansible_env.HOME }}/kubeconfig"
+
+# Namespaces
+argocd_namespace: argocd
+sealed_secrets_namespace: sealed-secrets
+rook_ceph_namespace: rook-ceph
+onepassword_namespace: one-password
+
+# 1Password configuration
+op_vault: K8s
+op_age_key_path: "op://K8s/age-key/age.key"
+op_argocd_redis_id: "Private/atoca-house-k8s-argocd-redis/credential"
+op_token_id: "Private/atoca-house-k8s-onepassword-token/credential"
+op_credential_file_id: "Private/atoca-house-k8s-credentials-file/1password-credentials.json"
+
+# Timeouts and retries
+default_retries: 20
+default_delay: 30
+cilium_timeout: 300
+argocd_timeout: 300
+ceph_timeout: 1800  # 30 minutes for Ceph to become healthy
+
+# Feature flags
+enable_ceph_verification: true
+enable_detailed_output: true

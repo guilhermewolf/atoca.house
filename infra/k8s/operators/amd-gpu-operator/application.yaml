@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: amd-gpu-operator
+  namespace: argocd
+spec:
+  destination:
+    namespace: kube-amd-gpu
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - chart: gpu-operator-charts
+      repoURL: https://rocm.github.io/gpu-operator
+      targetRevision: v1.4.0
+      helm:
+        valueFiles:
+        - $values/infra/k8s/operators/amd-gpu-operator/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      path: infra/k8s/operators/amd-gpu-operator/
+      directory:
+        exclude: '{application.yaml,values.yaml}'
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

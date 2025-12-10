@@ -1,0 +1,38 @@
+---
+# Root app-of-apps that discovers all parent category apps
+# This is the single entry point for the entire GitOps system
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: app-of-apps
+  sources:
+    # Infrastructure categories
+    - repoURL: https://github.com/guilhermewolf/atoca.house
+      targetRevision: HEAD
+      path: infra/k8s
+      directory:
+        recurse: true
+        include: '*/application.yaml'
+        exclude: '**/*/application.yaml'  # Only direct subdirectories
+    # Application categories
+    - repoURL: https://github.com/guilhermewolf/atoca.house
+      targetRevision: HEAD
+      path: apps
+      directory:
+        recurse: true
+        include: '*/application.yaml'
+        exclude: '**/*/application.yaml'  # Only direct subdirectories
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,24 @@
+apiVersion: amd.com/v1alpha1
+kind: DeviceConfig
+metadata:
+  name: amd-gpu-config
+  namespace: kube-amd-gpu
+spec:
+  # Disable driver installation - Talos provides drivers via extensions
+  driver:
+    enable: false
+
+  # Enable device plugin to expose GPUs to Kubernetes
+  devicePlugin:
+    enable: true
+    # Resource name that pods will use to request GPUs
+    resourceName: "amd.com/gpu"
+
+  # Enable metrics exporter for GPU monitoring
+  metricsExporter:
+    enable: true
+
+  # Node selector to target specific nodes (optional)
+  # Uncomment and modify if you only want GPU operator on specific nodes
+  # nodeSelector:
+  #   kubernetes.io/hostname: worker-with-gpu

@@ -1,0 +1,41 @@
+---
+# Install and verify Sealed Secrets controller
+
+- name: Apply Sealed Secrets manifests
+  ansible.builtin.command:
+    cmd: >
+      kubectl kustomize --enable-helm {{ k8s_infra_dir }}/security/sealed-secrets
+      | kubectl apply -f -
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  register: sealed_secrets_apply
+  changed_when: "'configured' in sealed_secrets_apply.stdout or 'created' in sealed_secrets_apply.stdout"
+
+- name: Wait for Sealed Secrets controller to be available
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=available
+      deployment/sealed-secrets-controller
+      -n {{ sealed_secrets_namespace }}
+      --timeout=300s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 10
+  delay: "{{ default_delay }}"
+  register: sealed_secrets_ready
+  until: sealed_secrets_ready.rc == 0
+  changed_when: false
+
+- name: Verify Sealed Secrets controller is running
+  ansible.builtin.command:
+    cmd: >
+      kubectl --kubeconfig={{ kubeconfig }}
+      get pods -n {{ sealed_secrets_namespace }}
+      -l app.kubernetes.io/name=sealed-secrets
+  register: sealed_secrets_pods
+  changed_when: false
+
+- name: Display Sealed Secrets status
+  ansible.builtin.debug:
+    msg: "{{ sealed_secrets_pods.stdout_lines }}"
+  when: enable_detailed_output

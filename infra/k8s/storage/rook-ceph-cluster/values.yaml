@@ -1,0 +1,267 @@
+# Rook-Ceph Cluster Configuration
+# 3-node homelab with 1TB data disk per node
+# Optimized for 16GB RAM per node
+
+operatorNamespace: rook-ceph
+
+toolbox:
+  enabled: true
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+monitoring:
+  enabled: true
+  createPrometheusRules: true
+
+cephClusterSpec:
+  # Use all available nodes (3 control planes)
+  placement:
+    all:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+
+  # Ceph version
+  cephVersion:
+    image: quay.io/ceph/ceph:v18.2.4
+    allowUnsupported: false
+
+  # Data directory on host
+  dataDirHostPath: /var/lib/rook
+
+  # Skip upgrade checks for homelab
+  skipUpgradeChecks: false
+  continueUpgradeAfterChecksEvenIfNotHealthy: false
+
+  # Network configuration
+  network:
+    provider: host
+    connections:
+      encryption:
+        enabled: false
+      compression:
+        enabled: false
+
+  # Crash collector for debugging
+  crashCollector:
+    disable: false
+
+  # Log level
+  logCollector:
+    enabled: true
+    periodicity: daily
+    maxLogSize: 500M
+
+  # Dashboard
+  dashboard:
+    enabled: true
+    ssl: false  # Use ingress for SSL
+
+  # Monitoring
+  monitoring:
+    enabled: true
+    metricsDisabled: false
+
+  # Resource limits for Ceph daemons
+  resources:
+    mgr:
+      limits:
+        cpu: "1000m"
+        memory: "1Gi"
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+    mon:
+      limits:
+        cpu: "1000m"
+        memory: "2Gi"
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+    osd:
+      limits:
+        cpu: "2000m"
+        memory: "4Gi"
+      requests:
+        cpu: "1000m"
+        memory: "2Gi"
+    prepareosd:
+      limits:
+        cpu: "500m"
+        memory: "1Gi"
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+    mgr-sidecar:
+      limits:
+        cpu: "500m"
+        memory: "256Mi"
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+    crashcollector:
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+      requests:
+        cpu: "50m"
+        memory: "64Mi"
+    logcollector:
+      limits:
+        cpu: "100m"
+        memory: "128Mi"
+      requests:
+        cpu: "50m"
+        memory: "64Mi"
+    cleanup:
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+      requests:
+        cpu: "250m"
+        memory: "256Mi"
+
+  # Storage configuration
+  storage:
+    useAllNodes: true
+    useAllDevices: false  # Explicitly specify devices
+
+    # IMPORTANT: Adjust device name based on your actual disk
+    # Common names: /dev/sdb, /dev/nvme1n1, /dev/vdb
+    # Check with: lsblk or talosctl disks
+    deviceFilter: "^sd[b-z]"  # Match sdb, sdc, etc (1TB disks)
+
+    config:
+      # OSD configuration
+      osdsPerDevice: "1"
+      encryptedDevice: "false"
+
+      # Tune for SSDs if you have them
+      storeType: bluestore
+      databaseSizeMB: "1024"
+      walSizeMB: "512"
+
+  # Remove OSDs automatically when nodes are removed
+  removeOSDsIfOutAndSafeToRemove: false
+
+  # Priority classes
+  priorityClassNames:
+    mon: system-node-critical
+    osd: system-node-critical
+    mgr: system-cluster-critical
+
+  # Disable disruption budget for homelab (allows faster updates)
+  disruptionManagement:
+    managePodBudgets: true
+    osdMaintenanceTimeout: 30
+    pgHealthCheckTimeout: 0
+
+# Storage Classes
+cephBlockPools:
+  - name: ceph-blockpool
+    spec:
+      failureDomain: host  # Replicate across hosts
+      replicated:
+        size: 2  # 2 replicas (can lose 1 node)
+        requireSafeReplicaSize: true
+    storageClass:
+      enabled: true
+      name: ceph-block
+      isDefault: true  # Make this the default storage class
+      reclaimPolicy: Delete
+      allowVolumeExpansion: true
+      volumeBindingMode: Immediate
+      parameters:
+        imageFormat: "2"
+        imageFeatures: layering
+        csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/provisioner-secret-namespace: rook-ceph
+        csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/controller-expand-secret-namespace: rook-ceph
+        csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+        csi.storage.k8s.io/node-stage-secret-namespace: rook-ceph
+        csi.storage.k8s.io/fstype: ext4
+
+# CephFS for shared filesystem (RWX)
+cephFileSystems:
+  - name: ceph-filesystem
+    spec:
+      metadataPool:
+        replicated:
+          size: 2
+          requireSafeReplicaSize: true
+      dataPools:
+        - name: data0
+          failureDomain: host
+          replicated:
+            size: 2
+            requireSafeReplicaSize: true
+      metadataServer:
+        activeCount: 1
+        activeStandby: true
+        resources:
+          limits:
+            cpu: "2000m"
+            memory: "4Gi"
+          requests:
+            cpu: "1000m"
+            memory: "2Gi"
+        priorityClassName: system-cluster-critical
+    storageClass:
+      enabled: true
+      name: ceph-filesystem
+      isDefault: false
+      reclaimPolicy: Delete
+      allowVolumeExpansion: true
+      volumeBindingMode: Immediate
+      parameters:
+        csi.storage.k8s.io/provisioner-secret-name: rook-csi-cephfs-provisioner
+        csi.storage.k8s.io/provisioner-secret-namespace: rook-ceph
+        csi.storage.k8s.io/controller-expand-secret-name: rook-csi-cephfs-provisioner
+        csi.storage.k8s.io/controller-expand-secret-namespace: rook-ceph
+        csi.storage.k8s.io/node-stage-secret-name: rook-csi-cephfs-node
+        csi.storage.k8s.io/node-stage-secret-namespace: rook-ceph
+        csi.storage.k8s.io/fstype: ext4
+
+# Object Storage (S3-compatible)
+cephObjectStores:
+  - name: ceph-objectstore
+    spec:
+      metadataPool:
+        failureDomain: host
+        replicated:
+          size: 2
+          requireSafeReplicaSize: true
+      dataPool:
+        failureDomain: host
+        replicated:
+          size: 2
+          requireSafeReplicaSize: true
+      preservePoolsOnDelete: false
+      gateway:
+        instances: 2  # 2 RGW instances for HA
+        port: 80
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+        priorityClassName: system-cluster-critical
+    storageClass:
+      enabled: true
+      name: ceph-bucket
+      reclaimPolicy: Delete
+      volumeBindingMode: Immediate
+      parameters:
+        region: us-east-1
+    ingress:
+      enabled: false  # Configure via Envoy Gateway separately

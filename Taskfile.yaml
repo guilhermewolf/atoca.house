@@ -11,6 +11,7 @@ env:
   TALOSCONFIG: '~/talos/talosconfig'
 
 includes:
+  cluster: .taskfiles/cluster
   kubernetes: .taskfiles/kubernetes
   workstation: .taskfiles/workstation
 

@@ -1,0 +1,68 @@
+---
+# Install ArgoCD
+
+- name: Apply ArgoCD installation manifests
+  ansible.builtin.command:
+    cmd: >
+      kubectl kustomize --enable-helm {{ argocd_dir }}/install
+      | kubectl apply -f -
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  register: argocd_apply
+  changed_when: "'configured' in argocd_apply.stdout or 'created' in argocd_apply.stdout"
+
+- name: Wait for ArgoCD server to be available
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=available
+      deployment/argocd-server
+      -n {{ argocd_namespace }}
+      --timeout={{ argocd_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 10
+  delay: "{{ default_delay }}"
+  register: argocd_server_ready
+  until: argocd_server_ready.rc == 0
+  changed_when: false
+
+- name: Wait for ArgoCD repo server to be available
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=available
+      deployment/argocd-repo-server
+      -n {{ argocd_namespace }}
+      --timeout={{ argocd_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 10
+  delay: "{{ default_delay }}"
+  register: argocd_repo_ready
+  until: argocd_repo_ready.rc == 0
+  changed_when: false
+
+- name: Wait for ArgoCD application controller to be available
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=available
+      deployment/argocd-application-controller
+      -n {{ argocd_namespace }}
+      --timeout={{ argocd_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 10
+  delay: "{{ default_delay }}"
+  register: argocd_controller_ready
+  until: argocd_controller_ready.rc == 0
+  changed_when: false
+
+- name: Get ArgoCD pods status
+  ansible.builtin.command:
+    cmd: "kubectl --kubeconfig={{ kubeconfig }} get pods -n {{ argocd_namespace }}"
+  register: argocd_pods
+  changed_when: false
+
+- name: Display ArgoCD status
+  ansible.builtin.debug:
+    msg: "{{ argocd_pods.stdout_lines }}"
+  when: enable_detailed_output

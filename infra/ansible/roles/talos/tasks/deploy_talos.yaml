@@ -1,0 +1,30 @@
+---
+# Deploy Talos configurations to all nodes
+
+- name: Decrypt Talos controlplane configurations
+  ansible.builtin.shell:
+    cmd: >
+      sops --config {{ repo_root }}/.sops.yaml
+      -d {{ talos_dir }}/controlplane-{{ item.name }}.enc.yaml
+      > {{ talos_dir }}/controlplane-{{ item.name }}.yaml
+    creates: "{{ talos_dir }}/controlplane-{{ item.name }}.yaml"
+  environment:
+    SOPS_AGE_KEY_FILE: "{{ age_config_dir }}/age.key"
+  loop: "{{ control_plane_nodes }}"
+  no_log: true
+
+- name: Apply Talos configurations to all nodes
+  ansible.builtin.command:
+    cmd: >
+      talosctl apply-config
+      --insecure
+      --nodes {{ item.ip }}
+      --file {{ talos_dir }}/controlplane-{{ item.name }}.yaml
+  loop: "{{ control_plane_nodes }}"
+  register: talos_apply
+  changed_when: talos_apply.rc == 0
+
+- name: Wait for Talos to initialize
+  ansible.builtin.pause:
+    seconds: 30
+    prompt: "Waiting for Talos to initialize on all nodes..."

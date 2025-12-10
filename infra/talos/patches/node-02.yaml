@@ -1,0 +1,14 @@
+---
+# Node-specific configuration for node-02 (192.168.178.202)
+
+machine:
+  network:
+    hostname: node-02
+    interfaces:
+      - interface: eth0  # Adjust to your actual interface name (check with: talosctl get links)
+        dhcp: false
+        addresses:
+          - 192.168.178.202/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 192.168.178.1

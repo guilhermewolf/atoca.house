@@ -1,0 +1,34 @@
+---
+# Setup Age encryption for SOPS
+
+- name: Create age config directory
+  ansible.builtin.file:
+    path: "{{ age_config_dir }}"
+    state: directory
+    mode: '0700'
+
+- name: Check if age key already exists
+  ansible.builtin.stat:
+    path: "{{ age_config_dir }}/age.key"
+  register: age_key_stat
+
+- name: Read age key from 1Password
+  ansible.builtin.shell:
+    cmd: "op read {{ op_age_key_path }}"
+  register: age_key_content
+  when: not age_key_stat.stat.exists
+  no_log: true
+
+- name: Store age key in config directory
+  ansible.builtin.copy:
+    content: "{{ age_key_content.stdout }}"
+    dest: "{{ age_config_dir }}/age.key"
+    mode: '0600'
+  when: not age_key_stat.stat.exists
+  no_log: true
+
+- name: Verify age key exists
+  ansible.builtin.stat:
+    path: "{{ age_config_dir }}/age.key"
+  register: age_key_verify
+  failed_when: not age_key_verify.stat.exists

@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: spegel
+  namespace: argocd
+spec:
+  destination:
+    namespace: spegel
+    server: https://kubernetes.default.svc
+  project: infra
+  sources:
+    - chart: spegel
+      repoURL: ghcr.io/spegel-org/helm-charts
+      targetRevision: 0.5.1
+      helm:
+        valueFiles:
+        - $values/infra/k8s/cluster-management/spegel/values.yaml
+    - repoURL: 'https://github.com/guilhermewolf/atoca.house'
+      targetRevision: HEAD
+      ref: values
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/enforce: privileged

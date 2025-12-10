@@ -1,0 +1,318 @@
+---
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+vars:
+  TALOS_DIR: '{{.ROOT_DIR}}/infra/talos'
+  ANSIBLE_DIR: '{{.ROOT_DIR}}/infra/ansible'
+  AGE_KEY_FILE: '~/.config/age/age.key'
+  TALOSCONFIG: '~/.talos/config'
+
+tasks:
+
+  bootstrap:
+    desc: Bootstrap the entire Kubernetes cluster from scratch
+    summary: |
+      Runs the Ansible bootstrap playbook to:
+      - Setup age encryption
+      - Deploy Talos configs to all nodes
+      - Bootstrap control planes
+      - Install Cilium, Sealed Secrets, ArgoCD
+      - Deploy Rook-Ceph storage
+
+      Duration: ~30-45 minutes
+    cmds:
+      - cmd: echo "Starting cluster bootstrap..."
+        silent: true
+      - ansible-playbook {{.ANSIBLE_DIR}}/playbooks/bootstrap.yaml
+    preconditions:
+      - which ansible
+      - which op  # 1Password CLI
+      - which kubectl
+      - which talosctl
+      - test -f {{.ANSIBLE_DIR}}/playbooks/bootstrap.yaml
+
+  generate-talos-configs:
+    desc: Generate Talos configurations for all nodes
+    summary: |
+      Generates encrypted Talos configs for the 3-node cluster:
+      - Decrypts age key from 1Password
+      - Generates configs with patches
+      - Encrypts with SOPS
+
+      Prerequisites:
+      - 1Password CLI authenticated
+      - Factory schematic ID configured in patches
+    dir: '{{.TALOS_DIR}}'
+    cmds:
+      - cmd: echo "Generating Talos configurations..."
+        silent: true
+      - chmod +x generate-configs.sh
+      - ./generate-configs.sh
+    preconditions:
+      - which op
+      - which talosctl
+      - which sops
+      - which yq
+      - test -f {{.TALOS_DIR}}/generate-configs.sh
+      - test -f {{.TALOS_DIR}}/patches/controlplane-common.yaml
+
+  setup-age-key:
+    desc: Setup age encryption key from 1Password
+    cmds:
+      - mkdir -p ~/.config/age
+      - chmod 700 ~/.config/age
+      - op read op://K8s/age-key/age.key > ~/.config/age/age.key
+      - chmod 600 ~/.config/age/age.key
+      - cmd: echo "Age key configured at ~/.config/age/age.key"
+        silent: true
+    preconditions:
+      - which op
+      - sh: 'op whoami'
+        msg: "1Password CLI not authenticated. Run: eval $(op signin)"
+
+  verify-cluster:
+    desc: Verify cluster health after bootstrap
+    summary: |
+      Checks:
+      - All nodes are Ready
+      - Ceph cluster is healthy
+      - ArgoCD applications are syncing
+      - Storage classes available
+    cmds:
+      - cmd: echo "=== Checking Nodes ==="
+        silent: true
+      - kubectl get nodes -o wide
+      - cmd: echo "\n=== Checking Ceph Status ==="
+        silent: true
+      - kubectl -n rook-ceph exec deploy/rook-ceph-tools -- ceph status
+      - cmd: echo "\n=== Checking Storage Classes ==="
+        silent: true
+      - kubectl get storageclass
+      - cmd: echo "\n=== Checking ArgoCD Applications ==="
+        silent: true
+      - kubectl get applications -n argocd
+      - cmd: echo "\n=== Checking Pods ==="
+        silent: true
+      - kubectl get pods -A | grep -v "Running\|Completed" || echo "All pods running!"
+    preconditions:
+      - which kubectl
+      - sh: 'kubectl cluster-info'
+        msg: "kubectl not configured or cluster not accessible"
+
+  seal-secrets:
+    desc: Seal 1Password secrets for Kubernetes
+    summary: |
+      Retrieves secrets from 1Password and seals them with kubeseal:
+      - Retrieves 1Password token and credentials
+      - Creates Kubernetes secret manifests
+      - Seals with kubeseal
+      - Writes to infra/k8s/security/one-password/
+
+      Duration: ~1-2 minutes
+
+      After completion, manually commit:
+        git add infra/k8s/security/one-password/*.yaml
+        git commit -m "Update 1Password sealed secrets"
+        git push
+    cmds:
+      - cmd: echo "Sealing 1Password secrets..."
+        silent: true
+      - ansible-playbook {{.ANSIBLE_DIR}}/playbooks/seal-secrets.yaml
+    preconditions:
+      - which ansible
+      - which op
+      - which kubectl
+      - which kubeseal
+      - test -f {{.ANSIBLE_DIR}}/playbooks/seal-secrets.yaml
+      - sh: 'op whoami'
+        msg: "1Password CLI not authenticated. Run: eval $(op signin)"
+
+  upgrade-talos:
+    desc: Upgrade Talos OS on all nodes
+    summary: |
+      Sequentially upgrades Talos on all 3 control plane nodes
+      Maintains cluster availability during upgrade
+
+      Set factory schematic ID first:
+        export TALOS_FACTORY_SCHEMATIC_ID="your-schematic-id"
+
+      Generate at: https://factory.talos.dev/
+
+      Duration: ~15-30 minutes
+    cmds:
+      - cmd: |
+          if [ -z "$TALOS_FACTORY_SCHEMATIC_ID" ]; then
+            echo "Error: TALOS_FACTORY_SCHEMATIC_ID not set!"
+            echo "Export it first: export TALOS_FACTORY_SCHEMATIC_ID=\"your-id\""
+            exit 1
+          fi
+        silent: false
+      - ansible-playbook {{.ANSIBLE_DIR}}/playbooks/update-talos.yaml
+    preconditions:
+      - which ansible
+      - which talosctl
+      - test -f {{.ANSIBLE_DIR}}/playbooks/update-talos.yaml
+
+  get-argocd-password:
+    desc: Get ArgoCD admin password
+    cmds:
+      - kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+    preconditions:
+      - which kubectl
+      - sh: 'kubectl get namespace argocd'
+        msg: "ArgoCD namespace not found"
+
+  get-ceph-password:
+    desc: Get Ceph dashboard password
+    cmds:
+      - kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 -d && echo
+    preconditions:
+      - which kubectl
+      - sh: 'kubectl get namespace rook-ceph'
+        msg: "Rook-ceph namespace not found"
+
+  port-forward-argocd:
+    desc: Port forward ArgoCD server to localhost:8080
+    cmds:
+      - cmd: echo "ArgoCD UI will be available at https://localhost:8080"
+        silent: true
+      - cmd: echo "Username: admin"
+        silent: true
+      - cmd: echo "Password: $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)"
+        silent: true
+      - kubectl port-forward svc/argocd-server -n argocd 8080:443
+    preconditions:
+      - which kubectl
+      - sh: 'kubectl get svc argocd-server -n argocd'
+        msg: "ArgoCD server not found"
+
+  port-forward-ceph:
+    desc: Port forward Ceph dashboard to localhost:7000
+    cmds:
+      - cmd: echo "Ceph dashboard will be available at http://localhost:7000"
+        silent: true
+      - cmd: echo "Username: admin"
+        silent: true
+      - cmd: echo "Password: $(kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 -d)"
+        silent: true
+      - kubectl port-forward -n rook-ceph svc/rook-ceph-mgr-dashboard 7000:7000
+    preconditions:
+      - which kubectl
+      - sh: 'kubectl get svc rook-ceph-mgr-dashboard -n rook-ceph'
+        msg: "Ceph dashboard service not found"
+
+  ceph-status:
+    desc: Check Ceph cluster status
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph status
+    preconditions:
+      - which kubectl
+      - sh: 'kubectl get deployment rook-ceph-tools -n rook-ceph'
+        msg: "Ceph tools not deployed"
+
+  ceph-osd-tree:
+    desc: Show Ceph OSD tree (storage distribution)
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph osd tree
+    preconditions:
+      - which kubectl
+      - sh: 'kubectl get deployment rook-ceph-tools -n rook-ceph'
+        msg: "Ceph tools not deployed"
+
+  ceph-df:
+    desc: Show Ceph storage usage
+    cmds:
+      - kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph df
+    preconditions:
+      - which kubectl
+      - sh: 'kubectl get deployment rook-ceph-tools -n rook-ceph'
+        msg: "Ceph tools not deployed"
+
+  talos-health:
+    desc: Check Talos cluster health [NODE=192.168.178.201]
+    cmds:
+      - talosctl -n {{.NODE}} health
+    vars:
+      NODE: '{{.NODE | default "192.168.178.201"}}'
+    preconditions:
+      - which talosctl
+      - test -f ~/.talos/config
+
+  talos-dashboard:
+    desc: Open Talos dashboard [NODE=192.168.178.201]
+    cmds:
+      - talosctl -n {{.NODE}} dashboard
+    vars:
+      NODE: '{{.NODE | default "192.168.178.201"}}'
+    preconditions:
+      - which talosctl
+      - test -f ~/.talos/config
+
+  sync-argocd-apps:
+    desc: Force sync all ArgoCD applications
+    cmds:
+      - cmd: echo "Syncing all ArgoCD applications..."
+        silent: true
+      - kubectl get applications -n argocd -o name | xargs -I {} kubectl -n argocd patch {} --type merge -p '{"metadata":{"annotations":{"argocd.argoproj.io/refresh":"hard"}}}'
+    preconditions:
+      - which kubectl
+      - sh: 'kubectl get namespace argocd'
+        msg: "ArgoCD namespace not found"
+
+  backup-etcd:
+    desc: Backup etcd snapshot [NODE=192.168.178.201]
+    summary: |
+      Creates an etcd snapshot for disaster recovery
+      Saves to ./etcd-snapshot-$(date).db
+    cmds:
+      - talosctl -n {{.NODE}} etcd snapshot {{.SNAPSHOT_FILE}}
+      - cmd: echo "Snapshot saved to {{.SNAPSHOT_FILE}}"
+        silent: true
+    vars:
+      NODE: '{{.NODE | default "192.168.178.201"}}'
+      SNAPSHOT_FILE: 'etcd-snapshot-{{now | date "2006-01-02-15-04-05"}}.db'
+    preconditions:
+      - which talosctl
+      - test -f ~/.talos/config
+
+  list-pvcs:
+    desc: List all PersistentVolumeClaims across namespaces
+    cmds:
+      - kubectl get pvc -A
+    preconditions:
+      - which kubectl
+
+  list-storageclasses:
+    desc: List all storage classes
+    cmds:
+      - kubectl get storageclass
+    preconditions:
+      - which kubectl
+
+  argocd-apps:
+    desc: List all ArgoCD applications with status
+    cmds:
+      - kubectl get applications -n argocd -o wide
+    preconditions:
+      - which kubectl
+      - sh: 'kubectl get namespace argocd'
+        msg: "ArgoCD namespace not found"
+
+  argocd-apps-unhealthy:
+    desc: Show only unhealthy ArgoCD applications
+    cmds:
+      - kubectl get applications -n argocd -o json | jq -r '.items[] | select(.status.health.status != "Healthy" or .status.sync.status != "Synced") | "\(.metadata.name)\t\(.status.health.status // "Unknown")\t\(.status.sync.status // "Unknown")"'
+    preconditions:
+      - which kubectl
+      - which jq
+      - sh: 'kubectl get namespace argocd'
+        msg: "ArgoCD namespace not found"
+
+  install-ansible-deps:
+    desc: Install Ansible Galaxy dependencies
+    cmds:
+      - ansible-galaxy install -r {{.ANSIBLE_DIR}}/requirements.yaml
+    preconditions:
+      - which ansible-galaxy
+      - test -f {{.ANSIBLE_DIR}}/requirements.yaml

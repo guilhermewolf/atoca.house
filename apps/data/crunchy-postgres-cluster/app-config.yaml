@@ -1,0 +1,6 @@
+---
+# Application configuration for crunchy-postgres-cluster
+# Note: This app uses raw Kubernetes manifests, not a Helm chart
+app:
+  name: crunchy-postgres-cluster
+  namespace: crunchy-postgres-cluster

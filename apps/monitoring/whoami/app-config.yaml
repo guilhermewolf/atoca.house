@@ -1,0 +1,8 @@
+---
+# Application configuration for whoami
+app:
+  name: whoami
+  namespace: whoami
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.5.0

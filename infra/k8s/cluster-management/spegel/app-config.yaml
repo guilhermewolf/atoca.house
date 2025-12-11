@@ -1,0 +1,9 @@
+app:
+  name: spegel
+  namespace: spegel
+  chart: spegel
+  chartRepo: ghcr.io/spegel-org/helm-charts
+  chartVersion: 0.5.1
+  hasValues: true
+  podSecurityPrivileged: true
+  disableAutoSync: true

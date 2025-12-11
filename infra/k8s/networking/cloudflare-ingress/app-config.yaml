@@ -1,0 +1,8 @@
+app:
+  name: cloudflare-ingress
+  namespace: cloudflare-ingress
+  chart: cloudflare-tunnel-ingress-controller
+  chartRepo: https://helm.strrl.dev
+  chartVersion: 0.0.21
+  hasValues: true
+  disableAutoSync: true

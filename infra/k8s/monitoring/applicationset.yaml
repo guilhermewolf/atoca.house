@@ -1,0 +1,81 @@
+---
+# ApplicationSet for monitoring infrastructure
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infra-monitoring
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+
+  generators:
+    - git:
+        repoURL: https://github.com/guilhermewolf/atoca.house
+        revision: HEAD
+        files:
+          - path: "infra/k8s/monitoring/*/app-config.yaml"
+
+  template:
+    metadata:
+      name: '{{.app.name}}'
+      namespace: argocd
+    spec:
+      project: infra
+      destination:
+        namespace: '{{.app.namespace}}'
+        server: https://kubernetes.default.svc
+
+      sources:
+        - chart: '{{.app.chart}}'
+          repoURL: '{{.app.chartRepo}}'
+          targetRevision: '{{.app.chartVersion}}'
+          helm:
+            valueFiles:
+              - $values/infra/k8s/monitoring/{{.app.name}}/values.yaml
+
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          ref: values
+
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          path: 'infra/k8s/monitoring/{{.app.name}}'
+          directory:
+            exclude: '{application.yaml,values.yaml,app-config.yaml}'
+
+      syncPolicy:
+        {{- if not .app.disableAutoSync }}
+        automated:
+          selfHeal: true
+          prune: {{.app.pruneEnabled | default true}}
+        {{- end }}
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+        {{- if or .app.volsyncPrivileged .app.podSecurityPrivileged }}
+        managedNamespaceMetadata:
+          {{- if or .app.volsyncPrivileged .app.podSecurityPrivileged }}
+          annotations:
+            {{- if .app.volsyncPrivileged }}
+            volsync.backube/privileged-movers: "true"
+            {{- end }}
+          {{- if .app.podSecurityPrivileged }}
+          labels:
+            pod-security.kubernetes.io/enforce: privileged
+            pod-security.kubernetes.io/enforce-version: latest
+          {{- end }}
+          {{- end }}
+        {{- end }}
+
+      {{- if .app.ignoreWebhooks }}
+      ignoreDifferences:
+        - group: admissionregistration.k8s.io
+          kind: MutatingWebhookConfiguration
+          jsonPointers:
+            - /webhooks
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          jsonPointers:
+            - /webhooks
+      {{- end }}

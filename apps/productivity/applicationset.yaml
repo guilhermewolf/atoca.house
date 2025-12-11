@@ -1,0 +1,63 @@
+---
+# ApplicationSet for productivity applications
+# Discovers apps from app-config.yaml files in subdirectories
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps-productivity
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+
+  generators:
+    - git:
+        repoURL: https://github.com/guilhermewolf/atoca.house
+        revision: HEAD
+        files:
+          - path: "apps/productivity/*/app-config.yaml"
+
+  template:
+    metadata:
+      name: '{{.app.name}}'
+      namespace: argocd
+    spec:
+      project: applications
+      destination:
+        namespace: '{{.app.namespace}}'
+        server: https://kubernetes.default.svc
+
+      sources:
+        # Helm chart source
+        - chart: '{{.app.chart}}'
+          repoURL: '{{.app.chartRepo}}'
+          targetRevision: '{{.app.chartVersion}}'
+          helm:
+            releaseName: '{{.app.name}}'
+            valueFiles:
+              - $values/apps/productivity/{{.app.name}}/values.yaml
+
+        # Values repository reference
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          ref: values
+
+        # Additional resources (secrets, configs, etc.)
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          path: 'apps/productivity/{{.app.name}}'
+          directory:
+            exclude: '{application.yaml,values.yaml,app-config.yaml}'
+
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+        {{- if .app.volsyncPrivileged }}
+        managedNamespaceMetadata:
+          annotations:
+            volsync.backube/privileged-movers: "true"
+        {{- end }}

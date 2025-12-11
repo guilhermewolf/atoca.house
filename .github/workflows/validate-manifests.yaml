@@ -19,7 +19,7 @@ permissions:
 jobs:
   validate-yaml:
     name: Validate YAML Syntax
-    runs-on: arc-runners
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'arc-runners' }}
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -34,7 +34,7 @@ jobs:
 
   validate-kubernetes:
     name: Validate Kubernetes Manifests
-    runs-on: arc-runners
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'arc-runners' }}
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -51,7 +51,7 @@ jobs:
 
   validate-argocd:
     name: Validate ArgoCD Applications
-    runs-on: arc-runners
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'arc-runners' }}
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -72,7 +72,7 @@ jobs:
 
   comment-results:
     name: Comment Results
-    runs-on: arc-runners
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'arc-runners' }}
     needs: [validate-yaml, validate-kubernetes, validate-argocd]
     if: github.event_name == 'pull_request'
     permissions:

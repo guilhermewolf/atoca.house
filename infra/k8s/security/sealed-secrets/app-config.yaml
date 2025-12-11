@@ -1,0 +1,7 @@
+app:
+  name: sealed-secrets
+  namespace: sealed-secrets
+  chart: sealed-secrets
+  chartRepo: https://bitnami-labs.github.io/sealed-secrets
+  chartVersion: 2.17.9
+  pruneEnabled: false

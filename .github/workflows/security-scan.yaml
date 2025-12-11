@@ -17,7 +17,7 @@ permissions:
 jobs:
   trivy-scan:
     name: Trivy Security Scan
-    runs-on: arc-runners
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'arc-runners' }}
     steps:
       - name: Checkout
         uses: actions/checkout
@@ -40,7 +40,7 @@ jobs:
 
   kubescape-scan:
     name: Kubescape Security Scan
-    runs-on: arc-runners
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'arc-runners' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -62,7 +62,7 @@ jobs:
 
   secret-scan:
     name: Secret Scanning
-    runs-on: arc-runners
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'arc-runners' }}
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6

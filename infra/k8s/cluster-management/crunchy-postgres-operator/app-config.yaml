@@ -1,0 +1,8 @@
+app:
+  name: crunchy-postgres-operator
+  namespace: crunchy-postgres-operator
+  chart: pgo
+  chartRepo: registry.developers.crunchydata.com/crunchydata
+  chartVersion: 5.8.5
+  hasValues: false
+  disableAutoSync: true

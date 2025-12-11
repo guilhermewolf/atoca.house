@@ -17,7 +17,7 @@ spec:
       path: infra/k8s
       directory:
         recurse: true
-        include: '*/application.yaml'
+        include: '{*/application.yaml,*/applicationset.yaml}'
         exclude: '**/*/application.yaml'  # Only direct subdirectories
     # Application categories
     - repoURL: https://github.com/guilhermewolf/atoca.house
@@ -25,7 +25,7 @@ spec:
       path: apps
       directory:
         recurse: true
-        include: '*/application.yaml'
+        include: '{*/application.yaml,*/applicationset.yaml}'
         exclude: '**/*/application.yaml'  # Only direct subdirectories
   destination:
     namespace: argocd

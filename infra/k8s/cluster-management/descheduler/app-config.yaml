@@ -1,0 +1,8 @@
+app:
+  name: descheduler
+  namespace: descheduler
+  chart: descheduler
+  chartRepo: https://kubernetes-sigs.github.io/descheduler/
+  chartVersion: 0.34.0
+  hasValues: true
+  disableAutoSync: true

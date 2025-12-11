@@ -1,0 +1,8 @@
+app:
+  name: envoy-gateway
+  namespace: envoy-gateway-system
+  chart: gateway-helm
+  chartRepo: registry-1.docker.io/envoyproxy
+  chartVersion: 1.6.1
+  hasValues: true
+  disableAutoSync: true

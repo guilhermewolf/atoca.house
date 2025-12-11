@@ -1,0 +1,9 @@
+---
+# Application configuration for Radarr
+app:
+  name: radarr
+  namespace: radarr
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.5.0
+  volsyncPrivileged: false

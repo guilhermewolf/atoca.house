@@ -164,7 +164,7 @@
   "yaml.schemas": {
     "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yaml",
     "https://json.schemastore.org/kustomization.json": "kustomization.yaml",
-    "https://raw.githubusercontent.com/argoproj/argo-cd/master/manifests/crds/application-crd.yaml": "**/application.yaml",
+    "https://raw.githubusercontent.com/argoproj/argo-cd/master/manifests/crds/application-crd.yaml": "argocd/**/*.yaml",
     "https://taskfile.dev/schema.json": [
       "Taskfile.yaml",
       "Taskfile.*.yaml",

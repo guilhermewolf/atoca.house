@@ -1,0 +1,9 @@
+---
+# Application configuration for Grafana Operator
+app:
+  name: grafana-operator
+  namespace: grafana
+  chart: grafana-operator
+  chartRepo: ghcr.io/grafana/helm-charts
+  chartVersion: v5.20.0
+  pruneEnabled: false  # Grafana operator should not auto-prune

@@ -11,8 +11,15 @@ template:
   spec:
     containers:
       - name: runner
-        image: ghcr.io/guilhermewolf/arm-actions-runner/arm-actions-runner:2.329.0@sha256:85902edca0cc2f62a5f326469c7bd2ad05b056f200678720c61cf05ec8b7a16d
+        image: ghcr.io/home-operations/actions-runner:2.330.0@sha256:92a45e47f4b349f4da2307ebaaea5443cc86d1ce625d37acf2c61b3b09192e47
         command: ["/home/runner/run.sh"]
+        env:
+          - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+            value: "false"
+          - name: NODE
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
         envFrom:
           - secretRef:
               name: postgres-pguser-terraform

@@ -11,7 +11,7 @@ spec:
   sources:
     - chart: spegel
       repoURL: ghcr.io/spegel-org/helm-charts
-      targetRevision: 0.5.1
+      targetRevision: 0.6.0
       helm:
         valueFiles:
         - $values/infra/helm/spegel/values.yaml

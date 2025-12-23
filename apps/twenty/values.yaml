@@ -7,7 +7,7 @@ controllers:
       server:
         image:
           repository: docker.io/twentycrm/twenty
-          tag: latest
+          tag: latest@sha256:4e2bea80ec3f2570622c20340019bd3bf6fae9305e261738b4fc87bdfaee87b5
           pullPolicy: IfNotPresent
         env:
           NODE_PORT: &port 3000
@@ -52,7 +52,7 @@ controllers:
       worker:
         image:
           repository: docker.io/twentycrm/twenty
-          tag: latest
+          tag: latest@sha256:4e2bea80ec3f2570622c20340019bd3bf6fae9305e261738b4fc87bdfaee87b5
           pullPolicy: IfNotPresent
         command:
           - yarn

@@ -16,7 +16,9 @@
     ":disableRateLimiting",
     "github>guilhermewolf/atoca.house//.github/renovate/grafanaDashboards.json"
   ],
-  "labels": ["renovate"],
+  "labels": [
+    "renovate"
+  ],
   "assigneesFromCodeOwners": true,
   "reviewersFromCodeOwners": true,
   "commitMessagePrefix": "chore(deps):",
@@ -37,117 +39,175 @@
   ],
   "vulnerabilityAlerts": {
     "enabled": true,
-    "labels": ["security"],
-    "assignees": ["@guilhermewolf"]
+    "labels": [
+      "security"
+    ],
+    "assignees": [
+      "@guilhermewolf"
+    ]
   },
   "packageRules": [
     {
       "description": "Group Kubernetes infrastructure updates",
       "groupName": "kubernetes-infrastructure",
-      "matchDatasources": ["helm"],
-      "matchPackagePatterns": [
-        "cilium",
-        "cert-manager",
-        "sealed-secrets",
-        "external-secrets",
-        "reloader",
-        "metrics-server"
+      "matchDatasources": [
+        "helm"
       ],
-      "schedule": ["every weekend"]
+      "schedule": [
+        "every weekend"
+      ],
+      "matchPackageNames": [
+        "/cilium/",
+        "/cert-manager/",
+        "/sealed-secrets/",
+        "/external-secrets/",
+        "/reloader/",
+        "/metrics-server/"
+      ]
     },
     {
       "description": "Group Rook-Ceph updates (critical storage)",
       "groupName": "rook-ceph",
-      "matchDatasources": ["helm", "docker"],
-      "matchPackagePatterns": ["rook", "ceph"],
+      "matchDatasources": [
+        "helm",
+        "docker"
+      ],
       "automerge": false,
-      "labels": ["renovate/helm", "area/storage", "critical"],
-      "reviewers": ["@guilhermewolf"]
+      "labels": [
+        "renovate/helm",
+        "area/storage",
+        "critical"
+      ],
+      "reviewers": [
+        "@guilhermewolf"
+      ],
+      "matchPackageNames": [
+        "/rook/",
+        "/ceph/"
+      ]
     },
     {
       "description": "Group monitoring stack updates",
       "groupName": "monitoring-stack",
-      "matchDatasources": ["helm", "docker"],
-      "matchPackagePatterns": [
-        "kube-prometheus-stack",
-        "grafana",
-        "prometheus",
-        "alertmanager"
+      "matchDatasources": [
+        "helm",
+        "docker"
+      ],
+      "matchPackageNames": [
+        "/kube-prometheus-stack/",
+        "/grafana/",
+        "/prometheus/",
+        "/alertmanager/"
       ]
     },
     {
       "description": "Group media app updates",
       "groupName": "media-apps",
-      "matchDatasources": ["docker"],
-      "matchFileNames": ["apps/media/**"],
-      "schedule": ["every weekend"]
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchFileNames": [
+        "apps/media/**"
+      ],
+      "schedule": [
+        "every weekend"
+      ]
     },
     {
       "description": "Auto-merge OCI Charts (minor/patch)",
-      "matchDatasources": ["docker"],
-      "matchPackagePatterns": [
-        "/kube-prometheus-stack/",
-        "/grafana/"
+      "matchDatasources": [
+        "docker"
       ],
       "automerge": true,
       "automergeType": "pr",
-      "matchUpdateTypes": ["minor", "patch"],
-      "ignoreTests": false
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "ignoreTests": false,
+      "matchPackageNames": [
+        "//kube-prometheus-stack//",
+        "//grafana//"
+      ]
     },
     {
       "description": "Auto-merge trusted GitHub Actions",
-      "matchManagers": ["github-actions"],
-      "matchPackagePatterns": [
-        "^actions/",
-        "^renovatebot/"
+      "matchManagers": [
+        "github-actions"
       ],
       "automerge": true,
       "automergeType": "branch",
-      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
       "minimumReleaseAge": "1 minute",
-      "ignoreTests": true
+      "ignoreTests": true,
+      "matchPackageNames": [
+        "/^actions//",
+        "/^renovatebot//"
+      ]
     },
     {
       "description": "Require manual approval for major updates",
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "automerge": false,
-      "labels": ["major-update"],
-      "reviewers": ["@guilhermewolf"]
+      "labels": [
+        "major-update"
+      ],
+      "reviewers": [
+        "@guilhermewolf"
+      ]
     },
     {
       "description": "Pin Talos versions (don't auto-update)",
-      "matchPackagePatterns": ["talos", "talosctl"],
-      "enabled": false
+      "enabled": false,
+      "matchPackageNames": [
+        "/talos/",
+        "/talosctl/"
+      ]
     },
     {
       "description": "Docker Compose updates",
-      "matchManagers": ["docker-compose"],
-      "matchFileNames": ["stacks/**"],
-      "labels": ["renovate/container", "area/docker"],
-      "schedule": ["every weekend"]
+      "matchManagers": [
+        "docker-compose"
+      ],
+      "matchFileNames": [
+        "stacks/**"
+      ],
+      "labels": [
+        "renovate/container",
+        "area/docker"
+      ],
+      "schedule": [
+        "every weekend"
+      ]
     }
   ],
   "docker-compose": {
-    "fileMatch": [
-      "(^|/)stacks/.+\\.ya?ml$"
+    "managerFilePatterns": [
+      "/(^|/)stacks/.+\\.ya?ml$/"
     ]
   },
   "argocd": {
-    "fileMatch": [
-      "(^|/)infra/k8s/.+/application\\.ya?ml$",
-      "(^|/)apps/.+/application\\.ya?ml$"
+    "managerFilePatterns": [
+      "/(^|/)infra/k8s/.+/application\\.ya?ml$/",
+      "/(^|/)apps/.+/application\\.ya?ml$/"
     ]
   },
   "helm-values": {
-    "fileMatch": [
-      "(^|/)infra/k8s/.+/values\\.ya?ml$",
-      "(^|/)apps/.+/values\\.ya?ml$"
+    "managerFilePatterns": [
+      "/(^|/)infra/k8s/.+/values\\.ya?ml$/",
+      "/(^|/)apps/.+/values\\.ya?ml$/"
     ]
   },
   "kubernetes": {
-    "fileMatch": [
-      "(^|/)infra/k8s/.+\\.ya?ml$",
-      "(^|/)apps/.+\\.ya?ml$"
+    "managerFilePatterns": [
+      "/(^|/)infra/k8s/.+\\.ya?ml$/",
+      "/(^|/)apps/.+\\.ya?ml$/"
     ],
     "ignorePaths": [
       "**/node_modules/**",
@@ -159,10 +219,10 @@
     {
       "customType": "regex",
       "description": "Process annotated dependencies in YAML and ENV files",
-      "fileMatch": [
-        "(^|/)\\.?[^/]*\\.ya?ml$",
-        "(^|/)\\.?[^/]*\\.ya?ml\\.j2$",
-        "(^|/)\\.?[^/]*\\.env$"
+      "managerFilePatterns": [
+        "/(^|/)\\.?[^/]*\\.ya?ml$/",
+        "/(^|/)\\.?[^/]*\\.ya?ml\\.j2$/",
+        "/(^|/)\\.?[^/]*\\.env$/"
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( repository=(?<registryUrl>\\S+))?\\n.+(:\\s|=)(&\\S+\\s)?(?<currentValue>\\S+)",
@@ -173,24 +233,15 @@
     {
       "customType": "regex",
       "description": "Process container image tags in Kubernetes manifests",
-      "fileMatch": [
-        "(^|/)infra/k8s/.+\\.ya?ml$",
-        "(^|/)apps/.+\\.ya?ml$"
+      "managerFilePatterns": [
+        "/(^|/)infra/k8s/.+\\.ya?ml$/",
+        "/(^|/)apps/.+\\.ya?ml$/"
       ],
       "matchStrings": [
         "image:\\s+['\"]?(?<depName>[^:'\"\\s]+):(?<currentValue>[^'\"\\s]+)['\"]?"
       ],
       "datasourceTemplate": "docker",
       "versioningTemplate": "docker"
-    }
-  ],
-  "regexManagers": [
-    {
-      "description": "Process Taskfile tool versions",
-      "fileMatch": ["^Taskfile\\.ya?ml$", "^\\.taskfiles/.+/Taskfile\\.ya?ml$"],
-      "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( repository=(?<registryUrl>\\S+))?\\s+.+version:\\s+['\"]?(?<currentValue>[^'\"\\s]+)['\"]?"
-      ]
     }
   ]
 }

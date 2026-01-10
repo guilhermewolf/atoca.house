@@ -27,7 +27,6 @@ spec:
         server: https://kubernetes.default.svc
 
       sources:
-        {{- if .app.chart }}
         - chart: '{{.app.chart}}'
           repoURL: '{{.app.chartRepo}}'
           targetRevision: '{{.app.chartVersion}}'
@@ -44,51 +43,11 @@ spec:
           path: 'infra/k8s/storage/{{.app.name}}'
           directory:
             exclude: '{application.yaml,values.yaml,app-config.yaml}'
-        {{- else }}
-        # CSI special case - non-Helm deployment
-        - repoURL: https://github.com/kubernetes-csi/external-snapshotter/
-          targetRevision: '{{.app.crdVersion}}'
-          path: client/config/crd
-        - repoURL: https://github.com/kubernetes-csi/external-snapshotter/
-          targetRevision: '{{.app.controllerVersion}}'
-          path: deploy/kubernetes/snapshot-controller/
-        - repoURL: https://github.com/guilhermewolf/atoca.house
-          targetRevision: HEAD
-          path: 'infra/k8s/storage/{{.app.name}}'
-          directory:
-            exclude: '{application.yaml,app-config.yaml}'
-        {{- end }}
 
       syncPolicy:
-        {{- if not .app.disableAutoSync }}
         automated:
-          selfHeal: true
-          prune: {{.app.pruneEnabled | default true}}
-        {{- end }}
+          selfHeal: false
+          prune: true
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
-        {{- if or .app.volsyncPrivileged .app.podSecurityPrivileged }}
-        managedNamespaceMetadata:
-          {{- if .app.volsyncPrivileged }}
-          annotations:
-            volsync.backube/privileged-movers: "true"
-          {{- end }}
-          {{- if .app.podSecurityPrivileged }}
-          labels:
-            pod-security.kubernetes.io/enforce: privileged
-            pod-security.kubernetes.io/enforce-version: latest
-          {{- end }}
-        {{- end }}
-
-      {{- if .app.ignoreWebhooks }}
-      ignoreDifferences:
-        - group: admissionregistration.k8s.io
-          kind: MutatingWebhookConfiguration
-          jsonPointers:
-            - /webhooks
-        - group: admissionregistration.k8s.io
-          kind: ValidatingWebhookConfiguration
-          jsonPointers:
-            - /webhooks
-      {{- end }}

@@ -45,35 +45,9 @@ spec:
             exclude: '{application.yaml,values.yaml,app-config.yaml}'
 
       syncPolicy:
-        {{- if not .app.disableAutoSync }}
         automated:
-          selfHeal: true
-          prune: {{.app.pruneEnabled | default true}}
-        {{- end }}
+          selfHeal: false
+          prune: true
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
-        {{- if or .app.volsyncPrivileged .app.podSecurityPrivileged }}
-        managedNamespaceMetadata:
-          {{- if .app.volsyncPrivileged }}
-          annotations:
-            volsync.backube/privileged-movers: "true"
-          {{- end }}
-          {{- if .app.podSecurityPrivileged }}
-          labels:
-            pod-security.kubernetes.io/enforce: privileged
-            pod-security.kubernetes.io/enforce-version: latest
-          {{- end }}
-        {{- end }}
-
-      {{- if .app.ignoreWebhooks }}
-      ignoreDifferences:
-        - group: admissionregistration.k8s.io
-          kind: MutatingWebhookConfiguration
-          jsonPointers:
-            - /webhooks
-        - group: admissionregistration.k8s.io
-          kind: ValidatingWebhookConfiguration
-          jsonPointers:
-            - /webhooks
-      {{- end }}

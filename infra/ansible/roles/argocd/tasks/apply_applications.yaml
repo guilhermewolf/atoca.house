@@ -3,7 +3,7 @@
 
 - name: Apply ArgoCD parent applications and projects
   ansible.builtin.command:
-    cmd: "kubectl --kubeconfig={{ kubeconfig }} apply -f {{ argocd_dir }}/applications/"
+    cmd: "kubectl --kubeconfig={{ kubeconfig }} apply -k {{ argocd_dir }}/applications/"
   environment:
     KUBECONFIG: "{{ kubeconfig }}"
   register: argocd_apps_apply

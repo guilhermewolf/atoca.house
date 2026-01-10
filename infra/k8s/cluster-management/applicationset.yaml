@@ -30,17 +30,13 @@ spec:
         - chart: '{{.app.chart}}'
           repoURL: '{{.app.chartRepo}}'
           targetRevision: '{{.app.chartVersion}}'
-          {{- if .app.hasValues }}
           helm:
             valueFiles:
               - $values/infra/k8s/cluster-management/{{.app.name}}/values.yaml
-          {{- end }}
 
-        {{- if .app.hasValues }}
         - repoURL: https://github.com/guilhermewolf/atoca.house
           targetRevision: HEAD
           ref: values
-        {{- end }}
 
         - repoURL: https://github.com/guilhermewolf/atoca.house
           targetRevision: HEAD
@@ -49,45 +45,9 @@ spec:
             exclude: '{application.yaml,values.yaml,app-config.yaml}'
 
       syncPolicy:
-        {{- if not .app.disableAutoSync }}
         automated:
-          selfHeal: true
-          prune: {{.app.pruneEnabled | default true}}
-        {{- end }}
+          selfHeal: false
+          prune: true
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
-        {{- if or .app.volsyncPrivileged .app.podSecurityPrivileged }}
-        managedNamespaceMetadata:
-          {{- if .app.volsyncPrivileged }}
-          annotations:
-            volsync.backube/privileged-movers: "true"
-          {{- end }}
-          {{- if .app.podSecurityPrivileged }}
-          labels:
-            pod-security.kubernetes.io/enforce: privileged
-            pod-security.kubernetes.io/enforce-version: latest
-          {{- end }}
-        {{- end }}
-
-      {{- if .app.ignoreWebhooks }}
-      ignoreDifferences:
-        - group: admissionregistration.k8s.io
-          kind: MutatingWebhookConfiguration
-          jsonPointers:
-            - /webhooks
-        - group: admissionregistration.k8s.io
-          kind: ValidatingWebhookConfiguration
-          jsonPointers:
-            - /webhooks
-      {{- end }}
-      {{- if .app.customIgnoreDifferences }}
-      ignoreDifferences:
-        - group: apps
-          kind: Deployment
-          name: reloader
-          namespace: reloader
-          jsonPointers:
-            - /spec/template/spec/containers/0/env/0/valueFrom/resourceFieldRef/divisor
-            - /spec/template/spec/containers/0/env/1/valueFrom/resourceFieldRef/divisor
-      {{- end }}

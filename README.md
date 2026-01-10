@@ -10,7 +10,6 @@ _... managed with ArgoCD and GitHub Actions_
 
 </div>
 
-
 <div align="center">
 
 [![Kubernetes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Fkubernetes_version&style=for-the-badge&logo=kubernetes&color=grey&label=%20)](https://k3s.io/)&nbsp;&nbsp;
@@ -52,6 +51,7 @@ This is a mono repository for my home infrastructure and Kubernetes cluster. I t
 ### Installation
 
 My cluster is a 3-node high-availability setup running on bare-metal Talos Linux. All three nodes function as control planes (no dedicated workers), providing both compute and distributed storage via Rook-Ceph. This hyper-converged architecture maximizes resource utilization across all nodes, with each node contributing:
+
 - Compute: Kubernetes workload scheduling
 - Storage: 1TB NVMe disk for Ceph distributed storage (block, filesystem, and object)
 - Control Plane: etcd member and Kubernetes API server
@@ -110,10 +110,10 @@ This Git repository contains the following directories.
 
 | Name                      | CIDR                |
 |---------------------------|---------------------|
-| Server VLAN               | `192.168.178.0/24`  |
+| Server VLAN               | `192.168.40.0/24`   |
 | Kubernetes pods (Cilium)  | `10.244.0.0/16`     |
 | Kubernetes services       | `10.96.0.0/12`      |
-| Gateway LoadBalancer IP   | `192.168.178.210`   |
+| Gateway LoadBalancer IP   | `192.168.60.10`     |
 
 ---
 
@@ -139,6 +139,7 @@ While most of my infrastructure and workloads are self-hosted I do rely upon the
 | Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB + 4x 12TB | 32GB | Intel Celeron  | Unraid 7.1.4     | NAS (external storage)     |
 
 ---
+
 ## 💪 TO-DO
 
 - [x] Ansible playbook for deploying the cluster

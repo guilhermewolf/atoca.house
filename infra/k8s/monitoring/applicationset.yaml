@@ -15,7 +15,7 @@ spec:
         revision: HEAD
         files:
           - path: "infra/k8s/monitoring/*/app-config.yaml"
-
+        ignoreMissingValueFiles: true
   template:
     metadata:
       name: '{{.app.name}}'

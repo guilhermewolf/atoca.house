@@ -14,6 +14,7 @@ This guide covers installing the Kubernetes cluster from scratch using automated
 - **yq** - YAML processor
 
 Install on macOS:
+
 ```bash
 brew install --cask 1password-cli
 brew install talosctl kubectl ansible sops yq
@@ -30,7 +31,7 @@ brew install talosctl kubectl ansible sops yq
 - 3x Mini PCs with AMD Ryzen 7 4800H, 16GB RAM
 - 256GB NVMe for Talos OS (per node)
 - 1TB NVMe for Ceph storage (per node)
-- Network connectivity on 192.168.178.0/24
+- Network connectivity on 192.168.40.0/24
 
 ## Installation Steps
 
@@ -38,7 +39,7 @@ brew install talosctl kubectl ansible sops yq
 
 First, create custom Talos image with required extensions:
 
-1. Visit https://factory.talos.dev/
+1. Visit <https://factory.talos.dev/>
 2. Select:
    - Architecture: `amd64`
    - Platform: `bare-metal`
@@ -72,6 +73,7 @@ This creates encrypted configs for all 3 control plane nodes.
    - Boot each node from USB or PXE
 
 2. **Verify network and disks**:
+
    ```bash
    # Check node is accessible (temporary IP from DHCP)
    talosctl -n <node-temp-ip> disks
@@ -82,6 +84,7 @@ This creates encrypted configs for all 3 control plane nodes.
    ```
 
 3. **Note interface names**:
+
    ```bash
    talosctl -n <node-temp-ip> get links
    ```
@@ -102,6 +105,7 @@ ansible-playbook bootstrap.yaml
 ```
 
 The playbook will:
+
 1. ✅ Setup age encryption
 2. ✅ Deploy Talos configs to all 3 nodes
 3. ✅ Bootstrap first control plane
@@ -137,6 +141,7 @@ kubectl get storageclass
 ### Step 5: Access Services
 
 **ArgoCD:**
+
 ```bash
 # Port forward
 kubectl port-forward svc/argocd-server -n argocd 8080:443
@@ -149,6 +154,7 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.pas
 ```
 
 **Ceph Dashboard:**
+
 ```bash
 # Get password
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 -d
@@ -182,16 +188,16 @@ sops -d infra/talos/controlplane-node-03.enc.yaml > infra/talos/controlplane-nod
 sops -d infra/talos/config.enc.yaml > $HOME/.talos/config
 
 # 3. Apply configs to all nodes
-talosctl apply-config --insecure --nodes 192.168.178.201 --file infra/talos/controlplane-node-01.yaml
-talosctl apply-config --insecure --nodes 192.168.178.202 --file infra/talos/controlplane-node-02.yaml
-talosctl apply-config --insecure --nodes 192.168.178.203 --file infra/talos/controlplane-node-03.yaml
+talosctl apply-config --insecure --nodes 192.168.40.11 --file infra/talos/controlplane-node-01.yaml
+talosctl apply-config --insecure --nodes 192.168.40.12 --file infra/talos/controlplane-node-02.yaml
+talosctl apply-config --insecure --nodes 192.168.40.13 --file infra/talos/controlplane-node-03.yaml
 
 # 4. Bootstrap first control plane
 sleep 30
-talosctl bootstrap -n 192.168.178.201
+talosctl bootstrap -n 192.168.40.11
 
 # 5. Get kubeconfig
-talosctl kubeconfig -f -n 192.168.178.201
+talosctl kubeconfig -f -n 192.168.40.11
 
 # 6. Wait for nodes to be ready
 kubectl wait --for=condition=ready nodes --all --timeout=600s
@@ -227,7 +233,7 @@ rm infra/talos/controlplane-node-*.yaml
 talosctl -n <node-ip> logs controller-runtime
 
 # Check etcd status
-talosctl -n 192.168.178.201 etcd status
+talosctl -n 192.168.40.11 etcd status
 ```
 
 ### Ceph not starting
@@ -268,7 +274,7 @@ ansible-playbook update-talos.yaml
 
 ```bash
 # Backup etcd
-talosctl -n 192.168.178.201 etcd snapshot snapshot.db
+talosctl -n 192.168.40.11 etcd snapshot snapshot.db
 
 # Backup all resources
 kubectl get all --all-namespaces -o yaml > cluster-backup.yaml

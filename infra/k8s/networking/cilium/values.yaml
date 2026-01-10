@@ -12,65 +12,18 @@ ipam:
 
 # Operator configuration
 operator:
-  replicas: 1
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 250m
-      memory: 256Mi
-
-# Cilium agent resources
-resources:
-  requests:
-    cpu: 100m
-    memory: 256Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
+  dashboards:
+    enabled: true
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  replicas: 2
+  rollOutPods: true
 
 # Enable Hubble for observability
 hubble:
-  enabled: true
-  metrics:
-    enabled:
-      - dns
-      - drop
-      - tcp
-      - flow
-      - icmp
-      - http
-    # serviceMonitor:
-    #   enabled: true
-    dashboards:
-      enabled: true
-      annotations:
-        grafana_folder: "Cilium"
-
-  relay:
-    enabled: true
-    replicas: 1
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 100m
-        memory: 128Mi
-
-  ui:
-    enabled: true
-    replicas: 1
-    ingress:
-      enabled: false  # We'll create a Gateway API route later
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 100m
-        memory: 128Mi
+  enabled: false
 
 # L2 Announcements for LoadBalancer support (replaces MetalLB)
 l2announcements:
@@ -81,13 +34,16 @@ externalIPs:
   enabled: true
 
 # LoadBalancer IP pool configuration
+loadBalancer:
+  algorithm: maglev
+  mode: dsr
+  serviceTopology: true
 # This will be configured via LB IPAM CRDs below
 bgpControlPlane:
   enabled: false  # Not using BGP, using L2 instead
-
-# Enable Gateway API support
-gatewayAPI:
+localRedirectPolicies:
   enabled: true
+
 
 # Security context for Talos Linux
 securityContext:
@@ -100,6 +56,8 @@ securityContext:
       - IPC_LOCK
       - SYS_ADMIN
       - SYS_RESOURCE
+      - PERFMON
+      - BPF
       - DAC_OVERRIDE
       - FOWNER
       - SETGID
@@ -109,6 +67,9 @@ securityContext:
       - SYS_ADMIN
       - SYS_RESOURCE
 
+socketLB:
+  enabled: true
+  hostNamespaceOnly: true
 # Talos-specific configuration
 cgroup:
   autoMount:
@@ -143,8 +104,13 @@ tunnelProtocol: vxlan
 hostFirewall:
   enabled: false  # Talos handles host firewall
 
-# Auto direct node routes (for better performance)
-autoDirectNodeRoutes: false
+autoDirectNodeRoutes: true
+
+rollOutCiliumPods: true
+routingMode: native
+ipv4NativeRoutingCIDR: 10.244.0.0/16
+dashboards:
+  enabled: true
 
 # Enable bandwidth manager for better performance
 bandwidthManager:
@@ -163,13 +129,13 @@ cni:
 endpointRoutes:
   enabled: true
 
-# Enable Egress Gateway for VPN routing
-egressGateway:
-  enabled: true
-  reconciliationTriggerInterval: 1s
-
-# Enable masquerading for egress gateway (required for egress gateway to work)
 bpf:
+  datapathMode: netkit
   masquerade: true
+  preallocateMaps: true
+  tproxy: true
+bpfClockProbe: true
+bgpControlPlane:
+  enabled: true
 
 enableIPv4Masquerade: true

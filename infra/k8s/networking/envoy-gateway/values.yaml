@@ -2,35 +2,16 @@
 
 config:
   envoyGateway:
-    gateway:
-      controllerName: gateway.envoyproxy.io/gatewayclass-controller
+    # gateway:
+    #   controllerName: gateway.envoyproxy.io/gatewayclass-controller
     provider:
       type: Kubernetes
+      kubernetes:
+        deploy:
+          type: GatewayNamespace
     logging:
       level:
         default: info
-
-  # Enable extension manager for rate limiting and other features
-  extensionManager:
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 100m
-        memory: 128Mi
-
-# Controller resources
-deployment:
-  replicas: 1
-  pod:
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 250m
-        memory: 256Mi
 
 # Create the GatewayClass automatically
 createGatewayClass: true

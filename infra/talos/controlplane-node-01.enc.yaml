@@ -56,7 +56,8 @@ machine:
         noatime=True
         nconnect=16
   install:
-    disk: /dev/nvme1n1
+    diskSelector:
+      model: SSD 256GB
     image: factory.talos.dev/metal-installer/83f6d002527e710e640809a8247bf83d7bc41cfc513c278f5dd9b58c5b6f85ee:v1.12.1
     wipe: false
     grubUseUKICmdline: true

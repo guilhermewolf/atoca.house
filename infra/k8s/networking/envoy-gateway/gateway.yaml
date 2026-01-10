@@ -1,6 +1,48 @@
 # Main Gateway resource for atoca.house
 # This Gateway will handle all HTTPS traffic and replace ingress-nginx
 ---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: envoy
+spec:
+  logging:
+    level:
+      default: info
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+        container:
+          imageRepository: mirror.gcr.io/envoyproxy/envoy
+          resources:
+            requests:
+              cpu: 100m
+            limits:
+              memory: 1Gi
+      envoyService:
+        externalTrafficPolicy: Local
+  shutdown:
+    drainTimeout: 180s
+  telemetry:
+    metrics:
+      prometheus:
+        compression:
+          type: Gzip
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: envoy
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: envoy
+    namespace: envoy-gateway
+---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -9,7 +51,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: cloudflare-prod
 spec:
-  gatewayClassName: cilium
+  gatewayClassName: envoy
   listeners:
     # HTTPS listener on port 443
     - name: https
@@ -33,9 +75,45 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
-  addresses:
-    - type: IPAddress
-      value: 192.168.178.210  # From the MetalLB pool
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: envoy
+spec:
+  compression:
+    - type: Zstd
+    - type: Brotli
+    - type: Gzip
+  targetSelectors:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+  tcpKeepalive: {}
+  timeout:
+    http:
+      requestTimeout: 0s
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: envoy
+spec:
+  clientIPDetection:
+    xForwardedFor:
+      trustedCIDRs:
+        - 10.244.0.0/16
+  http2:
+    onInvalidMessage: TerminateStream
+  http3: {}
+  targetSelectors:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+  tcpKeepalive: {}
+  tls:
+    minVersion: "1.2"
+    alpnProtocols:
+      - h2
+      - http/1.1
 ---
 # Certificate for wildcard domain
 apiVersion: cert-manager.io/v1

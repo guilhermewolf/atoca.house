@@ -7,19 +7,15 @@ controllers:
     containers:
       filebrowser:
         image:
-          repository: ghcr.io/gtsteffaniak/filebrowser
-          tag: 1.1.0-beta@sha256:b4acaedb2d29c4847ad677c7f8dc23d4762b2a545552d3d19bd0c95f362b6412
+          repository: lscr.io/linuxserver/znc
+          tag: 1.10.1
           pullPolicy: IfNotPresent
         env:
           TZ: "Europe/Amsterdam"
-          FILEBROWSER_CONFIG: /config/config.yaml
         resources:
           requests:
             cpu: 100m
             memory: 256Mi
-          limits:
-            memory: 2Gi
-            cpu: 1000m
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -84,6 +80,24 @@ ingress:
       - hosts:
           - filebrowser.atoca.house
         secretName: filebrowser-tls
+
+route:
+  thelounge:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: kube-system
+    hostnames:
+      - thelounge.atoca.house
+    rules:
+      - backendRefs:
+          - name: thelounge
+            port: 9000
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 
 persistence:
   config:

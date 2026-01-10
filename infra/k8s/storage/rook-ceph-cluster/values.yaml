@@ -35,7 +35,7 @@ cephClusterSpec:
     enabled: true
     urlPrefix: /
     ssl: false
-    prometheusEndpoint: http://prometheus-operated.observability.svc.cluster.local:9090
+    prometheusEndpoint: http://kube-prometheus-stack-moni-prometheus.monitoring.svc.cluster.local:9090
   mgr:
     modules:
       - name: diskprediction_local
@@ -60,9 +60,18 @@ cephClusterSpec:
       limits:
         memory: 8Gi
   storage:
-    useAllNodes: true
+    useAllNodes: false
     useAllDevices: false
-    devicePathFilter: /dev/disk/by-id/nvme-FIKWOT_FN955_1TB_AA245040550_.*
+    nodes:
+      - name: "node-01"
+        devices:
+          - name: "/dev/disk/by-id/nvme-FIKWOT_FN955_1TB_AA245040550"
+      - name: "node-02"
+        devices:
+          - name: "/dev/disk/by-id/nvme-FIKWOT_FN955_1TB_AA245040379"
+      - name: "node-03"
+        devices:
+          - name: "/dev/disk/by-id/nvme-FIKWOT_FN955_1TB_AA245040603"
     config:
       osdsPerDevice: "1"
 

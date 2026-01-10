@@ -13,7 +13,7 @@ spec:
     type: prometheus
     uid: prometheus
     access: proxy
-    url: http://monitoring-prometheus.monitoring.svc.cluster.local:9090
+    url: http://kube-prometheus-stack-moni-prometheus.monitoring.svc.cluster.local:9090
     isDefault: true
     jsonData:
       timeInterval: "1m"
@@ -33,7 +33,7 @@ spec:
     type: alertmanager
     uid: alertmanager
     access: proxy
-    url: http://monitoring-alertmanager.monitoring.svc.cluster.local:9093
+    url: http://kube-prometheus-stack-moni-alertmanager.monitoring.svc.cluster.local:9093
     jsonData:
       implementation: prometheus
     editable: true

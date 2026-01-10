@@ -5,6 +5,7 @@ Distributed storage cluster using Rook-Ceph for block, filesystem, and object st
 ## Architecture
 
 **3-Node Cluster:**
+
 - All nodes are control planes with storage
 - Each node contributes 1TB disk
 - 2-way replication (can tolerate 1 node failure)
@@ -13,6 +14,7 @@ Distributed storage cluster using Rook-Ceph for block, filesystem, and object st
 ## Storage Classes
 
 ### 1. Block Storage (RWO) - `ceph-block` (default)
+
 ```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -30,6 +32,7 @@ spec:
 **Use for:** Databases, stateful apps, single-pod storage
 
 ### 2. Shared Filesystem (RWX) - `ceph-filesystem`
+
 ```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -47,6 +50,7 @@ spec:
 **Use for:** Media libraries, shared configs, multi-pod access
 
 ### 3. Object Storage (S3) - `ceph-bucket`
+
 ```yaml
 apiVersion: objectbucket.io/v1alpha1
 kind: ObjectBucketClaim
@@ -62,12 +66,14 @@ spec:
 ## Resource Usage
 
 **Per Node (~16GB RAM):**
+
 - MON (Monitor): ~1-2GB
 - OSD (Storage): ~2-4GB
 - MGR (Manager): ~512MB-1GB
 - MDS (if using CephFS): ~2-4GB
 
 **Total Cluster:**
+
 - ~11-15GB RAM for Ceph (leaves ~17GB for apps)
 - ~4-6 CPU cores reserved
 
@@ -96,10 +102,11 @@ machine:
 ```
 
 **Check disk names on Talos:**
+
 ```bash
-talosctl disks -n 192.168.178.201
-talosctl disks -n 192.168.178.202
-talosctl disks -n 192.168.178.203
+talosctl disks -n 192.168.40.11
+talosctl disks -n 192.168.40.12
+talosctl disks -n 192.168.40.13
 ```
 
 Update `deviceFilter` in values.yaml to match your disk pattern.
@@ -114,20 +121,22 @@ Update `deviceFilter` in values.yaml to match your disk pattern.
 ## Accessing Ceph Dashboard
 
 **Get admin password:**
+
 ```bash
 kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 --decode && echo
 ```
 
 **Port forward (temporary):**
+
 ```bash
 kubectl port-forward -n rook-ceph svc/rook-ceph-mgr-dashboard 7000:7000
 ```
 
-Open: http://localhost:7000
+Open: <http://localhost:7000>
 Username: `admin`
 
 **Or access via Ingress:**
-https://ceph.atoca.house (after setting up HTTPRoute)
+<https://ceph.atoca.house> (after setting up HTTPRoute)
 
 ## Ceph Toolbox
 
@@ -148,6 +157,7 @@ ceph health detail
 Ceph metrics are automatically exported to Prometheus if monitoring is enabled.
 
 **Key metrics:**
+
 - `ceph_cluster_total_bytes` - Total storage
 - `ceph_cluster_total_used_bytes` - Used storage
 - `ceph_health_status` - Cluster health (0=HEALTH_OK)
@@ -156,6 +166,7 @@ Ceph metrics are automatically exported to Prometheus if monitoring is enabled.
 ## Object Storage (S3) Access
 
 **Get S3 credentials:**
+
 ```bash
 kubectl -n rook-ceph get secret rook-ceph-object-user-ceph-objectstore-my-user \
   -o jsonpath='{.data.AccessKey}' | base64 --decode
@@ -164,11 +175,13 @@ kubectl -n rook-ceph get secret rook-ceph-object-user-ceph-objectstore-my-user \
 ```
 
 **S3 endpoint:**
+
 ```
 http://rook-ceph-rgw-ceph-objectstore.rook-ceph.svc.cluster.local
 ```
 
 **Configure s3cmd:**
+
 ```bash
 s3cmd --configure
 # Host: rook-ceph-rgw-ceph-objectstore.rook-ceph.svc.cluster.local
@@ -179,16 +192,19 @@ s3cmd --configure
 ## Troubleshooting
 
 **Check cluster health:**
+
 ```bash
 kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph status
 ```
 
 **Check OSD status:**
+
 ```bash
 kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph osd tree
 ```
 
 **View logs:**
+
 ```bash
 kubectl -n rook-ceph logs -l app=rook-ceph-operator
 kubectl -n rook-ceph logs -l app=rook-ceph-mon
@@ -196,6 +212,7 @@ kubectl -n rook-ceph logs -l app=rook-ceph-osd
 ```
 
 **Common issues:**
+
 - **OSDs not coming up:** Check disk is empty and not partitioned
 - **Slow performance:** Check network latency between nodes
 - **Out of space:** Ceph reserves 15% of disk space by default
@@ -203,6 +220,7 @@ kubectl -n rook-ceph logs -l app=rook-ceph-osd
 ## Disaster Recovery
 
 **Backup PVC:**
+
 ```bash
 # Create VolumeSnapshot
 kubectl create -f - <<EOF

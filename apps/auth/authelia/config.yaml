@@ -61,7 +61,7 @@ data:
       default_policy: two_factor
       networks:
         - name: internal
-          networks: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "192.168.178.0/24"]
+          networks: ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "192.168.40.0/24"]
       rules:
         # This just reduces logging noise in authelia
         - domain:

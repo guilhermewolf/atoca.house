@@ -18,7 +18,7 @@ spec:
     - backendRefs:
         - kind: Service
           group: ''
-          name: monitoring-prometheus
+          name: kube-prometheus-stack-moni-prometheus
           port: 9090
           weight: 1
       matches:
@@ -43,7 +43,7 @@ spec:
     - backendRefs:
         - kind: Service
           group: ''
-          name: monitoring-alertmanager
+          name: kube-prometheus-stack-moni-alertmanager
           port: 9093
           weight: 1
       matches:

@@ -230,21 +230,21 @@ tasks:
         msg: "Ceph tools not deployed"
 
   talos-health:
-    desc: Check Talos cluster health [NODE=192.168.178.201]
+    desc: Check Talos cluster health [NODE=192.168.40.11]
     cmds:
       - talosctl -n {{.NODE}} health
     vars:
-      NODE: '{{.NODE | default "192.168.178.201"}}'
+      NODE: '{{.NODE | default "192.168.40.11"}}'
     preconditions:
       - which talosctl
       - test -f ~/.talos/config
 
   talos-dashboard:
-    desc: Open Talos dashboard [NODE=192.168.178.201]
+    desc: Open Talos dashboard [NODE=192.168.40.11]
     cmds:
       - talosctl -n {{.NODE}} dashboard
     vars:
-      NODE: '{{.NODE | default "192.168.178.201"}}'
+      NODE: '{{.NODE | default "192.168.40.11"}}'
     preconditions:
       - which talosctl
       - test -f ~/.talos/config
@@ -261,7 +261,7 @@ tasks:
         msg: "ArgoCD namespace not found"
 
   backup-etcd:
-    desc: Backup etcd snapshot [NODE=192.168.178.201]
+    desc: Backup etcd snapshot [NODE=192.168.40.11]
     summary: |
       Creates an etcd snapshot for disaster recovery
       Saves to ./etcd-snapshot-$(date).db
@@ -270,7 +270,7 @@ tasks:
       - cmd: echo "Snapshot saved to {{.SNAPSHOT_FILE}}"
         silent: true
     vars:
-      NODE: '{{.NODE | default "192.168.178.201"}}'
+      NODE: '{{.NODE | default "192.168.40.11"}}'
       SNAPSHOT_FILE: 'etcd-snapshot-{{now | date "2006-01-02-15-04-05"}}.db'
     preconditions:
       - which talosctl

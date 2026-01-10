@@ -33,7 +33,7 @@ spec:
           helm:
             valueFiles:
               - $values/infra/k8s/networking/{{.app.name}}/values.yaml
-
+            ignoreMissingValueFiles: true
         - repoURL: https://github.com/guilhermewolf/atoca.house
           targetRevision: HEAD
           ref: values

@@ -1,26 +1,42 @@
-replicas: 1
 kind: Deployment
 deschedulerPolicyAPIVersion: descheduler/v1alpha2
 deschedulerPolicy:
+  metricsProviders:
+    - source: KubernetesMetrics
   profiles:
-    - name: default
+    - name: Default
       pluginConfig:
         - name: DefaultEvictor
           args:
-            nodeFit: true
-            evictFailedBarePods: true
-            evictLocalStoragePods: true
-            evictSystemCriticalPods: true
-            ignorePvcPods: false
+            podProtections:
+              defaultDisabled:
+                - FailedBarePods
+                - PodsWithLocalStorage
+                - SystemCriticalPods
         - name: LowNodeUtilization
           args:
-            targetThresholds:
-              cpu: 50
-              memory: 65
+            metricsUtilization:
+              source: KubernetesMetrics
             thresholds:
               cpu: 20
-              memory: 25
-            useDeviationThresholds: true
+              memory: 20
+              pods: 20
+            targetThresholds:
+              cpu: 50
+              memory: 50
+              pods: 50
+        - name: RemoveFailedPods
+          args:
+            reasons:
+              - ContainerStatusUnknown
+              - NodeAffinity
+              - NodeShutdown
+              - Terminated
+              - UnexpectedAdmissionError
+            includingInitContainers: true
+            excludeOwnerKinds:
+              - Job
+            minPodLifetimeSeconds: 1800
         - name: RemovePodsViolatingInterPodAntiAffinity
         - name: RemovePodsViolatingNodeAffinity
           args:
@@ -28,25 +44,17 @@ deschedulerPolicy:
               - requiredDuringSchedulingIgnoredDuringExecution
         - name: RemovePodsViolatingNodeTaints
         - name: RemovePodsViolatingTopologySpreadConstraint
-          args:
-            constraints:
-              - DoNotSchedule
-              - ScheduleAnyway
-        - name: RemovePodsHavingTooManyRestarts
-          args:
-            podRestartThreshold: 3
-            includingInitContainers: true
       plugins:
         balance:
           enabled:
-            - RemovePodsViolatingTopologySpreadConstraint
             - LowNodeUtilization
+            - RemovePodsViolatingTopologySpreadConstraint
         deschedule:
           enabled:
-            - RemovePodsViolatingNodeTaints
-            - RemovePodsViolatingNodeAffinity
+            - RemoveFailedPods
             - RemovePodsViolatingInterPodAntiAffinity
-            - RemovePodsHavingTooManyRestarts
+            - RemovePodsViolatingNodeAffinity
+            - RemovePodsViolatingNodeTaints
 service:
   enabled: true
 serviceMonitor:

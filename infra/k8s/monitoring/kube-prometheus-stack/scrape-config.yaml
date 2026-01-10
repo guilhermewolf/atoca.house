@@ -6,7 +6,7 @@ metadata:
 spec:
   staticConfigs:
     - targets:
-        - 192.168.178.160:9100
+        - 192.168.40.160:9100
   metricsPath: /metrics
   relabelings:
     - action: replace
@@ -20,7 +20,7 @@ metadata:
 spec:
   staticConfigs:
     - targets:
-        - 192.168.178.160:8083
+        - 192.168.40.160:8083
   relabelings:
     - action: replace
       targetLabel: job
@@ -33,7 +33,7 @@ metadata:
 spec:
   staticConfigs:
     - targets:
-        - 192.168.178.22:9100
+        - 192.168.40.22:9100
   metricsPath: /metrics
   relabelings:
     - action: replace

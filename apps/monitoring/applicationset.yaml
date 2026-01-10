@@ -50,9 +50,6 @@ spec:
             exclude: '{application.yaml,values.yaml,app-config.yaml}'
 
       syncPolicy:
-        automated:
-          selfHeal: false
-          prune: true
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true

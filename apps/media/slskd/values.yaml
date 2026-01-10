@@ -1,0 +1,115 @@
+controllers:
+  slskd:
+    type: statefulset
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/slskd/slskd
+          tag: 0.24.1@sha256:e3635858d9614a2fb811601afca706dbf97a6838b849905c27294cbce71be268
+        env:
+          DOTNET_BUNDLE_EXTRACT_BASE_DIR: /tmp/.net
+          TZ: Europe/Amsterdam
+          SLSKD_APP_DIR: /config
+          SLSKD_HTTP_PORT: &port 80
+          SLSKD_NO_AUTH: true
+          SLSKD_NO_HTTPS: true
+          SLSKD_NO_VERSION_CHECK: true
+          SLSKD_SLSK_LISTEN_PORT: 50429
+        envFrom:
+          - secretRef:
+              name: "slskd-secret"
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: ["ALL"]}
+        resources:
+          requests:
+            cpu: 10m
+            memory: 128Mi
+          limits:
+            memory: 1Gi
+    statefulset:
+      volumeClaimTemplates:
+        - name: config
+          storageClass: ceph-block
+          accessMode: ReadWriteOnce
+          size: 5Gi
+defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.12/24"],
+        "mac": "c6:58:f2:a7:62:ce"
+      }]
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+service:
+  app:
+    ports:
+      http:
+        port: *port
+route:
+  app:
+    hostnames:
+      - slskd.atoca.house
+    parentRefs:
+      - name: atoca-gateway
+        namespace: network
+    rules:
+      - backendRefs:
+          - identifier: app
+            port: *port
+configMaps:
+  config:
+    data:
+      slskd.yml: |-
+        directories:
+          downloads: /downloads/complete/music
+          incomplete: /downloads/incomplete
+        permissions:
+          file:
+            mode: 750
+        shares:
+          directories:
+            - /media/Downloads/soulseek/shared
+          filters:
+            - \.ini$
+            - Thumbs.db$
+            - \.DS_Store$
+persistence:
+  config-file:
+    type: configMap
+    identifier: config
+    globalMounts:
+      - path: /config/slskd.yml
+        subPath: slskd.yml
+  media:
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/data/slskd
+    globalMounts:
+      - path: /media/Downloads/soulseek
+        subPath: /downloads/complete/music/
+  tmp:
+    type: emptyDir

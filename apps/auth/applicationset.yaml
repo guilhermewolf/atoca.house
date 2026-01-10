@@ -1,0 +1,54 @@
+---
+# ApplicationSet for auth applications
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps-auth
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+
+  generators:
+    - git:
+        repoURL: https://github.com/guilhermewolf/atoca.house
+        revision: HEAD
+        files:
+          - path: "apps/auth/*/app-config.yaml"
+
+  template:
+    metadata:
+      name: '{{.app.name}}'
+      namespace: argocd
+    spec:
+      project: applications
+      destination:
+        namespace: '{{.app.namespace}}'
+        server: https://kubernetes.default.svc
+
+      sources:
+        - chart: '{{.app.chart}}'
+          repoURL: '{{.app.chartRepo}}'
+          targetRevision: '{{.app.chartVersion}}'
+          helm:
+            releaseName: '{{.app.name}}'
+            valueFiles:
+              - $values/apps/auth/{{.app.name}}/values.yaml
+
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          ref: values
+
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          path: 'apps/auth/{{.app.name}}'
+          directory:
+            exclude: '{application.yaml,values.yaml,app-config.yaml}'
+
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

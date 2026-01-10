@@ -1,0 +1,104 @@
+controllers:
+  qbittorrent:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/home-operations/qbittorrent
+          tag: 5.1.4@sha256:25fc7caf22101f85276ede9b1f76a46b7a93971bb6b70b6c58d14d6ab7f51415
+        env:
+          TZ: Europe/Amsterdam
+          QBT_WEBUI_PORT: &port 80
+          QBT_TORRENTING_PORT: 50469
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v2/app/version
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            memory: 8Gi
+defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.10/24"],
+        "mac": "32:0b:d8:1f:b6:e4"
+      }]
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    ports:
+      http:
+        port: *port
+route:
+  app:
+    hostnames:
+      - qbittorrent.atoca.house
+    parentRefs:
+      - name: atoca-gateway
+        namespace: network
+    rules:
+      - backendRefs:
+          - identifier: app
+            port: *port
+
+configMaps:
+  config:
+    data:
+      .qbt.toml: |-
+        [qbittorrent]
+        addr = "http://localhost:80"
+
+persistence:
+  config:
+    existingClaim: qbittorrent
+  config-file:
+    type: configMap
+    identifier: config
+    globalMounts:
+      - path: /config/.qbt.toml
+        subPath: .qbt.toml
+  tmp:
+    type: emptyDir
+  # scripts:
+  #   type: configMap
+  #   name: qbittorrent-scripts
+  #   defaultMode: 0775
+  #   globalMounts:
+  #     - readOnly: true
+  media:
+    type: nfs
+    server: expanse.internal
+    path: /mnt/user/data/torrents
+    globalMounts:
+      - path: /data/torrents
+        subPath: torrents

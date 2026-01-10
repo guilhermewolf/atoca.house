@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd
+
+resources:
+  # ArgoCD self-management
+  - argocd.yaml
+
+  # Projects
+  - project.yaml
+  - infra-project.yaml
+  - applications-project.yaml
+
+  # Root app-of-apps (discovers all category parent apps)
+  # Each category (infra/k8s/* and apps/*) has its own application.yaml
+  # that discovers child apps in that category
+  - root.yaml

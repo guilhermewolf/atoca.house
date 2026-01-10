@@ -1,0 +1,44 @@
+---
+# ApplicationSet for data applications
+# Discovers apps from app-config.yaml files in subdirectories
+# Note: Data apps use raw Kubernetes manifests, not Helm charts
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps-data
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+
+  generators:
+    - git:
+        repoURL: https://github.com/guilhermewolf/atoca.house
+        revision: HEAD
+        files:
+          - path: "apps/data/*/app-config.yaml"
+
+  template:
+    metadata:
+      name: '{{.app.name}}'
+      namespace: argocd
+    spec:
+      project: applications
+      destination:
+        namespace: '{{.app.namespace}}'
+        server: https://kubernetes.default.svc
+
+      source:
+        repoURL: https://github.com/guilhermewolf/atoca.house
+        targetRevision: HEAD
+        path: 'apps/data/{{.app.name}}'
+        directory:
+          exclude: '{application.yaml,app-config.yaml}'
+
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

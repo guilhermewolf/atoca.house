@@ -51,7 +51,12 @@ This is a mono repository for my home infrastructure and Kubernetes cluster. I t
 
 ### Installation
 
-My cluster provisioned overtop bare-metal Talos Linux. This is a semi-hyper-converged cluster, workloads and block storage are sharing the same available resources on my nodes while I have a separate server for (NFS) file storage.
+My cluster is a 3-node high-availability setup running on bare-metal Talos Linux. All three nodes function as control planes (no dedicated workers), providing both compute and distributed storage via Rook-Ceph. This hyper-converged architecture maximizes resource utilization across all nodes, with each node contributing:
+- Compute: Kubernetes workload scheduling
+- Storage: 1TB NVMe disk for Ceph distributed storage (block, filesystem, and object)
+- Control Plane: etcd member and Kubernetes API server
+
+The cluster uses 2-way replication for storage, tolerating one node failure while maintaining data availability.
 
 ---
 
@@ -61,7 +66,7 @@ My cluster provisioned overtop bare-metal Talos Linux. This is a semi-hyper-conv
 
 **Security & Secrets:** [cert-manager](https://cert-manager.io/) automates SSL/TLS certificate management using Cloudflare DNS-01 challenges. For secrets, [external-secrets](https://external-secrets.io/) integrates with [1Password Connect](https://github.com/1Password/connect-helm-charts) to inject secrets into Kubernetes, while [sealed-secrets](https://github.com/bitnami-labs/sealed-secrets) stores encrypted secrets safely in Git.
 
-**Storage & Backup:** [longhorn](https://longhorn.io/) provides distributed block storage for persistent volumes, with [volsync](https://volsync.readthedocs.io/) handling volume snapshots and replication for backup/restore. [spegel](https://github.com/spegel-org/spegel) improves reliability by running a stateless cluster-local OCI image mirror. [crunchy-postgres-operator](https://github.com/CrunchyData/postgres-operator) manages highly available PostgreSQL clusters.
+**Storage & Backup:** [rook-ceph](https://rook.io/) provides distributed storage with block (RBD), filesystem (CephFS), and object (S3) storage capabilities across the 3-node cluster. [volsync](https://volsync.readthedocs.io/) handles volume snapshots and replication for backup/restore. [spegel](https://github.com/spegel-org/spegel) improves reliability by running a stateless cluster-local OCI image mirror. [crunchy-postgres-operator](https://github.com/CrunchyData/postgres-operator) manages highly available PostgreSQL clusters.
 
 **Monitoring & Observability:** [kube-prometheus-stack](https://github.com/prometheus-operator/kube-prometheus) delivers comprehensive monitoring with Prometheus, Alertmanager, and Grafana. [metrics-server](https://github.com/kubernetes-sigs/metrics-server) provides resource metrics for autoscaling and kubectl top commands.
 
@@ -76,19 +81,27 @@ My cluster provisioned overtop bare-metal Talos Linux. This is a semi-hyper-conv
 This Git repository contains the following directories.
 
 ```sh
-📁 .github         # Github workflows
-📁 apps            # Apps deployed into my cluster grouped by namespace
-📁 argocd          # ArgoCD Helm Chart and configuration
-📁 docs            # Extra documentation and assets
-📁 infra           # Core infrastructure configurations
-└─📁 ansible       # Ansible playbooks
-└─📁 helm          # Helm charts
-└─📁 terraform     # Terraform configurations
-└─📁 talos         # Talos Linux configurations
-📁 sets            # ArgoCD application sets
-📁 stacks          # docker-compose files running on Asustor NAS
-└─📁 media-stack   # Media management stack
-📁 terraform       # terraform configuration for cloud resources
+📁 .github              # GitHub workflows for CI/CD
+📁 apps                 # Applications deployed in the cluster
+  └─📁 {category}       # Organized by function: media, data, auth, communication, etc.
+📁 argocd               # ArgoCD configuration and parent applications
+  └─📁 applications     # Parent apps that discover and manage child apps
+  └─📁 install          # ArgoCD installation manifests
+📁 docs                 # Extra documentation and assets
+📁 infra                # Core infrastructure configurations
+  └─📁 ansible          # Ansible playbooks for cluster bootstrap
+  └─📁 k8s              # Kubernetes infrastructure by category
+    └─📁 networking     # CNI, ingress, DNS (Cilium, Envoy Gateway, etc.)
+    └─📁 storage        # Storage systems (Rook-Ceph, CSI drivers, etc.)
+    └─📁 security       # Security tools (cert-manager, sealed-secrets, etc.)
+    └─📁 monitoring     # Monitoring stack (Prometheus, Grafana)
+    └─📁 cluster-mgmt   # Cluster utilities (metrics-server, reloader, etc.)
+    └─📁 operators      # Kubernetes operators (Postgres, GPU, etc.)
+  └─📁 talos            # Talos Linux node configurations
+  └─📁 terraform        # Terraform configurations
+📁 stacks               # Docker Compose files for Asustor NAS
+  └─📁 media-stack      # Media management stack
+📁 terraform            # Terraform for cloud resources (Cloudflare, etc.)
 ```
 
 ---
@@ -120,13 +133,10 @@ While most of my infrastructure and workloads are self-hosted I do rely upon the
 
 ## 🔧 Hardware
 
-| Device                          | Count | OS Disk Size | Data Disk Size              | Ram  | Operating System   | Purpose             |
-|---------------------------------|-------|--------------|-----------------------------|------|--------------------|---------------------|
-| Raspberry Pi 4                  | 3     | 128GB (SD)   | -                           | 4GB  | Talos Linux 1.11.5 | K8s nodes           |
-| Raspberry Pi 4                  | 1     | 128GB (SD)   | -                           | 8GB  | Talos Linux 1.11.5 | K8s node            |
-| Raspberry PoE Hat               | 4     | -            | -                           | -    | -                  | Power the Pi's      |
-| TP-Link TL-SG108PE              | 1     | -            | -                           | -    | -                  | Network PoE Switch  |
-| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB Nvme + 4x 12TB HDD   | 32GB | Unraid 7.1.4       | NAS                 |
+| Device                          | Count | OS Disk Size | Data Disk Size | RAM  | CPU              | Operating System | Purpose                    |
+|---------------------------------|-------|--------------|----------------|------|------------------|------------------|----------------------------|
+| Mini PC                         | 3     | 256GB NVMe   | 1TB NVMe       | 16GB | Ryzen 7 4800H    | Talos Linux 1.9  | K8s control plane nodes    |
+| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB + 4x 12TB | 32GB | Intel Celeron  | Unraid 7.1.4     | NAS (external storage)     |
 
 ---
 ## 💪 TO-DO

@@ -1,0 +1,7 @@
+app:
+  name: volsync-system
+  namespace: volsync-system
+  chart: volsync
+  chartRepo: https://backube.github.io/helm-charts/
+  chartVersion: 0.14.0
+  disableAutoSync: true

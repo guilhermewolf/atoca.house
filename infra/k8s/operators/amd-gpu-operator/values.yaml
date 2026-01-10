@@ -1,0 +1,25 @@
+# AMD GPU Operator Configuration for Talos OS
+
+# Node Feature Discovery - auto-label nodes with AMD GPUs
+node-feature-discovery:
+  enabled: true
+
+# Kernel Module Management - not needed on Talos (drivers via extensions)
+kmm:
+  enabled: false
+
+# Install default DeviceConfig automatically
+crds:
+  defaultCR:
+    install: true
+
+# Controller resources
+controllerManager:
+  manager:
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi

@@ -1,0 +1,6 @@
+---
+# Application configuration for pgadmin
+# Note: This app uses raw Kubernetes manifests, not a Helm chart
+app:
+  name: pgadmin
+  namespace: pgadmin

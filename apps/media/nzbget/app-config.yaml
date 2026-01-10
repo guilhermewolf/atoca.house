@@ -1,0 +1,9 @@
+---
+# Application configuration for NZBGet
+app:
+  name: nzbget
+  namespace: nzbget
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.5.0
+  volsyncPrivileged: false

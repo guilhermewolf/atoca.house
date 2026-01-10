@@ -1,0 +1,7 @@
+app:
+  name: one-password
+  namespace: one-password
+  chart: connect
+  chartRepo: https://1password.github.io/connect-helm-charts
+  chartVersion: 1.17.1
+  disableAutoSync: true

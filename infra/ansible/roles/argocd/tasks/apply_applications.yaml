@@ -1,0 +1,53 @@
+---
+# Apply ArgoCD applications (GitOps takes over)
+
+- name: Apply ArgoCD parent applications and projects
+  ansible.builtin.command:
+    cmd: "kubectl --kubeconfig={{ kubeconfig }} apply -f {{ argocd_dir }}/applications/"
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  register: argocd_apps_apply
+  changed_when: "'configured' in argocd_apps_apply.stdout or 'created' in argocd_apps_apply.stdout"
+
+- name: Wait for root application to be created
+  ansible.builtin.command:
+    cmd: >
+      kubectl --kubeconfig={{ kubeconfig }}
+      get application root -n {{ argocd_namespace }}
+      -o jsonpath='{.metadata.name}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 10
+  delay: 10
+  register: root_app_created
+  until: root_app_created.rc == 0
+  changed_when: false
+
+- name: Wait for critical infrastructure parent apps to be created
+  ansible.builtin.command:
+    cmd: >
+      kubectl --kubeconfig={{ kubeconfig }}
+      get application {{ item }} -n {{ argocd_namespace }}
+      -o jsonpath='{.metadata.name}'
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 5
+  delay: 10
+  register: parent_app_created
+  until: parent_app_created.rc == 0
+  changed_when: false
+  loop:
+    - infra-security
+    - infra-networking
+    - infra-storage
+
+- name: Get ArgoCD applications status
+  ansible.builtin.command:
+    cmd: "kubectl --kubeconfig={{ kubeconfig }} get applications -n {{ argocd_namespace }}"
+  register: argocd_apps_status
+  changed_when: false
+
+- name: Display ArgoCD applications
+  ansible.builtin.debug:
+    msg: "{{ argocd_apps_status.stdout_lines }}"
+  when: enable_detailed_output

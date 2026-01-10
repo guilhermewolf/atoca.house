@@ -1,0 +1,379 @@
+{
+  // Kubernetes and ArgoCD Snippets for faster development
+
+  // ==========================================================================
+  // ArgoCD Application Snippets
+  // ==========================================================================
+  "ArgoCD Application": {
+    "prefix": "argo-app",
+    "description": "ArgoCD Application manifest",
+    "body": [
+      "---",
+      "apiVersion: argoproj.io/v1alpha1",
+      "kind: Application",
+      "metadata:",
+      "  name: ${1:app-name}",
+      "  namespace: argocd",
+      "spec:",
+      "  project: ${2|infra,applications|}",
+      "  source:",
+      "    repoURL: https://github.com/guilhermewolf/atoca.house",
+      "    targetRevision: HEAD",
+      "    path: ${3:path/to/app}",
+      "  destination:",
+      "    namespace: ${4:namespace}",
+      "    server: https://kubernetes.default.svc",
+      "  syncPolicy:",
+      "    automated:",
+      "      selfHeal: true",
+      "      prune: ${5|true,false|}",
+      "    syncOptions:",
+      "      - CreateNamespace=true",
+      "$0"
+    ]
+  },
+
+  "ArgoCD Helm Application": {
+    "prefix": "argo-helm",
+    "description": "ArgoCD Application with Helm chart",
+    "body": [
+      "---",
+      "apiVersion: argoproj.io/v1alpha1",
+      "kind: Application",
+      "metadata:",
+      "  name: ${1:app-name}",
+      "  namespace: argocd",
+      "spec:",
+      "  project: ${2|infra,applications|}",
+      "  sources:",
+      "    - chart: ${3:chart-name}",
+      "      repoURL: ${4:https://charts.example.com}",
+      "      targetRevision: ${5:1.0.0}",
+      "      helm:",
+      "        valueFiles:",
+      "        - \\$values/${6:path/to/values.yaml}",
+      "    - repoURL: https://github.com/guilhermewolf/atoca.house",
+      "      targetRevision: HEAD",
+      "      ref: values",
+      "  destination:",
+      "    namespace: ${7:namespace}",
+      "    server: https://kubernetes.default.svc",
+      "  syncPolicy:",
+      "    automated:",
+      "      selfHeal: true",
+      "      prune: true",
+      "    syncOptions:",
+      "      - CreateNamespace=true",
+      "      - ServerSideApply=true",
+      "$0"
+    ]
+  },
+
+  "ArgoCD Parent Application": {
+    "prefix": "argo-parent",
+    "description": "ArgoCD parent app that discovers children",
+    "body": [
+      "---",
+      "# Parent app that discovers all ${1:category} apps",
+      "apiVersion: argoproj.io/v1alpha1",
+      "kind: Application",
+      "metadata:",
+      "  name: ${2:parent-name}",
+      "  namespace: argocd",
+      "spec:",
+      "  project: ${3|infra,applications,app-of-apps|}",
+      "  source:",
+      "    repoURL: https://github.com/guilhermewolf/atoca.house",
+      "    targetRevision: HEAD",
+      "    path: ${4:path/to/category}",
+      "    directory:",
+      "      recurse: true",
+      "      include: '*/application.yaml'",
+      "      exclude: 'application.yaml'",
+      "  destination:",
+      "    namespace: argocd",
+      "    server: https://kubernetes.default.svc",
+      "  syncPolicy:",
+      "    automated:",
+      "      selfHeal: true",
+      "      prune: true",
+      "$0"
+    ]
+  },
+
+  // ==========================================================================
+  // Kubernetes Resource Snippets
+  // ==========================================================================
+  "Kubernetes Namespace": {
+    "prefix": "k8s-ns",
+    "description": "Kubernetes Namespace",
+    "body": [
+      "---",
+      "apiVersion: v1",
+      "kind: Namespace",
+      "metadata:",
+      "  name: ${1:namespace-name}",
+      "  labels:",
+      "    ${2:key}: ${3:value}",
+      "$0"
+    ]
+  },
+
+  "Kubernetes ConfigMap": {
+    "prefix": "k8s-cm",
+    "description": "Kubernetes ConfigMap",
+    "body": [
+      "---",
+      "apiVersion: v1",
+      "kind: ConfigMap",
+      "metadata:",
+      "  name: ${1:configmap-name}",
+      "  namespace: ${2:namespace}",
+      "data:",
+      "  ${3:key}: ${4:value}",
+      "$0"
+    ]
+  },
+
+  "Kubernetes Secret": {
+    "prefix": "k8s-secret",
+    "description": "Kubernetes Secret",
+    "body": [
+      "---",
+      "apiVersion: v1",
+      "kind: Secret",
+      "metadata:",
+      "  name: ${1:secret-name}",
+      "  namespace: ${2:namespace}",
+      "type: Opaque",
+      "stringData:",
+      "  ${3:key}: ${4:value}",
+      "$0"
+    ]
+  },
+
+  "Kubernetes PVC": {
+    "prefix": "k8s-pvc",
+    "description": "Kubernetes PersistentVolumeClaim",
+    "body": [
+      "---",
+      "apiVersion: v1",
+      "kind: PersistentVolumeClaim",
+      "metadata:",
+      "  name: ${1:pvc-name}",
+      "  namespace: ${2:namespace}",
+      "spec:",
+      "  accessModes:",
+      "    - ${3|ReadWriteOnce,ReadWriteMany,ReadOnlyMany|}",
+      "  storageClassName: ${4|ceph-block,ceph-filesystem,ceph-bucket|}",
+      "  resources:",
+      "    requests:",
+      "      storage: ${5:10Gi}",
+      "$0"
+    ]
+  },
+
+  "Gateway API HTTPRoute": {
+    "prefix": "k8s-httproute",
+    "description": "Gateway API HTTPRoute",
+    "body": [
+      "---",
+      "apiVersion: gateway.networking.k8s.io/v1",
+      "kind: HTTPRoute",
+      "metadata:",
+      "  name: ${1:route-name}",
+      "  namespace: ${2:namespace}",
+      "spec:",
+      "  parentRefs:",
+      "    - name: ${3:atoca-gateway}",
+      "      namespace: network",
+      "      sectionName: ${4|http,https|}",
+      "  hostnames:",
+      "    - \"${5:app.atoca.house}\"",
+      "  rules:",
+      "    - matches:",
+      "        - path:",
+      "            type: PathPrefix",
+      "            value: /",
+      "      backendRefs:",
+      "        - name: ${6:service-name}",
+      "          port: ${7:80}",
+      "$0"
+    ]
+  },
+
+  // ==========================================================================
+  // External Secrets Snippets
+  // ==========================================================================
+  "External Secret (1Password)": {
+    "prefix": "external-secret",
+    "description": "External Secret from 1Password",
+    "body": [
+      "---",
+      "apiVersion: external-secrets.io/v1beta1",
+      "kind: ExternalSecret",
+      "metadata:",
+      "  name: ${1:secret-name}",
+      "  namespace: ${2:namespace}",
+      "spec:",
+      "  refreshInterval: 1h",
+      "  secretStoreRef:",
+      "    kind: ClusterSecretStore",
+      "    name: onepassword-connect",
+      "  target:",
+      "    name: ${3:k8s-secret-name}",
+      "    creationPolicy: Owner",
+      "  dataFrom:",
+      "    - extract:",
+      "        key: ${4:op://Vault/Item}",
+      "$0"
+    ]
+  },
+
+  // ==========================================================================
+  // Helm Values Snippets
+  // ==========================================================================
+  "Helm Values File": {
+    "prefix": "helm-values",
+    "description": "Basic Helm values.yaml structure",
+    "body": [
+      "---",
+      "# Helm values for ${1:app-name}",
+      "",
+      "image:",
+      "  repository: ${2:registry/image}",
+      "  tag: ${3:latest}",
+      "  pullPolicy: IfNotPresent",
+      "",
+      "service:",
+      "  type: ClusterIP",
+      "  port: ${4:80}",
+      "",
+      "resources:",
+      "  limits:",
+      "    cpu: ${5:1000m}",
+      "    memory: ${6:1Gi}",
+      "  requests:",
+      "    cpu: ${7:100m}",
+      "    memory: ${8:128Mi}",
+      "",
+      "persistence:",
+      "  enabled: ${9|true,false|}",
+      "  storageClass: ${10:ceph-block}",
+      "  size: ${11:10Gi}",
+      "$0"
+    ]
+  },
+
+  // ==========================================================================
+  // Kustomization Snippets
+  // ==========================================================================
+  "Kustomization": {
+    "prefix": "kustomization",
+    "description": "Kustomization file",
+    "body": [
+      "---",
+      "apiVersion: kustomize.config.k8s.io/v1beta1",
+      "kind: Kustomization",
+      "namespace: ${1:namespace}",
+      "",
+      "resources:",
+      "  - ${2:resource.yaml}",
+      "$0"
+    ]
+  },
+
+  // ==========================================================================
+  // Ansible Playbook Snippets
+  // ==========================================================================
+  "Ansible Playbook": {
+    "prefix": "ansible-playbook",
+    "description": "Ansible playbook template",
+    "body": [
+      "---",
+      "- name: ${1:Playbook description}",
+      "  hosts: ${2:localhost}",
+      "  gather_facts: ${3|yes,no|}",
+      "  ",
+      "  vars:",
+      "    ${4:var_name}: ${5:value}",
+      "  ",
+      "  tasks:",
+      "    - name: ${6:Task description}",
+      "      ${7:ansible.builtin.command}:",
+      "        cmd: ${8:command}",
+      "$0"
+    ]
+  },
+
+  // ==========================================================================
+  // Taskfile Snippets
+  // ==========================================================================
+  "Taskfile Task": {
+    "prefix": "task",
+    "description": "Taskfile.yaml task",
+    "body": [
+      "${1:task-name}:",
+      "  desc: ${2:Task description}",
+      "  cmds:",
+      "    - ${3:command}",
+      "  preconditions:",
+      "    - which ${4:required-command}",
+      "$0"
+    ]
+  },
+
+  // ==========================================================================
+  // Documentation Snippets
+  // ==========================================================================
+  "README Template": {
+    "prefix": "readme",
+    "description": "README.md template for applications",
+    "body": [
+      "# ${1:Application Name}",
+      "",
+      "${2:Brief description of what this application does}",
+      "",
+      "## Configuration",
+      "",
+      "### Values",
+      "",
+      "Key configuration values in `values.yaml`:",
+      "",
+      "- **`${3:key}`**: ${4:description}",
+      "",
+      "## Access",
+      "",
+      "**URL**: https://${5:app}.atoca.house",
+      "",
+      "## Storage",
+      "",
+      "Uses **${6|ceph-block,ceph-filesystem,none|}** storage class.",
+      "",
+      "## Troubleshooting",
+      "",
+      "**Check logs:**",
+      "\\`\\`\\`bash",
+      "kubectl logs -n ${7:namespace} -l app=${8:app-label}",
+      "\\`\\`\\`",
+      "",
+      "**Check status:**",
+      "\\`\\`\\`bash",
+      "kubectl get pods -n ${7:namespace}",
+      "\\`\\`\\`",
+      "$0"
+    ]
+  },
+
+  // ==========================================================================
+  // YAML Document Separator
+  // ==========================================================================
+  "YAML Document Separator": {
+    "prefix": "---",
+    "description": "YAML document separator",
+    "body": [
+      "---",
+      "$0"
+    ]
+  }
+}

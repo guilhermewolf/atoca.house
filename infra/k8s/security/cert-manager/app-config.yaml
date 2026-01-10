@@ -1,0 +1,7 @@
+app:
+  name: cert-manager
+  namespace: cert-manager
+  chart: cert-manager
+  chartRepo: https://charts.jetstack.io
+  chartVersion: v1.19.2
+  disableAutoSync: true

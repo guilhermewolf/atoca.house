@@ -1,0 +1,12 @@
+---
+# Application configuration for Kube Prometheus Stack
+app:
+  name: monitoring
+  namespace: monitoring
+  chart: kube-prometheus-stack
+  chartRepo: https://prometheus-community.github.io/helm-charts
+  chartVersion: 80.6.0
+  volsyncPrivileged: true
+  podSecurityPrivileged: true
+  ignoreWebhooks: true  # Ignore webhook configuration diffs
+  disableAutoSync: true  # Manual sync only for critical monitoring

@@ -1,0 +1,144 @@
+---
+# Install and verify Cilium CNI
+
+- name: Add Cilium Helm repository
+  ansible.builtin.command:
+    cmd: helm repo add cilium https://helm.cilium.io/
+  register: helm_repo_add
+  changed_when: "'has been added' in helm_repo_add.stdout"
+  failed_when: false
+
+- name: Update Helm repositories
+  ansible.builtin.command:
+    cmd: helm repo update
+  changed_when: false
+
+# renovate: datasource=helm depName=cilium registryUrl=https://helm.cilium.io
+- name: Install Cilium CNI via Helm
+  ansible.builtin.command:
+    cmd: >
+      helm upgrade --install cilium cilium/cilium
+      --version 1.18.5
+      --namespace kube-system
+      --values {{ k8s_infra_dir }}/networking/cilium/values.yaml
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  register: cilium_install
+  changed_when: "'has been upgraded' in cilium_install.stdout or 'has been installed' in cilium_install.stdout"
+
+- name: Apply Cilium LB IPAM configuration
+  ansible.builtin.command:
+    cmd: kubectl apply -f {{ k8s_infra_dir }}/networking/cilium/lb-ipam.yaml
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  register: lb_ipam_apply
+  changed_when: "'configured' in lb_ipam_apply.stdout or 'created' in lb_ipam_apply.stdout"
+
+- name: Wait for Cilium DaemonSet to be ready
+  ansible.builtin.command:
+    cmd: >
+      kubectl rollout status daemonset/cilium
+      -n kube-system
+      --timeout={{ cilium_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 3
+  delay: "{{ default_delay }}"
+  register: cilium_daemonset_ready
+  until: cilium_daemonset_ready.rc == 0
+  changed_when: false
+
+- name: Wait for Cilium agent pods to be ready
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=ready pod
+      -l k8s-app=cilium
+      -n kube-system
+      --timeout={{ cilium_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 3
+  delay: "{{ default_delay }}"
+  register: cilium_agents_ready
+  until: cilium_agents_ready.rc == 0
+  changed_when: false
+
+- name: Wait for Cilium operator deployment to be available
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=available
+      deployment/cilium-operator
+      -n kube-system
+      --timeout={{ cilium_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 3
+  delay: "{{ default_delay }}"
+  register: cilium_operator_ready
+  until: cilium_operator_ready.rc == 0
+  changed_when: false
+
+- name: Wait for Cilium operator pods to be ready
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=ready pod
+      -l app.kubernetes.io/name=cilium-operator
+      -n kube-system
+      --timeout={{ cilium_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 3
+  delay: "{{ default_delay }}"
+  register: cilium_operator_pods_ready
+  until: cilium_operator_pods_ready.rc == 0
+  changed_when: false
+
+- name: Wait for Cilium Envoy DaemonSet to be ready
+  ansible.builtin.command:
+    cmd: >
+      kubectl rollout status daemonset/cilium-envoy
+      -n kube-system
+      --timeout={{ cilium_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 3
+  delay: "{{ default_delay }}"
+  register: cilium_envoy_ready
+  until: cilium_envoy_ready.rc == 0
+  changed_when: false
+  failed_when: false
+
+- name: Verify all nodes are Ready after CNI installation
+  ansible.builtin.shell:
+    cmd: >
+      kubectl --kubeconfig={{ kubeconfig }}
+      get nodes
+      -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}'
+      | grep -v False | grep True
+  retries: 10
+  delay: 15
+  register: nodes_ready_cni
+  until: nodes_ready_cni.rc == 0
+  changed_when: false
+
+- name: Get Cilium status
+  ansible.builtin.command:
+    cmd: "kubectl --kubeconfig={{ kubeconfig }} get pods -n kube-system -l app.kubernetes.io/part-of=cilium"
+  register: cilium_pods
+  changed_when: false
+
+- name: Display Cilium status
+  ansible.builtin.debug:
+    msg: "{{ cilium_pods.stdout_lines }}"
+  when: enable_detailed_output
+
+- name: Get Cilium DaemonSets and Deployments status
+  ansible.builtin.command:
+    cmd: "kubectl --kubeconfig={{ kubeconfig }} get daemonsets,deployments -n kube-system -l app.kubernetes.io/part-of=cilium"
+  register: cilium_workloads
+  changed_when: false
+
+- name: Display Cilium workloads status
+  ansible.builtin.debug:
+    msg: "{{ cilium_workloads.stdout_lines }}"
+  when: enable_detailed_output

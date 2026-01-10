@@ -1,0 +1,12 @@
+---
+# Node-specific configuration for node-03 (192.168.40.13)
+
+machine:
+  network:
+    interfaces:
+      - interface: enp5s0f3u2
+        dhcp: true
+        vlans:
+          - vlanId: 6  # VPN VLAN (for Kubernetes workloads)
+            dhcp: false
+            mtu: 1500

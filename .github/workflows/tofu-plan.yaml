@@ -16,7 +16,7 @@ defaults:
 
 jobs:
   tofu-plan:
-    runs-on: arc-runners
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'arc-runners' }}
     env:
       TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_cloudflare_api_token }}
       TF_VAR_zone_id: ${{ secrets.TF_VAR_zone_id }}

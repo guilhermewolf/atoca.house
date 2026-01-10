@@ -1,0 +1,25 @@
+---
+# Node-specific configuration for node-02 (192.168.40.12)
+# NOTE: Node-02 has NVMe disks in REVERSED order compared to nodes 01 and 03
+
+machine:
+  # Install configuration - Override common patch
+  install:
+    disk: /dev/nvme0n1  # 256GB Samsung (reversed from common)
+    wipe: false
+
+  # Network configuration
+  network:
+    interfaces:
+      - interface: enp5s0f3u2
+        dhcp: true
+        vlans:
+          - vlanId: 6  # VPN VLAN (for Kubernetes workloads)
+            dhcp: false
+            mtu: 1500
+
+  # Data disks - Override common patch
+  disks:
+    - device: /dev/nvme1n1  # 1TB Fikwot (reversed from common)
+      partitions:
+        - mountpoint: /var/mnt/ceph

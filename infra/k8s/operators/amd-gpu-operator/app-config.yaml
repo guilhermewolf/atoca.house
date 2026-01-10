@@ -1,0 +1,7 @@
+app:
+  name: amd-gpu-operator
+  namespace: kube-amd-gpu
+  chart: gpu-operator-charts
+  chartRepo: https://rocm.github.io/gpu-operator
+  chartVersion: v1.4.0
+  disableAutoSync: true

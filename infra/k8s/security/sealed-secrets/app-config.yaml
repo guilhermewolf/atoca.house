@@ -1,0 +1,7 @@
+app:
+  name: sealed-secrets
+  namespace: sealed-secrets
+  chart: sealed-secrets
+  chartRepo: https://bitnami-labs.github.io/sealed-secrets
+  chartVersion: 2.18.0 # renovate: datasource=helm depName=sealed-secrets registryUrl=https://bitnami-labs.github.io/sealed-secrets
+  pruneEnabled: false

@@ -1,70 +1,70 @@
-serviceAccount:
-  create: true
-  name: external-dns-adguard
+# serviceAccount:
+#   create: true
+#   name: external-dns-adguard
 
-rbac:
-  create: true
+# rbac:
+#   create: true
 
-provider:
-  name: webhook
-  webhook:
-    image:
-      repository: ghcr.io/muhlba91/external-dns-provider-adguard
-      tag: v9.1.0
-      pullPolicy: IfNotPresent
-    service:
-      port: 8080
-    env:
-      - name: LOG_LEVEL
-        value: debug
-      - name: ADGUARD_URL
-        valueFrom:
-          secretKeyRef:
-            name: adguard-configuration
-            key: url
-      - name: ADGUARD_USER
-        valueFrom:
-          secretKeyRef:
-            name: adguard-configuration
-            key: username
-      - name: ADGUARD_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: adguard-configuration
-            key: password
-      - name: DRY_RUN
-        value: "false"
-      - name: HEALTHZ_ADDRESS
-        value: "0.0.0.0"
-      - name: HEALTHZ_PORT
-        value: "8080"
-    resources:
-      requests:
-        cpu: 25m
-        memory: 32Mi
-      limits:
-        cpu: 100m
-        memory: 128Mi
+# provider:
+#   name: webhook
+#   webhook:
+#     image:
+#       repository: ghcr.io/muhlba91/external-dns-provider-adguard
+#       tag: v9.1.0
+#       pullPolicy: IfNotPresent
+#     service:
+#       port: 8080
+#     env:
+#       - name: LOG_LEVEL
+#         value: debug
+#       - name: ADGUARD_URL
+#         valueFrom:
+#           secretKeyRef:
+#             name: adguard-configuration
+#             key: url
+#       - name: ADGUARD_USER
+#         valueFrom:
+#           secretKeyRef:
+#             name: adguard-configuration
+#             key: username
+#       - name: ADGUARD_PASSWORD
+#         valueFrom:
+#           secretKeyRef:
+#             name: adguard-configuration
+#             key: password
+#       - name: DRY_RUN
+#         value: "false"
+#       - name: HEALTHZ_ADDRESS
+#         value: "0.0.0.0"
+#       - name: HEALTHZ_PORT
+#         value: "8080"
+#     resources:
+#       requests:
+#         cpu: 25m
+#         memory: 32Mi
+#       limits:
+#         cpu: 100m
+#         memory: 128Mi
 
-extraArgs:
-  - --webhook-provider-url=http://localhost:8080
+# extraArgs:
+#   - --webhook-provider-url=http://localhost:8080
 
-sources:
-  - gateway-httproute
+# sources:
+#   - gateway-httproute
 
-resources:
-  requests:
-    cpu: 50m
-    memory: 64Mi
-  limits:
-    cpu: 100m
-    memory: 128Mi
+# resources:
+#   requests:
+#     cpu: 50m
+#     memory: 64Mi
+#   limits:
+#     cpu: 100m
+#     memory: 128Mi
 
-metrics:
-  enabled: true
-serviceMonitor:
-  enabled: true
-provider:
-  webhook:
-    serviceMonitor:
-      enabled: true
+# metrics:
+#   enabled: true
+# serviceMonitor:
+#   enabled: true
+# provider:
+#   webhook:
+#     serviceMonitor:
+#       enabled: true

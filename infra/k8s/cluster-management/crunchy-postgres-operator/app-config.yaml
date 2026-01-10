@@ -3,6 +3,6 @@ app:
   namespace: crunchy-postgres-operator
   chart: pgo
   chartRepo: registry.developers.crunchydata.com/crunchydata
-  chartVersion: 5.8.5
+  chartVersion: 6.0.0
   hasValues: false
   disableAutoSync: true

@@ -1,41 +1,73 @@
 ---
 # Install and verify Sealed Secrets controller
 
-- name: Apply Sealed Secrets manifests
+- name: Add Sealed Secrets Helm repository
+  ansible.builtin.command:
+    cmd: helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
+  register: helm_repo_add
+  changed_when: "'has been added' in helm_repo_add.stdout"
+  failed_when: false
+
+- name: Update Helm repositories
+  ansible.builtin.command:
+    cmd: helm repo update
+  changed_when: false
+
+# renovate: datasource=helm depName=sealed-secrets registryUrl=https://bitnami-labs.github.io/sealed-secrets
+- name: Install Sealed Secrets controller via Helm
   ansible.builtin.command:
     cmd: >
-      kubectl kustomize --enable-helm {{ k8s_infra_dir }}/security/sealed-secrets
-      | kubectl apply -f -
+      helm upgrade --install sealed-secrets sealed-secrets/sealed-secrets
+      --version 2.17.9
+      --namespace {{ sealed_secrets_namespace }}
+      --create-namespace
+      --wait
+      --timeout 5m
   environment:
     KUBECONFIG: "{{ kubeconfig }}"
-  register: sealed_secrets_apply
-  changed_when: "'configured' in sealed_secrets_apply.stdout or 'created' in sealed_secrets_apply.stdout"
+  register: sealed_secrets_install
+  changed_when: "'has been upgraded' in sealed_secrets_install.stdout or 'has been installed' in sealed_secrets_install.stdout"
 
-- name: Wait for Sealed Secrets controller to be available
+- name: Wait for Sealed Secrets deployment to be available
   ansible.builtin.command:
     cmd: >
       kubectl wait --for=condition=available
-      deployment/sealed-secrets-controller
+      deployment/sealed-secrets
       -n {{ sealed_secrets_namespace }}
       --timeout=300s
   environment:
     KUBECONFIG: "{{ kubeconfig }}"
-  retries: 10
+  retries: 3
   delay: "{{ default_delay }}"
-  register: sealed_secrets_ready
-  until: sealed_secrets_ready.rc == 0
+  register: sealed_secrets_deployment_ready
+  until: sealed_secrets_deployment_ready.rc == 0
   changed_when: false
 
-- name: Verify Sealed Secrets controller is running
+- name: Wait for Sealed Secrets pods to be ready
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=ready pod
+      -l app.kubernetes.io/name=sealed-secrets
+      -n {{ sealed_secrets_namespace }}
+      --timeout=300s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 3
+  delay: "{{ default_delay }}"
+  register: sealed_secrets_pods_ready
+  until: sealed_secrets_pods_ready.rc == 0
+  changed_when: false
+
+- name: Get Sealed Secrets status
   ansible.builtin.command:
     cmd: >
       kubectl --kubeconfig={{ kubeconfig }}
-      get pods -n {{ sealed_secrets_namespace }}
+      get deployment,pods -n {{ sealed_secrets_namespace }}
       -l app.kubernetes.io/name=sealed-secrets
-  register: sealed_secrets_pods
+  register: sealed_secrets_status
   changed_when: false
 
 - name: Display Sealed Secrets status
   ansible.builtin.debug:
-    msg: "{{ sealed_secrets_pods.stdout_lines }}"
+    msg: "{{ sealed_secrets_status.stdout_lines }}"
   when: enable_detailed_output

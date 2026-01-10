@@ -31,6 +31,7 @@ infra/ansible/
 ### Prerequisites
 
 Install required tools:
+
 ```bash
 # macOS
 brew install ansible kubectl talosctl sops kubeseal
@@ -43,6 +44,7 @@ eval $(op signin)
 ```
 
 Install Ansible dependencies:
+
 ```bash
 cd infra/ansible
 ansible-galaxy install -r requirements.yaml
@@ -91,6 +93,7 @@ ansible-playbook playbooks/update-talos.yaml
 **Purpose:** Bootstrap a new Talos Kubernetes cluster from scratch with ArgoCD GitOps.
 
 **What it does:**
+
 1. **Setup Age encryption** - Retrieves Age key from 1Password for SOPS
 2. **Deploy Talos** - Applies configs to all 3 nodes, bootstraps cluster
 3. **Install Cilium** - eBPF networking (CNI) with Gateway API support
@@ -102,11 +105,13 @@ ansible-playbook playbooks/update-talos.yaml
 **Time:** 30-45 minutes
 
 **Requirements:**
+
 - Age key in 1Password: `op://K8s/age-key/age.key`
 - ArgoCD Redis secret: `op://Private/atoca-house-k8s-argocd-redis/credential`
 - Encrypted Talos configs in `infra/talos/`
 
 **Tags:**
+
 - `bootstrap` - All bootstrap tasks
 - `phase1` - Talos deployment
 - `phase2` - Cilium CNI
@@ -116,6 +121,7 @@ ansible-playbook playbooks/update-talos.yaml
 - Individual roles: `talos`, `cilium`, `sealed-secrets`, `argocd`, `rook-ceph`
 
 **Example:**
+
 ```bash
 # Full bootstrap
 ansible-playbook playbooks/bootstrap.yaml
@@ -135,6 +141,7 @@ ansible-playbook playbooks/bootstrap.yaml --check
 **Purpose:** Retrieve secrets from 1Password and seal them for safe storage in Git.
 
 **What it does:**
+
 1. Retrieves 1Password token from 1Password
 2. Retrieves 1Password credentials file from 1Password
 3. Creates Kubernetes secret manifests (unsealed)
@@ -144,17 +151,20 @@ ansible-playbook playbooks/bootstrap.yaml --check
 **Time:** 1-2 minutes
 
 **Requirements:**
+
 - 1Password CLI authenticated: `eval $(op signin)`
 - Sealed Secrets controller running in cluster
 - 1Password secrets exist at configured paths
 
 **Output:**
+
 - `infra/k8s/security/one-password/onepassword-token.yaml` (sealed)
 - `infra/k8s/security/one-password/op-credentials.yaml` (sealed)
 
 **Important:** This does NOT automatically commit to Git. You must manually review and commit.
 
 **Example:**
+
 ```bash
 # Seal secrets
 ansible-playbook playbooks/seal-secrets.yaml
@@ -170,6 +180,7 @@ git push
 **Purpose:** Rolling upgrade of Talos Linux and optionally Kubernetes.
 
 **What it does:**
+
 1. Fetches latest Talos version from GitHub
 2. Displays upgrade plan (version, nodes)
 3. Upgrades each node ONE AT A TIME (maintains availability)
@@ -179,13 +190,15 @@ git push
 **Time:** 15-30 minutes (depends on node count and download speed)
 
 **Requirements:**
+
 - Talos factory schematic ID (custom image with extensions)
 - Set via: `export TALOS_FACTORY_SCHEMATIC_ID="your-id"`
 - Or edit playbook and hardcode the value
 
-**Generate schematic:** https://factory.talos.dev/
+**Generate schematic:** <https://factory.talos.dev/>
 
 **Example:**
+
 ```bash
 # Set schematic ID
 export TALOS_FACTORY_SCHEMATIC_ID="abc123def456"
@@ -203,6 +216,7 @@ Each role handles a specific component of the infrastructure. See individual rol
 ### `talos` - Talos Linux Deployment
 
 **Responsibilities:**
+
 - Setup Age encryption for SOPS
 - Decrypt and apply Talos configurations to all nodes
 - Bootstrap first control plane node
@@ -217,6 +231,7 @@ Each role handles a specific component of the infrastructure. See individual rol
 ### `cilium` - Cilium CNI
 
 **Responsibilities:**
+
 - Deploy Cilium using Helm via kustomize
 - Wait for Cilium agents and operator to be ready
 - Verify all nodes are Ready after CNI installation
@@ -228,6 +243,7 @@ Each role handles a specific component of the infrastructure. See individual rol
 ### `sealed_secrets` - Sealed Secrets Controller
 
 **Responsibilities:**
+
 - Deploy Sealed Secrets controller
 - Wait for controller to be available
 - Verify controller pods are running
@@ -239,6 +255,7 @@ Each role handles a specific component of the infrastructure. See individual rol
 ### `argocd` - ArgoCD GitOps
 
 **Responsibilities:**
+
 - Setup ArgoCD Redis secret from 1Password
 - Install ArgoCD (server, repo-server, controller)
 - Apply ArgoCD root app-of-apps
@@ -251,6 +268,7 @@ Each role handles a specific component of the infrastructure. See individual rol
 ### `one_password` - 1Password Secret Sealing
 
 **Responsibilities:**
+
 - Retrieve 1Password token and credentials from 1Password
 - Create Kubernetes secret manifests
 - Seal secrets with kubeseal
@@ -266,6 +284,7 @@ Each role handles a specific component of the infrastructure. See individual rol
 ### `rook_ceph` - Rook-Ceph Verification
 
 **Responsibilities:**
+
 - Verify Rook-Ceph operator is synced and healthy
 - Verify Rook-Ceph cluster is synced and healthy
 - Check Ceph cluster health (HEALTH_OK)
@@ -287,11 +306,11 @@ Edit `inventory/group_vars/all.yaml` to configure:
 # Cluster nodes
 control_plane_nodes:
   - name: node-01
-    ip: 192.168.178.201
+    ip: 192.168.40.11
   - name: node-02
-    ip: 192.168.178.202
+    ip: 192.168.40.12
   - name: node-03
-    ip: 192.168.178.203
+    ip: 192.168.40.13
 
 # Paths
 repo_root: /path/to/atoca.house
@@ -325,6 +344,7 @@ gathering = smart
 Tags allow running specific parts of playbooks:
 
 **Phase tags:**
+
 - `phase1` - Talos deployment
 - `phase2` - Cilium CNI
 - `phase3` - Sealed Secrets
@@ -332,14 +352,17 @@ Tags allow running specific parts of playbooks:
 - `phase5` - Rook-Ceph verification
 
 **Component tags:**
+
 - `talos`, `cilium`, `sealed-secrets`, `argocd`, `onepassword`, `rook-ceph`
 
 **Action tags:**
+
 - `bootstrap` - All bootstrap tasks
 - `deploy`, `install`, `verify`, `cleanup`
 - `secrets`, `encryption`, `seal`
 
 **Example:**
+
 ```bash
 # Run only Talos and Cilium
 ansible-playbook playbooks/bootstrap.yaml --tags "talos,cilium"
@@ -358,6 +381,7 @@ ansible-playbook playbooks/bootstrap.yaml --tags secrets
 **Error:** `which: no talosctl in...`
 
 **Fix:**
+
 ```bash
 # Check tools are installed
 which ansible talosctl kubectl sops op kubeseal
@@ -372,6 +396,7 @@ brew install --cask 1password-cli
 **Error:** `op read failed`
 
 **Fix:**
+
 ```bash
 # Sign in to 1Password
 eval $(op signin)
@@ -385,12 +410,13 @@ op read op://K8s/age-key/age.key
 **Error:** `connection refused` or `timeout`
 
 **Fix:**
+
 ```bash
 # Check nodes are reachable
-ping 192.168.178.201
+ping 192.168.40.11
 
 # Check Talos is running
-talosctl -n 192.168.178.201 version
+talosctl -n 192.168.40.11 version
 
 # Reboot nodes if needed
 ```
@@ -400,6 +426,7 @@ talosctl -n 192.168.178.201 version
 **Error:** Cilium pods stuck in Pending or CrashLoopBackOff
 
 **Fix:**
+
 ```bash
 # Check node status
 kubectl get nodes
@@ -416,6 +443,7 @@ kubectl rollout restart daemonset/cilium -n kube-system
 **Issue:** Ceph cluster stuck in HEALTH_WARN
 
 **Fix:**
+
 ```bash
 # Check Ceph status
 kubectl -n rook-ceph exec deploy/rook-ceph-tools -- ceph status
@@ -432,6 +460,7 @@ kubectl get pods -n rook-ceph -l app=rook-ceph-osd
 **Issue:** Applications stuck in OutOfSync or Progressing
 
 **Fix:**
+
 ```bash
 # Check ArgoCD app status
 kubectl get applications -n argocd
@@ -522,6 +551,7 @@ See `.taskfiles/cluster/Taskfile.yaml` for all available tasks.
 ## 📝 Changelog
 
 **2025-12-10** - Major restructure:
+
 - ✅ Reorganized into roles and playbooks (best practices)
 - ✅ Separated concerns (modularity)
 - ✅ Fixed one-password.yaml path issue

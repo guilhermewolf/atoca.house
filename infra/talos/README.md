@@ -3,12 +3,14 @@
 ## Cluster Specifications
 
 **Hardware:**
+
 - 3x Mini PCs with AMD Ryzen 7 4800H
 - 16GB RAM per node
 - 256GB system disk (Talos OS)
 - 1TB data disk (Ceph storage)
 
 **Architecture:**
+
 - 3 control plane nodes (no workers)
 - HA etcd cluster (3 replicas)
 - Distributed storage with Rook-Ceph
@@ -17,23 +19,25 @@
 
 | Node | Role | IP Address |
 |------|------|------------|
-| node-01 | Control Plane | 192.168.178.201 |
-| node-02 | Control Plane | 192.168.178.202 |
-| node-03 | Control Plane | 192.168.178.203 |
+| node-01 | Control Plane | 192.168.40.11 |
+| node-02 | Control Plane | 192.168.40.12 |
+| node-03 | Control Plane | 192.168.40.13 |
 
 **Network Details:**
-- Server VLAN: `192.168.178.0/24`
+
+- Server VLAN: `192.168.40.0/24`
 - Kubernetes Pods (Cilium): `10.244.0.0/16`
 - Kubernetes Services: `10.96.0.0/12`
-- Cluster Endpoint: `https://192.168.178.201:6443` (VIP or first node)
+- Cluster Endpoint: `https://192.168.40.11:6443` (VIP or first node)
 
 ## Talos Image
 
 Create custom Talos image with required extensions:
 
-**Factory URL:** https://factory.talos.dev/
+**Factory URL:** <https://factory.talos.dev/>
 
 **Configuration:**
+
 - Platform: Bare Metal (x86_64)
 - Talos Version: `1.9.0` (or latest stable)
 - System Extensions:
@@ -48,21 +52,22 @@ Create custom Talos image with required extensions:
 ```bash
 # Set cluster name and endpoint
 export CLUSTER_NAME="atoca-k8s"
-export CLUSTER_ENDPOINT="https://192.168.178.201:6443"
+export CLUSTER_ENDPOINT="https://192.168.40.11:6443"
 
 # Generate configs for all 3 control planes
 talosctl gen config $CLUSTER_NAME $CLUSTER_ENDPOINT \
   --output-dir infra/talos/generated \
   --with-secrets infra/talos/generated/secrets.yaml \
   --config-patch-control-plane @infra/talos/patches/controlplane-common.yaml \
-  --additional-sans 192.168.178.201 \
-  --additional-sans 192.168.178.202 \
-  --additional-sans 192.168.178.203
+  --additional-sans 192.168.40.11 \
+  --additional-sans 192.168.40.12 \
+  --additional-sans 192.168.40.13
 ```
 
 ### Step 2: Apply Node-Specific Patches
 
 Each node needs specific configuration for:
+
 - Hostname
 - Network interface
 - Disk configuration (1TB data disk for Ceph)
@@ -106,7 +111,7 @@ machine:
   network:
     hostname: ""  # Override per node
     nameservers:
-      - 192.168.178.1
+      - 192.168.40.1
       - 1.1.1.1
 
   # Kubelet configuration for Rook-Ceph
@@ -121,7 +126,7 @@ machine:
           - rw
     nodeIP:
       validSubnets:
-        - 192.168.178.0/24
+        - 192.168.40.0/24
 
   # Time configuration
   time:
@@ -185,16 +190,16 @@ cluster:
   # API server configuration
   apiServer:
     certSANs:
-      - 192.168.178.201
-      - 192.168.178.202
-      - 192.168.178.203
+      - 192.168.40.11
+      - 192.168.40.12
+      - 192.168.40.13
     extraArgs:
       feature-gates: MixedProtocolLBService=true
 
   # Etcd configuration (3-node HA)
   etcd:
     advertisedSubnets:
-      - 192.168.178.0/24
+      - 192.168.40.0/24
 
   # Allow scheduling on control plane nodes
   allowSchedulingOnControlPlanes: true
@@ -205,52 +210,55 @@ cluster:
 Create `patches/node-01.yaml`, `node-02.yaml`, `node-03.yaml`:
 
 **node-01.yaml:**
+
 ```yaml
 machine:
   network:
     hostname: node-01
     interfaces:
-      - interface: eth0  # Adjust to your interface name
+      - interface: enp5s0f3u2  # Adjust to your interface name
         dhcp: false
         addresses:
-          - 192.168.178.201/24
+          - 192.168.40.11/24
         routes:
           - network: 0.0.0.0/0
-            gateway: 192.168.178.1
+            gateway: 192.168.40.1
 cluster:
   etcd:
     advertisedSubnets:
-      - 192.168.178.0/24
+      - 192.168.40.0/24
 ```
 
 **node-02.yaml:**
+
 ```yaml
 machine:
   network:
     hostname: node-02
     interfaces:
-      - interface: eth0
+      - interface: enp5s0f3u2
         dhcp: false
         addresses:
-          - 192.168.178.202/24
+          - 192.168.40.12/24
         routes:
           - network: 0.0.0.0/0
-            gateway: 192.168.178.1
+            gateway: 192.168.40.1
 ```
 
 **node-03.yaml:**
+
 ```yaml
 machine:
   network:
     hostname: node-03
     interfaces:
-      - interface: eth0
+      - interface: enp5s0f3u2
         dhcp: false
         addresses:
-          - 192.168.178.203/24
+          - 192.168.40.13/24
         routes:
           - network: 0.0.0.0/0
-            gateway: 192.168.178.1
+            gateway: 192.168.40.1
 ```
 
 ## Helper Script
@@ -267,6 +275,7 @@ ansible-playbook bootstrap.yaml
 ```
 
 The playbook will:
+
 1. Decrypt Talos configs with SOPS
 2. Apply configs to all 3 nodes
 3. Bootstrap the first control plane
@@ -288,7 +297,7 @@ kubectl get nodes -o wide
 kubectl get pods -n kube-system
 
 # Check etcd members
-talosctl -n 192.168.178.201 etcd members
+talosctl -n 192.168.40.11 etcd members
 
 # Check Ceph status (after Rook-Ceph deployment)
 kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph status
@@ -299,14 +308,16 @@ kubectl -n rook-ceph exec -it deploy/rook-ceph-tools -- ceph status
 Talos will automatically detect and make available the 1TB disk (`/dev/sdb`) for Rook-Ceph to use. The `deviceFilter: "^sd[b-z]"` in Rook-Ceph configuration will automatically discover and use this disk.
 
 **Verify disks are available:**
+
 ```bash
 # Check disks on each node
-talosctl -n 192.168.178.201 disks
-talosctl -n 192.168.178.202 disks
-talosctl -n 192.168.178.203 disks
+talosctl -n 192.168.40.11 disks
+talosctl -n 192.168.40.13 disks
+talosctl -n 192.168.40.203 disks
 ```
 
 Each node should show:
+
 - `/dev/sda` (256GB) - Talos OS
 - `/dev/sdb` (1TB) - Available for Ceph
 
@@ -316,27 +327,29 @@ When upgrading Talos, upgrade one control plane at a time:
 
 ```bash
 # Upgrade node-01
-talosctl -n 192.168.178.201 upgrade --image factory.talos.dev/installer/<schematic>:v1.9.1
+talosctl -n 192.168.40.11 upgrade --image factory.talos.dev/installer/<schematic>:v1.9.1
 
 # Wait for node-01 to be ready, then upgrade node-02
-talosctl -n 192.168.178.202 upgrade --image factory.talos.dev/installer/<schematic>:v1.9.1
+talosctl -n 192.168.40.12 upgrade --image factory.talos.dev/installer/<schematic>:v1.9.1
 
 # Wait for node-02 to be ready, then upgrade node-03
-talosctl -n 192.168.178.203 upgrade --image factory.talos.dev/installer/<schematic>:v1.9.1
+talosctl -n 192.168.40.13 upgrade --image factory.talos.dev/installer/<schematic>:v1.9.1
 ```
 
 ## Troubleshooting
 
 **Node won't join cluster:**
+
 ```bash
 # Check node logs
 talosctl -n <node-ip> logs controller-runtime
 
 # Check etcd status
-talosctl -n 192.168.178.201 etcd status
+talosctl -n 192.168.40.11 etcd status
 ```
 
 **Disk not detected by Rook:**
+
 ```bash
 # Check if disk is visible
 talosctl -n <node-ip> disks
@@ -346,6 +359,7 @@ talosctl -n <node-ip> reset --graceful=false --reboot --system-labels-to-wipe ST
 ```
 
 **Network issues:**
+
 ```bash
 # Check interface name
 talosctl -n <node-ip> get links

@@ -2,13 +2,13 @@
 # Global variables for all hosts
 
 # Paths
-repo_root: "{{ lookup('env', 'PWD') }}"
+repo_root: "{{ playbook_dir }}/../../.."
 talos_dir: "{{ repo_root }}/infra/talos"
 k8s_infra_dir: "{{ repo_root }}/infra/k8s"
 argocd_dir: "{{ repo_root }}/argocd"
-age_config_dir: "{{ ansible_env.HOME }}/.config/age"
-talos_config_file: "{{ ansible_env.HOME }}/.talos/config"
-kubeconfig: "{{ ansible_env.HOME }}/kubeconfig"
+age_config_dir: "{{ lookup('env', 'HOME') }}/.config/age"
+talos_config_file: "{{ lookup('env', 'HOME') }}/.talos/config"
+kubeconfig: "{{ lookup('env', 'HOME') }}/kubeconfig"
 
 # Namespaces
 argocd_namespace: argocd

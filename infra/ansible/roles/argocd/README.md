@@ -5,18 +5,27 @@ This role installs and configures ArgoCD for GitOps continuous deployment.
 ## Responsibilities
 
 1. **Setup Secrets** - Retrieves and creates ArgoCD Redis secret from 1Password
-2. **Install ArgoCD** - Deploys ArgoCD server, repo-server, and application controller
-3. **Apply Applications** - Deploys ArgoCD parent apps and projects (root app-of-apps)
-4. **Verify Infrastructure** - Ensures critical infrastructure apps are synced and healthy
+2. **Install ArgoCD** - Deploys ArgoCD components via Helm:
+   - Server (Deployment)
+   - Repo Server (Deployment)
+   - Application Controller (StatefulSet)
+   - ApplicationSet Controller (Deployment)
+   - Notifications Controller (Deployment)
+   - Redis (Deployment)
+3. **Verify Components** - Waits for all deployments and statefulsets to be ready
+4. **Apply Applications** - Deploys ArgoCD parent apps and projects (root app-of-apps)
+5. **Verify Infrastructure** - Ensures critical infrastructure apps are synced and healthy
 
 ## Requirements
 
 - `kubectl` CLI installed
+- `helm` CLI installed
 - `op` (1Password CLI) installed and authenticated
 - Kubeconfig configured
-- ArgoCD manifests in `{{ argocd_dir }}/install`
+- ArgoCD values file at `{{ argocd_dir }}/install/values.yaml`
 - ArgoCD Redis secret in 1Password at `{{ op_argocd_redis_id }}`
 - Sealed Secrets controller running (for secret management)
+- Envoy Gateway installed (provides Gateway API CRDs for HTTPRoute)
 
 ## Variables
 

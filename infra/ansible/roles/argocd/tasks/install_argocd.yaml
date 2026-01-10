@@ -1,17 +1,43 @@
 ---
 # Install ArgoCD
 
-- name: Apply ArgoCD installation manifests
+- name: Add ArgoCD Helm repository
   ansible.builtin.command:
-    cmd: >
-      kubectl kustomize --enable-helm {{ argocd_dir }}/install
-      | kubectl apply -f -
+    cmd: helm repo add argo https://argoproj.github.io/argo-helm
+  register: helm_repo_add
+  changed_when: "'has been added' in helm_repo_add.stdout"
+  failed_when: false
+
+- name: Update Helm repositories
+  ansible.builtin.command:
+    cmd: helm repo update
+  changed_when: false
+
+- name: Create ArgoCD namespace
+  ansible.builtin.command:
+    cmd: kubectl create namespace {{ argocd_namespace }}
   environment:
     KUBECONFIG: "{{ kubeconfig }}"
-  register: argocd_apply
-  changed_when: "'configured' in argocd_apply.stdout or 'created' in argocd_apply.stdout"
+  register: argocd_namespace_create
+  changed_when: "'created' in argocd_namespace_create.stdout"
+  failed_when: argocd_namespace_create.rc != 0 and 'AlreadyExists' not in argocd_namespace_create.stderr
 
-- name: Wait for ArgoCD server to be available
+# renovate: datasource=helm depName=argo-cd registryUrl=https://argoproj.github.io/argo-helm
+- name: Install ArgoCD via Helm
+  ansible.builtin.command:
+    cmd: >
+      helm upgrade --install argocd argo/argo-cd
+      --version 9.1.7
+      --namespace {{ argocd_namespace }}
+      --values {{ argocd_dir }}/install/values.yaml
+      --wait
+      --timeout 10m
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  register: argocd_install
+  changed_when: "'has been upgraded' in argocd_install.stdout or 'has been installed' in argocd_install.stdout"
+
+- name: Wait for ArgoCD server deployment to be available
   ansible.builtin.command:
     cmd: >
       kubectl wait --for=condition=available
@@ -20,13 +46,13 @@
       --timeout={{ argocd_timeout }}s
   environment:
     KUBECONFIG: "{{ kubeconfig }}"
-  retries: 10
+  retries: 3
   delay: "{{ default_delay }}"
   register: argocd_server_ready
   until: argocd_server_ready.rc == 0
   changed_when: false
 
-- name: Wait for ArgoCD repo server to be available
+- name: Wait for ArgoCD repo server deployment to be available
   ansible.builtin.command:
     cmd: >
       kubectl wait --for=condition=available
@@ -35,34 +61,82 @@
       --timeout={{ argocd_timeout }}s
   environment:
     KUBECONFIG: "{{ kubeconfig }}"
-  retries: 10
+  retries: 3
   delay: "{{ default_delay }}"
   register: argocd_repo_ready
   until: argocd_repo_ready.rc == 0
   changed_when: false
 
-- name: Wait for ArgoCD application controller to be available
+- name: Wait for ArgoCD application controller StatefulSet to be ready
   ansible.builtin.command:
     cmd: >
-      kubectl wait --for=condition=available
-      deployment/argocd-application-controller
+      kubectl wait --for=jsonpath='{.status.readyReplicas}'=1
+      statefulset/argocd-application-controller
       -n {{ argocd_namespace }}
       --timeout={{ argocd_timeout }}s
   environment:
     KUBECONFIG: "{{ kubeconfig }}"
-  retries: 10
+  retries: 3
   delay: "{{ default_delay }}"
   register: argocd_controller_ready
   until: argocd_controller_ready.rc == 0
   changed_when: false
 
-- name: Get ArgoCD pods status
+- name: Wait for ArgoCD ApplicationSet controller deployment to be available
   ansible.builtin.command:
-    cmd: "kubectl --kubeconfig={{ kubeconfig }} get pods -n {{ argocd_namespace }}"
-  register: argocd_pods
+    cmd: >
+      kubectl wait --for=condition=available
+      deployment/argocd-applicationset-controller
+      -n {{ argocd_namespace }}
+      --timeout={{ argocd_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 3
+  delay: "{{ default_delay }}"
+  register: argocd_applicationset_ready
+  until: argocd_applicationset_ready.rc == 0
+  changed_when: false
+
+- name: Wait for ArgoCD notifications controller deployment to be available
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=available
+      deployment/argocd-notifications-controller
+      -n {{ argocd_namespace }}
+      --timeout={{ argocd_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 3
+  delay: "{{ default_delay }}"
+  register: argocd_notifications_ready
+  until: argocd_notifications_ready.rc == 0
+  changed_when: false
+
+- name: Wait for all ArgoCD pods to be ready
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=ready pod
+      -l app.kubernetes.io/part-of=argocd
+      -n {{ argocd_namespace }}
+      --timeout={{ argocd_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 3
+  delay: "{{ default_delay }}"
+  register: argocd_pods_ready
+  until: argocd_pods_ready.rc == 0
+  changed_when: false
+
+- name: Get ArgoCD status
+  ansible.builtin.command:
+    cmd: >
+      kubectl --kubeconfig={{ kubeconfig }}
+      get deployments,statefulsets,pods -n {{ argocd_namespace }}
+      -l app.kubernetes.io/part-of=argocd
+  register: argocd_status
   changed_when: false
 
 - name: Display ArgoCD status
   ansible.builtin.debug:
-    msg: "{{ argocd_pods.stdout_lines }}"
+    msg: "{{ argocd_status.stdout_lines }}"
   when: enable_detailed_output

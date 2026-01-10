@@ -4,16 +4,19 @@ This role installs and verifies Cilium CNI (Container Network Interface) for Kub
 
 ## Responsibilities
 
-1. **Apply Cilium** - Deploys Cilium using Helm via kustomize
-2. **Verify Cilium Agents** - Ensures Cilium agents are running on all nodes
-3. **Verify Cilium Operator** - Ensures Cilium operator is ready
-4. **Verify Nodes** - Confirms all nodes are Ready after CNI installation
+1. **Apply Cilium** - Deploys Cilium using Helm
+2. **Apply LB IPAM** - Configures LoadBalancer IP address management
+3. **Verify Cilium Agents** - Ensures Cilium agents are running on all nodes
+4. **Verify Cilium Operator** - Ensures Cilium operator is ready
+5. **Verify Nodes** - Confirms all nodes are Ready after CNI installation
 
 ## Requirements
 
+- `helm` CLI installed
 - `kubectl` CLI installed
 - Kubeconfig configured
-- Cilium Helm chart configured in `{{ k8s_infra_dir }}/networking/cilium`
+- Cilium values file at `{{ k8s_infra_dir }}/networking/cilium/values.yaml`
+- Cilium LB IPAM config at `{{ k8s_infra_dir }}/networking/cilium/lb-ipam.yaml`
 - Kubernetes cluster running (control plane ready)
 
 ## Variables

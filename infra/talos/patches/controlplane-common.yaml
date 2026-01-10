@@ -5,63 +5,72 @@
 machine:
   # Install configuration
   install:
-    disk: /dev/sda  # 256GB system disk
+    disk: /dev/nvme1n1  # 256GB system disk
     wipe: false
 
   # Network configuration
   network:
+    interfaces:
+      - interface: enp5s0f3u2
+        dhcp: true
     nameservers:
-      - 192.168.178.1
+      - 192.168.40.1
       - 1.1.1.1
       - 1.0.0.1
 
   # Kubelet configuration for Rook-Ceph
   kubelet:
-    extraMounts:
-      - destination: /var/lib/rook
-        type: bind
-        source: /var/lib/rook
-        options:
-          - bind
-          - rshared
-          - rw
+    defaultRuntimeSeccompProfileEnabled: true
+    disableManifestsDirectory: true
+    extraConfig:
+      serializeImagePulls: false
     nodeIP:
       validSubnets:
-        - 192.168.178.0/24
-    extraArgs:
-      feature-gates: GracefulNodeShutdown=true,NewVolumeManagerReconstruction=false
-      rotate-server-certificates: "true"
-
-  # Time configuration
-  time:
-    disabled: false
-    servers:
-      - time.cloudflare.com
-      - time.google.com
+        - 192.168.40.0/24
 
   # Features
   features:
     rbac: true
-    stableHostname: true
     kubernetesTalosAPIAccess:
       enabled: true
       allowedRoles:
         - os:admin
       allowedKubernetesNamespaces:
         - kube-system
+    diskQuotaSupport: true
+    kubePrism:
+      enabled: true
+      port: 7445
+    hostDNS:
+      enabled: true
+      forwardKubeDNSToHost: true
+      resolveMemberNames: true
 
   # System disk partitions - Mount 1TB data disk for Ceph
   disks:
-    - device: /dev/sdb  # 1TB data disk for Ceph
+    - device: /dev/nvme0n1  # 1TB data disk for Ceph
       partitions:
         - mountpoint: /var/mnt/ceph
 
   # Sysctls for networking
   sysctls:
-    fs.inotify.max_user_watches: "1048576"
     fs.inotify.max_user_instances: "8192"
-    net.core.rmem_max: "2500000"
-    net.core.wmem_max: "2500000"
+    fs.inotify.max_user_watches: "1048576"
+    net.core.default_qdisc: fq
+    net.core.rmem_max: "67108864"
+    net.core.wmem_max: "67108864"
+    net.ipv4.neigh.default.gc_thresh1: "4096"
+    net.ipv4.neigh.default.gc_thresh2: "8192"
+    net.ipv4.neigh.default.gc_thresh3: "16384"
+    net.ipv4.ping_group_range: 0 2147483647
+    net.ipv4.tcp_congestion_control: bbr
+    net.ipv4.tcp_fastopen: "3"
+    net.ipv4.tcp_mtu_probing: "1"
+    net.ipv4.tcp_rmem: 4096 87380 33554432
+    net.ipv4.tcp_slow_start_after_idle: "0"
+    net.ipv4.tcp_window_scaling: "1"
+    net.ipv4.tcp_wmem: 4096 65536 33554432
+    user.max_user_namespaces: "11255"
 
 # Cluster configuration
 cluster:
@@ -102,16 +111,16 @@ cluster:
   # API server configuration
   apiServer:
     certSANs:
-      - 192.168.178.201
-      - 192.168.178.202
-      - 192.168.178.203
+      - 192.168.40.11
+      - 192.168.40.12
+      - 192.168.40.13
     extraArgs:
       feature-gates: MixedProtocolLBService=true,ServerSideApply=true
 
   # Etcd configuration (3-node HA)
   etcd:
     advertisedSubnets:
-      - 192.168.178.0/24
+      - 192.168.40.0/24
 
   # Allow scheduling on control plane nodes (no workers)
   allowSchedulingOnControlPlanes: true

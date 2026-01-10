@@ -12,13 +12,13 @@ all:
       vars:
         # Cluster configuration
         cluster_name: atoca-k8s
-        bootstrap_node_ip: 192.168.178.201
+        bootstrap_node_ip: 192.168.40.11
 
         # All 3 nodes are control planes (no workers)
         control_plane_nodes:
           - name: node-01
-            ip: 192.168.178.201
+            ip: 192.168.40.11
           - name: node-02
-            ip: 192.168.178.202
+            ip: 192.168.40.12
           - name: node-03
-            ip: 192.168.178.203
+            ip: 192.168.40.13

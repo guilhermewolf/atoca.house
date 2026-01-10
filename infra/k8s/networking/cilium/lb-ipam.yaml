@@ -7,8 +7,8 @@ metadata:
   name: home-pool
 spec:
   blocks:
-    - start: "192.168.178.210"
-      stop: "192.168.178.220"
+    - start: "192.168.40.210"
+      stop: "192.168.40.220"
   serviceSelector:
     matchLabels: {}  # Apply to all services
 ---
@@ -22,6 +22,6 @@ spec:
   nodeSelector:
     matchLabels: {}  # Announce from all nodes
   interfaces:
-    - ^end0  # Raspberry Pi Talos network interface (end0 for RPi)
+    - ^enp5s0f3u2
   externalIPs: true
   loadBalancerIPs: true

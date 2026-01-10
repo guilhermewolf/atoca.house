@@ -6,19 +6,16 @@
 set -euo pipefail
 
 # Configuration
-CLUSTER_NAME="atoca-k8s"
-CLUSTER_ENDPOINT="https://192.168.178.201:6443"
+CLUSTER_NAME="atoca-house"
+CLUSTER_ENDPOINT="https://192.168.40.11:6443"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GEN_DIR="${SCRIPT_DIR}/generated"
 PATCHES_DIR="${SCRIPT_DIR}/patches"
 TALOS_VERSION="${TALOS_VERSION:-v1.9.0}"
 
-# Node configuration
-declare -A NODES=(
-  ["node-01"]="192.168.178.201"
-  ["node-02"]="192.168.178.202"
-  ["node-03"]="192.168.178.203"
-)
+# Node configuration (bash 3.2 compatible)
+NODE_NAMES=("node-01" "node-02" "node-03")
+NODE_IPS=("192.168.40.11" "192.168.40.12" "192.168.40.13")
 
 # Colors for output
 RED='\033[0;31m'
@@ -76,11 +73,23 @@ generate_base_configs() {
   rm -rf "${GEN_DIR}"
   mkdir -p "${GEN_DIR}"
 
-  # Generate base config with secrets
-  talosctl gen config "${CLUSTER_NAME}" "${CLUSTER_ENDPOINT}" \
-    --output-dir "${GEN_DIR}" \
-    --with-secrets "${GEN_DIR}/secrets.yaml" \
-    --force
+  # Check if we have existing secrets to reuse
+  local secrets_backup_dir="${HOME}/.talos"
+  local existing_secrets=$(ls -t "${secrets_backup_dir}"/atoca-secrets-*.yaml 2>/dev/null | head -n1)
+
+  if [ -n "${existing_secrets}" ] && [ -f "${existing_secrets}" ]; then
+    log_info "Found existing secrets: ${existing_secrets}"
+    log_info "Regenerating configs with existing secrets..."
+    talosctl gen config "${CLUSTER_NAME}" "${CLUSTER_ENDPOINT}" \
+      --output-dir "${GEN_DIR}" \
+      --with-secrets "${existing_secrets}" \
+      --force
+  else
+    log_info "No existing secrets found, generating new cluster..."
+    talosctl gen config "${CLUSTER_NAME}" "${CLUSTER_ENDPOINT}" \
+      --output-dir "${GEN_DIR}" \
+      --force
+  fi
 
   log_info "Base configurations generated"
 }
@@ -93,14 +102,14 @@ apply_patches() {
 
   log_info "Applying patches for ${node_name} (${node_ip})..."
 
-  # Apply common control plane patch
-  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' \
+  # Apply common control plane patch - merge patch into base config
+  yq eval-all 'select(fileIndex == 0) *+ select(fileIndex == 1)' \
     "${input_file}" \
     "${PATCHES_DIR}/controlplane-common.yaml" > "${output_file}.tmp"
 
   # Apply node-specific patch
   if [ -f "${PATCHES_DIR}/${node_name}.yaml" ]; then
-    yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' \
+    yq eval-all 'select(fileIndex == 0) *+ select(fileIndex == 1)' \
       "${output_file}.tmp" \
       "${PATCHES_DIR}/${node_name}.yaml" > "${output_file}"
     rm "${output_file}.tmp"
@@ -120,12 +129,24 @@ generate_node_configs() {
     exit 1
   fi
 
-  # Generate config for each node
-  for node_name in "${!NODES[@]}"; do
-    local node_ip="${NODES[$node_name]}"
+  # Generate config for each node using talosctl patch
+  for i in "${!NODE_NAMES[@]}"; do
+    local node_name="${NODE_NAMES[$i]}"
+    local node_ip="${NODE_IPS[$i]}"
     local output_file="${GEN_DIR}/controlplane-${node_name}.yaml"
 
-    apply_patches "${node_name}" "${node_ip}" "${base_cp}" "${output_file}"
+    # Use talosctl to apply patches properly
+    talosctl machineconfig patch "${base_cp}" \
+      --patch @"${PATCHES_DIR}/controlplane-common.yaml" \
+      --patch @"${PATCHES_DIR}/${node_name}.yaml" \
+      --output "${output_file}" 2>/dev/null || {
+      log_error "Failed to generate config for ${node_name}"
+      exit 1
+    }
+
+    # Replace auto hostname with explicit hostname in the HostnameConfig document
+    sed -i '' 's/^auto: stable$/hostname: '"${node_name}"'/' "${output_file}"
+
     log_info "Generated config for ${node_name}"
   done
 }
@@ -144,7 +165,8 @@ encrypt_configs() {
   export SOPS_AGE_KEY_FILE="${age_key}"
 
   # Encrypt each control plane config
-  for node_name in "${!NODES[@]}"; do
+  for i in "${!NODE_NAMES[@]}"; do
+    local node_name="${NODE_NAMES[$i]}"
     local input="${GEN_DIR}/controlplane-${node_name}.yaml"
     local output="${SCRIPT_DIR}/controlplane-${node_name}.enc.yaml"
 
@@ -190,8 +212,8 @@ show_summary() {
   echo "========================================"
   echo ""
   echo "Generated encrypted configs for:"
-  for node_name in "${!NODES[@]}"; do
-    echo "  - ${node_name} (${NODES[$node_name]})"
+  for i in "${!NODE_NAMES[@]}"; do
+    echo "  - ${NODE_NAMES[$i]} (${NODE_IPS[$i]})"
   done
   echo ""
   echo "Next steps:"

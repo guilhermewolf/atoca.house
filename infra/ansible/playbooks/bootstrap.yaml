@@ -14,6 +14,7 @@
         - op
         - kubeseal
       changed_when: false
+      tags: [always]
 
     - name: Display bootstrap information
       ansible.builtin.debug:
@@ -28,30 +29,35 @@
           - "This playbook will:"
           - "  1. Setup Age encryption for SOPS"
           - "  2. Deploy and bootstrap Talos Linux"
-          - "  3. Install Cilium CNI (networking)"
-          - "  4. Install Sealed Secrets (secret management)"
-          - "  5. Install ArgoCD (GitOps)"
-          - "  6. Deploy infrastructure applications"
-          - "  7. Verify Rook-Ceph storage"
+          - "  3. Install Cilium CNI (pod networking)"
+          - "  4. Install Envoy Gateway (ingress controller)"
+          - "  5. Install Sealed Secrets (secret management)"
+          - "  6. Install ArgoCD (GitOps)"
+          - "  7. Deploy infrastructure applications"
+          - "  8. Verify Rook-Ceph storage"
           - ""
           - "Estimated time: 30-45 minutes"
           - "============================================================================"
+      tags: [always]
 
   roles:
-    - role: talos
-      tags: [bootstrap, talos, phase1]
+    # - role: talos
+    #   tags: [phase1]
 
-    - role: cilium
-      tags: [bootstrap, cilium, cni, phase2]
+    # - role: cilium
+    #   tags: [phase2]
 
-    - role: sealed_secrets
-      tags: [bootstrap, sealed-secrets, phase3]
+    # - role: envoy_gateway
+    #   tags: [phase3]
+
+    # - role: sealed_secrets
+    #   tags: [phase4]
 
     - role: argocd
-      tags: [bootstrap, argocd, gitops, phase4]
+      tags: [phase5]
 
-    - role: rook_ceph
-      tags: [bootstrap, rook-ceph, storage, phase5]
+    # - role: rook_ceph
+    #   tags: [phase6]
 
   post_tasks:
     - name: Display bootstrap completion message
@@ -68,7 +74,8 @@
           - "  • Distributed storage with Rook-Ceph"
           - ""
           - "Core Infrastructure Installed:"
-          - "  ✓ Cilium CNI (eBPF networking with Gateway API)"
+          - "  ✓ Cilium CNI (eBPF pod networking)"
+          - "  ✓ Envoy Gateway (Gateway API ingress controller)"
           - "  ✓ Sealed Secrets (encrypted secret storage)"
           - "  ✓ ArgoCD (GitOps continuous deployment)"
           - "  ✓ Cert-Manager (automated TLS certificate management)"
@@ -129,3 +136,4 @@
           - "  task cluster:argocd-apps         # List all ArgoCD apps"
           - ""
           - "============================================================================"
+      tags: [always]

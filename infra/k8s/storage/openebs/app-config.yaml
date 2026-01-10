@@ -1,0 +1,7 @@
+app:
+  name: openebs
+  namespace: openebs
+  chart: openebs
+  chartRepo: oci://ghcr.io/openebs/charts
+  chartVersion: 4.4.0
+  disableAutoSync: true

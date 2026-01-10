@@ -1,7 +1,0 @@
-app:
-  name: csi
-  namespace: csi
-  # CSI doesn't use Helm chart - it uses raw manifests
-  crdVersion: v8.4.0
-  controllerVersion: v8.4.0
-  disableAutoSync: true

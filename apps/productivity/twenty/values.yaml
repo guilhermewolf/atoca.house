@@ -142,7 +142,7 @@ persistence:
   storage:
     enabled: true
     type: persistentVolumeClaim
-    storageClass: longhorn
+    storageClass: ceph-block
     accessMode: ReadWriteOnce
     size: 5Gi
     advancedMounts:
@@ -152,7 +152,7 @@ persistence:
   docker-data:
     enabled: true
     type: persistentVolumeClaim
-    storageClass: longhorn
+    storageClass: ceph-block
     accessMode: ReadWriteOnce
     size: 5Gi
     advancedMounts:

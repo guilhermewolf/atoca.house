@@ -2,7 +2,7 @@ app:
   name: envoy-gateway
   namespace: envoy-gateway-system
   chart: gateway-helm
-  chartRepo: oci://docker.io/envoyproxy
+  chartRepo: docker.io/envoyproxy
   chartVersion: v1.6.1 # renovate: datasource=helm depName=gateway-helm registryUrl=oci://docker.io/envoyproxy
   hasValues: true
   disableAutoSync: true

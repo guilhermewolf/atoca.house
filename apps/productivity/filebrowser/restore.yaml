@@ -12,8 +12,8 @@ spec:
     repository: filebrowser-r2-secret
     copyMethod: Direct
     destinationPVC: filebrowser
-    storageClassName: longhorn
-    volumeSnapshotClassName: longhorn-snapshot-vsc
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool
     moverSecurityContext:
       runAsUser: 1000
       runAsGroup: 1000

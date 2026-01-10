@@ -46,7 +46,7 @@ persistence:
   prowlarr:
     enabled: true
     type: persistentVolumeClaim
-    storageClass: longhorn
+    storageClass: ceph-block
     accessMode: ReadWriteOnce
     size: 2Gi
     globalMounts:

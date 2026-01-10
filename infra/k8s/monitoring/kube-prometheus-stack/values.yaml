@@ -21,7 +21,7 @@ alertmanager:
     storage:
       volumeClaimTemplate:
         spec:
-          storageClassName: longhorn
+          storageClassName: ceph-block
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
@@ -56,7 +56,7 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: longhorn
+          storageClassName: ceph-block
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:

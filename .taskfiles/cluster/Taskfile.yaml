@@ -82,21 +82,21 @@ tasks:
     cmds:
       - cmd: echo "=== Checking Nodes ==="
         silent: true
-      - kubectl get nodes -o wide
+      - cmd: kubectl get nodes -o wide
       - cmd: echo "\n=== Checking Ceph Status ==="
         silent: true
-      - kubectl -n rook-ceph exec deploy/rook-ceph-tools -- ceph status
+      - cmd: kubectl -n rook-ceph exec deploy/rook-ceph-tools -- ceph status
       - cmd: echo "\n=== Checking Storage Classes ==="
         silent: true
-      - kubectl get storageclass
+      - cmd: kubectl get storageclass
       - cmd: echo "\n=== Checking ArgoCD Applications ==="
         silent: true
-      - kubectl get applications -n argocd
+      - cmd: kubectl get applications -n argocd
       - cmd: echo "\n=== Checking Pods ==="
         silent: true
-      - kubectl get pods -A | grep -v "Running\|Completed" || echo "All pods running!"
+      - cmd: kubectl get pods -A | grep -v "Running\|Completed" || echo "All pods running!"
     preconditions:
-      - which kubectl
+      - cmd: which kubectl
       - sh: 'kubectl cluster-info'
         msg: "kubectl not configured or cluster not accessible"
 
@@ -166,20 +166,18 @@ tasks:
   get-ceph-password:
     desc: Get Ceph dashboard password
     cmds:
-      - kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 -d && echo
-    preconditions:
-      - which kubectl
-      - sh: 'kubectl get namespace rook-ceph'
-        msg: "Rook-ceph namespace not found"
+      - kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath='{.data.password}' | base64 -d && echo
 
   port-forward-argocd:
     desc: Port forward ArgoCD server to localhost:8080
     cmds:
-      - cmd: echo "ArgoCD UI will be available at https://localhost:8080"
+      - cmd: 'echo "ArgoCD UI will be available at https://localhost:8080"'
         silent: true
-      - cmd: echo "Username: admin"
+      - cmd: 'echo "Username: admin"'
         silent: true
-      - cmd: echo "Password: $(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)"
+      - cmd: |
+          PW="$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d)"
+          echo "Password: ${PW}"
         silent: true
       - kubectl port-forward svc/argocd-server -n argocd 8080:443
     preconditions:
@@ -190,11 +188,13 @@ tasks:
   port-forward-ceph:
     desc: Port forward Ceph dashboard to localhost:7000
     cmds:
-      - cmd: echo "Ceph dashboard will be available at http://localhost:7000"
+      - cmd: 'echo "Ceph dashboard will be available at http://localhost:7000"'
         silent: true
-      - cmd: echo "Username: admin"
+      - cmd: 'echo "Username: admin"'
         silent: true
-      - cmd: echo "Password: $(kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath="{['data']['password']}" | base64 -d)"
+      - cmd: |
+          PW="$(kubectl -n rook-ceph get secret rook-ceph-dashboard-password -o jsonpath='{.data.password}' | base64 -d)"
+          echo "Password: ${PW}"
         silent: true
       - kubectl port-forward -n rook-ceph svc/rook-ceph-mgr-dashboard 7000:7000
     preconditions:

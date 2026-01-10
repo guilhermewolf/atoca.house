@@ -10,13 +10,15 @@
   "editor.guides.highlightActiveBracketPair": true,
   "editor.hover.delay": 1500,
   "editor.stickyScroll.enabled": true,
-  "editor.rulers": [80, 120],
+  "editor.rulers": [
+    80,
+    120
+  ],
   "editor.renderWhitespace": "boundary",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
   },
-
   // ============================================================================
   // File Explorer
   // ============================================================================
@@ -31,7 +33,6 @@
     "Taskfile.yaml": "Taskfile.*.yaml",
     "README.md": "*.md"
   },
-
   // ============================================================================
   // File Associations
   // ============================================================================
@@ -55,7 +56,6 @@
     "**/node_modules": true,
     "**/.git": false
   },
-
   // ============================================================================
   // Search Settings
   // ============================================================================
@@ -68,7 +68,6 @@
     "**/infra/talos/generated": true,
     "**/infra/talos/old-cluster-backup": true
   },
-
   // ============================================================================
   // Material Icon Theme - File Associations
   // ============================================================================
@@ -85,7 +84,6 @@
     "bootstrap.yaml": "ansible",
     "values.yaml": "helm"
   },
-
   // ============================================================================
   // Material Icon Theme - Folder Associations
   // ============================================================================
@@ -100,13 +98,11 @@
     "apps": "app",
     "argocd": "pipe",
     "stacks": "docker",
-
     // Infra subdirectories
     "ansible": "ansible",
     "talos": "linux",
     "terraform": "terraform",
     "k8s": "kubernetes",
-
     // Infrastructure categories (new structure)
     "networking": "connection",
     "storage": "dump",
@@ -114,7 +110,6 @@
     "monitoring": "log",
     "cluster-management": "command",
     "operators": "robot",
-
     // Application categories (new structure)
     "media": "video",
     "data": "database",
@@ -122,7 +117,6 @@
     "communication": "messages",
     "productivity": "tools",
     "home-automation": "home",
-
     // Specific applications/services
     "arc-runners": "github",
     "arc-systems": "github",
@@ -137,7 +131,7 @@
     "flaresolverr": "cloudflare",
     "grafana": "log",
     "kube-prometheus-stack": "log",
-    "longhorn-system": "dump",
+    "openebs": "dump",
     "rook-ceph-operator": "dump",
     "rook-ceph-cluster": "dump",
     "metrics-server": "log",
@@ -157,7 +151,6 @@
     "nzbget": "download",
     "jellyfin": "video"
   },
-
   // ============================================================================
   // YAML Language Server
   // ============================================================================
@@ -181,7 +174,6 @@
     "!reference sequence",
     "!vault scalar"
   ],
-
   // ============================================================================
   // Kubernetes Extension
   // ============================================================================
@@ -193,14 +185,12 @@
     "vscode-kubernetes.minikube-path.mac": "/opt/homebrew/bin/minikube"
   },
   "vscode-kubernetes.kubectl.showDebugRaw": false,
-
   // ============================================================================
   // SOPS (Secret Operations)
   // ============================================================================
   "sops.defaults.ageKeyFile": "~/.config/age/age.key",
   "sops.defaults.awsProfile": "",
   "sops.defaults.gcp_kms_resource_id": "",
-
   // ============================================================================
   // Git Settings
   // ============================================================================
@@ -210,7 +200,6 @@
   "git.ignoreRebaseWarning": true,
   "git.inputValidationLength": 72,
   "git.inputValidationSubjectLength": 50,
-
   // ============================================================================
   // Language-Specific Settings
   // ============================================================================
@@ -248,14 +237,12 @@
     "editor.defaultFormatter": "hashicorp.terraform",
     "editor.formatOnSave": true
   },
-
   // ============================================================================
   // Ansible
   // ============================================================================
   "ansible.python.interpreterPath": "/opt/homebrew/bin/python3",
   "ansible.validation.enabled": true,
   "ansible.validation.lint.enabled": true,
-
   // ============================================================================
   // Better Comments (Color-coded comments)
   // ============================================================================
@@ -315,7 +302,6 @@
       "italic": false
     }
   ],
-
   // ============================================================================
   // Terminal
   // ============================================================================
@@ -326,12 +312,10 @@
     "KUBECONFIG": "${env:HOME}/kubeconfig",
     "SOPS_AGE_KEY_FILE": "${env:HOME}/.config/age/age.key"
   },
-
   // ============================================================================
   // Security
   // ============================================================================
   "security.workspace.trust.untrustedFiles": "open",
-
   // ============================================================================
   // Misc
   // ============================================================================

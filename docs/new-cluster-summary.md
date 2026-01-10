@@ -38,7 +38,7 @@ Updated for new cluster topology:
 - Updated node IP addresses (201, 202, 203)
 - Parallel config application to all nodes
 - Enhanced waiting/health checks for HA setup
-- Rook-Ceph integration (replaced Longhorn)
+- Rook-Ceph integration (replaced ceph-block)
 - Comprehensive completion message with quick start commands
 
 **Bootstrap Flow:**
@@ -156,7 +156,7 @@ Updated Talos overview:
 **Main README** (`/README.md`):
 - Updated hardware table (Mini PCs vs Raspberry Pis)
 - Updated cluster description (HA control planes)
-- Updated storage section (Rook-Ceph vs Longhorn)
+- Updated storage section (Rook-Ceph vs ceph-block)
 - Updated directory structure documentation
 
 **Directory Structure:**
@@ -181,7 +181,7 @@ Updated Talos overview:
       └───────┘ └───────┘ └───────┘
 
 Total: 20GB RAM, ARM64, Single control plane
-Storage: Longhorn (external NAS)
+Storage: ceph-block (external NAS)
 ```
 
 ### New Cluster (Mini PC)

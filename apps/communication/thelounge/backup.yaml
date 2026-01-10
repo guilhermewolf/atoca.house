@@ -21,4 +21,4 @@ spec:
       monthly: 1
       yearly: 1
     copyMethod: Clone
-    storageClassName: longhorn
+    storageClassName: ceph-block

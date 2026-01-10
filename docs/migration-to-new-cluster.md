@@ -13,11 +13,11 @@ This guide documents the migration from the existing 4-node Raspberry Pi cluster
 | **Topology** | 1 control plane + 3 workers | 3 control planes (HA) |
 | **Total RAM** | 20GB | 48GB |
 | **Total CPU** | ~16 cores (ARM) | 48 cores (24 physical) |
-| **Storage** | External NAS (Longhorn) | Distributed Ceph (3x 1TB) |
+| **Storage** | External NAS (ceph-block) | Distributed Ceph (3x 1TB) |
 | **System Disks** | 4x 128GB SD cards | 3x 256GB NVMe |
 | **Data Disks** | None (NAS only) | 3x 1TB NVMe (Ceph) |
 | **Talos Version** | 1.11.5 | 1.9.0+ |
-| **Storage Solution** | Longhorn + NAS | Rook-Ceph (block/fs/object) |
+| **Storage Solution** | ceph-block + NAS | Rook-Ceph (block/fs/object) |
 
 ## Key Architectural Changes
 
@@ -34,7 +34,7 @@ This guide documents the migration from the existing 4-node Raspberry Pi cluster
 
 ### 2. Hyper-Converged Storage
 
-**Old:** External Longhorn storage or NAS
+**Old:** External ceph-block storage or NAS
 **New:** Rook-Ceph integrated on all nodes
 
 **Benefits:**
@@ -217,12 +217,12 @@ This guide documents the migration from the existing 4-node Raspberry Pi cluster
 
 ## Storage Migration Details
 
-### Longhorn → Rook-Ceph
+### ceph-block → Rook-Ceph
 
 **Block Storage (RWO):**
 ```yaml
 # Old
-storageClassName: longhorn
+storageClassName: ceph-block
 
 # New
 storageClassName: ceph-block  # This is now the default
@@ -231,7 +231,7 @@ storageClassName: ceph-block  # This is now the default
 **Shared Filesystem (RWX):**
 ```yaml
 # Old
-storageClassName: longhorn  # Or NFS
+storageClassName: ceph-block  # Or NFS
 
 # New
 storageClassName: ceph-filesystem  # Native CephFS

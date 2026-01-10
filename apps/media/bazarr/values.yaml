@@ -73,7 +73,7 @@ persistence:
   bazarr:
     enabled: true
     type: persistentVolumeClaim
-    storageClass: longhorn
+    storageClass: ceph-block
     accessMode: ReadWriteOnce
     size: 1Gi
     globalMounts:

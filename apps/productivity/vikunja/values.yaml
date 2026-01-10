@@ -90,7 +90,7 @@ persistence:
     enabled: true
     size: 5Gi
     type: persistentVolumeClaim
-    storageClass: longhorn
+    storageClass: ceph-block
     accessMode: ReadWriteOnce
     globalMounts:
       - path:  /app/vikunja/files

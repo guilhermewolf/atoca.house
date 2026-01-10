@@ -1,79 +1,14 @@
-# Rook-Ceph Operator Configuration for 3-node homelab
-# Optimized for control plane nodes with limited resources
-
-# Resource limits for operator (runs on all nodes)
-resources:
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 256Mi
-
-# Enable discovery daemon to find disks
 csi:
-  enableRbdDriver: true
-  enableCephfsDriver: true
-  enableGrpcMetrics: true
-
-  # CSI provisioner resources (one per cluster)
-  provisionerReplicas: 2
-
-  # Resource limits for CSI pods
-  csiRBDProvisionerResource: |
-    - name: csi-provisioner
-      resource:
-        requests:
-          memory: 128Mi
-          cpu: 50m
-        limits:
-          memory: 256Mi
-          cpu: 200m
-    - name: csi-attacher
-      resource:
-        requests:
-          memory: 128Mi
-          cpu: 50m
-        limits:
-          memory: 256Mi
-          cpu: 200m
-
-  csiCephFSProvisionerResource: |
-    - name: csi-provisioner
-      resource:
-        requests:
-          memory: 128Mi
-          cpu: 50m
-        limits:
-          memory: 256Mi
-          cpu: 200m
-    - name: csi-attacher
-      resource:
-        requests:
-          memory: 128Mi
-          cpu: 50m
-        limits:
-          memory: 256Mi
-          cpu: 200m
-
-# Monitoring
+  cephFSKernelMountOptions: ms_mode=prefer-crc
+  enableLiveness: true
+  serviceMonitor:
+    enabled: true
+image:
+  repository: ghcr.io/rook/ceph
 monitoring:
   enabled: true
-
-# Enable host networking for better performance
-hostNetwork: true
-
-# Node affinity - allow on control planes
-tolerations:
-  - key: node-role.kubernetes.io/control-plane
-    operator: Exists
-  - key: node-role.kubernetes.io/master
-    operator: Exists
-
-# Discover devices on all nodes
-discover:
-  tolerations:
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
-    - key: node-role.kubernetes.io/master
-      operator: Exists
+resources:
+  requests:
+    memory: 128Mi # unchangable
+    cpu: 100m # unchangable
+  limits: {}

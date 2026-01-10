@@ -1,5 +1,5 @@
 app:
-  name: external-dns
+  name: external-dns-cloudflare
   namespace: external-dns
   chart: external-dns
   chartRepo: https://kubernetes-sigs.github.io/external-dns/

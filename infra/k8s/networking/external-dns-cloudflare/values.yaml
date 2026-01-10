@@ -8,6 +8,11 @@ rbac:
 provider:
   name: cloudflare
 
+podAnnotations:
+  secret.reloader.stakater.com/reload: externaldns-cloudflare-secrets
+
+policy: sync
+
 env:
   - name: CF_API_KEY
     valueFrom:
@@ -21,9 +26,13 @@ env:
         key: cloudflare-email
 sources:
   - gateway-httproute
-
+  - crd
 domainFilters:
   - atoca.house
+
+triggerLoopOnEvent: true
+txtOwnerId: main
+txtPrefix: "k8s."
 
 resources:
   requests:

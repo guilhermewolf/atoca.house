@@ -21,6 +21,13 @@ machine:
     interfaces:
       - interface: enp5s0f3u2
         dhcp: true
+        vlans:
+          - # IOT
+            vlanId: 5
+            dhcp: false
+          - # VPN
+            vlanId: 6
+            dhcp: false
     nameservers:
       - 192.168.40.1
       - 1.1.1.1

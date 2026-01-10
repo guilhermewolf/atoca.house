@@ -41,8 +41,8 @@
       tags: [always]
 
   roles:
-    # - role: talos
-    #   tags: [phase1]
+    - role: talos
+      tags: [phase1]
 
     # - role: cilium
     #   tags: [phase2]
@@ -53,8 +53,8 @@
     # - role: sealed_secrets
     #   tags: [phase4]
 
-    - role: argocd
-      tags: [phase5]
+    # - role: argocd
+    #   tags: [phase5]
 
     # - role: rook_ceph
     #   tags: [phase6]

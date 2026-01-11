@@ -1,26 +1,26 @@
 controllers:
   nzbget:
     containers:
-      app:
+      nzbget:
         image:
           repository: ghcr.io/home-operations/nzbget
           tag: 25.4.0@sha256:7afaa93e1992f86a033a310eb0f012f1e4c6bd406caa608146df951e85298ff1
         env:
           NZBGET__PORT: &port 80
           TZ: Europe/Amsterdam
-        probes:
-          liveness: &probes
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /jsonrpc/status
-                port: *port
-              initialDelaySeconds: 0
-              periodSeconds: 10
-              timeoutSeconds: 1
-              failureThreshold: 3
-          readiness: *probes
+        # probes:
+        #   liveness: &probes
+        #     enabled: true
+        #     custom: true
+        #     spec:
+        #       httpGet:
+        #         path: /jsonrpc/status
+        #         port: *port
+        #       initialDelaySeconds: 0
+        #       periodSeconds: 10
+        #       timeoutSeconds: 1
+        #       failureThreshold: 3
+        #   readiness: *probes
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -41,31 +41,48 @@ defaultPodOptions:
       }]
   securityContext:
     runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
     fsGroupChangePolicy: OnRootMismatch
+
 service:
-  app:
+  nzbget:
+    controller: nzbget
     ports:
       http:
         port: *port
 route:
-  app:
-    hostnames:
-      - nzbget.atoca.house
+  nzbget:
+    enabled: true
+    kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: network
+        namespace: kube-system
+    hostnames:
+      - nzbget.atoca.house
+    rules:
+      - backendRefs:
+          - name: nzbget
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 persistence:
   config:
-    existingClaim: "{{ .Release.Name }}"
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /config
   media:
     type: nfs
     server: nas.atoca.house
     path: /mnt/user/data/usenet
     globalMounts:
       - path: /media/Downloads/nzbget
-        subPath: Downloads/nzbget
   tmp:
     type: emptyDir

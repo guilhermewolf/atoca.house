@@ -33,8 +33,9 @@
           - "  4. Install Envoy Gateway (ingress controller)"
           - "  5. Install Sealed Secrets (secret management)"
           - "  6. Install ArgoCD (GitOps)"
-          - "  7. Deploy infrastructure applications"
-          - "  8. Verify Rook-Ceph storage"
+          - "  7. Install Volume Snapshot CRDs (CSI snapshots)"
+          - "  8. Deploy infrastructure applications"
+          - "  9. Verify Rook-Ceph storage"
           - ""
           - "Estimated time: 30-45 minutes"
           - "============================================================================"
@@ -44,20 +45,23 @@
     - role: talos
       tags: [phase1]
 
-    # - role: cilium
-    #   tags: [phase2]
+    - role: cilium
+      tags: [phase2]
 
-    # - role: envoy_gateway
-    #   tags: [phase3]
+    - role: envoy_gateway
+      tags: [phase3]
 
-    # - role: sealed_secrets
-    #   tags: [phase4]
+    - role: sealed_secrets
+      tags: [phase4]
 
-    # - role: argocd
-    #   tags: [phase5]
+    - role: argocd
+      tags: [phase5]
 
-    # - role: rook_ceph
-    #   tags: [phase6]
+    - role: volume_snapshots
+      tags: [phase5.5, snapshots]
+
+    - role: rook_ceph
+      tags: [phase6]
 
   post_tasks:
     - name: Display bootstrap completion message
@@ -78,6 +82,7 @@
           - "  ✓ Envoy Gateway (Gateway API ingress controller)"
           - "  ✓ Sealed Secrets (encrypted secret storage)"
           - "  ✓ ArgoCD (GitOps continuous deployment)"
+          - "  ✓ Volume Snapshot CRDs (CSI snapshot support)"
           - "  ✓ Cert-Manager (automated TLS certificate management)"
           - "  ✓ External Secrets (secret injection from 1Password)"
           - "  ✓ 1Password Operator (secure secret management)"

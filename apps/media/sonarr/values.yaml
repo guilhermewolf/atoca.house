@@ -3,7 +3,7 @@ controllers:
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
-      app:
+      sonarr:
         image:
           repository: ghcr.io/home-operations/sonarr
           tag: 4.0.16.2943@sha256:0a1b8f5cb5b072f7ad8c6ff64a25dc512115d1a114ecf19a58a3b4f870207ddd
@@ -45,25 +45,46 @@ controllers:
 defaultPodOptions:
   securityContext:
     runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
     fsGroupChangePolicy: OnRootMismatch
+
 service:
-  app:
+  sonarr:
+    controller: sonarr
     ports:
       http:
         port: *port
+
 route:
-  app:
-    hostnames:
-      - sonarr.atoca.house
+  sonarr:
+    enabled: true
+    kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: network
+        namespace: kube-system
+    hostnames:
+      - sonarr.atoca.house
+    rules:
+      - backendRefs:
+          - name: sonarr
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
 persistence:
   config:
-    existingClaim: "{{ .Release.Name }}"
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    globalMounts:
+      - path: /config/
+
   scripts:
     type: configMap
     name: sonarr-configmap
@@ -72,9 +93,9 @@ persistence:
       - readOnly: true
   media:
     type: nfs
-    server: expanse.internal
-    path: /mnt/eros/Media
+    server: nas.atoca.house
+    path: /mnt/user/data/
     globalMounts:
-      - path: /media
+      - path: /data
   tmp:
     type: emptyDir

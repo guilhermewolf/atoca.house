@@ -1,0 +1,118 @@
+---
+controllers:
+  pgadmin:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    pod:
+      securityContext:
+        runAsUser: 5050
+        runAsGroup: 5050
+        fsGroup: 5050
+        fsGroupChangePolicy: OnRootMismatch
+    containers:
+      pgadmin:
+        image:
+          repository: dpage/pgadmin4
+          tag: "9.11"
+        env:
+          PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
+          PGADMIN_DISABLE_POSTFIX: "true"
+          PGADMIN_LISTEN_PORT: &port 80
+          PGADMIN_DEFAULT_EMAIL: "admin@atoca.house"
+          PGADMIN_DEFAULT_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: pgadmin-secret-auth
+                key: PGADMIN_PASSWORD
+        probes:
+          liveness: &probes
+            enabled: false
+          readiness: *probes
+        resources:
+          requests:
+            cpu: 50m
+            memory: 100Mi
+          limits:
+            memory: 500Mi
+
+
+configMaps:
+  servers:
+    data:
+      servers.json: |
+        {
+          "Servers": {
+            "1": {
+              "Name": "crunchy",
+              "Group": "Servers",
+              "Host": "postgres-primary.crunchy-postgres-cluster.svc",
+              "Port": 5432,
+              "MaintenanceDB": "postgres",
+              "Username": "postgres",
+              "PassFile": "/pgadmin4/pgpass",
+              "DBRestrictionType": "databases",
+              "UseSSHTunnel": 0,
+              "TunnelPort": "22",
+              "TunnelAuthentication": 0,
+              "TunnelPromptPassword": 0,
+              "TunnelKeepAlive": 0,
+              "KerberosAuthentication": false,
+              "ConnectionParameters": {
+                "sslmode": "prefer",
+                "connect_timeout": 10
+              }
+            }
+          }
+        }
+
+service:
+  pgadmin:
+    controller: pgadmin
+    ports:
+      http:
+        port: *port
+
+route:
+  pgadmin:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: kube-system
+    hostnames:
+      - pgadmin.atoca.house
+    rules:
+      - backendRefs:
+          - name: pgadmin
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /var/lib/pgadmin
+
+  pgpass:
+    enabled: true
+    type: secret
+    name: pgadmin-secret
+    defaultMode: 0600
+    advancedMounts:
+      pgadmin:
+        pgadmin:
+          - path: /pgadmin4/pgpass
+            subPath: pgpass
+  servers:
+    type: configMap
+    name: pgadmin
+    globalMounts:
+      - path: /pgadmin4/servers.json
+        subPath: servers.json

@@ -19,6 +19,7 @@
     cmd: >
       talosctl apply-config
       --nodes {{ item.ip }}
+      --insecure
       --file {{ talos_dir }}/controlplane-{{ item.name }}.yaml
       --mode=auto
   loop: "{{ control_plane_nodes }}"

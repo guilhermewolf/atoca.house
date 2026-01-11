@@ -32,8 +32,7 @@ spec:
         repoURL: https://github.com/guilhermewolf/atoca.house
         targetRevision: HEAD
         path: 'apps/data/{{.app.name}}'
-        directory:
-          exclude: '{application.yaml,app-config.yaml}'
+        kustomize: {}
 
       syncPolicy:
         syncOptions:

@@ -30,6 +30,16 @@ controllers:
             memory: "256Mi"
             cpu: "500m"
 
+defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.14/24"],
+        "mac": "3a:91:7c:2e:58:04"
+      }]
+
 service:
   thelounge:
     controller: thelounge

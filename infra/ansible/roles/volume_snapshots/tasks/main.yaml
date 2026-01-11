@@ -1,0 +1,64 @@
+---
+# Install Kubernetes Volume Snapshot CRDs required by Rook-Ceph CSI
+
+- name: Install Volume Snapshot CRDs
+  ansible.builtin.command:
+    cmd: >
+      kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ volume_snapshot_version }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+      -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ volume_snapshot_version }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+      -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ volume_snapshot_version }}/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  register: snapshot_crds_apply
+  changed_when: "'configured' in snapshot_crds_apply.stdout or 'created' in snapshot_crds_apply.stdout"
+
+- name: Install Snapshot Controller
+  ansible.builtin.command:
+    cmd: >
+      kubectl apply -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ volume_snapshot_version }}/deploy/kubernetes/snapshot-controller/rbac-snapshot-controller.yaml
+      -f https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/{{ volume_snapshot_version }}/deploy/kubernetes/snapshot-controller/setup-snapshot-controller.yaml
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  register: snapshot_controller_apply
+  changed_when: "'configured' in snapshot_controller_apply.stdout or 'created' in snapshot_controller_apply.stdout"
+
+- name: Wait for Snapshot Controller deployment to be available
+  ansible.builtin.command:
+    cmd: >
+      kubectl wait --for=condition=available
+      deployment/snapshot-controller
+      -n kube-system
+      --timeout={{ volume_snapshot_timeout }}s
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  retries: 3
+  delay: "{{ default_delay }}"
+  register: snapshot_controller_ready
+  until: snapshot_controller_ready.rc == 0
+  changed_when: false
+
+- name: Verify Volume Snapshot CRDs are installed
+  ansible.builtin.command:
+    cmd: kubectl get crd volumesnapshotclasses.snapshot.storage.k8s.io volumesnapshotcontents.snapshot.storage.k8s.io volumesnapshots.snapshot.storage.k8s.io
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  register: snapshot_crds_verify
+  changed_when: false
+
+- name: Display Volume Snapshot CRDs status
+  ansible.builtin.debug:
+    msg: "{{ snapshot_crds_verify.stdout_lines }}"
+  when: enable_detailed_output
+
+- name: Get Snapshot Controller status
+  ansible.builtin.command:
+    cmd: "kubectl get deployment snapshot-controller -n kube-system"
+  environment:
+    KUBECONFIG: "{{ kubeconfig }}"
+  register: snapshot_controller_status
+  changed_when: false
+
+- name: Display Snapshot Controller status
+  ansible.builtin.debug:
+    msg: "{{ snapshot_controller_status.stdout_lines }}"
+  when: enable_detailed_output

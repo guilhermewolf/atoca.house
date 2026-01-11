@@ -3,7 +3,7 @@ controllers:
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
-      app:
+      radarr:
         image:
           repository: ghcr.io/home-operations/radarr
           tag: 6.1.0.10293@sha256:22bbf7e924dd929b756147d8110664c3e2da37c59516b249945ab1d63657be29
@@ -45,30 +45,49 @@ controllers:
 defaultPodOptions:
   securityContext:
     runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
     fsGroupChangePolicy: OnRootMismatch
 service:
-  app:
+  radarr:
+    controller: radarr
     ports:
       http:
         port: *port
 route:
-  app:
-    hostnames:
-      - radarr.atoca.house
+  radarr:
+    enabled: true
+    kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: network
+        namespace: kube-system
+    hostnames:
+      - radarr.atoca.house
+    rules:
+      - backendRefs:
+          - name: radarr
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
 persistence:
   config:
-    existingClaim: "{{ .Release.Name }}"
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    globalMounts:
+      - path: /config/
+
   media:
     type: nfs
-    server: expanse.internal
-    path: /mnt/eros/Media
+    server: nas.atoca.house
+    path: /mnt/user/data/
     globalMounts:
-      - path: /media
+      - path: /data
   tmp:
     type: emptyDir

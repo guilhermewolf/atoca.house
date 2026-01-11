@@ -4,9 +4,10 @@
 node-feature-discovery:
   enabled: true
 
-# Kernel Module Management - not needed on Talos (drivers via extensions)
+# Kernel Module Management - keep enabled to install CRDs (operator controller needs them)
+# The driver is disabled in DeviceConfig since Talos provides drivers via system extensions
 kmm:
-  enabled: false
+  enabled: true
 
 # Install default DeviceConfig automatically
 crds:

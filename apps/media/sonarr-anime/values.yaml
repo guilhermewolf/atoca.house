@@ -45,36 +45,57 @@ controllers:
 defaultPodOptions:
   securityContext:
     runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
     fsGroupChangePolicy: OnRootMismatch
+
 service:
   sonarr-anime:
+    controller: sonarr-anime
     ports:
       http:
         port: *port
+
 route:
   sonarr-anime:
-    hostnames:
-      - sonarr.atoca.house
+    enabled: true
+    kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: network
+        namespace: kube-system
+    hostnames:
+      - anime.atoca.house
+    rules:
+      - backendRefs:
+          - name: sonarr-anime
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
 persistence:
   config:
-    existingClaim: "{{ .Release.Name }}"
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    globalMounts:
+      - path: /config/
+
   scripts:
     type: configMap
-    name: sonarr-configmap
+    name: sonarr-anime-configmap
     defaultMode: 0775
     globalMounts:
       - readOnly: true
   media:
     type: nfs
-    server: expanse.internal
-    path: /mnt/eros/Media
+    server: nas.atoca.house
+    path: /mnt/user/data/
     globalMounts:
-      - path: /media
+      - path: /data
   tmp:
     type: emptyDir

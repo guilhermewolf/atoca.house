@@ -12,12 +12,12 @@ spec:
       "plugins": [
         {
           "type": "macvlan",
-          "master": "enp5s0f3u2.5",
+          "master": "bond0.5",
           "mode": "bridge",
           "ipam": {
             "type": "static",
             "routes": [
-              {"dst": "0.0.0.0/0", "gw": "192.168.5.1"}
+              {"dst": "0.0.0.0/0", "gw": "192.168.70.1"}
             ]
           }
         },

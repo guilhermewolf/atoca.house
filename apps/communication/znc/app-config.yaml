@@ -1,8 +1,0 @@
----
-# Application configuration for znc
-app:
-  name: znc
-  namespace: znc
-  chart: app-template
-  chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 4.5.0

@@ -4,7 +4,7 @@ controllers:
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
-      app:
+      slskd:
         image:
           repository: ghcr.io/slskd/slskd
           tag: 0.24.1@sha256:e3635858d9614a2fb811601afca706dbf97a6838b849905c27294cbce71be268
@@ -60,39 +60,48 @@ defaultPodOptions:
       }]
   securityContext:
     runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
     fsGroupChangePolicy: OnRootMismatch
+
 service:
-  app:
+  slskd:
+    controller: slskd
     ports:
       http:
         port: *port
 route:
-  app:
-    hostnames:
-      - slskd.atoca.house
+  slskd:
+    enabled: true
+    kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: network
+        namespace: kube-system
+    hostnames:
+      - slskd.atoca.house
     rules:
       - backendRefs:
-          - identifier: app
-            port: *port
+          - name: slskd
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
 configMaps:
   config:
     data:
       slskd.yml: |-
         directories:
-          downloads: /downloads/complete/music
           incomplete: /downloads/incomplete
+          downloads: /downloads/complete
         permissions:
           file:
             mode: 750
         shares:
           directories:
-            - /media/Downloads/soulseek/shared
+            - /playlists
           filters:
             - \.ini$
             - Thumbs.db$
@@ -109,7 +118,13 @@ persistence:
     server: nas.atoca.house
     path: /mnt/user/data/slskd
     globalMounts:
-      - path: /media/Downloads/soulseek
-        subPath: /downloads/complete/music/
+      - path: /downloads/
+
+  playlists:
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/musics/playlists
+    globalMounts:
+      - path: /playlists
   tmp:
     type: emptyDir

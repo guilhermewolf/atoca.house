@@ -1,7 +1,6 @@
 controllers:
   bazarr:
     replicas: 1
-    strategy: RollingUpdate
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
@@ -11,38 +10,28 @@ controllers:
           tag: 1.5.3@sha256:a42fef2a5ffa1dca8714e12892ba0b8de5c6c513f1bcdb1ffe4143e715cffb45
           pullPolicy: IfNotPresent
         env:
-          BAZARR__PORT: &port 80
+          BAZARR__PORT: &port 6767
           TZ: "Europe/Amsterdam"
+          PUID: "99"
+          PGID: "100"
         resources:
           requests:
             cpu: 10m
           limits:
             memory: 1Gi
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities: { drop: ["ALL"] }
-        probes:
-          liveness: &probes
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /health
-                port: *port
-              initialDelaySeconds: 0
-              periodSeconds: 10
-              timeoutSeconds: 1
-              failureThreshold: 3
-          readiness: *probes
-
-defaultPodOptions:
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
-    fsGroupChangePolicy: OnRootMismatch
+        # probes:
+        #   liveness: &probes
+        #     enabled: true
+        #     custom: true
+        #     spec:
+        #       httpGet:
+        #         path: /health
+        #         port: *port
+        #       initialDelaySeconds: 0
+        #       periodSeconds: 10
+        #       timeoutSeconds: 1
+        #       failureThreshold: 3
+        #   readiness: *probes
 
 service:
   bazarr:
@@ -63,7 +52,7 @@ route:
     rules:
       - backendRefs:
           - name: bazarr
-            port: 80
+            port: *port
         matches:
           - path:
               type: PathPrefix

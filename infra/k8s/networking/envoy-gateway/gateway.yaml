@@ -52,6 +52,9 @@ metadata:
     cert-manager.io/cluster-issuer: cloudflare-prod
 spec:
   gatewayClassName: envoy
+  infrastructure:
+    annotations:
+      lbipam.cilium.io/ips: "192.168.60.10"
   listeners:
     # HTTPS listener on port 443
     - name: https

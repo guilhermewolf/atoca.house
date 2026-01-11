@@ -1,0 +1,5 @@
+---
+# Volume Snapshot CRDs version
+# renovate: datasource=github-releases depName=kubernetes-csi/external-snapshotter
+volume_snapshot_version: "v8.2.0"
+volume_snapshot_timeout: 120

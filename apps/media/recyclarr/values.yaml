@@ -9,13 +9,13 @@ controllers:
       failedJobsHistory: 1
       ttlSecondsAfterFinished: 86400
     containers:
-      app:
+      recyclarr:
         image:
           repository: ghcr.io/recyclarr/recyclarr
           tag: 7.5.2@sha256:2550848d43a453f2c6adf3582f2198ac719f76670691d76de0819053103ef2fb
         envFrom:
           - secretRef:
-              name: "recyclarrsecret"
+              name: "recyclarr-secret"
         args:
           - sync
         securityContext:
@@ -38,10 +38,17 @@ defaultPodOptions:
     fsGroupChangePolicy: OnRootMismatch
 persistence:
   config:
-    existingClaim: "{{ .Release.Name }}"
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    globalMounts:
+      - path: /config/
+
   config-file:
     type: configMap
-    name: "{{ .Release.Name }}-configmap"
+    name: "{{ .Release.Name }}-config"
     globalMounts:
       - path: /config/recyclarr.yml
         subPath: recyclarr.yml

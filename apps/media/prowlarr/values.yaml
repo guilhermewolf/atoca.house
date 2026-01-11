@@ -16,6 +16,37 @@ controllers:
             value: "1000"
           - name: PGID
             value: "1000"
+        envFrom:
+          - secretRef:
+              name: "prowlarr-secret"
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /ping
+                port: 9696
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            memory: 1Gi
+
+defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.13/24"],
+        "mac": "36:5c:a2:9d:4f:81"
+      }]
 
 service:
   prowlarr:

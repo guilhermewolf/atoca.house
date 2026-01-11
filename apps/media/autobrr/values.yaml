@@ -28,7 +28,7 @@ controllers:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          capabilities: { drop: ["ALL"] }
+          capabilities: {drop: ["ALL"]}
         probes:
           liveness:
             enabled: true
@@ -54,6 +54,14 @@ controllers:
               failureThreshold: 3
 
 defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.15/24"],
+        "mac": "2e:47:b9:6c:10:5d"
+      }]
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
@@ -71,7 +79,7 @@ service:
         port: *metricsPort
 
 serviceMonitor:
-  app:
+  autobrr:
     endpoints:
       - port: metrics
 
@@ -99,7 +107,7 @@ persistence:
     type: persistentVolumeClaim
     storageClass: ceph-block
     accessMode: ReadWriteOnce
-    size: 1Gi
+    size: 5Gi
     globalMounts:
       - path: /config
   tmp:

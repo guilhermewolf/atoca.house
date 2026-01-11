@@ -27,15 +27,22 @@ machine:
           - rw
   network:
     interfaces:
-      - interface: enp5s0f3u2
+      - interface: bond0
+        bond:
+          deviceSelectors:
+            - driver: r8152 # enp5s0f3u2
+            - driver: r8169 # enp2s0
+          mode: active-backup
         dhcp: true
         vlans:
-          # IOT
-          - vlanId: 5
+          - # IOT
+            vlanId: 5
             dhcp: false
-          # VPN
-          - vlanId: 6
+            mtu: 1500
+          - # VPN
+            vlanId: 6
             dhcp: false
+            mtu: 1500
     nameservers:
       - 192.168.40.1
       - 1.1.1.1
@@ -172,11 +179,13 @@ cluster:
       service:
         disabled: false
   etcd:
+    advertisedSubnets:
+      - 192.168.40.0/24
     ca:
       crt: ENC[AES256_GCM,data:3TSr5z/HAxrvwGvCNRuIwBppnu/Sq9jL6e+PgysxSSVblo3VffjeC4JCWg2q3GxxMiMdjOn77wD2hrctI0/jYYMReX4cKn7nLUoO65e3ahq4cgG/mbZy488M3Ge+PTZzMZxRFtqOWRLlFZLcdDtKjFmrNRTlIFKVeEXQKK1BugcbWSOHmzYLWme5SQiyh78gBUGluHOeWJ2KycEHcQgFYx29my7NSOM3OdeHeTXygqRHPr+VcXPLCAoHDFeuKn/rGLgMIT788JR3tLaMqBa2qSVj98MTK6uWPX/JVbAyZ+4Tdf0BORYqFjA1Uxx/DXkcUjRUi0CTuXzEc4/mAWtkmVWZIQ+rsPc/opTLObKgQ+8jAQaQyqOk587JkT5V7in8+WlZkVXs6DqHEOsI8e/ecEZw4o+BOLmQnRyFt0sWvKDVfZdi39EFLvOu64YTuL/5yqmO0vo7k4eSAoedUtuyYi8iZooUz+iuvzqJjwhZt2513af8y0VpfFWOdNdXQ+1V+AhyPGVudKRTAhlxXGvr8XC55kSjna4Zatq/83eh1PrdvBHXr3uU/4diWy33gScjzjwC1JDDkdT+Fe2fWwe9WA6tFjtm/4+GbPBmMdjTdas+QehQ5YnvVX1Bvx/gXbveUrfVb7vDPnE2J7ioUaidNraSTze8ycKJk7XRToDbOerA6H8nt7YqPO6HPCz77aJDUeKuIlBmUk0ws/uKECUHfhdun8XYQEz+70ILqmhcEDNJJPCs1F+W1JtlO32EIpX5geH8yC6BpdYqvE0h/oan28df9hY07WNDVSWX7f8+OWeDD9sPYhKL4uqCyamiDu0WbRaEVszpXXIFzUy+xzdBfRLdn/VHKOyQLZZqjpCEqBgBqoZIfo2KgLyRmiK9ICeuEdccoHf1SDmTHGYewWQPcKSRZygDe1fEa6g8fKw4r0dOP4ADiUTqb9RtQ0QbxGpf4K+2SAOOGPfq3HIiP8tHuXnbBlFEUbTMOvGKLO1hd3Qvn7FTxdq6F6ARBcmRorWWUNm9Cw==,iv:oNoWm5hLVZ0bRlXpj3AozYBHqWQlujMZehSLV228lVo=,tag:UQNtAwYikkgPje84wKonAA==,type:str]
       key: ENC[AES256_GCM,data:Cq4/Lie/QNbct/yhGpun1JUKw4ybfLwCnQ7SWYDr0gxpq6gDZUXEukj5bknIDe2ZdtTokUypyODlBY1wIQ/+Th2YzHlIrKNGOOSXnNf2+UgkQZUEl//d6L9HCGJmGIovyRIapyUWebX/onVAkwT+TF0I0l3sd4HWFBcFvTo8c/mgP44LjrdEFcgRTCe737UCiTt3hfxkfsgS2+alQR9wlzTyBKiXLOAsZJjEuvCu0UZNuS8c9nvP8/rVBEktFjzUPUQkYfWBqEn0Kjn/UsGnXyPH4OO6hsPnpsHmD/PM4iGDhrPBOO82dOBl1uBOqClv8l9ymib6fa2sf7PohslcA9GuzcIwgrxQ1fiQUX6dqr9b/WikzkJSYM3WwYHLfhW/ZRf165MSTNyH6y6oNJqIUA==,iv:1eN8zNJxhuVRYYwoVsU0nG6eo8x/glr/FbXzDc65pk4=,tag:6TA6GaEq790wZx8McZRu0Q==,type:str]
-  extraManifests: []
-  inlineManifests: []
+    extraArgs:
+      listen-metrics-urls: http://0.0.0.0:2381
 sops:
   age:
     - recipient: age1zx0z00jmqr26put69qssz3rpguwtfwnptgdn2wq6pd2axhhxepdqvfdhhu

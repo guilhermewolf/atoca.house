@@ -26,13 +26,13 @@
   register: cilium_install
   changed_when: "'has been upgraded' in cilium_install.stdout or 'has been installed' in cilium_install.stdout"
 
-- name: Apply Cilium LB IPAM configuration
+- name: Apply Cilium networking configuration (LB IPAM + BGP)
   ansible.builtin.command:
-    cmd: kubectl apply -f {{ k8s_infra_dir }}/networking/cilium/lb-ipam.yaml
+    cmd: kubectl apply -f {{ k8s_infra_dir }}/networking/cilium/networking.yaml
   environment:
     KUBECONFIG: "{{ kubeconfig }}"
-  register: lb_ipam_apply
-  changed_when: "'configured' in lb_ipam_apply.stdout or 'created' in lb_ipam_apply.stdout"
+  register: cilium_networking_apply
+  changed_when: "'configured' in cilium_networking_apply.stdout or 'created' in cilium_networking_apply.stdout"
 
 - name: Wait for Cilium DaemonSet to be ready
   ansible.builtin.command:

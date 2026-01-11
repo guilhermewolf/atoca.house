@@ -17,7 +17,7 @@ operator:
   prometheus:
     enabled: true
     serviceMonitor:
-      enabled: true
+      enabled: false  # Disabled until Prometheus Operator is installed
   replicas: 2
   rollOutPods: true
 
@@ -111,7 +111,7 @@ routingMode: native
 ipv4NativeRoutingCIDR: 10.244.0.0/16
 dashboards:
   enabled: true
-
+devices: bond+
 # Enable bandwidth manager for better performance
 bandwidthManager:
   enabled: true
@@ -122,8 +122,8 @@ localRedirectPolicy: true
 
 # Disable CNI chaining (Cilium is the primary CNI)
 cni:
-  exclusive: true
-  chainingMode: none
+  exclusive: false
+
 
 # Enable endpoint routes for better performance
 endpointRoutes:

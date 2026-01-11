@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: seerr-restore
+  namespace: seer
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: seerr-r2-secret
+    copyMethod: Direct
+    destinationPVC: seerr
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

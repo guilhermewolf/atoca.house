@@ -27,15 +27,22 @@ machine:
           - rw
   network:
     interfaces:
-      - interface: enp5s0f3u2
+      - interface: bond0
+        bond:
+          deviceSelectors:
+              - hardwareAddr: "0c:ef:15:17:c9:d3"  # enp5s0f3u2 (primary)
+              - hardwareAddr: "00:16:96:ed:ed:9e"  # enp2s0 (backup)
+          mode: active-backup
         dhcp: true
         vlans:
-          # IOT
-          - vlanId: 5
+          - # IOT
+            vlanId: 5
             dhcp: false
-          # VPN
-          - vlanId: 6
+            mtu: 1500
+          - # VPN
+            vlanId: 6
             dhcp: false
+            mtu: 1500
     nameservers:
       - 192.168.40.1
       - 1.1.1.1

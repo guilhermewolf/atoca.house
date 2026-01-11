@@ -3,32 +3,32 @@ controllers:
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
-      app:
+      qbittorrent:
         image:
           repository: ghcr.io/home-operations/qbittorrent
           tag: 5.1.4@sha256:25fc7caf22101f85276ede9b1f76a46b7a93971bb6b70b6c58d14d6ab7f51415
         env:
           TZ: Europe/Amsterdam
           QBT_WEBUI_PORT: &port 80
-          QBT_TORRENTING_PORT: 50469
-        probes:
-          liveness: &probes
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /api/v2/app/version
-                port: *port
-              initialDelaySeconds: 0
-              periodSeconds: 10
-              timeoutSeconds: 1
-              failureThreshold: 3
-          readiness: *probes
-          startup:
-            enabled: true
-            spec:
-              failureThreshold: 30
-              periodSeconds: 10
+          QBT_TORRENTING_PORT: &torrentPort 51820
+        # probes:
+        #   liveness: &probes
+        #     enabled: true
+        #     custom: true
+        #     spec:
+        #       httpGet:
+        #         path: /api/v2/app/version
+        #         port: *port
+        #       initialDelaySeconds: 0
+        #       periodSeconds: 10
+        #       timeoutSeconds: 1
+        #       failureThreshold: 3
+        #   readiness: *probes
+        #   startup:
+        #     enabled: true
+        #     spec:
+        #       failureThreshold: 30
+        #       periodSeconds: 10
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -55,21 +55,30 @@ defaultPodOptions:
     fsGroupChangePolicy: OnRootMismatch
 
 service:
-  app:
+  qbittorrent:
+    controller: qbittorrent
     ports:
       http:
         port: *port
+
 route:
-  app:
-    hostnames:
-      - qbittorrent.atoca.house
+  qbittorrent:
+    enabled: true
+    kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: network
+        namespace: kube-system
+    hostnames:
+      - qbittorrent.atoca.house
     rules:
       - backendRefs:
-          - identifier: app
+          - name: qbittorrent
             port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
 
 configMaps:
   config:
@@ -80,7 +89,14 @@ configMaps:
 
 persistence:
   config:
-    existingClaim: qbittorrent
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /config/
+
   config-file:
     type: configMap
     identifier: config
@@ -97,8 +113,7 @@ persistence:
   #     - readOnly: true
   media:
     type: nfs
-    server: expanse.internal
+    server: nas.atoca.house
     path: /mnt/user/data/torrents
     globalMounts:
       - path: /data/torrents
-        subPath: torrents

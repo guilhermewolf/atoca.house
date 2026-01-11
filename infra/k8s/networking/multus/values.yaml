@@ -1,9 +1,181 @@
-cni:
-  binPath: /opt/cni/bin
-  netPath: /etc/cni/net.d
-multus:
-  resources:
-    requests:
-      cpu: 10m
-    limits:
-      memory: 512Mi
+controllers:
+  multus:
+    type: daemonset
+    serviceAccount:
+      identifier: multus
+    initContainers:
+      install-multus:
+        image:
+          repository: ghcr.io/k8snetworkplumbingwg/multus-cni
+          tag: v4.2.2-thick
+        command:
+          - /usr/src/multus-cni/bin/install_multus
+          - -d
+          - /opt/cni/bin
+          - -t
+          - thick
+        securityContext:
+          privileged: true
+    containers:
+      multus:
+        image:
+          repository: ghcr.io/k8snetworkplumbingwg/multus-cni
+          tag: v4.2.2-thick
+        command:
+          - /usr/src/multus-cni/bin/multus-daemon
+        env:
+          MULTUS_NODE_NAME:
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+        resources:
+          requests:
+            cpu: 100m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 50Mi
+        securityContext:
+          privileged: true
+    pod:
+      terminationGracePeriodSeconds: 10
+defaultPodOptions:
+  hostNetwork: true
+  hostPID: true
+  priorityClassName: system-node-critical
+  tolerations:
+    - operator: Exists
+      effect: NoSchedule
+    - operator: Exists
+      effect: NoExecute
+    - key: CriticalAddonsOnly
+      operator: Exists
+configMaps:
+  multus-daemon-config:
+    enabled: true
+    data:
+      daemon-config.json: |-
+        {
+          "chrootDir": "/hostroot",
+          "cniVersion": "0.3.1",
+          "logLevel": "verbose",
+          "logToStderr": true,
+          "cniConfigDir": "/host/etc/cni/net.d",
+          "multusAutoconfigDir": "/host/etc/cni/net.d",
+          "multusConfigFile": "auto",
+          "socketDir": "/host/run/multus/"
+        }
+rbac:
+  roles:
+    multus:
+      type: ClusterRole
+      rules:
+        - apiGroups:
+            - k8s.cni.cncf.io
+          resources:
+            - "*"
+          verbs:
+            - "*"
+        - apiGroups:
+            - ""
+          resources:
+            - pods
+            - pods/status
+          verbs:
+            - get
+            - list
+            - update
+            - watch
+        - apiGroups:
+            - ""
+            - events.k8s.io
+          resources:
+            - events
+          verbs:
+            - create
+            - patch
+            - update
+  bindings:
+    multus:
+      type: ClusterRoleBinding
+      roleRef:
+        identifier: multus
+      subjects:
+        - identifier: multus
+serviceAccount:
+  multus:
+    enabled: true
+persistence:
+  etc-cni-net-d:
+    type: hostPath
+    hostPath: /etc/cni/net.d
+    globalMounts:
+      - path: /host/etc/cni/net.d
+  opt-cni-bin:
+    type: hostPath
+    hostPath: /opt/cni/bin
+    advancedMounts:
+      multus:
+        install-multus:
+          - path: /opt/cni/bin
+            mountPropagation: Bidirectional
+        multus:
+          - path: /opt/cni/bin
+  tmp:
+    type: emptyDir
+  host-run:
+    type: hostPath
+    hostPath: /run
+    globalMounts:
+      - path: /host/run
+  host-var-lib-cni-multus:
+    type: hostPath
+    hostPath: /var/lib/cni/multus
+    globalMounts:
+      - path: /var/lib/cni/multus
+  host-var-lib-kubelet:
+    type: hostPath
+    hostPath: /var/lib/kubelet
+    advancedMounts:
+      multus:
+        install-multus:
+          - path: /var/lib/kubelet
+            mountPropagation: HostToContainer
+        multus:
+          - path: /var/lib/kubelet
+            mountPropagation: HostToContainer
+  host-run-k8s-cni-cncf-io:
+    type: hostPath
+    hostPath: /run/k8s.cni.cncf.io
+    globalMounts:
+      - path: /run/k8s.cni.cncf.io
+  host-run-netns:
+    type: hostPath
+    hostPath: /run/netns
+    advancedMounts:
+      multus:
+        install-multus:
+          - path: /run/netns
+            mountPropagation: HostToContainer
+        multus:
+          - path: /run/netns
+            mountPropagation: HostToContainer
+  hostroot:
+    type: hostPath
+    hostPath: /
+    advancedMounts:
+      multus:
+        multus:
+          - path: /hostroot
+            mountPropagation: HostToContainer
+  multus-conf-dir:
+    type: hostPath
+    hostPath: /etc/cni/multus/net.d
+    globalMounts:
+      - path: /etc/cni/multus/net.d
+  multus-daemon-config:
+    type: configMap
+    identifier: multus-daemon-config
+    globalMounts:
+      - path: /etc/cni/net.d/multus.d
+        readOnly: true

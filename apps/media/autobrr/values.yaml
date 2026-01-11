@@ -17,9 +17,9 @@ controllers:
           AUTOBRR__CHECK_FOR_UPDATES: false
           AUTOBRR__LOG_LEVEL: INFO
           TZ: "Europe/Amsterdam"
-        envFrom:
-          - secretRef:
-              name: "autobrr-secret"
+        # envFrom:
+        #   - secretRef:
+        #       name: "autobrr-secret"
         resources:
           requests:
             cpu: 10m
@@ -56,9 +56,9 @@ controllers:
 defaultPodOptions:
   securityContext:
     runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    fsGroup: 1000
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
     fsGroupChangePolicy: OnRootMismatch
 
 service:
@@ -71,7 +71,7 @@ service:
         port: *metricsPort
 
 serviceMonitor:
-  app:
+  autobrr:
     endpoints:
       - port: metrics
 
@@ -99,7 +99,7 @@ persistence:
     type: persistentVolumeClaim
     storageClass: ceph-block
     accessMode: ReadWriteOnce
-    size: 1Gi
+    size: 5Gi
     globalMounts:
       - path: /config
   tmp:

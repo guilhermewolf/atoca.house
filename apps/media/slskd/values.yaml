@@ -4,7 +4,7 @@ controllers:
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
-      app:
+      slskd:
         image:
           repository: ghcr.io/slskd/slskd
           tag: 0.24.1@sha256:e3635858d9614a2fb811601afca706dbf97a6838b849905c27294cbce71be268
@@ -64,22 +64,31 @@ defaultPodOptions:
     runAsGroup: 1000
     fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
+
 service:
-  app:
+  slskd:
+    controller: slskd
     ports:
       http:
         port: *port
 route:
-  app:
-    hostnames:
-      - slskd.atoca.house
+  slskd:
+    enabled: true
+    kind: HTTPRoute
     parentRefs:
       - name: atoca-gateway
-        namespace: network
+        namespace: kube-system
+    hostnames:
+      - slskd.atoca.house
     rules:
       - backendRefs:
-          - identifier: app
-            port: *port
+          - name: slskd
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
 configMaps:
   config:
     data:

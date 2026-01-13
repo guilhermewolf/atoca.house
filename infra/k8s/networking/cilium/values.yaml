@@ -86,10 +86,10 @@ encryption:
   type: wireguard
 
 # Monitoring
-# prometheus:
-#   enabled: true
-#   serviceMonitor:
-#     enabled: true
+prometheus:
+  enabled: true
+  serviceMonitor:
+    enabled: true
 
 # Enable IPv4 (IPv6 can be added later if needed)
 ipv4:

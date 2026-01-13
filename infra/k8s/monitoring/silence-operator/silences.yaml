@@ -7,8 +7,10 @@ metadata:
 spec:
   matchers:
     - name: alertname
+      matchType: '='
       value: CephNodeDiskspaceWarning
     - name: mountpoint
+      matchType: '='
       value: /etc/nfsmount.conf
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/observability.giantswarm.io/silence_v1alpha2.json
@@ -19,6 +21,7 @@ metadata:
 spec:
   matchers:
     - name: alertname
+      matchType: '='
       value: CephNodeDiskspaceWarning
     - name: device
       value: /dev/sd.*
@@ -32,8 +35,10 @@ metadata:
 spec:
   matchers:
     - name: alertname
+      matchType: '='
       value: NodeMemoryHighUtilization
     - name: instance
+      matchType: '='
       value: nas.atoca.house:9100
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/observability.giantswarm.io/silence_v1alpha2.json
@@ -44,6 +49,7 @@ metadata:
 spec:
   matchers:
     - name: alertname
+      matchType: '='
       value: KubeHpaMaxedOut
     - name: horizontalpodautoscaler
       value: keda-hpa-.*

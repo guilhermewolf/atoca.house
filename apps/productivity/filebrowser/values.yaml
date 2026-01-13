@@ -7,7 +7,7 @@ controllers:
       filebrowser:
         image:
           repository: ghcr.io/gtsteffaniak/filebrowser
-          tag: 1.1.4-beta@sha256:830bbafee8a70838753e4e54d41cefc3a58e7a8f73189a442309fc95cce71877
+          tag: 1.1.6-beta@sha256:7d17cbdf4341db115ed08efd949428946b45024648a15baeba37d86f803e88e6
           pullPolicy: IfNotPresent
         env:
           TZ: "Europe/Amsterdam"

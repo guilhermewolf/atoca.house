@@ -11,8 +11,8 @@ server:
     hostnames:
       - victoria-logs.atoca.house
     parentRefs:
-      - name: envoy-internal
-        namespace: network
+      - name: atoca-gateway
+        namespace: kube-system
     extraRules:
       - filters:
           - type: RequestRedirect

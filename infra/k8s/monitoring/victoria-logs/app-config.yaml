@@ -1,5 +1,5 @@
 ---
-# Application configuration for Authelia
+# Application configuration for victoria-logs
 app:
   name: victoria-logs
   namespace: victoria-logs

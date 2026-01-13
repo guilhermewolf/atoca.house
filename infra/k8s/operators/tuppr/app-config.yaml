@@ -1,0 +1,8 @@
+---
+# Application configuration for tuppr
+app:
+  name: tuppr
+  namespace: tuppr
+  chart: tuppr
+  chartRepo: ghcr.io/home-operations/charts
+  chartVersion: 0.0.51

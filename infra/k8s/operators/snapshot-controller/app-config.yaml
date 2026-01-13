@@ -1,0 +1,8 @@
+---
+# Application configuration for snapshot-controller
+app:
+  name: snapshot-controller
+  namespace: snapshot-controller
+  chart: snapshot-controller
+  chartRepo: ghcr.io/piraeusdatastore/helm-charts
+  chartVersion: 4.2.0

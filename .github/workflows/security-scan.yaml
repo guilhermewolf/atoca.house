@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout
 
       - name: Run Trivy vulnerability scanner in repo mode
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
         with:
           scan-type: "fs"
           scan-ref: "."
@@ -33,7 +33,7 @@ jobs:
           exit-code: "0" # Don't fail the build
 
       - name: Upload Trivy results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@4bdb89f48054571735e3792627da6195c57459e2 # v3
         if: always()
         with:
           sarif_file: "trivy-results.sarif"
@@ -43,7 +43,7 @@ jobs:
     runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'arc-runners' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       - name: Run Kubescape
         uses: kubescape/github-action
         continue-on-error: true
@@ -55,7 +55,7 @@ jobs:
             nsa,mitre
 
       - name: Upload Kubescape results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@4bdb89f48054571735e3792627da6195c57459e2 # v3
         if: always()
         with:
           sarif_file: kubescape-results.sarif
@@ -70,7 +70,7 @@ jobs:
           fetch-depth: 0 # Fetch all history for all branches
 
       - name: Gitleaks Scan
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_COMMENTS: true

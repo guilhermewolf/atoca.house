@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   znc:
-    image: lscr.io/linuxserver/znc:latest
+    image: lscr.io/linuxserver/znc:latest@sha256:b85ad9504dae0338e775ebfd46d443f113f2849ded2b8b7022df6d0ef488b53f
     container_name: znc
     restart: unless-stopped
     network_mode: "container:GlueTun-PIA"

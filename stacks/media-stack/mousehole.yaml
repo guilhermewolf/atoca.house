@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mousehole:
-    image: tmmrtn/mousehole:0.2.0
+    image: tmmrtn/mousehole:0.2.0@sha256:9adfcfddb3395d33f0fbef50a6dc52a930769c57f2c0af2b3b9d6f7bfda6195c
     network_mode: "container:GlueTun-PIA"
     container_name: mousehole
     environment:

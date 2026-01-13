@@ -1,0 +1,78 @@
+controllers:
+  homebridge:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      homebridge:
+        image:
+          repository: homebridge/homebridge
+          tag: 2025-02-26@sha256:97d5c72d3eaf5f5241934feecd07e15704af218819696c1bd867b7b3a6953b3c
+        env:
+          HOMEBRIDGE_CONFIG_UI: "1"
+          HOMEBRIDGE_CONFIG_UI_PORT: &port 8581
+          TZ: Europe/Amsterdam
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: *port
+              initialDelaySeconds: 30
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+        resources:
+          requests:
+            cpu: 250m
+            memory: 128Mi
+          limits:
+            cpu: 1000m
+            memory: 512Mi
+defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "iot",
+        "namespace": "kube-system",
+        "ips": ["192.168.70.10/24"],
+        "mac": "6a:3f:82:19:d4:7e"
+      }]
+  securityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+service:
+  homebridge:
+    controller: homebridge
+    ports:
+      http:
+        port: *port
+route:
+  homebridge:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-gateway
+        namespace: kube-system
+    hostnames:
+      - homebridge.atoca.house
+    rules:
+      - backendRefs:
+          - name: homebridge
+            port: 8581
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /homebridge

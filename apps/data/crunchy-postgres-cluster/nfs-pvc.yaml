@@ -10,7 +10,7 @@ spec:
   storageClassName: nfs-slow #csi-driver-nfs
   nfs:
     server: nas.atoca.house
-    path: /mnt/user/backups/
+    path: /mnt/user/backups/crunchy-postgres
   mountOptions:
     - nfsvers=4.2
     - hard

@@ -1,0 +1,55 @@
+---
+# ApplicationSet for home-automation applications
+# Discovers apps from app-config.yaml files in subdirectories
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps-home-automation
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+
+  generators:
+    - git:
+        repoURL: https://github.com/guilhermewolf/atoca.house
+        revision: HEAD
+        files:
+          - path: "apps/home-automation/*/app-config.yaml"
+
+  template:
+    metadata:
+      name: '{{.app.name}}'
+      namespace: argocd
+    spec:
+      project: applications
+      destination:
+        namespace: '{{.app.namespace}}'
+        server: https://kubernetes.default.svc
+
+      sources:
+        # Helm chart source
+        - chart: '{{.app.chart}}'
+          repoURL: '{{.app.chartRepo}}'
+          targetRevision: '{{.app.chartVersion}}'
+          helm:
+            releaseName: '{{.app.name}}'
+            valueFiles:
+              - $values/apps/home-automation/{{.app.name}}/values.yaml
+
+        # Values repository reference
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          ref: values
+
+        # Additional resources (secrets, configs, etc.)
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          path: 'apps/home-automation/{{.app.name}}'
+          directory:
+            exclude: '{application.yaml,values.yaml,app-config.yaml}'
+
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

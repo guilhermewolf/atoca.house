@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   jellyfin:
-    image: lscr.io/linuxserver/jellyfin:10.11.5@sha256:6e614901a5e9d04f03b2b84363fcc69285635d4149e23e4cac30b1c9a8ccddac
+    image: lscr.io/linuxserver/jellyfin:10.11.5@sha256:313571f253bf1035809f6856bb063904456226ef3899b96e60ee4597b3477246
     container_name: jellyfin
     network_mode: bridge
     ports:

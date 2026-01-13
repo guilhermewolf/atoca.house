@@ -6,7 +6,7 @@ controllers:
       seerr:
         image:
           repository: ghcr.io/seerr-team/seerr
-          tag: develop@sha256:cebdcb3d23986bef88221717ed3352a595a05d4168409d69efa10f5fc5be19ff
+          tag: develop@sha256:5a40dbf48fdf1142157b2ee678238c84a1659fae03c2e487a42d3dcc279038ef
         env:
           TZ: Europe/Amsterdam
           LOG_LEVEL: "info"

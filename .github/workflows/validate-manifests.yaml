@@ -5,7 +5,7 @@ on:
     paths:
       - "**/*.yaml"
       - "**/*.yml"
-      - "!stacks/**"  # Exclude docker-compose
+      - "!stacks/**" # Exclude docker-compose
   push:
     branches: ["main"]
     paths:
@@ -58,7 +58,7 @@ jobs:
 
       - name: Setup ArgoCD CLI
         run: |
-          curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          curl -fsSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
           chmod +x argocd
           sudo mv argocd /usr/local/bin/
 

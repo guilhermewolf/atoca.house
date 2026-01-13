@@ -1,0 +1,3 @@
+alertmanagerAddress: http://kube-prometheus-stack-moni-alertmanager.monitoring.svc.cluster.local:9093
+networkPolicy:
+  enabled: false

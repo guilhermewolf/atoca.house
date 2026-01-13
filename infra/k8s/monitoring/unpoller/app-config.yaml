@@ -1,0 +1,8 @@
+---
+# Application configuration for Authelia
+app:
+  name: unpoller
+  namespace: unpoller
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.5.0

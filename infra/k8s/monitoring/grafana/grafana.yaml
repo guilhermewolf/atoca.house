@@ -15,25 +15,19 @@ spec:
       reporting_enabled: "false"
     log:
       mode: "console"
+    metrics:
+      enabled: "true"
+    news:
+      news_feed_enabled: "false"
     server:
       enable_gzip: "true"
       root_url: "https://grafana.atoca.house"
     news:
       news_feed_enabled: "false"
-    # auth:
-    #   singout_redirect_url: "https://auth.atoca.house/application/o/grafana/end-session/"
-    date_formats:
-      use_browser_locale: "true"
-    explore:
-      enabled: "true"
     security:
       angular_support_enabled: "true"
     plugins:
       plugin_admin_enabled: "false"
-    # auth.generic_oauth:
-    #   enabled: "true"
-    #   client_id: "$__env{GF_AUTH_GENERIC_OAUTH_CLIENT_ID}"
-    #   client_secret: "$__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}"
 
   deployment:
     spec:

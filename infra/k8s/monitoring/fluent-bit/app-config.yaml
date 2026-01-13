@@ -1,0 +1,8 @@
+---
+# Application configuration for Authelia
+app:
+  name: fluent-bit
+  namespace: fluent-bit
+  chart: fluent-bit
+  chartRepo: ghcr.io/home-operations/charts-mirror/
+  chartVersion: 0.54.1

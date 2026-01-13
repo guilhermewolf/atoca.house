@@ -1,0 +1,8 @@
+---
+# Application configuration for Authelia
+app:
+  name: victoria-logs
+  namespace: victoria-logs
+  chart: victoria-logs-single
+  chartRepo: ghcr.io/victoriametrics/helm-charts
+  chartVersion: 0.11.24

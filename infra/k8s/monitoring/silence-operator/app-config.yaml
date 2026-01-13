@@ -1,0 +1,8 @@
+---
+# Application configuration for Authelia
+app:
+  name: silence-operator
+  namespace: silence-operator
+  chart: silence-operator
+  chartRepo: gsoci.azurecr.io/charts/giantswarm
+  chartVersion: 0.20.0

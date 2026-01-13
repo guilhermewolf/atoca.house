@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./docs/assets/raspbernetes.png" alt="Raspbernetes">
+<img src="./docs/assets/atoca-house.png" alt="AtocaHouse" width="250">
 
 ## A Toca - K8s
 

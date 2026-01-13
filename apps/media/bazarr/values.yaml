@@ -7,7 +7,7 @@ controllers:
       bazarr:
         image:
           repository: ghcr.io/lscr.io/linuxserver/bazarr
-          tag: 1.5.3@sha256:a42fef2a5ffa1dca8714e12892ba0b8de5c6c513f1bcdb1ffe4143e715cffb45
+          tag: 1.5.4@sha256:7d0a091a63889ce1e4ac4c90595ebd2c50ba5a5df7039a4f4d2be6c2aed6d4ae
           pullPolicy: IfNotPresent
         env:
           BAZARR__PORT: &port 6767

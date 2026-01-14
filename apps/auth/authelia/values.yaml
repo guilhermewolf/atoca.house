@@ -19,7 +19,7 @@ controllers:
           repository: ghcr.io/authelia/authelia
           tag: 4.39.15@sha256:d23ee3c721d465b4749cc58541cda4aebe5aa6f19d7b5ce0afebb44ebee69591
         env:
-          AUTHELIA_SERVER_ADDRESS: tcp://0.0.0.0:8888
+          AUTHELIA_SERVER_ADDRESS: tcp://0.0.0.0:80
           AUTHELIA_SERVER_DISABLE_HEALTHCHECK: "false"
           AUTHELIA_TELEMETRY_METRICS_ADDRESS: tcp://0.0.0.0:8080
           AUTHELIA_TELEMETRY_METRICS_ENABLED: "true"
@@ -39,7 +39,7 @@ controllers:
             spec:
               httpGet:
                 path: /api/health
-                port: &port 8888
+                port: &port 80
               initialDelaySeconds: 0
               periodSeconds: 10
               timeoutSeconds: 1
@@ -90,7 +90,7 @@ service:
     ipFamilyPolicy: PreferDualStack
     ports:
       http:
-        port: 8888
+        port: *port
         primary: true
       metrics:
         port: 8080
@@ -112,7 +112,7 @@ route:
     rules:
       - backendRefs:
           - name: authelia
-            port: 8080
+            port: *port
         matches:
           - path:
               type: PathPrefix

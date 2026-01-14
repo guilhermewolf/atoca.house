@@ -38,3 +38,14 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+
+  templatePatch: |
+    {{- if dig "app" "useVaultPlugin" false . }}
+    spec:
+      source:
+        repoURL: https://github.com/guilhermewolf/atoca.house
+        targetRevision: HEAD
+        path: 'apps/data/{{.app.name}}'
+        plugin:
+          name: argocd-vault-plugin
+    {{- end }}

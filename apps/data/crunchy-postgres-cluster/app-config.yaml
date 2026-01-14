@@ -4,3 +4,4 @@
 app:
   name: crunchy-postgres-cluster
   namespace: crunchy-postgres-cluster
+  useVaultPlugin: true

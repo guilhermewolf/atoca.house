@@ -1,0 +1,26 @@
+---
+# RBAC to allow ArgoCD repo-server to read secrets for AVP
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: argocd-repo-server-avp
+  namespace: crunchy-postgres-cluster
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: ["crunchy-postgres-r2-endpoint"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argocd-repo-server-avp
+  namespace: crunchy-postgres-cluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: argocd-repo-server-avp
+subjects:
+- kind: ServiceAccount
+  name: argocd-repo-server
+  namespace: argocd

@@ -54,7 +54,7 @@ configs:
             - sh
           args:
             - "-c"
-            - "find . -name '*.yaml' -o -name '*.yml' | xargs -I {} sh -c 'grep -q \"^kind:\" \"{}\" && grep -q \"<[^>]*>\\|avp\\.kubernetes\\.io\" \"{}\" && cat \"{}\" || true' 2>/dev/null | argocd-vault-plugin generate -"
+            - "find . -name '*.yaml' -o -name '*.yml' | xargs -I {} sh -c 'grep -q \"^kind:\" \"{}\" && cat \"{}\" && echo \"---\" || true' 2>/dev/null | argocd-vault-plugin generate -"
 
 
 crds:

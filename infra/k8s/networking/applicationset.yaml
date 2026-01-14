@@ -48,3 +48,24 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+
+  templatePatch: |
+    {{- if dig "app" "useVaultPlugin" false . }}
+    spec:
+      sources:
+        - chart: '{{.app.chart}}'
+          repoURL: '{{.app.chartRepo}}'
+          targetRevision: '{{.app.chartVersion}}'
+          helm:
+            valueFiles:
+              - $values/infra/k8s/networking/{{.app.name}}/values.yaml
+            ignoreMissingValueFiles: true
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          ref: values
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          path: 'infra/k8s/networking/{{.app.name}}'
+          plugin:
+            name: argocd-vault-plugin
+    {{- end }}

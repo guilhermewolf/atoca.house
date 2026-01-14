@@ -37,6 +37,26 @@ configs:
   params:
     server.insecure: "true"   # IMPORTANT: Let the edge (Envoy Gateway) terminate TLS and run argocd-server in HTTP mode behind it.
 
+  # Config Management Plugin for ArgoCD Vault Plugin
+  cmp:
+    create: true
+    plugins:
+      argocd-vault-plugin:
+        allowConcurrency: true
+        discover:
+          find:
+            command:
+              - sh
+              - "-c"
+              - "find . -name '*.yaml' -o -name '*.yml' | xargs -I {} sh -c 'grep -q \"^kind:\" \"{}\" && grep -q \"<[^>]*>\\|avp\\.kubernetes\\.io\" \"{}\" && echo \"{}\" || true' 2>/dev/null"
+        generate:
+          command:
+            - sh
+          args:
+            - "-c"
+            - "find . -name '*.yaml' -o -name '*.yml' | xargs -I {} sh -c 'grep -q \"^kind:\" \"{}\" && grep -q \"<[^>]*>\\|avp\\.kubernetes\\.io\" \"{}\" && cat \"{}\" || true' 2>/dev/null | argocd-vault-plugin generate -"
+
+
 crds:
   install: true
   keep: true
@@ -63,6 +83,53 @@ server:
               value: /
 
 repoServer:
+  initContainers:
+    - name: download-tools
+      image: alpine:3.19
+      command: [sh, -c]
+      env:
+        - name: AVP_VERSION
+          value: "1.18.0"
+      args:
+        - >-
+          wget -O /custom-tools/argocd-vault-plugin
+          https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64 &&
+          chmod +x /custom-tools/argocd-vault-plugin
+      volumeMounts:
+        - mountPath: /custom-tools
+          name: custom-tools
+
+  # ArgoCD Vault Plugin sidecar container
+  extraContainers:
+    - name: avp
+      command: [/var/run/argocd/argocd-cmp-server]
+      image: quay.io/argoproj/argocd:v2.13.2
+      env:
+        - name: AVP_TYPE
+          value: kubernetessecret
+      volumeMounts:
+        - mountPath: /var/run/argocd
+          name: var-files
+        - mountPath: /home/argocd/cmp-server/plugins
+          name: plugins
+        - mountPath: /tmp
+          name: cmp-tmp
+        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: argocd-vault-plugin.yaml
+          name: argocd-cmp-cm
+        - name: custom-tools
+          subPath: argocd-vault-plugin
+          mountPath: /usr/local/bin/argocd-vault-plugin
+
+  # Volumes for CMP
+  volumes:
+    - name: custom-tools
+      emptyDir: {}
+    - name: cmp-tmp
+      emptyDir: {}
+    - name: argocd-cmp-cm
+      configMap:
+        name: argocd-cmp-cm
   resources:
     requests:
       cpu: 600m

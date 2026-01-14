@@ -4,9 +4,11 @@ apiVersion: externaldns.k8s.io/v1alpha1
 kind: DNSEndpoint
 metadata:
   name: cloudflare-tunnel
+  annotations:
+    avp.kubernetes.io/path: "cloudflare-tunnel:cloudflare-tunnel-secret"
 spec:
   endpoints:
     - dnsName: external.atoca.house
       recordType: CNAME
       targets:
-        - ${CLOUDFLARE_TUNNEL_ID}.cfargotunnel.com
+        - <CLOUDFLARE_TUNNEL_ID>.cfargotunnel.com

@@ -98,6 +98,7 @@ repoServer:
       volumeMounts:
         - mountPath: /custom-tools
           name: custom-tools
+      automountServiceAccountToken: true
 
   # ArgoCD Vault Plugin sidecar container
   extraContainers:
@@ -106,7 +107,15 @@ repoServer:
       image: quay.io/argoproj/argocd:v2.13.2
       env:
         - name: AVP_TYPE
-          value: kubernetessecret
+          value: 1passwordconnect
+        - name: OP_CONNECT_HOST
+          value: http://onepassword-connect.one-password.svc.cluster.local:8080
+        - name: OP_CONNECT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: argocd-avp-token
+              key: credential
+              optional: true
       volumeMounts:
         - mountPath: /var/run/argocd
           name: var-files

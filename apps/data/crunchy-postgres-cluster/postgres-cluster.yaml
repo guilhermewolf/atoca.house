@@ -5,7 +5,7 @@ metadata:
   name: &name postgres
   annotations:
     postgres-operator.crunchydata.com/autoCreateUserSchema: "true"
-    avp.kubernetes.io/path: "crunchy-postgres-cluster:crunchy-postgres-r2-endpoint"
+    avp.kubernetes.io/path: "vaults/K8s/items/crunchy-postgres-secrets"
 spec:
   postgresVersion: 17
 
@@ -141,7 +141,7 @@ spec:
           s3: &r2
             bucket: "crunchy-postgres"
             region: "us-east-1"
-            endpoint: <CLOUDFLARE_R2_ENDPOINT>
+            endpoint: <CPGO_R2_ENDPOINT>
           schedules:
             full: "0 2 * * 0" # Sunday at 02:00
             incremental: "0 2 * * 1-6/2" # Mon-Sat at 02:00, every 2nd day

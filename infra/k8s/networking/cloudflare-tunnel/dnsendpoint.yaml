@@ -5,7 +5,7 @@ kind: DNSEndpoint
 metadata:
   name: cloudflare-tunnel
   annotations:
-    avp.kubernetes.io/path: "cloudflare-tunnel:cloudflare-tunnel-secret"
+    avp.kubernetes.io/path: "vaults/K8s/items/cloudflare-tunnel-secret"
 spec:
   endpoints:
     - dnsName: external.atoca.house

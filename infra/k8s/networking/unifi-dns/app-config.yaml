@@ -1,0 +1,6 @@
+app:
+  name: unifi-dns
+  namespace: unifi-dns
+  chart: external-dns
+  chartRepo: ghcr.io/home-operations/charts-mirror
+  chartVersion: 1.20.0

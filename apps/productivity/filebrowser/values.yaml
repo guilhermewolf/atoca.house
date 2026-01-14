@@ -67,22 +67,23 @@ service:
         port: 80
         targetPort: 8080
         protocol: HTTP
-
-ingress:
+route:
   filebrowser:
-    className: cloudflare-tunnel
-    hosts:
-      - host: filebrowser.atoca.house
-        paths:
-          - path: /
-            pathType: Prefix
-            service:
-              identifier: filebrowser
-              port: http
-    tls:
-      - hosts:
-          - filebrowser.atoca.house
-        secretName: filebrowser-tls
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-external
+        namespace: kube-system
+    hostnames:
+      - filebrowser.atoca.house
+    rules:
+      - backendRefs:
+          - name: filebrowser
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 
 persistence:
   config:

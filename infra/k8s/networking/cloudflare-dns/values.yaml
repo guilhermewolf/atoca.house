@@ -1,0 +1,35 @@
+---
+fullnameOverride: &app cloudflare-dns
+provider:
+  name: cloudflare
+env:
+  - name: &name CF_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: &secret cloudflare-dns-secret
+        key: *name
+  - name: &name CF_ZONE_ID
+    valueFrom:
+      secretKeyRef:
+        name: *secret
+        key: *name
+extraArgs:
+  - --cloudflare-dns-records-per-page=1000
+  - --cloudflare-proxied
+  - --crd-source-apiversion=externaldns.k8s.io/v1alpha1
+  - --crd-source-kind=DNSEndpoint
+  - --gateway-name=atoca-house-external
+  - --zone-id-filter=$(CF_ZONE_ID)
+triggerLoopOnEvent: true
+policy: sync
+sources:
+  - crd
+  - gateway-httproute
+txtOwnerId: default
+txtPrefix: k8s.
+domainFilters:
+  - atoca.house
+serviceMonitor:
+  enabled: true
+podAnnotations:
+  secret.reloader.stakater.com/reload: *secret

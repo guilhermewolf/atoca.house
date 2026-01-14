@@ -53,7 +53,7 @@ server:
     hostnames:
       - argocd.atoca.house
     parentRefs:
-      - name: atoca-gateway
+      - name: atoca-house-internal
         namespace: kube-system
     annotations: {}
     rules:

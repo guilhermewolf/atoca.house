@@ -1,8 +1,0 @@
-app:
-  name: external-dns-cloudflare
-  namespace: external-dns
-  chart: external-dns
-  chartRepo: https://kubernetes-sigs.github.io/external-dns/
-  chartVersion: 1.19.0
-  #dualChart: true
-  disableAutoSync: true

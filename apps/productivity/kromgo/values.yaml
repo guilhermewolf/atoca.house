@@ -35,16 +35,23 @@ service:
         primary: true
         port: 80
         targetPort: 8080
-ingress:
+route:
   kromgo:
-    className: cloudflare-tunnel
-    hosts:
-      - host: kromgo.atoca.house
-        paths:
-          - path: /
-            service:
-              identifier: kromgo
-              port: http
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-external
+        namespace: kube-system
+    hostnames:
+      - kromgo.atoca.house
+    rules:
+      - backendRefs:
+          - name: kromgo
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 persistence:
   config-file:
     type: configMap

@@ -157,33 +157,6 @@ renovate/github-action:
       - "^renovate/.*"
 
 # =============================================================================
-# Size Labels - Based on lines changed
-# =============================================================================
-size/XS:
-  - changed-files:
-      - count: 0-9
-
-size/S:
-  - changed-files:
-      - count: 10-29
-
-size/M:
-  - changed-files:
-      - count: 30-99
-
-size/L:
-  - changed-files:
-      - count: 100-499
-
-size/XL:
-  - changed-files:
-      - count: 500-999
-
-size/XXL:
-  - changed-files:
-      - count: 1000+
-
-# =============================================================================
 # Special Labels
 # =============================================================================
 security:

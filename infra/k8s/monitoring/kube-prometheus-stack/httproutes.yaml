@@ -10,7 +10,7 @@ spec:
   parentRefs:
     - kind: Gateway
       namespace: kube-system
-      name: atoca-gateway
+      name: atoca-house-internal
       group: gateway.networking.k8s.io
   hostnames:
     - prometheus.atoca.house
@@ -35,7 +35,7 @@ spec:
   parentRefs:
     - kind: Gateway
       namespace: kube-system
-      name: atoca-gateway
+      name: atoca-house-internal
       group: gateway.networking.k8s.io
   hostnames:
     - alertmanager.atoca.house

@@ -11,7 +11,7 @@ server:
     hostnames:
       - victoria-logs.atoca.house
     parentRefs:
-      - name: atoca-gateway
+      - name: atoca-house-internal
         namespace: kube-system
     extraRules:
       - filters:

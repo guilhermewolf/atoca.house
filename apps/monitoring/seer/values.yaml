@@ -55,7 +55,7 @@ route:
     enabled: true
     kind: HTTPRoute
     parentRefs:
-      - name: atoca-gateway
+      - name: atoca-house-internal
         namespace: kube-system
     hostnames:
       - seer.atoca.house

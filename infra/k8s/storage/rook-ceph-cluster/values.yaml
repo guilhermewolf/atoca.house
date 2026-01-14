@@ -12,7 +12,7 @@ route:
       path: /
       pathType: PathPrefix
     parentRefs:
-      - name: atoca-gateway
+      - name: atoca-house-internal
         namespace: kube-system
 
 operatorNamespace: rook-ceph

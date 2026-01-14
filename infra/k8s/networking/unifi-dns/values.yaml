@@ -1,25 +1,14 @@
-fullnameOverride: external-dns-unifi
-
-logLevel: &logLevel info
-
-domainFilters:
-  - atoca.house
-
-podAnnotations:
-  secret.reloader.stakater.com/reload: external-dns-unifi-secret
-policy: sync
-
+---
+fullnameOverride: *app
 provider:
   name: webhook
   webhook:
     image:
       repository: ghcr.io/kashalls/external-dns-unifi-webhook
-      tag: v0.8.0
+      tag: v0.8.0@sha256:fb2f74fdd0fc9fa22b95b525ccca9958715c0963d317da23b5f858858443dabe
     env:
-      - name: LOG_LEVEL
-        value: *logLevel
       - name: UNIFI_HOST
-        value: https://10.40.0.1
+        value: https://unifi.internal
       - name: UNIFI_API_KEY
         valueFrom:
           secretKeyRef:
@@ -38,17 +27,22 @@ provider:
       initialDelaySeconds: 10
       timeoutSeconds: 5
 
-resources:
-  requests:
-    cpu: 16m
-    memory: 90M
-  limits:
-    memory: 90M
-serviceMonitor:
-  enabled: true
+triggerLoopOnEvent: true
+policy: sync
+
 sources:
   - gateway-httproute
   - service
-triggerLoopOnEvent: true
+
 txtOwnerId: main
-txtPrefix: "k8s."
+
+txtPrefix: k8s.main.
+
+domainFilters:
+  - atoca.house
+
+serviceMonitor:
+  enabled: true
+
+podAnnotations:
+  secret.reloader.stakater.com/reload: external-dns-unifi-secret

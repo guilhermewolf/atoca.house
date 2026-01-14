@@ -185,7 +185,7 @@
       "  namespace: ${2:namespace}",
       "spec:",
       "  parentRefs:",
-      "    - name: ${3:atoca-gateway}",
+      "    - name: ${3:atoca-house-internal}",
       "      namespace: network",
       "      sectionName: ${4|http,https|}",
       "  hostnames:",

@@ -23,6 +23,8 @@ defaultPodOptions:
     runAsUser: 65534
     runAsGroup: 65534
     seccompProfile: { type: RuntimeDefault }
+
+
 service:
   whoami:
     controller: whoami
@@ -30,13 +32,20 @@ service:
       http:
         port: 80
 
-ingress:
+route:
   whoami:
-    className: cloudflare-tunnel
-    hosts:
-      - host: whoami.atoca.house
-        paths:
-          - path: /
-            service:
-              identifier: whoami
-              port: http
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-external
+        namespace: kube-system
+    hostnames:
+      - whoami.atoca.house
+    rules:
+      - backendRefs:
+          - name: whoami
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /

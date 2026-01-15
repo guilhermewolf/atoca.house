@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: n8n-restore
+  namespace: n8n
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: n8n-r2-secret
+    copyMethod: Direct
+    destinationPVC: n8n
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

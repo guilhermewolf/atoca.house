@@ -1,0 +1,97 @@
+controllers:
+  n8n:
+    replicas: 1
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      n8n:
+        image:
+          repository: ghcr.io/n8n-io/n8n
+          tag: 1.123.13@sha256:5cba4f8d18d4dce83ba4ae95d1676a1ae2d4057926667dbe11e7a7b072d844f3
+          pullPolicy: IfNotPresent
+        env:
+          TZ: "Europe/Amsterdam"
+          GENERIC_TIMEZONE: "Europe/Amsterdam"
+          N8N_PROTOCOL: https
+          N8N_PORT: &port 80
+          N8N_HOST: &hostName n8n.atoca.house
+        resources:
+          requests:
+            cpu: 500m
+            memory: 256Mi
+          limits:
+            cpu: 1500m
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities: { drop: ["ALL"] }
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: *port
+              initialDelaySeconds: 30
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 5
+              timeoutSeconds: 1
+              failureThreshold: 30
+    pod:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups: [1000]
+        seccompProfile:
+          type: RuntimeDefault
+
+service:
+  n8n:
+    controller: n8n
+    ports:
+      http:
+        port: *port
+
+route:
+  n8n:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - *hostName
+    rules:
+      - backendRefs:
+          - name: n8n
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /home/node/.n8n

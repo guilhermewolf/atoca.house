@@ -1,0 +1,8 @@
+---
+# Application configuration for n8n
+app:
+  name: n8n
+  namespace: n8n
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.5.0

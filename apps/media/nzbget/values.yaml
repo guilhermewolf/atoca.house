@@ -81,8 +81,8 @@ persistence:
   media:
     type: nfs
     server: nas.atoca.house
-    path: /mnt/user/data/usenet
+    path: /mnt/user/data/
     globalMounts:
-      - path: /media/Downloads/nzbget
+      - path: /data
   tmp:
     type: emptyDir

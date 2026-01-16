@@ -144,7 +144,7 @@ repoServer:
       cpu: 600m
       memory: 256Mi
     limits:
-      cpu: 2000m
+      cpu: 2
       memory: 1000Mi
 
 controller:

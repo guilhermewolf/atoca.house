@@ -119,10 +119,18 @@ cephFileSystems:
         replicated:
           size: 3
       dataPools:
-        - failureDomain: host
+        - application: ''
+          erasureCoded:
+            codingChunks: 0
+            dataChunks: 0
+          failureDomain: host
+          mirroring: {}
+          name: data0
+          quotas: {}
           replicated:
             size: 3
-          name: data0
+          statusCheck:
+            mirror: {}
       metadataServer:
         activeCount: 1
         activeStandby: true

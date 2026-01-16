@@ -170,10 +170,14 @@ metadata:
     external-dns.alpha.kubernetes.io/controller: none
 spec:
   parentRefs:
-    - name: atoca-house-external
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: atoca-house-external
       namespace: kube-system
       sectionName: http
-    - name: atoca-house-internal
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: atoca-house-internal
       namespace: kube-system
       sectionName: http
   rules:
@@ -182,6 +186,10 @@ spec:
           requestRedirect:
             scheme: https
             statusCode: 301
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
 ---
 # Certificate for wildcard domain
 apiVersion: cert-manager.io/v1

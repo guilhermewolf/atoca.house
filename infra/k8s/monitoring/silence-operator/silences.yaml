@@ -17,6 +17,20 @@ spec:
 apiVersion: observability.giantswarm.io/v1alpha2
 kind: Silence
 metadata:
+  name: ceph-node-network-packet-drops
+spec:
+  matchers:
+    - name: alertname
+      matchType: '='
+      value: CephNodeNetworkPacketDrops
+    - name: device
+      matchType: '='
+      value: wlp3s0
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/observability.giantswarm.io/silence_v1alpha2.json
+apiVersion: observability.giantswarm.io/v1alpha2
+kind: Silence
+metadata:
   name: ceph-node-local-diskspace-warning
 spec:
   matchers:

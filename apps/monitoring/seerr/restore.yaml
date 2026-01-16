@@ -3,7 +3,7 @@ apiVersion: volsync.backube/v1alpha1
 kind: ReplicationDestination
 metadata:
   name: seerr-restore
-  namespace: seer
+  namespace: seerr
 spec:
   trigger:
     manual: restore-once

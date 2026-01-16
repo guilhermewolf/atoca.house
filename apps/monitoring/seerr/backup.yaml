@@ -3,7 +3,7 @@ apiVersion: volsync.backube/v1alpha1
 kind: ReplicationSource
 metadata:
   name: seerr-backup
-  namespace: seer
+  namespace: seerr
 spec:
   sourcePVC: seerr
   trigger:

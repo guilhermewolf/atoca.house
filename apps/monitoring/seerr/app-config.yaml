@@ -1,8 +1,8 @@
 ---
 # Application configuration for seer
 app:
-  name: seer
-  namespace: seer
+  name: seerr
+  namespace: seerr
   chart: app-template
   chartRepo: ghcr.io/bjw-s-labs/helm
   chartVersion: 4.5.0

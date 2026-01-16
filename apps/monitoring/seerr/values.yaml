@@ -13,7 +13,7 @@ controllers:
           PORT: &port 80
         # envFrom:
         #   - secretRef:
-        #       name: "seer-secret"
+        #       name: "seerr-secret"
         probes:
           liveness: &probes
             enabled: true
@@ -58,10 +58,10 @@ route:
       - name: atoca-house-internal
         namespace: kube-system
     hostnames:
-      - seer.atoca.house
+      - seerr.atoca.house
     rules:
       - backendRefs:
-          - name: seer
+          - name: seerr
             port: 80
         matches:
           - path:
@@ -69,7 +69,7 @@ route:
               value: /
 
 persistence:
-  seer:
+  seerr:
     enabled: true
     type: persistentVolumeClaim
     storageClass: ceph-block

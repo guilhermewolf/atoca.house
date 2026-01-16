@@ -66,10 +66,6 @@ area/ansible:
   - changed-files:
       - any-glob-to-any-file:
           - "infra/ansible/**/*"
-          - "**/*.yaml"  # Ansible playbooks
-        all-globs-to-all-files:
-          - "!**/.github/**/*"
-          - "!**/argocd/**/*"
 
 area/talos:
   - changed-files:
@@ -105,7 +101,7 @@ area/docs:
   - changed-files:
       - any-glob-to-any-file:
           - "docs/**/*"
-          - "**/*.md"
+          - "*.md"  # Only root-level markdown files
           - "!.github/**/*.md"
 
 area/github:
@@ -134,27 +130,31 @@ type/ci:
 # Renovate Labels
 # =============================================================================
 renovate/container:
-  - changed-files:
-      - any-glob-to-any-file:
-          - "**/values.yaml"  # Likely container updates
-          - "**/docker-compose*.yaml"
-    head-branch:
-      - "^renovate/.*"
+  - all:
+    - changed-files:
+        - any-glob-to-any-file:
+            - "**/values.yaml"  # Container image updates in Helm values
+            - "**/docker-compose*.yaml"  # Docker compose image updates
+            - "stacks/**/*"  # Docker compose stacks
+    - head-branch:
+        - "^renovate/.*"
 
 renovate/helm:
-  - changed-files:
-      - any-glob-to-any-file:
-          - "**/application.yaml"
-          - "**/Chart.yaml"
-    head-branch:
-      - "^renovate/.*"
+  - all:
+    - changed-files:
+        - any-glob-to-any-file:
+            - "**/application.yaml"  # ArgoCD application updates (chart versions)
+            - "**/Chart.yaml"  # Helm chart dependency updates
+    - head-branch:
+        - "^renovate/.*"
 
 renovate/github-action:
-  - changed-files:
-      - any-glob-to-any-file:
-          - ".github/workflows/**/*"
-    head-branch:
-      - "^renovate/.*"
+  - all:
+    - changed-files:
+        - any-glob-to-any-file:
+            - ".github/workflows/**/*"  # GitHub Action version updates
+    - head-branch:
+        - "^renovate/.*"
 
 # =============================================================================
 # Special Labels
@@ -191,6 +191,9 @@ breaking-change:
 cluster/main:
   - changed-files:
       - any-glob-to-any-file:
-          - "infra/**/*"
-          - "apps/**/*"
-          - "argocd/**/*"
+          - "infra/talos/**/*"
+          - "infra/k8s/cluster-management/**/*"
+          - "infra/k8s/operators/**/*"
+          - "infra/k8s/networking/**/*"
+          - "infra/k8s/storage/**/*"
+          - "infra/k8s/security/**/*"

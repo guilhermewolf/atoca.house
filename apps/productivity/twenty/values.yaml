@@ -7,8 +7,8 @@ controllers:
       server:
         image:
           repository: docker.io/twentycrm/twenty
-          tag: latest
-          pullPolicy: IfNotPresent
+          tag: v1.15.0@sha256:512c2a666418dd4d5a457b208ca2a44159ea775f60824db38eb81ffb40e9dd74
+          pullPolicy: Always
         env:
           NODE_PORT: &port 3000
           NODE_TLS_REJECT_UNAUTHORIZED: "0"
@@ -24,24 +24,25 @@ controllers:
               name: twenty-db-secret
           - secretRef:
               name: twenty-secret
-        # probes:
-        #   liveness: &probes
-        #     enabled: true
-        #     custom: true
-        #     spec:
-        #       httpGet:
-        #         path: /healthz
-        #         port: *port
-        #       initialDelaySeconds: 30
-        #       periodSeconds: 10
-        #       timeoutSeconds: 5
-        #       failureThreshold: 3
-        #   readiness: *probes
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: *port
+              initialDelaySeconds: 90
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 6
+          readiness: *probes
         resources:
           requests:
-            cpu: 100m
+            cpu: 250m
             memory: 256Mi
           limits:
+            cpu: 1000m
             memory: 1Gi
 
   worker:
@@ -52,8 +53,8 @@ controllers:
       worker:
         image:
           repository: docker.io/twentycrm/twenty
-          tag: latest
-          pullPolicy: IfNotPresent
+          tag: v1.15.0@sha256:512c2a666418dd4d5a457b208ca2a44159ea775f60824db38eb81ffb40e9dd74
+          pullPolicy: Always
         command:
           - yarn
           - worker:prod
@@ -71,9 +72,10 @@ controllers:
               name: twenty-secret
         resources:
           requests:
-            cpu: 100m
-            memory: 512Mi
+            cpu: 250m
+            memory: 1Gi
           limits:
+            cpu: 1000m
             memory: 2Gi
 
   redis:
@@ -81,11 +83,12 @@ controllers:
     containers:
       redis:
         image:
-          repository: docker.io/redis
+          repository: docker.io/redis/redis-stack-server
           tag: 8-alpine@sha256:6cbef353e480a8a6e7f10ec545f13d7d3fa85a212cdcc5ffaf5a1c818b9d3798
-          pullPolicy: IfNotPresent
-        env:
-          REDIS_MAXMEMORY_POLICY: noeviction
+          pullPolicy: Always
+        args:
+          - --maxmemory-policy
+          - noeviction
         probes:
           liveness: &redis-probes
             enabled: true
@@ -102,14 +105,19 @@ controllers:
           readiness: *redis-probes
         resources:
           requests:
-            cpu: 10m
-            memory: 32Mi
+            cpu: 250m
+            memory: 1Gi
           limits:
-            memory: 128Mi
+            cpu: 500m
+            memory: 2Gi
 
 service:
   server:
     controller: server
+    sessionAffinity: ClientIP
+    sessionAffinityConfig:
+      clientIP:
+        timeoutSeconds: 10800
     ports:
       http:
         port: *port
@@ -144,7 +152,7 @@ persistence:
     type: persistentVolumeClaim
     storageClass: ceph-block
     accessMode: ReadWriteOnce
-    size: 5Gi
+    size: 10Gi
     advancedMounts:
       server:
         server:

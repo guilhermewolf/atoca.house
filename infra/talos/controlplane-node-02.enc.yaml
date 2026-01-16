@@ -75,7 +75,7 @@ machine:
       allowedRoles:
         - os:admin
       allowedKubernetesNamespaces:
-        - kube-system
+        - tuppr
     diskQuotaSupport: true
     kubePrism:
       enabled: true

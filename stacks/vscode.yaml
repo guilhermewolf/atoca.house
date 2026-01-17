@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   openvscode-server:
-    image: lscr.io/linuxserver/openvscode-server:1.106.3@sha256:11829fbc31fd217b191d70a8befd406d16344c1fe1d2722e2983292202e052df
+    image: lscr.io/linuxserver/openvscode-server:1.106.3@sha256:b44600640efc8eccffff3e456478a1f4eb34d973e2e6e11e3e9f10bc7f608774
     container_name: openvscode-server
     network_mode: bridge
     ports:

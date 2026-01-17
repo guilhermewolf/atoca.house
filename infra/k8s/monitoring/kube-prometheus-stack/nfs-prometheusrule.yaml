@@ -1,0 +1,57 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: nfs-monitoring
+  namespace: monitoring
+spec:
+  groups:
+    - name: nfs.rules
+      rules:
+        - alert: NFSVolumeMountFailure
+          expr: |-
+            kube_pod_container_status_waiting_reason{reason=~"CreateContainerError|CreateContainerConfigError"} > 0
+            and
+            kube_pod_info * on(namespace, pod) group_left() kube_pod_status_phase{phase="Pending"} > 0
+          for: 5m
+          annotations:
+            summary: >-
+              Pod {{ $labels.namespace }}/{{ $labels.pod }} is failing to mount volumes
+            description: >-
+              Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }}
+              has been in {{ $labels.reason }} state for more than 5 minutes.
+              This is often caused by stale NFS mounts or volume mount issues.
+          labels:
+            severity: warning
+
+        - alert: NFSVolumeMountFailureCritical
+          expr: |-
+            kube_pod_container_status_waiting_reason{reason=~"CreateContainerError|CreateContainerConfigError"} > 0
+            and
+            kube_pod_info * on(namespace, pod) group_left() kube_pod_status_phase{phase="Pending"} > 0
+          for: 15m
+          annotations:
+            summary: >-
+              Pod {{ $labels.namespace }}/{{ $labels.pod }} is stuck failing to mount volumes
+            description: >-
+              Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }}
+              has been in {{ $labels.reason }} state for more than 15 minutes.
+              Check for stale NFS mounts on node {{ $labels.node }} with:
+              `talosctl -n {{ $labels.node }} dmesg | grep -i "nfs.*error\|stale"`
+          labels:
+            severity: critical
+
+        - alert: PodRestartingFrequently
+          expr: |-
+            rate(kube_pod_container_status_restarts_total[15m]) * 3600 > 4
+          for: 5m
+          annotations:
+            summary: >-
+              Pod {{ $labels.namespace }}/{{ $labels.pod }} is restarting frequently
+            description: >-
+              Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }}
+              has restarted {{ $value | humanize }} times per hour over the last 15 minutes.
+              This may indicate volume mount issues or application problems.
+          labels:
+            severity: warning

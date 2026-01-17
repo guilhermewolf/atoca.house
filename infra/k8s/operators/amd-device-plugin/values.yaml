@@ -1,0 +1,47 @@
+---
+controllers:
+  amd-device-plugin:
+    type: daemonset
+
+    containers:
+      app:
+        image:
+          repository: docker.io/rocm/k8s-device-plugin
+          tag: 1.31.0.2@sha256:75c151293f0f69a69f91d6cb04f2635c340747ee7863c6d5cd7ec81c31351961
+
+        workingDir: /root
+
+        command: ["./k8s-device-plugin"]
+
+        args: ["-logtostderr=true", "-stderrthreshold=INFO", "-v=5"]
+
+        env:
+          TZ: Europe/Amsterdam
+
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
+          limits:
+            memory: 100Mi
+
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+
+service:
+  app:
+    enabled: false
+    controller: amd-device-plugin
+
+persistence:
+  sys:
+    enabled: true
+    type: hostPath
+    hostPath: /sys
+
+  device-plugins:
+    enabled: true
+    type: hostPath
+    hostPath: /var/lib/kubelet/device-plugins

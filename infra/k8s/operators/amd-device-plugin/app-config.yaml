@@ -1,0 +1,9 @@
+---
+# Application configuration for amd-device-plugin
+app:
+  name: amd-device-plugin
+  namespace: kube-system
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.5.0
+  volsyncPrivileged: false

@@ -1,0 +1,64 @@
+---
+controllers:
+  amd-gpu-node-labeller:
+    type: daemonset
+
+    containers:
+      app:
+        image:
+          repository: docker.io/rocm/k8s-device-plugin
+          tag: labeller-1.25.2.5@sha256:cd0decbe8e44ff8906fe9c3163b1ae102bcffc23e85edd6213f393beaa8ad78e
+
+        workingDir: /root
+
+        command: ["/root/k8s-node-labeller"]
+
+        args:
+          [
+            "-logtostderr=true",
+            "-stderrthreshold=INFO",
+            "-v=5",
+            "-vram",
+            "-cu-count",
+            "-simd-count",
+            "-device-id",
+            "-family",
+          ]
+
+        env:
+          TZ: Europe/Amsterdam
+          DS_NODE_NAME:
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+
+        resources:
+          requests:
+            cpu: 25m
+            memory: 10Mi
+          limits:
+            memory: 100Mi
+
+        securityContext:
+          privileged: true
+          capabilities:
+            drop: ["ALL"]
+
+serviceAccount:
+  amd-gpu-node-labeller: {}
+
+service:
+  app:
+    enabled: false
+    controller: amd-gpu-node-labeller
+
+persistence:
+  sys:
+    enabled: true
+    type: hostPath
+    hostPath: /sys
+
+  dev:
+    enabled: true
+    type: hostPath
+    hostPath: /dev

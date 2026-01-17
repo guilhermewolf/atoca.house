@@ -1,0 +1,71 @@
+---
+controllers:
+  cross-seed:
+    annotations:
+      secret.reloader.stakater.com/reload: cross-seed-secret
+
+    containers:
+      app:
+        image:
+          repository: ghcr.io/cross-seed/cross-seed
+          tag: 6.13.6
+        args:
+          - daemon
+          - -v
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 5
+        resources:
+          requests:
+            cpu: 10m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    ports:
+      http:
+        port: 2468
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /config/
+
+  config-file:
+    type: secret
+    name: cross-seed-secret
+    globalMounts:
+      - path: /config/config.js
+        subPath: config.js
+  media:
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/data/torrents
+    globalMounts:
+      - path: /data/torrents

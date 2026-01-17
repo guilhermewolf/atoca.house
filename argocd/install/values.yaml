@@ -13,6 +13,14 @@ configs:
           jsonPointers:
           - /spec/preserveUnknownFields
 
+      apps/Deployment:
+        ignoreDifferences: |
+          jsonPointers:
+          - /spec/template/metadata/annotations/kubectl.kubernetes.io~1restartedAt
+          - /spec/template/metadata/annotations/checksum~1cm
+          - /spec/template/metadata/annotations/checksum~1cmd-params
+          - /spec/template/metadata/annotations/checksum~1cmp-cm
+
     resource.customizations.health.argoproj.io_Application: |
       hs = {}
       hs.status = "Progressing"

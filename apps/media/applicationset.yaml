@@ -49,6 +49,20 @@ spec:
           directory:
             exclude: '{application.yaml,values.yaml,app-config.yaml}'
 
+      ignoreDifferences:
+        # Ignore checksum annotations added by helm charts for triggering restarts
+        - group: apps
+          kind: StatefulSet
+          jsonPointers:
+            - /spec/template/metadata/annotations/checksum~1configMaps
+            - /spec/template/metadata/annotations/checksum~1secrets
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/template/metadata/annotations/checksum~1configMaps
+            - /spec/template/metadata/annotations/checksum~1secrets
+            - /spec/template/metadata/annotations/kubectl.kubernetes.io~1restartedAt
+
       syncPolicy:
         syncOptions:
           - CreateNamespace=true

@@ -38,7 +38,7 @@ controllers:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          capabilities: {drop: ["ALL"]}
+          capabilities: { drop: ["ALL"] }
 
 defaultPodOptions:
   securityContext:
@@ -82,3 +82,9 @@ persistence:
     size: 1Gi
     globalMounts:
       - path: /config
+  media:
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/data/torrents
+    globalMounts:
+      - path: /data/torrents

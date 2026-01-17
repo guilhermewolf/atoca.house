@@ -1,0 +1,9 @@
+---
+# Application configuration for Jellyfin
+app:
+  name: jellyfin
+  namespace: jellyfin
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.5.0
+  volsyncPrivileged: false

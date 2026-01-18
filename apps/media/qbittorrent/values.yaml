@@ -79,7 +79,6 @@ route:
               type: PathPrefix
               value: /
 
-
 configMaps:
   config:
     data:

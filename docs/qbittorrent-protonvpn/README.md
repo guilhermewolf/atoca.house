@@ -15,8 +15,12 @@ Run the NAT-PMP port forwarding script directly on the Unifi Gateway, which has 
 The script:
 1. Adds a route to reach ProtonVPN's gateway (10.2.0.1) via the WireGuard interface
 2. Requests port forwarding from ProtonVPN via NAT-PMP
-3. Updates qBittorrent's listening port via its API
-4. Renews the port lease every 45 seconds
+3. Gets the current port configured in qBittorrent via its API
+4. Compares qBittorrent's port with the VPN port and updates if different
+5. Updates iptables rules when the VPN port changes
+6. Renews the port lease every 45 seconds
+
+The script continuously monitors both the VPN port and qBittorrent's configuration, ensuring they always stay in sync even if qBittorrent's port is manually changed or reset.
 
 ## Files
 

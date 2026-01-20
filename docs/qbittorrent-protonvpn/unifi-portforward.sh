@@ -33,6 +33,43 @@ ensure_route() {
     fi
 }
 
+# Function to get current qBittorrent listening port
+get_qbittorrent_port() {
+    local prefs
+    prefs=$(curl -s --max-time 5 "$QBIT_API/api/v2/app/preferences" 2>/dev/null)
+
+    if [ $? -eq 0 ] && [ -n "$prefs" ]; then
+        echo "$prefs" | grep -o '"listen_port":[0-9]*' | cut -d: -f2
+    else
+        echo "0"
+    fi
+}
+
+# Function to update qBittorrent port
+update_qbittorrent_port() {
+    local port=$1
+    if [ -z "$port" ] || [ "$port" -eq 0 ]; then
+        return 1
+    fi
+
+    log "Updating qBittorrent at $QBIT_API to use port $port..."
+
+    CURL_OUTPUT=$(curl -s -w "\nHTTP_CODE:%{http_code}" \
+        --max-time 5 \
+        --data "json={\"listen_port\":$port}" \
+        "$QBIT_API/api/v2/app/setPreferences" 2>&1)
+
+    HTTP_CODE=$(echo "$CURL_OUTPUT" | grep "HTTP_CODE:" | cut -d: -f2)
+
+    if [ "$HTTP_CODE" = "200" ] || [ -z "$HTTP_CODE" ]; then
+        log "Successfully updated qBittorrent to port $port"
+        return 0
+    else
+        log "WARNING: Failed to update qBittorrent (HTTP $HTTP_CODE)"
+        return 1
+    fi
+}
+
 # Function to remove iptables rules for old port
 remove_port_forward() {
     local port=$1
@@ -109,8 +146,13 @@ while true; do
         PORT=$(echo "$PROTON_OUTPUT" | grep "Mapped public port" | awk '{print $4}')
 
         if [ -n "$PORT" ] && [ "$PORT" -gt 0 ]; then
+            # Check qBittorrent's current port
+            QBIT_CURRENT_PORT=$(get_qbittorrent_port)
+            log "VPN port: $PORT, qBittorrent port: $QBIT_CURRENT_PORT"
+
+            # Update iptables if VPN port changed
             if [ "$PORT" -ne "$OLD_PORT" ]; then
-                log "Got port $PORT from Proton VPN"
+                log "VPN port changed from $OLD_PORT to $PORT"
 
                 # Also request UDP
                 natpmpc -g "$PROTON_GW" -a 1 0 udp 60 >/dev/null 2>&1
@@ -126,25 +168,15 @@ while true; do
                 # Save port to file
                 echo "$PORT" > "$PORT_FILE"
 
-                # Update qBittorrent listening port
-                log "Updating qBittorrent at $QBIT_API to use port $PORT..."
-
-                CURL_OUTPUT=$(curl -s -w "\nHTTP_CODE:%{http_code}" \
-                    --max-time 5 \
-                    --data "json={\"listen_port\":$PORT}" \
-                    "$QBIT_API/api/v2/app/setPreferences" 2>&1)
-
-                HTTP_CODE=$(echo "$CURL_OUTPUT" | grep "HTTP_CODE:" | cut -d: -f2)
-
-                if [ "$HTTP_CODE" = "200" ] || [ -z "$HTTP_CODE" ]; then
-                    log "Successfully updated qBittorrent to port $PORT"
-                else
-                    log "WARNING: Failed to update qBittorrent (HTTP $HTTP_CODE)"
-                fi
-
                 OLD_PORT=$PORT
+            fi
+
+            # Always check if qBittorrent needs updating
+            if [ "$QBIT_CURRENT_PORT" != "$PORT" ]; then
+                log "qBittorrent port ($QBIT_CURRENT_PORT) differs from VPN port ($PORT), updating..."
+                update_qbittorrent_port "$PORT"
             else
-                log "Port unchanged: $PORT"
+                log "Port unchanged and qBittorrent already configured: $PORT"
             fi
         else
             log "ERROR: Failed to extract port from NAT-PMP response"

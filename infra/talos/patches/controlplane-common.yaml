@@ -5,21 +5,37 @@
 machine:
   # Install configuration
   install:
-    disk: /dev/nvme1n1  # 256GB system disk
+    image: factory.talos.dev/metal-installer/83f6d002527e710e640809a8247bf83d7bc41cfc513c278f5dd9b58c5b6f85ee:v1.12.1
     wipe: false
+    grubUseUKICmdline: true
 
-  # Network configuration
+  # Network configuration - bonded interfaces with VLANs
   network:
     interfaces:
-      - interface: enp5s0f3u2
+      - interface: bond0
+        bond:
+          deviceSelectors:
+            - driver: r8152 # enp5s0f3u2
+            - driver: r8169 # enp2s0
+          mode: active-backup
         dhcp: true
+        vlans:
+          - # IOT
+            vlanId: 5
+            dhcp: false
+            mtu: 1500
+          - # VPN
+            vlanId: 6
+            dhcp: false
+            mtu: 1500
     nameservers:
       - 192.168.40.1
       - 1.1.1.1
-      - 1.0.0.1
+      - 8.8.8.8
 
-  # Kubelet configuration for Rook-Ceph
+  # Kubelet configuration
   kubelet:
+    image: ghcr.io/siderolabs/kubelet:v1.35.0
     defaultRuntimeSeccompProfileEnabled: true
     disableManifestsDirectory: true
     extraConfig:
@@ -27,6 +43,31 @@ machine:
     nodeIP:
       validSubnets:
         - 192.168.40.0/24
+    extraMounts:
+      - destination: /var/local
+        type: bind
+        source: /var/local
+        options:
+          - bind
+          - rshared
+          - rw
+
+  # Files configuration
+  files:
+    - op: create
+      path: /etc/cri/conf.d/20-customization.part
+      content: |
+        [plugins."io.containerd.cri.v1.images"]
+          discard_unpacked_layers = false
+    - op: overwrite
+      path: /etc/nfsmount.conf
+      permissions: 420
+      content: |
+        [ NFSMount_Global_Options ]
+        nfsvers=4.2
+        hard=True
+        noatime=True
+        nconnect=16
 
   # Features
   features:
@@ -36,7 +77,7 @@ machine:
       allowedRoles:
         - os:admin
       allowedKubernetesNamespaces:
-        - kube-system
+        - tuppr
     diskQuotaSupport: true
     kubePrism:
       enabled: true
@@ -46,11 +87,10 @@ machine:
       forwardKubeDNSToHost: true
       resolveMemberNames: true
 
-  # System disk partitions - Mount 1TB data disk for Ceph
-  disks:
-    - device: /dev/nvme0n1  # 1TB data disk for Ceph
-      partitions:
-        - mountpoint: /var/mnt/ceph
+  # Node labels
+  nodeLabels:
+    node.kubernetes.io/exclude-from-external-load-balancers: ""
+    openebs.io/engine: mayastor
 
   # Sysctls for networking
   sysctls:
@@ -71,6 +111,7 @@ machine:
     net.ipv4.tcp_window_scaling: "1"
     net.ipv4.tcp_wmem: 4096 65536 33554432
     user.max_user_namespaces: "11255"
+    vm.nr_hugepages: "1024"
 
 # Cluster configuration
 cluster:
@@ -79,7 +120,7 @@ cluster:
     enabled: true
     registries:
       kubernetes:
-        disabled: false
+        disabled: true
       service:
         disabled: false
 
@@ -96,34 +137,57 @@ cluster:
   # Proxy configuration
   proxy:
     disabled: true  # Using Cilium kube-proxy replacement
+    image: registry.k8s.io/kube-proxy:v1.35.0
 
   # Scheduler configuration
   scheduler:
+    image: registry.k8s.io/kube-scheduler:v1.35.0
     config:
       apiVersion: kubescheduler.config.k8s.io/v1
       kind: KubeSchedulerConfiguration
+      profiles:
+        - schedulerName: default-scheduler
+          plugins:
+            score:
+              disabled:
+                - name: ImageLocality
+          pluginConfig:
+            - name: PodTopologySpread
+              args:
+                defaultingType: List
+                defaultConstraints:
+                  - maxSkew: 1
+                    topologyKey: kubernetes.io/hostname
+                    whenUnsatisfiable: ScheduleAnyway
+    extraArgs:
+      bind-address: 0.0.0.0
 
   # Controller manager
   controllerManager:
+    image: registry.k8s.io/kube-controller-manager:v1.35.0
     extraArgs:
       bind-address: 0.0.0.0
 
   # API server configuration
   apiServer:
+    image: registry.k8s.io/kube-apiserver:v1.35.0
     certSANs:
       - 192.168.40.11
       - 192.168.40.12
       - 192.168.40.13
-    extraArgs:
-      feature-gates: MixedProtocolLBService=true,ServerSideApply=true
+    auditPolicy:
+      apiVersion: audit.k8s.io/v1
+      kind: Policy
+      rules:
+        - level: Metadata
+    disablePodSecurityPolicy: true
 
   # Etcd configuration (3-node HA)
   etcd:
     advertisedSubnets:
       - 192.168.40.0/24
+    extraArgs:
+      listen-metrics-urls: http://0.0.0.0:2381
 
   # Allow scheduling on control plane nodes (no workers)
   allowSchedulingOnControlPlanes: true
-
-  # Inline manifests for critical components that need to run before CNI
-  inlineManifests: []

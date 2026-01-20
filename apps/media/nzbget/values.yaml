@@ -8,28 +8,29 @@ controllers:
         env:
           NZBGET__PORT: &port 80
           TZ: Europe/Amsterdam
-        # probes:
-        #   liveness: &probes
-        #     enabled: true
-        #     custom: true
-        #     spec:
-        #       httpGet:
-        #         path: /jsonrpc/status
-        #         port: *port
-        #       initialDelaySeconds: 0
-        #       periodSeconds: 10
-        #       timeoutSeconds: 1
-        #       failureThreshold: 3
-        #   readiness: *probes
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /jsonrpc/status
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          capabilities: {drop: ["ALL"]}
+          capabilities: { drop: ["ALL"] }
         resources:
           requests:
             cpu: 100m
+            memory: 128Mi
           limits:
-            memory: 8Gi
+            memory: 256Mi
 defaultPodOptions:
   annotations:
     k8s.v1.cni.cncf.io/networks: |-

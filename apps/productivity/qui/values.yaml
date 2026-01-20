@@ -33,8 +33,9 @@ controllers:
         resources:
           requests:
             cpu: 10m
+            memory: 192Mi
           limits:
-            memory: 512Mi
+            memory: 256Mi
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

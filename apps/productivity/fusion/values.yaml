@@ -28,8 +28,9 @@ controllers:
         resources:
           requests:
             cpu: 100m
+            memory: 64Mi
           limits:
-            memory: 512Mi
+            memory: 128Mi
 
 service:
   fusion:

@@ -6,33 +6,39 @@ controllers:
     containers:
       bazarr:
         image:
-          repository: ghcr.io/lscr.io/linuxserver/bazarr
-          tag: 1.5.4@sha256:7d0a091a63889ce1e4ac4c90595ebd2c50ba5a5df7039a4f4d2be6c2aed6d4ae
+          repository: ghcr.io/home-operations/bazarr
+          tag: 1.5.4@sha256:7ff11ddc4bec111ef8f4b58e95d1df8b980835f78c5087c0a95c6e74908a1d29
           pullPolicy: IfNotPresent
         env:
           BAZARR__PORT: &port 6767
           TZ: "Europe/Amsterdam"
-          PUID: "99"
-          PGID: "100"
         resources:
           requests:
             cpu: 10m
+            memory: 384Mi
           limits:
-            memory: 1Gi
-        # probes:
-        #   liveness: &probes
-        #     enabled: true
-        #     custom: true
-        #     spec:
-        #       httpGet:
-        #         path: /health
-        #         port: *port
-        #       initialDelaySeconds: 0
-        #       periodSeconds: 10
-        #       timeoutSeconds: 1
-        #       failureThreshold: 3
-        #   readiness: *probes
+            memory: 512Mi
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
 
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
 service:
   bazarr:
     controller: bazarr

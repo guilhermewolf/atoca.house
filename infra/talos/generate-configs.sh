@@ -11,7 +11,7 @@ CLUSTER_ENDPOINT="https://192.168.40.11:6443"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GEN_DIR="${SCRIPT_DIR}/generated"
 PATCHES_DIR="${SCRIPT_DIR}/patches"
-TALOS_VERSION="${TALOS_VERSION:-v1.9.0}"
+TALOS_VERSION="${TALOS_VERSION:-v1.12.1}"
 
 # Node configuration (bash 3.2 compatible)
 NODE_NAMES=("node-01" "node-02" "node-03")
@@ -49,17 +49,12 @@ check_requirements() {
     missing_tools+=("sops")
   fi
 
-  if ! command -v yq &> /dev/null; then
-    missing_tools+=("yq")
-  fi
-
   if [ ${#missing_tools[@]} -gt 0 ]; then
     log_error "Missing required tools: ${missing_tools[*]}"
     echo ""
     echo "Install missing tools:"
     echo "  talosctl: curl -sL https://talos.dev/install | sh"
     echo "  sops: brew install sops (or from https://github.com/getsops/sops)"
-    echo "  yq: brew install yq (or from https://github.com/mikefarah/yq)"
     exit 1
   fi
 
@@ -94,31 +89,6 @@ generate_base_configs() {
   log_info "Base configurations generated"
 }
 
-apply_patches() {
-  local node_name=$1
-  local node_ip=$2
-  local input_file=$3
-  local output_file=$4
-
-  log_info "Applying patches for ${node_name} (${node_ip})..."
-
-  # Apply common control plane patch - merge patch into base config
-  yq eval-all 'select(fileIndex == 0) *+ select(fileIndex == 1)' \
-    "${input_file}" \
-    "${PATCHES_DIR}/controlplane-common.yaml" > "${output_file}.tmp"
-
-  # Apply node-specific patch
-  if [ -f "${PATCHES_DIR}/${node_name}.yaml" ]; then
-    yq eval-all 'select(fileIndex == 0) *+ select(fileIndex == 1)' \
-      "${output_file}.tmp" \
-      "${PATCHES_DIR}/${node_name}.yaml" > "${output_file}"
-    rm "${output_file}.tmp"
-  else
-    mv "${output_file}.tmp" "${output_file}"
-    log_warn "No node-specific patch found for ${node_name}"
-  fi
-}
-
 generate_node_configs() {
   log_info "Generating node-specific configurations..."
 
@@ -143,9 +113,6 @@ generate_node_configs() {
       log_error "Failed to generate config for ${node_name}"
       exit 1
     }
-
-    # Replace auto hostname with explicit hostname in the HostnameConfig document
-    sed -i '' 's/^auto: stable$/hostname: '"${node_name}"'/' "${output_file}"
 
     log_info "Generated config for ${node_name}"
   done

@@ -1,36 +1,20 @@
 # Define local variables
 locals {
   subdomains = [
-    "adguard",
-    "anime",
-    "autobrr",
-    "bazar",
     "compartilhado",
     "duplicati",
-    "glances",
     "hass",
-    "homebridge",
     "jellyfin",
-    "jellyseerr",
     "kuma",
     "lidarr",
     "kvm",
     "mass",
     "minio",
     "minio-data",
-    "n8n",
-    "nextcloud",
     "npm",
     "portainer",
-    "qbittorrent",
-    "radar",
-    "readar",
-    "sabnzbd",
-    "slskd",
     "syncthing",
-    "sonar",
     "vscode",
-    "znc"
   ]
   domain = "atoca.house"
 }

@@ -1,6 +1,6 @@
-resource "cloudflare_r2_bucket" "rpi_k8s" {
+resource "cloudflare_r2_bucket" "atoca_house_cluster_backup" {
   account_id     = var.account_id
-  name           = "rpi-k8s-backup"
+  name           = "atoca-house-cluster-backup"
   jurisdiction   = "default"
   location       = "WEUR"
   storage_class  = "Standard"
@@ -14,9 +14,9 @@ resource "cloudflare_r2_bucket" "rpi_k8s" {
   }
 }
 
-resource "cloudflare_r2_bucket" "rpi_k8s_crunchy_postgres" {
+resource "cloudflare_r2_bucket" "atoca_house_crunchy_postgres" {
   account_id     = var.account_id
-  name           = "rpi-k8s-crunchy-postgres"
+  name           = "atoca-house-crunchy-postgres"
   jurisdiction   = "default"
   location       = "WEUR"
   storage_class  = "Standard"

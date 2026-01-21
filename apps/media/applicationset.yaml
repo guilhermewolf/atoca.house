@@ -19,21 +19,21 @@ spec:
 
   template:
     metadata:
-      name: '{{.app.name}}'
+      name: "{{.app.name}}"
       namespace: argocd
     spec:
       project: applications
       destination:
-        namespace: '{{.app.namespace}}'
+        namespace: "{{.app.namespace}}"
         server: https://kubernetes.default.svc
 
       sources:
         # Helm chart source
-        - chart: '{{.app.chart}}'
-          repoURL: '{{.app.chartRepo}}'
-          targetRevision: '{{.app.chartVersion}}'
+        - chart: "{{.app.chart}}"
+          repoURL: "{{.app.chartRepo}}"
+          targetRevision: "{{.app.chartVersion}}"
           helm:
-            releaseName: '{{.app.name}}'
+            releaseName: "{{.app.name}}"
             valueFiles:
               - $values/apps/media/{{.app.name}}/values.yaml
 
@@ -45,23 +45,17 @@ spec:
         # Additional resources (secrets, configs, etc.)
         - repoURL: https://github.com/guilhermewolf/atoca.house
           targetRevision: HEAD
-          path: 'apps/media/{{.app.name}}'
+          path: "apps/media/{{.app.name}}"
           directory:
-            exclude: '{application.yaml,values.yaml,app-config.yaml}'
+            exclude: "{application.yaml,values.yaml,app-config.yaml}"
 
       ignoreDifferences:
         # Ignore checksum annotations added by helm charts for triggering restarts
         - group: apps
           kind: StatefulSet
           jsonPointers:
-            - /spec/template/metadata/annotations/checksum~1configMaps
-            - /spec/template/metadata/annotations/checksum~1secrets
-        - group: apps
-          kind: Deployment
-          jsonPointers:
-            - /spec/template/metadata/annotations/checksum~1configMaps
-            - /spec/template/metadata/annotations/checksum~1secrets
-            - /spec/template/metadata/annotations/kubectl.kubernetes.io~1restartedAt
+            - /spec/volumeClaimTemplates/0/apiVersion
+            - /spec/volumeClaimTemplates/0/kind
 
       syncPolicy:
         syncOptions:

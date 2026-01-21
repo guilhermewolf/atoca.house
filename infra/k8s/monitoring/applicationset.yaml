@@ -43,6 +43,25 @@ spec:
           directory:
             exclude: '{application.yaml,values.yaml,app-config.yaml}'
 
+      ignoreDifferences:
+        - group: apps
+          kind: StatefulSet
+          jsonPointers:
+            - /spec/volumeClaimTemplates/0/apiVersion
+            - /spec/volumeClaimTemplates/0/kind
+        # Ignore runtime modifications on HTTPRoutes from Gateway controllers
+        - group: gateway.networking.k8s.io
+          kind: HTTPRoute
+          jsonPointers:
+            - /status
+            - /metadata/generation
+            - /metadata/resourceVersion
+            - /spec/parentRefs/0/group
+            - /spec/parentRefs/0/kind
+            - /spec/rules/0/backendRefs/0/group
+            - /spec/rules/0/backendRefs/0/kind
+            - /spec/rules/0/backendRefs/0/weight
+
       syncPolicy:
         syncOptions:
           - CreateNamespace=true

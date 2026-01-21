@@ -74,6 +74,9 @@ route:
     parentRefs:
       - name: atoca-house-external
         namespace: kube-system
+    annotations:
+      gatus.home-operations.com/endpoint: |-
+        conditions: ["[STATUS] == 200"]
     hostnames:
       - filebrowser.atoca.house
     rules:

@@ -52,6 +52,10 @@ metadata:
   annotations:
     external-dns.alpha.kubernetes.io/target: &hostname external.atoca.house
     cert-manager.io/cluster-issuer: cloudflare-prod
+    gatus.home-operations.com/endpoint: |-
+      client:
+        dns-resolver: tcp://1.1.1.1:53
+      group: external
 spec:
   gatewayClassName: envoy
   infrastructure:
@@ -74,7 +78,7 @@ spec:
       tls:
         certificateRefs:
           - kind: Secret
-            group: ''
+            group: ""
             name: atoca-house-tls
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -112,7 +116,7 @@ spec:
       tls:
         certificateRefs:
           - kind: Secret
-            group: ''
+            group: ""
             name: atoca-house-tls
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1

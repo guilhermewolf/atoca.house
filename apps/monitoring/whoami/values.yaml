@@ -24,7 +24,6 @@ defaultPodOptions:
     runAsGroup: 65534
     seccompProfile: { type: RuntimeDefault }
 
-
 service:
   whoami:
     controller: whoami
@@ -39,6 +38,9 @@ route:
     parentRefs:
       - name: atoca-house-external
         namespace: kube-system
+    annotations:
+      gatus.home-operations.com/endpoint: |-
+        conditions: ["[STATUS] == 200"]
     hostnames:
       - whoami.atoca.house
     rules:

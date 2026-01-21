@@ -42,6 +42,9 @@ route:
     parentRefs:
       - name: atoca-house-external
         namespace: kube-system
+    annotations:
+      gatus.home-operations.com/endpoint: |-
+        conditions: ["[STATUS] == 404"]
     hostnames:
       - kromgo.atoca.house
     rules:

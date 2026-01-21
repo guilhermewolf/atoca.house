@@ -52,6 +52,11 @@ spec:
             - /status
             - /metadata/generation
             - /metadata/resourceVersion
+            - /spec/parentRefs/0/group
+            - /spec/parentRefs/0/kind
+            - /spec/rules/0/backendRefs/0/group
+            - /spec/rules/0/backendRefs/0/kind
+            - /spec/rules/0/backendRefs/0/weight
         # Ignore checksum annotations
         - group: apps
           kind: Deployment

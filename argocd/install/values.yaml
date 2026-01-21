@@ -43,7 +43,7 @@ configs:
       g, ArgoCD Viewers, role:readonly
 
   params:
-    server.insecure: "true"   # IMPORTANT: Let the edge (Envoy Gateway) terminate TLS and run argocd-server in HTTP mode behind it.
+    server.insecure: "true" # IMPORTANT: Let the edge (Envoy Gateway) terminate TLS and run argocd-server in HTTP mode behind it.
 
   # Config Management Plugin for ArgoCD Vault Plugin
   cmp:
@@ -62,8 +62,7 @@ configs:
             - sh
           args:
             - "-c"
-            - "find . -name '*.yaml' -o -name '*.yml' | xargs -I {} sh -c 'grep -q \"^kind:\" \"{}\" && cat \"{}\" && echo \"---\" || true' 2>/dev/null | argocd-vault-plugin generate -"
-
+            - 'find . -name ''*.yaml'' -o -name ''*.yml'' | xargs -I {} sh -c ''grep -q "^kind:" "{}" && cat "{}" && echo "---" || true'' 2>/dev/null | argocd-vault-plugin generate -'
 
 crds:
   install: true
@@ -106,7 +105,6 @@ repoServer:
       volumeMounts:
         - mountPath: /custom-tools
           name: custom-tools
-      automountServiceAccountToken: true
 
   # ArgoCD Vault Plugin sidecar container
   extraContainers:
@@ -152,7 +150,7 @@ repoServer:
       cpu: 600m
       memory: 256Mi
     limits:
-      cpu: 2
+      cpu: "2"
       memory: 1000Mi
 
 controller:

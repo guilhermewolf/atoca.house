@@ -2,7 +2,14 @@
 # Node-specific configuration for node-03 (192.168.40.13)
 
 machine:
+  type: controlplane
   # Install configuration - node-03 specific disk
   install:
     diskSelector:
       model: SAMSUNG MZALQ256HBJD-00BL2
+  nodeLabels:
+    topology.kubernetes.io/zone: node-03
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: node-03

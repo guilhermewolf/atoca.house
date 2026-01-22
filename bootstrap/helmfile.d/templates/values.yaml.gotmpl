@@ -1,0 +1,1 @@
+{{ (fromYaml (readFile (printf "../../../infra/k8s/%s/%s/values.yaml" .Release.Namespace .Release.Name))) | toYaml }}

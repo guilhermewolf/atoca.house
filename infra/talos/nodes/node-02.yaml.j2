@@ -2,7 +2,14 @@
 # Node-specific configuration for node-02 (192.168.40.12)
 
 machine:
+  type: controlplane
   # Install configuration - node-02 specific disk
   install:
     diskSelector:
       model: SAMSUNG MZAL4256HBJD-00BL2
+  nodeLabels:
+    topology.kubernetes.io/zone: node-02
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: node-02

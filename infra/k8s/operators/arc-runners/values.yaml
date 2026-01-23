@@ -23,6 +23,8 @@ template:
         envFrom:
           - secretRef:
               name: postgres-pguser-terraform
+          - secretRef:
+              name: opentofu-secrets
 metrics:
   controllerManagerAddr: ":8080"
   listenerAddr: ":8080"

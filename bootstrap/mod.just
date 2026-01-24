@@ -3,7 +3,7 @@ set quiet := true
 set shell := ['bash', '-euo', 'pipefail', '-c']
 
 bootstrap_dir := justfile_dir() + '/bootstrap'
-kubernetes_dir := justfile_dir() + '/infra/kubernetes'
+kubernetes_dir := justfile_dir() + '/infra/k8s'
 controller := `talosctl config info -o yaml | yq -e '.endpoints[0]'`
 nodes := `talosctl config info -o yaml | yq -e '.nodes | join (" ")'`
 
@@ -56,9 +56,12 @@ wait:
 [doc('Apply Kubernetes namespaces')]
 namespaces:
     just log info "Running stage..." "stage" "$0"
-    find "{{ kubernetes_dir }}/apps" -mindepth 1 -maxdepth 1 -type d | while IFS= read -r dir; do \
-        if ! kustomize build "$dir" | yq ea -e 'select(.kind == "Namespace")' | kubectl apply --server-side --field-manager bootstrap --force-conflicts -f -; then \
-            just log fatal "Failed to apply namespace" "stage" "$0" "namespace" "$(basename "$dir")"; \
+    find "{{ kubernetes_dir }}" -name "app-config.yaml" | while IFS= read -r config; do \
+        namespace=$(yq -e '.app.namespace' "$config" 2>/dev/null); \
+        if [[ -n "$namespace" ]]; then \
+            if ! kubectl create namespace "$namespace" --dry-run=client -o yaml | kubectl apply --server-side --field-manager bootstrap --force-conflicts -f -; then \
+                just log fatal "Failed to apply namespace" "stage" "$0" "namespace" "$namespace" "config" "$config"; \
+            fi; \
         fi; \
     done
 

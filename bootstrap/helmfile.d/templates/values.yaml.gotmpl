@@ -1,1 +1,22 @@
-{{ (fromYaml (readFile (printf "../../../infra/k8s/%s/%s/values.yaml" .Release.Namespace .Release.Name))) | toYaml }}
+{{- $appName := .Release.Name -}}
+{{- $appPath := "" -}}
+{{- $valuesFile := "" -}}
+{{- if eq $appName "cilium" -}}
+  {{- $appPath = "networking/cilium" -}}
+{{- else if eq $appName "spegel" -}}
+  {{- $appPath = "cluster-management/spegel" -}}
+{{- else if eq $appName "cert-manager" -}}
+  {{- $appPath = "security/cert-manager" -}}
+{{- else if eq $appName "external-secrets" -}}
+  {{- $appPath = "security/external-secrets" -}}
+{{- else if eq $appName "one-password" -}}
+  {{- $appPath = "security/one-password" -}}
+{{- else if eq $appName "argocd" -}}
+  {{- $valuesFile = "../../../argocd/install/values.yaml" -}}
+{{- else -}}
+  {{- $appPath = printf "%s/%s" .Release.Namespace $appName -}}
+{{- end -}}
+{{- if eq $valuesFile "" -}}
+  {{- $valuesFile = printf "../../../infra/k8s/%s/values.yaml" $appPath -}}
+{{- end -}}
+{{- readFile $valuesFile | default "{}" -}}

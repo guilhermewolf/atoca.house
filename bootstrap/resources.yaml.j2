@@ -3,15 +3,15 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: onepassword-secret
-  namespace: external-secrets
+  namespace: one-password
 stringData:
-  1password-credentials.json: op://Private/atoca-house-k8s-credentials-file/1password-credentials.json
-  token: op://Private/atoca-house-k8s-onepassword-token/credential
+  token: op://K8s/1password/OP_CONNECT_TOKEN
+  1password-credentials.json: 'op://K8s/1password/OP_CREDENTIALS_JSON'
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: cloudflare-tunnel-id-secret
-  namespace: network
+  namespace: cloudflare-tunnel
 stringData:
   CLOUDFLARE_TUNNEL_ID: op://K8s/cloudflare-tunnel-secret/CLOUDFLARE_TUNNEL_ID

@@ -4,57 +4,48 @@
     // ========================================================================
     // Essential - Kubernetes & Cloud Native
     // ========================================================================
-    "ms-kubernetes-tools.vscode-kubernetes-tools",  // Kubernetes resource management
-    "redhat.vscode-yaml",                           // YAML language server with schema validation
-    "signageos.signageos-vscode-sops",              // SOPS encryption/decryption
-    "task.vscode-task",                             // Taskfile.dev support
-
+    "ms-kubernetes-tools.vscode-kubernetes-tools", // Kubernetes resource management
+    "redhat.vscode-yaml", // YAML language server with schema validation
     // ========================================================================
     // Essential - Git & Version Control
     // ========================================================================
-    "eamodio.gitlens",                              // Enhanced Git integration
-    "mhutchie.git-graph",                           // Git graph visualization
-
+    "eamodio.gitlens", // Enhanced Git integration
+    "mhutchie.git-graph", // Git graph visualization
     // ========================================================================
     // Infrastructure as Code
     // ========================================================================
-    "hashicorp.terraform",                          // Terraform syntax and validation
-    "redhat.ansible",                               // Ansible playbook support
-    "ms-azuretools.vscode-docker",                  // Docker/Dockerfile support
-
+    "hashicorp.terraform", // Terraform syntax and validation
+    "redhat.ansible", // Ansible playbook support
+    "ms-azuretools.vscode-docker", // Docker/Dockerfile support
     // ========================================================================
     // Code Quality & Formatting
     // ========================================================================
-    "editorconfig.editorconfig",                    // EditorConfig support
-    "foxundermoon.shell-format",                    // Shell script formatting
-    "esbenp.prettier-vscode",                       // Prettier code formatter
-
+    "editorconfig.editorconfig", // EditorConfig support
+    "foxundermoon.shell-format", // Shell script formatting
+    "esbenp.prettier-vscode", // Prettier code formatter
     // ========================================================================
     // Markdown & Documentation
     // ========================================================================
-    "yzhang.markdown-all-in-one",                   // Markdown editing features
-    "davidanson.vscode-markdownlint",               // Markdown linting
-    "bierner.markdown-mermaid",                     // Mermaid diagram support
-
+    "yzhang.markdown-all-in-one", // Markdown editing features
+    "davidanson.vscode-markdownlint", // Markdown linting
+    "bierner.markdown-mermaid", // Mermaid diagram support
     // ========================================================================
     // UI & Developer Experience
     // ========================================================================
-    "pkief.material-icon-theme",                    // Material icon theme
-    "aaron-bond.better-comments",                   // Color-coded comments
-    "usernamehw.errorlens",                         // Inline error messages
-    "gruntfuggly.todo-tree",                        // TODO/FIXME highlighting
-
+    "pkief.material-icon-theme", // Material icon theme
+    "aaron-bond.better-comments", // Color-coded comments
+    "usernamehw.errorlens", // Inline error messages
+    "gruntfuggly.todo-tree", // TODO/FIXME highlighting
     // ========================================================================
     // Additional Helpers
     // ========================================================================
-    "tamasfe.even-better-toml",                     // TOML support
-    "golang.go",                                     // Go language support (if needed)
-    "ms-python.python"                              // Python support (for Ansible)
+    "tamasfe.even-better-toml", // TOML support
+    "golang.go", // Go language support (if needed)
+    "ms-python.python" // Python support (for Ansible)
   ],
-
   "unwantedRecommendations": [
     // Extensions that conflict or duplicate functionality
-    "ms-azuretools.vscode-azureterraform",          // Use hashicorp.terraform instead
-    "vscjava.vscode-java-pack"                      // Not needed for this repo
+    "ms-azuretools.vscode-azureterraform", // Use hashicorp.terraform instead
+    "vscjava.vscode-java-pack" // Not needed for this repo
   ]
 }

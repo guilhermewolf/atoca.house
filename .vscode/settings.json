@@ -28,9 +28,7 @@
   "explorer.sortOrder": "type",
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
-    "*.yaml": "${capture}.enc.yaml, ${capture}.sops.yaml",
     "application.yaml": "values.yaml, secrets.yaml, kustomization.yaml",
-    "Taskfile.yaml": "Taskfile.*.yaml",
     "README.md": "*.md"
   },
   // ============================================================================
@@ -40,9 +38,6 @@
     "**/*.json5": "json5",
     "**/*.yaml.j2": "yaml",
     "**/*.enc.yaml": "yaml",
-    "**/*.sops.yaml": "yaml",
-    "**/Taskfile*.yaml": "yaml",
-    "**/.sops.yaml": "yaml",
     "**/talosconfig": "yaml",
     "**/kubeconfig": "yaml",
     "**/kustomization.yaml": "yaml",
@@ -72,13 +67,9 @@
   // Material Icon Theme - File Associations
   // ============================================================================
   "material-icon-theme.files.associations": {
-    "*.enc.yaml": "lock",
-    "*.sops.yaml": "lock",
-    ".sops.yaml": "lock",
     "helmfile.yaml": "helm",
     "kubeconfig": "kubernetes",
     "talosconfig": "kubernetes",
-    "Taskfile.yaml": "gulp",
     "kustomization.yaml": "kubernetes",
     "application.yaml": "kubernetes",
     "bootstrap.yaml": "ansible",
@@ -91,7 +82,6 @@
     // Top level directories
     ".github": "github",
     ".github/workflows": "ci",
-    ".taskfiles": "gulp",
     ".vscode": "vscode",
     "docs": "docs",
     "infra": "config",
@@ -158,11 +148,6 @@
     "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yaml",
     "https://json.schemastore.org/kustomization.json": "kustomization.yaml",
     "https://raw.githubusercontent.com/argoproj/argo-cd/master/manifests/crds/application-crd.yaml": "argocd/**/*.yaml",
-    "https://taskfile.dev/schema.json": [
-      "Taskfile.yaml",
-      "Taskfile.*.yaml",
-      ".taskfiles/**/Taskfile.yaml"
-    ]
   },
   "yaml.format.enable": true,
   "yaml.format.singleQuote": false,
@@ -185,12 +170,6 @@
     "vscode-kubernetes.minikube-path.mac": "/opt/homebrew/bin/minikube"
   },
   "vscode-kubernetes.kubectl.showDebugRaw": false,
-  // ============================================================================
-  // SOPS (Secret Operations)
-  // ============================================================================
-  "sops.defaults.ageKeyFile": "~/.config/age/age.key",
-  "sops.defaults.awsProfile": "",
-  "sops.defaults.gcp_kms_resource_id": "",
   // ============================================================================
   // Git Settings
   // ============================================================================
@@ -310,7 +289,6 @@
   "terminal.integrated.defaultProfile.osx": "zsh",
   "terminal.integrated.env.osx": {
     "KUBECONFIG": "${env:HOME}/kubeconfig",
-    "SOPS_AGE_KEY_FILE": "${env:HOME}/.config/age/age.key"
   },
   // ============================================================================
   // Security

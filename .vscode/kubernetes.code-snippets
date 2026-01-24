@@ -29,8 +29,8 @@
       "      prune: ${5|true,false|}",
       "    syncOptions:",
       "      - CreateNamespace=true",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   "ArgoCD Helm Application": {
@@ -65,8 +65,8 @@
       "    syncOptions:",
       "      - CreateNamespace=true",
       "      - ServerSideApply=true",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   "ArgoCD Parent Application": {
@@ -97,8 +97,8 @@
       "    automated:",
       "      selfHeal: true",
       "      prune: true",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   // ==========================================================================
@@ -115,8 +115,8 @@
       "  name: ${1:namespace-name}",
       "  labels:",
       "    ${2:key}: ${3:value}",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   "Kubernetes ConfigMap": {
@@ -131,8 +131,8 @@
       "  namespace: ${2:namespace}",
       "data:",
       "  ${3:key}: ${4:value}",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   "Kubernetes Secret": {
@@ -148,8 +148,8 @@
       "type: Opaque",
       "stringData:",
       "  ${3:key}: ${4:value}",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   "Kubernetes PVC": {
@@ -169,8 +169,8 @@
       "  resources:",
       "    requests:",
       "      storage: ${5:10Gi}",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   "Gateway API HTTPRoute": {
@@ -198,8 +198,8 @@
       "      backendRefs:",
       "        - name: ${6:service-name}",
       "          port: ${7:80}",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   // ==========================================================================
@@ -226,8 +226,8 @@
       "  dataFrom:",
       "    - extract:",
       "        key: ${4:op://Vault/Item}",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   // ==========================================================================
@@ -261,8 +261,8 @@
       "  enabled: ${9|true,false|}",
       "  storageClass: ${10:ceph-block}",
       "  size: ${11:10Gi}",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   // ==========================================================================
@@ -279,8 +279,8 @@
       "",
       "resources:",
       "  - ${2:resource.yaml}",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   // ==========================================================================
@@ -302,25 +302,8 @@
       "    - name: ${6:Task description}",
       "      ${7:ansible.builtin.command}:",
       "        cmd: ${8:command}",
-      "$0"
-    ]
-  },
-
-  // ==========================================================================
-  // Taskfile Snippets
-  // ==========================================================================
-  "Taskfile Task": {
-    "prefix": "task",
-    "description": "Taskfile.yaml task",
-    "body": [
-      "${1:task-name}:",
-      "  desc: ${2:Task description}",
-      "  cmds:",
-      "    - ${3:command}",
-      "  preconditions:",
-      "    - which ${4:required-command}",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   // ==========================================================================
@@ -361,8 +344,8 @@
       "\\`\\`\\`bash",
       "kubectl get pods -n ${7:namespace}",
       "\\`\\`\\`",
-      "$0"
-    ]
+      "$0",
+    ],
   },
 
   // ==========================================================================
@@ -371,9 +354,6 @@
   "YAML Document Separator": {
     "prefix": "---",
     "description": "YAML document separator",
-    "body": [
-      "---",
-      "$0"
-    ]
-  }
+    "body": ["---", "$0"],
+  },
 }

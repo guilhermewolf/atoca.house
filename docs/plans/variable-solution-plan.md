@@ -86,6 +86,7 @@ app:
   namespace: radarr
   chart: app-template
   chartRepo: ghcr.io/bjw-s-labs/helm
+  # renovate: datasource=docker depName=ghcr.io/bjw-s-labs/helm/app-template
   chartVersion: 4.5.0
 ```
 

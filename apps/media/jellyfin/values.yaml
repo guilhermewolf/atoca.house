@@ -6,7 +6,7 @@ controllers:
       jellyfin:
         image:
           repository: lscr.io/linuxserver/jellyfin
-          tag: 10.11.5@sha256:313571f253bf1035809f6856bb063904456226ef3899b96e60ee4597b3477246
+          tag: 10.11.6@sha256:df1ccfdd214c39c9ae0595b5800591b52a6f87bbbab1bd4a53dc7be6852cf6b1
         env:
           PUID: "99"
           PGID: "100"

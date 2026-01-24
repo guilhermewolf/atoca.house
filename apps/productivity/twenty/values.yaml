@@ -7,7 +7,7 @@ controllers:
       server:
         image:
           repository: docker.io/twentycrm/twenty
-          tag: v1.15.0@sha256:d49e3161742e5b2f99792cd85fdf1366a814dc3d31d8b5dbec53bb951fe5eec6
+          tag: v1.16.0@sha256:2601fa4b896469973c47b44a82d465fc1b0f6aa7e8611c1e3de459bb806834db
           pullPolicy: Always
         env:
           NODE_PORT: &port 3000
@@ -53,7 +53,7 @@ controllers:
       worker:
         image:
           repository: docker.io/twentycrm/twenty
-          tag: v1.15.0@sha256:d49e3161742e5b2f99792cd85fdf1366a814dc3d31d8b5dbec53bb951fe5eec6
+          tag: v1.16.0@sha256:2601fa4b896469973c47b44a82d465fc1b0f6aa7e8611c1e3de459bb806834db
           pullPolicy: Always
         command:
           - yarn

@@ -81,7 +81,7 @@ route:
     annotations:
       gatus.home-operations.com/enabled: "false"
     hostnames:
-      - gatus.atoca.house
+      - status.atoca.house
     parentRefs:
       - name: atoca-house-external
         namespace: kube-system

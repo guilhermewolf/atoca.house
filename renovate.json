@@ -225,6 +225,7 @@
         "/(^|/)\\.?[^/]*\\.env$/"
       ],
       "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( (?:repository|registryUrl)=(?<registryUrl>\\S+))?\\n\\s*(?:chartVersion|version|tag)(?::|=)\\s*[\"']?(?<currentValue>[^\"'\\s]+)[\"']?",
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( repository=(?<registryUrl>\\S+))?\\n.+(:\\s|=)(&\\S+\\s)?(?<currentValue>\\S+)",
         "datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( repository=(?<registryUrl>\\S+))?\\n.+/(?<currentValue>(v|\\d)[^/]+)"
       ],

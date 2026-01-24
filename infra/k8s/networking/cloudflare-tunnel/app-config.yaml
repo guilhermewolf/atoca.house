@@ -3,5 +3,6 @@ app:
   namespace: cloudflare-tunnel
   chart: app-template
   chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 4.5.0
+  # renovate: datasource=docker depName=ghcr.io/bjw-s-labs/helm/app-template
+  chartVersion: 4.6.2
   useVaultPlugin: true

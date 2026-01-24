@@ -1,0 +1,8 @@
+---
+# Application configuration for Headlamp
+app:
+  name: headlamp
+  namespace: headlamp
+  chart: headlamp
+  chartRepo: ghcr.io/home-operations/charts-mirror
+  chartVersion: 0.39.0

@@ -1,7 +1,9 @@
+---
+# Application configuration for one-password
 app:
   name: one-password
   namespace: one-password
-  chart: connect
-  chartRepo: https://1password.github.io/connect-helm-charts
-  chartVersion: 1.17.1
-  disableAutoSync: true
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  # renovate: datasource=docker depName=ghcr.io/bjw-s-labs/helm/app-template
+  chartVersion: 4.6.2

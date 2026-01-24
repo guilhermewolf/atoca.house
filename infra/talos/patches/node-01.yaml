@@ -1,8 +1,0 @@
----
-# Node-specific configuration for node-01 (192.168.40.11)
-
-machine:
-  # Install configuration - node-01 specific disk
-  install:
-    diskSelector:
-      model: SSD 256GB

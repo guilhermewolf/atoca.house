@@ -1,0 +1,17 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: onepassword-secret
+  namespace: one-password
+stringData:
+  token: op://K8s/1password/OP_CONNECT_TOKEN
+  1password-credentials.json: 'op://K8s/1password/OP_CREDENTIALS_JSON'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflare-tunnel-id-secret
+  namespace: cloudflare-tunnel
+stringData:
+  CLOUDFLARE_TUNNEL_ID: op://K8s/cloudflare-tunnel-secret/CLOUDFLARE_TUNNEL_ID

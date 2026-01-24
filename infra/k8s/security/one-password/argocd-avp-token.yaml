@@ -1,7 +1,0 @@
-apiVersion: onepassword.com/v1
-kind: OnePasswordItem
-metadata:
-  name: argocd-avp-token
-  namespace: argocd
-spec:
-  itemPath: "vaults/k8s/items/argocd-avp-token"

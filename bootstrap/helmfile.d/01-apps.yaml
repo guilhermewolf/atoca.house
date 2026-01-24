@@ -1,0 +1,125 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/helmfile
+
+helmDefaults:
+  cleanupOnFail: true
+  wait: true
+  waitForJobs: true
+
+repositories:
+  - name: 1password
+    url: https://1password.github.io/connect-helm-charts
+  - name: argo
+    url: https://argoproj.github.io/argo-helm
+
+releases:
+  - name: cilium
+    namespace: kube-system
+    chart: oci://quay.io/cilium/charts/cilium
+    version: 1.18.6
+    values:
+      - ./templates/values.yaml.gotmpl
+    hooks:
+      - # Wait for Cilium CRDs to be available
+        command: bash
+        args:
+          - -c
+          - until kubectl get crd ciliumloadbalancerippools.cilium.io ciliumbgpadvertisements.cilium.io ciliumbgppeerconfigs.cilium.io ciliumbgpclusterconfigs.cilium.io &>/dev/null; do sleep 5; done
+        events:
+          - postsync
+        showlogs: true
+      - # Apply Cilium Resources
+        command: kubectl
+        args:
+          - apply
+          - --namespace=kube-system
+          - --server-side
+          - --field-manager=kustomize-controller
+          - --filename=../../infra/k8s/networking/cilium/networking.yaml
+        events:
+          - postsync
+        showlogs: true
+
+
+  - name: spegel
+    namespace: spegel
+    chart: oci://ghcr.io/spegel-org/helm-charts/spegel
+    version: 0.6.0
+    values:
+      - ./templates/values.yaml.gotmpl
+    needs:
+      - kube-system/cilium
+
+  - name: cert-manager
+    namespace: cert-manager
+    chart: oci://quay.io/jetstack/charts/cert-manager
+    version: v1.19.2
+    values:
+      - ./templates/values.yaml.gotmpl
+    needs:
+      - spegel/spegel
+
+  - name: one-password
+    namespace: one-password
+    chart: 1password/connect
+    version: 1.17.1
+    values:
+      - ./templates/values.yaml.gotmpl
+    needs:
+      - cert-manager/cert-manager
+
+  - name: external-secrets
+    namespace: external-secrets
+    chart: oci://ghcr.io/external-secrets/charts/external-secrets
+    version: 1.2.1
+    values:
+      - ./templates/values.yaml.gotmpl
+    hooks:
+      - # Wait for ExternalSecrets CRDs to be available
+        command: bash
+        args:
+          - -c
+          - until kubectl get crd clustersecretstores.external-secrets.io &>/dev/null; do sleep 5; done
+        events:
+          - postsync
+        showlogs: true
+      - # Apply ExternalSecret Resources
+        command: kubectl
+        args:
+          - apply
+          - --server-side
+          - --field-manager=kustomize-controller
+          - --filename=../../infra/k8s/security/external-secrets/clusterstore.yaml
+        events:
+          - postsync
+        showlogs: true
+    needs:
+      - one-password/one-password
+
+  - name: argocd
+    namespace: argocd
+    chart: argo/argo-cd
+    version: 9.3.5
+    values:
+      - ./templates/values.yaml.gotmpl
+    hooks:
+      - # Wait for ExternalSecrets CRDs to be available
+        command: bash
+        args:
+          - -c
+          - until kubectl get crd clustersecretstores.external-secrets.io &>/dev/null; do sleep 5; done
+        events:
+          - postsync
+        showlogs: true
+      - # Apply ExternalSecret Resources
+        command: kubectl
+        args:
+          - apply
+          - --server-side
+          - --field-manager=kustomize-controller
+          - --filename=../../argocd/install/secrets.yaml
+        events:
+          - postsync
+        showlogs: true
+    needs:
+      - external-secrets/external-secrets

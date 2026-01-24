@@ -1,11 +1,16 @@
-# Ignore .terraform folder
 .terraform/
-.taks/
-
-.DS_Store
 **/charts/
-
-controlplane.yaml
-worker-1.yaml
-worker-2.yaml
-worker-3.yaml
+.private/
+.pytest_cache/
+.task/
+.venv/
+*.crt
+*.env
+*.iso
+*.key
+.decrypted~*
+.DS_Store
+Brewfile.lock.json
+Thumbs.db
+kubeconfig
+talosconfig

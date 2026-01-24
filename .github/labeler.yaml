@@ -88,12 +88,6 @@ area/docker:
           - "**/docker-compose*.yaml"
           - "**/Dockerfile"
 
-area/taskfile:
-  - changed-files:
-      - any-glob-to-any-file:
-          - "Taskfile*.yaml"
-          - ".taskfiles/**/*"
-
 # =============================================================================
 # Area Labels - Documentation and GitHub
 # =============================================================================

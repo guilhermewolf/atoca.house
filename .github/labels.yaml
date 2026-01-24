@@ -76,10 +76,6 @@
   description: Docker Compose stacks
   color: "027fa0"
 
-- name: area/taskfile
-  description: Taskfile automation
-  color: "0e8a16"
-
 # =============================================================================
 # Type Labels - What kind of change
 # =============================================================================

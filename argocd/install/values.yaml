@@ -115,7 +115,7 @@ repoServer:
         - name: AVP_TYPE
           value: 1passwordconnect
         - name: OP_CONNECT_HOST
-          value: http://onepassword-connect.one-password.svc.cluster.local:8080
+          value: http://one-password.one-password.svc.cluster.local
         - name: OP_CONNECT_TOKEN
           valueFrom:
             secretKeyRef:

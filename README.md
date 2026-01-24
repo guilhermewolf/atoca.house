@@ -19,6 +19,14 @@ _... managed with ArgoCD and GitHub Actions_
 
 <div align="center">
 
+[![Home-Internet](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.atoca.house%2Fapi%2Fv1%2Fendpoints%2Fconnectivity_cloudflare%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=ubiquiti&logoColor=white&label=Home%20Internet)](https://status.atoca.house)&nbsp;&nbsp;
+[![Status-Page](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.atoca.house%2Fapi%2Fv1%2Fendpoints%2Fconnectivity_google%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=statuspage&logoColor=white&label=Status%20Page)](https://status.atoca.house)&nbsp;&nbsp;
+[![Alertmanager](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.atoca.house%2Fapi%2Fv1%2Fendpoints%2Finternal_alertmanager%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=prometheus&logoColor=white&label=Alertmanager)](https://status.atoca.house)
+
+</div>
+
+<div align="center">
+
 ![Cluster](https://img.shields.io/badge/Cluster-grey?style=flat-square&logo=kubernetes)&nbsp;&nbsp;
 [![Age-Days](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Fcluster_age_days&style=flat-square&label=Age)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;
 [![Uptime-Days](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Fcluster_uptime_days&style=flat-square&label=Uptime)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;
@@ -91,7 +99,7 @@ This Git repository contains the following directories.
 📁 infra                # Core infrastructure configurations
   └─📁 ansible          # Ansible playbooks for cluster bootstrap
   └─📁 k8s              # Kubernetes infrastructure by category
-    └─📁 networking     # CNI, ingress, DNS (Cilium, Envoy Gateway, etc.)
+    └─📁 networking     # CNI, ingress, DNS (Cilium, Envoy Gateway, etc.)kv
     └─📁 storage        # Storage systems (Rook-Ceph, CSI drivers, etc.)
     └─📁 security       # Security tools (cert-manager, sealed-secrets, etc.)
     └─📁 monitoring     # Monitoring stack (Prometheus, Grafana)
@@ -135,15 +143,8 @@ While most of my infrastructure and workloads are self-hosted I do rely upon the
 
 | Device                          | Count | OS Disk Size | Data Disk Size | RAM  | CPU              | Operating System | Purpose                    |
 |---------------------------------|-------|--------------|----------------|------|------------------|------------------|----------------------------|
-| Mini PC                         | 3     | 256GB NVMe   | 1TB NVMe       | 16GB | Ryzen 7 4800H    | Talos Linux 1.9  | K8s control plane nodes    |
-| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB + 4x 12TB | 32GB | Intel Celeron  | Unraid 7.1.4     | NAS (external storage)     |
-
----
-
-## 💪 TO-DO
-
-- [x] Ansible playbook for deploying the cluster
-- [x] Implement terraform for managing cloud resources
+| Mini PC                         | 3     | 256GB NVMe   | 1TB NVMe       | 32GB | Ryzen 7 4800H    | Talos Linux      | K8s control plane nodes    |
+| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB + 4x 12TB | 32GB | Intel Celeron  | Unraid           | NAS (external storage)     |
 
 ---
 

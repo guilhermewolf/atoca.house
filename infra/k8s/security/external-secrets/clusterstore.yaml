@@ -6,13 +6,12 @@ metadata:
 spec:
   provider:
     onepassword:
-      connectHost: http://onepassword-connect.one-password.svc.cluster.local:8080
+      connectHost: http://one-password.one-password.svc.cluster.local
       vaults:
         K8s: 1
       auth:
         secretRef:
           connectTokenSecretRef:
-            name: onepassword-token
+            name: onepassword-secret
             key: token
             namespace: one-password
-

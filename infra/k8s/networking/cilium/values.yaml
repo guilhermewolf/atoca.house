@@ -90,6 +90,7 @@ prometheus:
   enabled: true
   serviceMonitor:
     enabled: true
+    trustCRDsExist: true
 
 # Enable IPv4 (IPv6 can be added later if needed)
 ipv4:

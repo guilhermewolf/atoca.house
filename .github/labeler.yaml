@@ -62,11 +62,6 @@ area/argocd:
           - "argocd/**/*"
           - "**/application.yaml"
 
-area/ansible:
-  - changed-files:
-      - any-glob-to-any-file:
-          - "infra/ansible/**/*"
-
 area/talos:
   - changed-files:
       - any-glob-to-any-file:
@@ -95,8 +90,7 @@ area/docs:
   - changed-files:
       - any-glob-to-any-file:
           - "docs/**/*"
-          - "*.md"  # Only root-level markdown files
-          - "!.github/**/*.md"
+          - "*.md"
 
 area/github:
   - changed-files:
@@ -119,36 +113,6 @@ type/ci:
           - ".github/workflows/**/*"
           - ".github/actions/**/*"
           - "**/.gitlab-ci.yml"
-
-# =============================================================================
-# Renovate Labels
-# =============================================================================
-renovate/container:
-  - all:
-    - changed-files:
-        - any-glob-to-any-file:
-            - "**/values.yaml"  # Container image updates in Helm values
-            - "**/docker-compose*.yaml"  # Docker compose image updates
-            - "stacks/**/*"  # Docker compose stacks
-    - head-branch:
-        - "^renovate/.*"
-
-renovate/helm:
-  - all:
-    - changed-files:
-        - any-glob-to-any-file:
-            - "**/application.yaml"  # ArgoCD application updates (chart versions)
-            - "**/Chart.yaml"  # Helm chart dependency updates
-    - head-branch:
-        - "^renovate/.*"
-
-renovate/github-action:
-  - all:
-    - changed-files:
-        - any-glob-to-any-file:
-            - ".github/workflows/**/*"  # GitHub Action version updates
-    - head-branch:
-        - "^renovate/.*"
 
 # =============================================================================
 # Special Labels

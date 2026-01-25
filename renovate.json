@@ -13,8 +13,7 @@
     ":pinDevDependencies",
     "abandonments:recommended",
     ":automergeBranch",
-    ":disableRateLimiting",
-    "github>guilhermewolf/atoca.house//.github/renovate/grafanaDashboards.json"
+    ":disableRateLimiting"
   ],
   "labels": [
     "renovate"

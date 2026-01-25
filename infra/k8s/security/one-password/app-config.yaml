@@ -5,5 +5,5 @@ app:
   namespace: one-password
   chart: app-template
   chartRepo: ghcr.io/bjw-s-labs/helm
-  # renovate: datasource=docker depName=ghcr.io/bjw-s-labs/helm/app-template
+  # renovate: datasource=helm registryUrl=oci://ghcr.io/bjw-s-labs/helm depName=app-template
   chartVersion: 4.6.2

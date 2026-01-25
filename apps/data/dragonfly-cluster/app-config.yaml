@@ -1,0 +1,7 @@
+---
+# Application configuration for Dragonfly Cluster
+# Note: This app uses raw Kubernetes manifests, not a Helm chart
+app:
+  name: dragonfly-cluster
+  namespace: dragonfly-cluster
+  useVaultPlugin: false

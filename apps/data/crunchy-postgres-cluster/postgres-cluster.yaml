@@ -90,23 +90,20 @@ spec:
       global: &backupFlag
         compress-type: "bz2"
         compress-level: "9"
-        #PVC
-        repo1-retention-full: "30" # days
+        # Minio (Primary - Local)
+        repo1-block: "y"
+        repo1-bundle: "y"
+        repo1-path: "/crunchy-postgres"
+        repo1-retention-full: "30"
         repo1-retention-full-type: "time"
-        # Minio
+        repo1-s3-uri-style: path
+        # R2 (Offsite DR)
         repo2-block: "y"
         repo2-bundle: "y"
-        repo2-path: "/crunchy-postgres"
+        repo2-path: "/atoca-house-crunchy-postgres"
         repo2-retention-full: "30"
-        repo2-retention-full-type: "time"
+        repo2-retention-full-type: time
         repo2-s3-uri-style: path
-        # # R2
-        # repo3-block: "y"
-        # repo3-bundle: "y"
-        # repo3-path: "/atoca-house-crunchy-postgres"
-        # repo3-retention-full: "7" # days
-        # repo3-retention-full-type: time
-        # repo3-s3-uri-style: path
       manual:
         repoName: repo1
         options:
@@ -116,19 +113,6 @@ spec:
           app.kubernetes.io/name: crunchy-postgres
       repos:
         - name: repo1
-          volume: &nfs
-            volumeClaimSpec:
-              storageClassName: nfs-slow #csi-driver-nfs
-              volumeName: crunchy-postgres-nfs
-              accessModes: ["ReadWriteMany"]
-              resources:
-                requests:
-                  storage: 1Mi
-          schedules:
-            full: "30 1 * * 0" # Sunday at 01:30
-            differential: "30 1 * * 1-6" # Mon-Sat at 01:30
-            incremental: "30 3-23 * * *" # Every hour except 01:30-2:30
-        - name: repo2
           s3: &minio
             bucket: "crunchy-postgres"
             endpoint: minio-data.atoca.house
@@ -137,23 +121,24 @@ spec:
             full: "15 1 * * 0" # Sunday at 01:15
             differential: "15 1 * * 1-6" # Mon-Sat at 01:15
             incremental: "15 3-23 * * *" # Every hour except 01:30-2:30
-        - name: repo3 # R2
+        - name: repo2 # R2
           s3: &r2
             bucket: "atoca-house-crunchy-postgres"
             region: "us-east-1"
             endpoint: <CPGO_R2_ENDPOINT>
           schedules:
             full: "0 2 * * 0" # Sunday at 02:00
-            incremental: "0 2 * * 1-6/2" # Mon-Sat at 02:00, every 2nd day
+            differential: "0 2 * * 3" # Wednesday at 02:00
+            incremental: "0 2 * * 1-6" # Mon-Sat at 02:00
 
-  # dataSource:
-  #   pgbackrest:
-  #     stanza: db
-  #     configuration: *backupConfig
-  #     global: *backupFlag
-  #     repo:
-  #       name: repo2
-  #       s3: *minio
+  dataSource:
+    pgbackrest:
+      stanza: db
+      configuration: *backupConfig
+      global: *backupFlag
+      repo:
+        name: repo1
+        s3: *minio
 
   monitoring:
     pgmonitor:

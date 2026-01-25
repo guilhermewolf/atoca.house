@@ -83,8 +83,8 @@ controllers:
     containers:
       redis:
         image:
-          repository: docker.io/redis/redis-stack-server
-          tag: 7.4.0-v8@sha256:798ab84d9f266936b034ab11c4d04a2b8e4b441884c5aa7d17ac951eefdf742a
+          repository: docker.io/redis
+          tag: 8.4.0@sha256:73dad4271642c5966db88db7a7585fae7cf10b685d1e48006f31e0294c29fdd7
           pullPolicy: Always
         args:
           - --maxmemory-policy

@@ -1,0 +1,8 @@
+---
+# Application configuration for Blackbox Exporter for LAN monitoring
+app:
+  name: blackbox-exporter-lan
+  namespace: blackbox-exporter-lan
+  chart: prometheus-blackbox-exporter
+  chartRepo: ghcr.io/prometheus-community/charts
+  chartVersion: 11.7.0

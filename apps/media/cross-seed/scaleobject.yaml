@@ -2,7 +2,7 @@
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: slskd
+  name: cross-seed
 spec:
   advanced:
     restoreToOriginalReplicaCount: true
@@ -11,8 +11,8 @@ spec:
   maxReplicaCount: 1
   scaleTargetRef:
     apiVersion: apps/v1
-    kind: StatefulSet
-    name: slskd
+    kind: Deployment
+    name: cross-seed
   triggers:
     - type: prometheus
       metadata:

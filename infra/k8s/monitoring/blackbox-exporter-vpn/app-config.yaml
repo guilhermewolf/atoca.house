@@ -1,0 +1,8 @@
+---
+# Application configuration for Blackbox Exporter for VPN monitoring
+app:
+  name: blackbox-exporter-vpn
+  namespace: blackbox-exporter-vpn
+  chart: prometheus-blackbox-exporter
+  chartRepo: ghcr.io/prometheus-community/charts
+  chartVersion: 11.7.0

@@ -3,5 +3,5 @@ app:
   namespace: external-secrets
   chart: external-secrets
   chartRepo: https://charts.external-secrets.io/
-  chartVersion: 1.2.0
+  chartVersion: 1.3.1
   disableAutoSync: true

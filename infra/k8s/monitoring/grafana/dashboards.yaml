@@ -13,5 +13,5 @@ spec:
     - datasourceName: prometheus
       inputName: DS_PROMETHEUS
   configMapRef:
-    name: grafana-operator-dashboard
+    name: grafana-grafana-operator-dashboard
     key: grafana-operator.json

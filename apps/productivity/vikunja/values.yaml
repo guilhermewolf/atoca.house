@@ -26,12 +26,13 @@ controllers:
           VIKUNJA_METRICS_ENABLED: true
           VIKUNJA_DEFAULTSETTINGS_DISCOVERABLE_BY_NAME: true
           VIKUNJA_DEFAULTSETTINGS_EMAIL_REMINDERS_ENABLED: true
+          VIKUNJA_REDIS_ENABLED: true
+          VIKUNJA_REDIS_HOST: dragonfly.dragonfly-cluster.svc.cluster.local:6379
+          VIKUNJA_REDIS_DB: 3
+          VIKUNJA_KEYVALUE_TYPE: redis
           discoverable_by_email: true
           overdue_tasks_reminders_time: '11:00'
           VIKUNJA_DEFAULTSETTINGS_WEEK_START: 1
-
-          # Redis
-          VIKUNJA_REDIS_ENABLED: false
 
           # postgres
           VIKUNJA_DATABASE_TYPE: postgres

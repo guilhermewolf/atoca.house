@@ -37,6 +37,9 @@ data:
           domain: atoca.house
           authelia_url: https://auth.atoca.house
           default_redirection_url: https://atoca.house
+      redis:
+        database_index: 2
+        host: dragonfly.dragonfly-cluster.svc.cluster.local
 
     totp:
       disable: false

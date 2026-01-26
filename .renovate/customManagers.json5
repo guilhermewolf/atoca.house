@@ -25,5 +25,17 @@
       matchStrings: ["oci://(?<depName>[^:]+):(?<currentValue>\\S+)"],
       datasourceTemplate: "docker",
     },
+    {
+      customType: "regex",
+      description: "Process Helm charts in app-config.yaml files",
+      managerFilePatterns: [
+        "/(^|/)infra/k8s/.+/app-config\\.ya?ml$/",
+        "/(^|/)apps/.+/app-config\\.ya?ml$/",
+      ],
+      matchStrings: [
+        "chart:\\s+(?<depName>[^\\s]+)\\s+chartRepo:\\s+(?<registryUrl>[^\\s]+)\\s+chartVersion:\\s+(?<currentValue>[^\\s]+)",
+      ],
+      datasourceTemplate: "helm",
+    },
   ],
 }

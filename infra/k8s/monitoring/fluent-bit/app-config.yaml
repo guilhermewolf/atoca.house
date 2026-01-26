@@ -5,4 +5,4 @@ app:
   namespace: fluent-bit
   chart: fluent-bit
   chartRepo: ghcr.io/home-operations/charts-mirror
-  chartVersion: 0.54.1
+  chartVersion: 2.10.3

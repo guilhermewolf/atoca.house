@@ -19,7 +19,7 @@ operatorNamespace: rook-ceph
 
 cephClusterSpec:
   cephVersion:
-    image: quay.io/ceph/ceph:v19.2.3
+    image: quay.io/ceph/ceph:v20.2.0
     imagePullPolicy: IfNotPresent
   cephConfig:
     global:

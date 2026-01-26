@@ -109,7 +109,6 @@ This Git repository contains the following directories.
   └─📁 terraform        # Terraform configurations
 📁 stacks               # Docker Compose files for Asustor NAS
   └─📁 media-stack      # Media management stack
-📁 terraform            # Terraform for cloud resources (Cloudflare, etc.)
 ```
 
 ---
@@ -141,10 +140,12 @@ While most of my infrastructure and workloads are self-hosted I do rely upon the
 
 ## 🔧 Hardware
 
-| Device                          | Count | OS Disk Size | Data Disk Size | RAM  | CPU              | Operating System | Purpose                    |
-|---------------------------------|-------|--------------|----------------|------|------------------|------------------|----------------------------|
-| Mini PC                         | 3     | 256GB NVMe   | 1TB NVMe       | 32GB | Ryzen 7 4800H    | Talos Linux      | K8s control plane nodes    |
-| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB + 4x 12TB | 32GB | Intel Celeron  | Unraid           | NAS (external storage)     |
+| Device                          | Count | OS Disk Size | Data Disk Size   | RAM  | CPU              | Operating System | Purpose                    |
+|---------------------------------|-------|--------------|------------------|------|------------------|------------------|----------------------------|
+| Mini PC                         | 3     | 256GB NVMe   | 1TB NVMe         | 32GB | Ryzen 7 4800H    | Talos Linux      | K8s control plane nodes    |
+| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB + 4x 12TB | 32GB | Intel Celeron    | Unraid           | NAS (external storage)     |
+| Unifi Cloud Gateway Max         | 1     | -            | -                | -    | -                | -                | Router                     |
+| Unifi USW Enterprise 24 PoE     | 1     | -            | -                | -    | -                | -                | 2.5Gb PoE Switch           |
 
 ---
 

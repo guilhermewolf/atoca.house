@@ -18,6 +18,12 @@ variable "account_id" {
   default     = ""
 }
 
+variable "cloudflare_tunnel_secret" {
+  description = "The tunnel secret for the Cloudflare Zero Trust Tunnel"
+  type        = string
+  default     = ""
+}
+
 variable "domain" {
   description = "The domain name for the Cloudflare account"
   type        = string
@@ -30,4 +36,3 @@ variable "npm_ip" {
   default     = ""
   sensitive   = true
 }
-

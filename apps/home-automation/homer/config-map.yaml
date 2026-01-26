@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homer-configmap
+data:
+  config.yml: |
+    title: "Home Dashboard"
+    subtitle: ""
+    header: true
+    footer: false
+    columns: 5
+    connectivityCheck: true
+
+    links: []
+
+    colors:
+      light:
+        highlight-primary: "#3367d6"
+        highlight-secondary: "#4285f4"
+        highlight-hover: "#5a95f5"
+        background: "#f5f5f5"
+        card-background: "#ffffff"
+        text: "#363636"
+        text-header: "#ffffff"
+        text-title: "#303030"
+        text-subtitle: "#424242"
+        card-shadow: rgba(0, 0, 0, 0.1)
+        link: "#3273dc"
+        link-hover: "#363636"
+      dark:
+        highlight-primary: "#3367d6"
+        highlight-secondary: "#4285f4"
+        highlight-hover: "#5a95f5"
+        background: "#131313"
+        card-background: "#2b2b2b"
+        text: "#eaeaea"
+        text-header: "#ffffff"
+        text-title: "#fafafa"
+        text-subtitle: "#f5f5f5"
+        card-shadow: rgba(0, 0, 0, 0.4)
+        link: "#3273dc"
+        link-hover: "#ffdd57"
+
+    services:
+      - name: "Media"
+        icon: "fas fa-photo-video"
+        items:
+          - name: "Jellyfin"
+            subtitle: "Media Server"
+            url: "https://jellyfin.atoca.house"
+            target: "_blank"
+            logo: "assets/icons/jellyfin.svg"
+
+
+      - name: "Home Automation"
+        icon: "fas fa-home"
+        items:
+          - name: "Home Assistant"
+            subtitle: "Home Automation"
+            url: "https://hass.atoca.house"
+            target: "_blank"
+            logo: "assets/icons/home-assistant.svg"
+
+      - name: "Downloads"
+        icon: "fa-solid fa-skull-crossbones"
+        items:
+          - name: "Sonarr"
+            subtitle: "TV Shows Management"
+            url: "https://sonarr.atoca.house"
+            target: "_blank"
+            logo: "assets/icons/sonarr.svg"
+
+          - name: "Radarr"
+            subtitle: "Movie Management"
+            url: "https://radarr.atoca.house"
+            target: "_blank"
+            logo: "assets/icons/radarr.svg"
+
+          - name: "Lidarr"
+            subtitle: "Music Management"
+            url: "https://lidarr.atoca.house"
+            target: "_blank"
+            logo: "assets/icons/lidarr.svg"
+
+          - name: "Prowlarr"
+            subtitle: "Indexer Manager"
+            url: "https://prowlarr.atoca.house"
+            target: "_blank"
+            logo: "assets/icons/prowlarr.svg"
+
+          - name: "qBittorrent"
+            subtitle: "Torrent Client"
+            url: "https://torrent.atoca.house"
+            target: "_blank"
+            logo: "assets/icons/qbittorrent.svg"

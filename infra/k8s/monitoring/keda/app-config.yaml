@@ -1,0 +1,8 @@
+---
+# Application configuration for Kube Prometheus Stack
+app:
+  name: keda
+  namespace: keda
+  chart: keda
+  chartRepo: ghcr.io/home-operations/charts-mirror
+  chartVersion: 2.18.3

@@ -1,0 +1,11 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Dragonfly Operator CRD from upstream
+  # renovate: datasource=github-releases depName=dragonflydb/dragonfly-operator
+  - https://raw.githubusercontent.com/dragonflydb/dragonfly-operator/v1.3.1/manifests/crd.yaml
+  # Local dragonfly cluster resources
+  - dragonfly-cluster.yaml
+  - pod-monitor.yaml

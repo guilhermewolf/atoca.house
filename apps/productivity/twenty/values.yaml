@@ -101,7 +101,7 @@ route:
       - twenty.atoca.house
     rules:
       - backendRefs:
-          - name: twenty-server
+          - name: twenty
             port: 3000
         matches:
           - path:

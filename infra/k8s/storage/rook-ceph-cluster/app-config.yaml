@@ -3,7 +3,7 @@ app:
   namespace: rook-ceph
   chart: rook-ceph-cluster
   chartRepo: https://charts.rook.io/release
-  chartVersion: v1.18.8 # renovate: datasource=helm depName=rook-ceph-cluster registryUrl=https://charts.rook.io/release
+  chartVersion: v1.19.0 # renovate: datasource=helm depName=rook-ceph-cluster registryUrl=https://charts.rook.io/release
   hasValues: true
   disableAutoSync: true
   podSecurityPrivileged: true

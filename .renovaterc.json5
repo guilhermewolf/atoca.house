@@ -34,12 +34,6 @@
       "/(^|/)stacks/.+\\.ya?ml$/"
     ]
   },
-  argocd: {
-    managerFilePatterns: [
-      "/(^|/)infra/k8s/.+/app-config\\.ya?ml$/",
-      "/(^|/)apps/.+/app-config\\.ya?ml$/"
-    ]
-  },
   "helm-values": {
     managerFilePatterns: [
       "/(^|/)infra/k8s/.+/values\\.ya?ml$/",

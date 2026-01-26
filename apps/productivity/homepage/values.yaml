@@ -1,0 +1,124 @@
+---
+controllers:
+  homepage:
+    annotations:
+      reloader.stakater.com/search: "true"
+
+    containers:
+      homepage:
+        image:
+          repository: ghcr.io/gethomepage/homepage
+          tag: v1.8.0@sha256:7dc099d5c6ec7fc945d858218565925b01ff8a60bcbfda990fc680a8b5cd0b6e
+        env:
+          TZ: "Eupore/Amsterdam"
+          LOG_LEVEL: debug
+          HOMEPAGE_ALLOWED_HOSTS: "home.atoca.house"
+        envFrom:
+          - secretRef:
+              name: homepage-secret
+        resources:
+          requests:
+            cpu: 25m
+            memory: 105M
+          limits:
+            memory: 225M
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
+    serviceAccount:
+      identifier: &app homepage
+
+defaultPodOptions:
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+
+rbac:
+  roles:
+    homepage:
+      type: ClusterRole
+      rules:
+        - apiGroups:
+            - ""
+          resources:
+            - namespaces
+            - pods
+            - nodes
+          verbs:
+            - get
+            - list
+        - apiGroups:
+            - extensions
+            - networking.k8s.io
+          resources:
+            - ingresses
+          verbs:
+            - get
+            - list
+        - apiGroups:
+            - metrics.k8s.io
+          resources:
+            - nodes
+            - pods
+          verbs:
+            - get
+            - list
+        - apiGroups:
+            - apiextensions.k8s.io
+          resources:
+            - customresourcedefinitions/status
+          verbs:
+            - get
+            - list
+  bindings:
+    homepage:
+      type: ClusterRoleBinding
+      roleRef:
+        identifier: *app
+      subjects:
+        - identifier: *app
+
+serviceAccount:
+  # allow scraping of k8s resources for widget
+  homepage: {}
+service:
+  homepage:
+    controller: *app
+    ports:
+      http:
+        port: 3000
+route:
+  homepage:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - home.atoca.house
+    rules:
+      - backendRefs:
+          - name: homepage
+            port: 3000
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    type: configMap
+    name: *app
+    globalMounts:
+      - subPath: settings.yaml
+        path: /app/config/settings.yaml
+      - subPath: widgets.yaml
+        path: /app/config/widgets.yaml
+      - subPath: services.yaml
+        path: /app/config/services.yaml
+      - subPath: bookmarks.yaml
+        path: /app/config/bookmarks.yaml
+      - subPath: docker.yaml
+        path: /app/config/docker.yaml
+      - subPath: kubernetes.yaml
+        path: /app/config/kubernetes.yaml

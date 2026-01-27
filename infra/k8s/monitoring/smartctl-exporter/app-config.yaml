@@ -1,0 +1,8 @@
+---
+# Application configuration for smartctl-exporter
+app:
+  name: smartctl-exporter
+  namespace: smartctl-exporter
+  chart: prometheus-smartctl-exporter
+  chartRepo: ghcr.io/prometheus-community/charts
+  chartVersion: 0.16.0

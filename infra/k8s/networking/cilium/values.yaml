@@ -17,7 +17,7 @@ operator:
   prometheus:
     enabled: true
     serviceMonitor:
-      enabled: false  # Disabled until Prometheus Operator is installed
+      enabled: true
   replicas: 2
   rollOutPods: true
 

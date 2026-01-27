@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: soulsync-restore
+  namespace: soulsync
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: soulsync-r2-secret
+    copyMethod: Direct
+    destinationPVC: soulsync
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

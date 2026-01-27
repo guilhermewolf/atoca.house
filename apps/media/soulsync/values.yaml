@@ -101,24 +101,24 @@ persistence:
         subPath: config
       - path: /app/logs
         subPath: logs
-      # - path: /app/downloads
-      #   subPath: downloads
       - path: /app/data
         subPath: data
 
   media:
     type: nfs
     server: nas.atoca.house
-    path: /mnt/user/data/slskd
+    path: /mnt/user/data/slskd/complete
     globalMounts:
-      - path: /app/downloads/
+      - path: /app/downloads
+        readOnly: false
 
-  playlists:
+  library:
     type: nfs
     server: nas.atoca.house
-    path: /mnt/user/musics/playlists
+    path: /mnt/user/musics/library
     globalMounts:
       - path: /music
+        readOnly: false
 
   tmpfs:
     type: emptyDir

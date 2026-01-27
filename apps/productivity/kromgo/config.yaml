@@ -30,7 +30,7 @@ data:
         title: Pods
 
       - name: cluster_cpu_usage
-        query: round(100 - (avg(rate(node_cpu_seconds_total{mode="idle", instance!="192.168.40.22:9100", instance!="192.168.40.160:9100"}[5m])) * 100), 0.1)
+        query: round(100 - (avg(rate(node_cpu_seconds_total{mode="idle", instance!="hass.internal:9100", instance!="nas.atoca.house:9100"}[5m])) * 100), 0.1)
         suffix: "%"
         colors:
           - { color: "green", min: 0, max: 35 }
@@ -39,7 +39,7 @@ data:
         title: CPU
 
       - name: cluster_memory_usage
-        query: round(sum(node_memory_MemTotal_bytes{instance!="192.168.40.22:9100", instance!="192.168.40.160:9100"} - node_memory_MemAvailable_bytes{instance!="192.168.40.22:9100", instance!="192.168.40.160:9100"}) / sum(node_memory_MemTotal_bytes{instance!="192.168.40.22:9100", instance!="192.168.40.160:9100"}) * 100, 0.1)
+        query: round(sum(node_memory_MemTotal_bytes{instance!="hass.internal:9100", instance!="nas.atoca.house:9100"} - node_memory_MemAvailable_bytes{instance!="hass.internal:9100", instance!="nas.atoca.house:9100"}) / sum(node_memory_MemTotal_bytes{instance!="hass.internal:9100", instance!="nas.atoca.house:9100"}) * 100, 0.1)
         suffix: "%"
         colors:
           - { color: green, min: 0, max: 35 }
@@ -75,7 +75,7 @@ data:
         title: Uptime
 
       - name: nas_cpu_usage
-        query: round(100 - (avg(rate(node_cpu_seconds_total{mode="idle", instance="192.168.40.160:9100"}[5m])) * 100), 0.1)
+        query: round(100 - (avg(rate(node_cpu_seconds_total{mode="idle", instance="nas.atoca.house:9100"}[5m])) * 100), 0.1)
         suffix: "%"
         colors:
           - { color: "green", min: 0, max: 35 }
@@ -84,7 +84,7 @@ data:
         title: CPU
 
       - name: nas_memory_usage
-        query: round(sum(node_memory_MemTotal_bytes{instance="192.168.40.160:9100"} - node_memory_MemAvailable_bytes{instance="192.168.40.160:9100"}) / sum(node_memory_MemTotal_bytes{instance="192.168.40.160:9100"}) * 100, 0.1)
+        query: round(sum(node_memory_MemTotal_bytes{instance="nas.atoca.house:9100"} - node_memory_MemAvailable_bytes{instance="nas.atoca.house:9100"}) / sum(node_memory_MemTotal_bytes{instance="nas.atoca.house:9100"}) * 100, 0.1)
         suffix: "%"
         colors:
           - { color: green, min: 0, max: 35 }
@@ -93,7 +93,7 @@ data:
         title: Memory
 
       - name: nas_uptime_days
-        query: round((node_time_seconds{instance="192.168.40.160:9100",job="compartilhado-node-exporter"} - node_boot_time_seconds{instance="192.168.40.160:9100",job="compartilhado-node-exporter"}) / 86400)
+        query: round((node_time_seconds{instance="nas.atoca.house:9100",job="compartilhado-node-exporter"} - node_boot_time_seconds{instance="nas.atoca.house:9100",job="compartilhado-node-exporter"}) / 86400)
         suffix: "d"
         colors:
           - { color: "green", min: 0, max: 180 }
@@ -102,7 +102,7 @@ data:
         title: Uptime
 
       - name: nas_containers_count
-        query: count(container_last_seen{instance="192.168.40.160:8083"})
+        query: count(container_last_seen{instance="nas.atoca.house:8083"})
         colors:
           - { color: "green", min: 0, max: 9999 }
         title: Containers

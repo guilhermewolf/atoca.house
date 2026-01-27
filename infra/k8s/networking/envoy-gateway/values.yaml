@@ -1,25 +1,10 @@
 # Envoy Gateway configuration for atoca.house cluster
-
+global:
+  imageRegistry: mirror.gcr.io
 config:
   envoyGateway:
-    # gateway:
-    #   controllerName: gateway.envoyproxy.io/gatewayclass-controller
     provider:
       type: Kubernetes
       kubernetes:
         deploy:
           type: GatewayNamespace
-    logging:
-      level:
-        default: info
-
-# Create the GatewayClass automatically
-createGatewayClass: true
-
-# Service configuration
-service:
-  type: ClusterIP
-
-# Enable Prometheus metrics
-metrics:
-  enabled: true

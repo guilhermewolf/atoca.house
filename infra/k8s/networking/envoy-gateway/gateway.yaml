@@ -15,13 +15,14 @@ spec:
       envoyDeployment:
         replicas: 2
         container:
-          imageRepository: mirror.gcr.io/envoyproxy/envoy
+          #imageRepository: mirror.gcr.io/envoyproxy/envoy
+          image: mirror.gcr.io/envoyproxy/envoy:v1.37.0
           resources:
             requests:
               cpu: 100m
               memory: 96Mi
             limits:
-              memory: 128Mi
+              memory: 1Gi
       envoyService:
         externalTrafficPolicy: Local
   shutdown:
@@ -30,7 +31,7 @@ spec:
     metrics:
       prometheus:
         compression:
-          type: Gzip
+          type: Zstd
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass

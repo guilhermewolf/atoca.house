@@ -1,0 +1,135 @@
+---
+controllers:
+  soulsync:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      soulsync:
+        image:
+          # renovate: datasource=docker depName=boulderbadgedad/soulsync
+          repository: boulderbadgedad/soulsync
+          tag: 1.4
+        env:
+          TZ: Europe/Amsterdam
+          PUID: 99
+          PGID: 100
+          UMASK: 002
+          FLASK_ENV: production
+          PYTHONPATH: /app
+          SOULSYNC_CONFIG_PATH: /app/config/config.json
+        probes:
+          liveness:
+            enabled: true
+            spec:
+              httpGet:
+                path: /
+                port: 8008
+              initialDelaySeconds: 120
+              periodSeconds: 30
+              timeoutSeconds: 10
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            spec:
+              httpGet:
+                path: /
+                port: 8008
+              initialDelaySeconds: 60
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+defaultPodOptions:
+  securityContext:
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
+service:
+  soulsync:
+    controller: soulsync
+    ports:
+      http:
+        port: &port 8008
+      spotify:
+        port: 8888
+      tidal:
+        port: 8889
+route:
+  soulsync:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - soulsync.atoca.house
+    rules:
+      - backendRefs:
+          - identifier: soulsync
+            port: 8888
+        matches:
+          - path:
+              type: PathPrefix
+              value: /callback
+      - backendRefs:
+          - identifier: soulsync
+            port: 8889
+        matches:
+          - path:
+              type: PathPrefix
+              value: /tidal/callback
+      - backendRefs:
+          - identifier: soulsync
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    globalMounts:
+      - path: /app/config
+        subPath: config
+      - path: /app/logs
+        subPath: logs
+      # - path: /app/downloads
+      #   subPath: downloads
+      - path: /app/data
+        subPath: data
+
+  media:
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/data/slskd
+    globalMounts:
+      - path: /app/downloads/
+
+  playlists:
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/musics/playlists
+    globalMounts:
+      - path: /music
+
+  tmpfs:
+    type: emptyDir
+    advancedMounts:
+      soulsync:
+        soulsync:
+          - path: /tmp
+
+  home:
+    type: emptyDir
+    advancedMounts:
+      soulsync:
+        soulsync:
+          - path: /home/soulsync

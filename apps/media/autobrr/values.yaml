@@ -34,7 +34,7 @@ controllers:
             enabled: true
             spec:
               periodSeconds: 30
-              timeoutSeconds: 5
+              timeoutSeconds: 15
               failureThreshold: 5
           readiness:
             enabled: true
@@ -43,8 +43,9 @@ controllers:
               httpGet:
                 path: /api/healthz/readiness
                 port: *port
+              initialDelaySeconds: 10
               periodSeconds: 10
-              timeoutSeconds: 5
+              timeoutSeconds: 15
               failureThreshold: 5
           startup:
             enabled: true

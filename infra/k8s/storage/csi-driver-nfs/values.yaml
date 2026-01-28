@@ -2,7 +2,7 @@ storageClass:
   create: true
   name: nfs-slow
   parameters:
-    server: nas.atoca.house
+    server: nas.internal
     share: /mnt/user/data
   mountOptions:
     - nfsvers=4.2

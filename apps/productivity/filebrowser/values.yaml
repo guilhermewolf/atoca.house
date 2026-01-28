@@ -116,7 +116,7 @@ persistence:
   media:
     enabled: true
     type: nfs
-    server: nas.atoca.house
+    server: nas.internal
     path: /mnt/user/media
     globalMounts:
       - path: /mnt/media

@@ -10,7 +10,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - nas.atoca.house
+        - nas.internal
   metricRelabelings:
     - targetLabel: service
       replacement: blackbox-exporter-lan
@@ -28,7 +28,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - nas.atoca.house:2049
+        - nas.internal:2049
   metricRelabelings:
     - targetLabel: service
       replacement: blackbox-exporter-lan

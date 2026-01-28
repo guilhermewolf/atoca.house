@@ -81,7 +81,7 @@ persistence:
       - path: /config
   media:
     type: nfs
-    server: nas.atoca.house
+    server: nas.internal
     path: /mnt/user/data/
     globalMounts:
       - path: /data

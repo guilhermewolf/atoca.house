@@ -106,7 +106,7 @@ persistence:
 
   media:
     type: nfs
-    server: nas.atoca.house
+    server: nas.internal
     path: /mnt/user/data/slskd/complete
     globalMounts:
       - path: /app/downloads
@@ -114,7 +114,7 @@ persistence:
 
   library:
     type: nfs
-    server: nas.atoca.house
+    server: nas.internal
     path: /mnt/user/musics/library
     globalMounts:
       - path: /music

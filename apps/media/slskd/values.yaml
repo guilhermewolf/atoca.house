@@ -115,14 +115,14 @@ persistence:
         subPath: slskd.yml
   media:
     type: nfs
-    server: nas.atoca.house
+    server: nas.internal
     path: /mnt/user/data/slskd
     globalMounts:
       - path: /downloads/
 
   playlists:
     type: nfs
-    server: nas.atoca.house
+    server: nas.internal
     path: /mnt/user/musics/playlists
     globalMounts:
       - path: /playlists

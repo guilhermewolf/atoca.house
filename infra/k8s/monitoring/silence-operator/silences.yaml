@@ -53,7 +53,7 @@ spec:
       value: NodeMemoryHighUtilization
     - name: instance
       matchType: '='
-      value: nas.atoca.house:9100
+      value: nas.internal:9100
 ---
 # yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/observability.giantswarm.io/silence_v1alpha2.json
 apiVersion: observability.giantswarm.io/v1alpha2

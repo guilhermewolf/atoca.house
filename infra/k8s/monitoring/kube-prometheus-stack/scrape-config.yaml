@@ -6,7 +6,7 @@ metadata:
 spec:
   staticConfigs:
     - targets:
-        - nas.atoca.house:9100
+        - nas.internal:9100
   metricsPath: /metrics
   relabelings:
     - action: replace
@@ -20,7 +20,7 @@ metadata:
 spec:
   staticConfigs:
     - targets:
-        - nas.atoca.house:9633
+        - nas.internal:9633
   metricsPath: /metrics
   relabelings:
     - action: replace
@@ -34,7 +34,7 @@ metadata:
 spec:
   staticConfigs:
     - targets:
-        - nas.atoca.house:8083
+        - nas.internal:8083
   relabelings:
     - action: replace
       targetLabel: job

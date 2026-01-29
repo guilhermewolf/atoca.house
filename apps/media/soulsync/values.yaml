@@ -10,7 +10,6 @@ controllers:
           repository: boulderbadgedad/soulsync
           tag: 1.4
         env:
-          TZ: Europe/Amsterdam
           PUID: 99
           PGID: 100
           UMASK: 002

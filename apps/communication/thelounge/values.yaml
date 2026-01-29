@@ -14,8 +14,6 @@ controllers:
           tag: 4.4.3@sha256:c2aa0916203b298ffaf3a36c4eb60ef73c1006448d430e218d37840472e84e50
           pullPolicy: IfNotPresent
         env:
-          - name: TZ
-            value: "Europe/Amsterdam"
           - name: AUTO_UPDATE
             value: "true"
           - name: PUID

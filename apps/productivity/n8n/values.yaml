@@ -10,8 +10,6 @@ controllers:
           tag: 2.6.2@sha256:ff6fe9eca746b7455c9e6e4fbc6f5753c3204e82279e015fa62f1bfe309e6343
           pullPolicy: IfNotPresent
         env:
-          TZ: "Europe/Amsterdam"
-          GENERIC_TIMEZONE: "Europe/Amsterdam"
           N8N_PROTOCOL: https
           N8N_PORT: &port 80
           N8N_HOST: &hostName n8n.atoca.house

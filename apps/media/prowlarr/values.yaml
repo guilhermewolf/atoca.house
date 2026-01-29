@@ -10,8 +10,6 @@ controllers:
           tag: 2.3.0@sha256:d3e9307b320b6772749a2cf8fc2712e9e824c4930b034680ad4d08a9e2f25884
           pullPolicy: IfNotPresent
         env:
-          - name: TZ
-            value: "Europe/Amsterdam"
           - name: PUID
             value: "1000"
           - name: PGID

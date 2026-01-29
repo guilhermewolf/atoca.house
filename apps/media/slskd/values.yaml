@@ -10,7 +10,6 @@ controllers:
           tag: 0.24.3@sha256:bcf9820dab68e21d2bba8ebb1ffd583d71fcba542a50a1e998119f69b7b498fe
         env:
           DOTNET_BUNDLE_EXTRACT_BASE_DIR: /tmp/.net
-          TZ: Europe/Amsterdam
           SLSKD_APP_DIR: /config
           SLSKD_HTTP_PORT: &port 80
           SLSKD_NO_AUTH: true

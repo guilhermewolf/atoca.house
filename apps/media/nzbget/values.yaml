@@ -7,7 +7,6 @@ controllers:
           tag: 25.4.0@sha256:cec63a94495ed4354597fe30ae82fcb202a19f9a3a7bd989d397e95ee50038da
         env:
           NZBGET__PORT: &port 80
-          TZ: Europe/Amsterdam
         probes:
           liveness: &probes
             enabled: true

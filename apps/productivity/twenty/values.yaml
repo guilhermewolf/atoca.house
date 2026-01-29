@@ -65,7 +65,6 @@ controllers:
           REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379"
           DISABLE_DB_MIGRATIONS: "false"
           STORAGE_TYPE: local
-          TZ: Europe/Amsterdam
         envFrom:
           - secretRef:
               name: twenty-db-secret

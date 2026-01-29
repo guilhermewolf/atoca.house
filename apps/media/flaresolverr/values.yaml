@@ -10,8 +10,6 @@ controllers:
         env:
           - name: LOG_LEVEL
             value: "info"
-          - name: TZ
-            value: "Europe/Amsterdam"
         resources:
           requests:
             cpu: 10m

@@ -28,7 +28,6 @@ controllers:
           GATUS_DELAY_START_SECONDS: 5
           GATUS_CONFIG_PATH: /config
           GATUS_WEB_PORT: &port 80
-          TZ: Europe/Amsterdam
         probes:
           liveness: &probes
             enabled: true

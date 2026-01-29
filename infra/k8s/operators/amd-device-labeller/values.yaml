@@ -26,7 +26,6 @@ controllers:
           ]
 
         env:
-          TZ: Europe/Amsterdam
           DS_NODE_NAME:
             valueFrom:
               fieldRef:

@@ -15,9 +15,6 @@ controllers:
 
         args: ["-logtostderr=true", "-stderrthreshold=INFO", "-v=5"]
 
-        env:
-          TZ: Europe/Amsterdam
-
         resources:
           requests:
             cpu: 10m

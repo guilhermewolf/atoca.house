@@ -7,7 +7,6 @@ controllers:
           repository: ghcr.io/unpoller/unpoller
           tag: v2.25.0@sha256:664745b17859a4a98a6e40a1641c53dabd159566d306d2067b88b3ab38cd29da
         env:
-          TZ: Europe/Amsterdam
           UP_UNIFI_DEFAULT_ROLE: unpoller
           UP_UNIFI_DEFAULT_URL: https://192.168.40.1
           UP_PROMETHEUS_HTTP_LISTEN: 0.0.0.0:80

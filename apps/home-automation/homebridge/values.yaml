@@ -10,7 +10,6 @@ controllers:
         env:
           HOMEBRIDGE_CONFIG_UI: "1"
           HOMEBRIDGE_CONFIG_UI_PORT: &port 8581
-          TZ: Europe/Amsterdam
         probes:
           liveness: &probes
             enabled: true

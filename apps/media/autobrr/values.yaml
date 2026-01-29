@@ -16,7 +16,6 @@ controllers:
           AUTOBRR__METRICS_PORT: &metricsPort 9094
           AUTOBRR__CHECK_FOR_UPDATES: false
           AUTOBRR__LOG_LEVEL: INFO
-          TZ: "Europe/Amsterdam"
         envFrom:
           - secretRef:
               name: "autobrr-secret"

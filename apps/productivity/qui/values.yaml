@@ -13,7 +13,6 @@ controllers:
           QUI__HOST: 0.0.0.0
           QUI__PORT: &port 80
           QUI__LOG_LEVEL: INFO
-          TZ: Europe/Amsterdam
         envFrom:
           - secretRef:
               name: "qui-secret"

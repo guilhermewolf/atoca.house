@@ -1,0 +1,8 @@
+---
+# Application configuration for k8tz
+app:
+  name: k8tz
+  namespace: k8tz
+  chart: k8tz
+  chartRepo: ghcr.io/home-operations/charts-mirror
+  chartVersion: 0.18.0

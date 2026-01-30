@@ -13,6 +13,7 @@ controllers:
           N8N_PROTOCOL: https
           N8N_PORT: &port 80
           N8N_HOST: &hostName n8n.atoca.house
+          GENERIC_TIMEZONE: Europe/Amsterdam
         resources:
           requests:
             cpu: 500m

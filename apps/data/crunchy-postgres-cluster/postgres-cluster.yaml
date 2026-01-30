@@ -53,6 +53,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: wiki
+      databases:
+        - wiki
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

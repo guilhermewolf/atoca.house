@@ -1,0 +1,68 @@
+---
+controllers:
+  wiki:
+    replicas: 1
+    annotations:
+      reloader.stakater.com/auto: "true"
+    initContainers:
+      init-db:
+        image:
+          repository: ghcr.io/home-operations/postgres-init
+          tag: 17.6.0@sha256:86a1992d46273c58fd4ad95b626081dfaabfe16bd56944675169e406d1a660dd
+        envFrom:
+          - secretRef:
+              name: wiki-db-secret
+          - secretRef:
+              name: wiki-dbinit-secret
+    containers:
+      wiki:
+        image:
+          repository: ghcr.io/requarks/wiki
+          tag: 2.5.311
+        env:
+          APP_URL: "https://wiki.atoca.house"
+          DB_TYPE: postgres
+          DB_SSL: "true"
+        envFrom:
+          - secretRef:
+              name: wiki-db-secret
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                httpHeaders:
+                  - name: Host
+                    value: wiki.atoca.house
+                path: /healthz
+                port: 3000
+              initialDelaySeconds: 15
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+service:
+  wiki:
+    controller: wiki
+    ports:
+      http:
+        port: 3000
+
+route:
+  wiki:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - wiki.atoca.house
+    rules:
+      - backendRefs:
+          - name: wiki
+            port: 3000
+        matches:
+          - path:
+              type: PathPrefix
+              value: /

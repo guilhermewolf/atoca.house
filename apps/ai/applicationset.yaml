@@ -1,0 +1,55 @@
+---
+# ApplicationSet for ai applications
+# Discovers apps from app-config.yaml files in subdirectories
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps-ai
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+
+  generators:
+    - git:
+        repoURL: https://github.com/guilhermewolf/atoca.house
+        revision: HEAD
+        files:
+          - path: "apps/ai/*/app-config.yaml"
+
+  template:
+    metadata:
+      name: '{{.app.name}}'
+      namespace: argocd
+    spec:
+      project: applications
+      destination:
+        namespace: '{{.app.namespace}}'
+        server: https://kubernetes.default.svc
+
+      sources:
+        # Helm chart source
+        - chart: '{{.app.chart}}'
+          repoURL: '{{.app.chartRepo}}'
+          targetRevision: '{{.app.chartVersion}}'
+          helm:
+            releaseName: '{{.app.name}}'
+            valueFiles:
+              - $values/apps/ai/{{.app.name}}/values.yaml
+
+        # Values repository reference
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          ref: values
+
+        # Additional resources (secrets, configs, etc.)
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          path: 'apps/ai/{{.app.name}}'
+          directory:
+            exclude: '{application.yaml,values.yaml,app-config.yaml}'
+
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

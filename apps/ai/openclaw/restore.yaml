@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: openclaw-restore
+  namespace: openclaw
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: openclaw-r2-secret
+    copyMethod: Direct
+    destinationPVC: openclaw
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

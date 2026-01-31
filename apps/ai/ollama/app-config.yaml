@@ -1,0 +1,8 @@
+---
+# Application configuration for ollama
+app:
+  name: ollama
+  namespace: ollama
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2

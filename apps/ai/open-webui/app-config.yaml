@@ -1,0 +1,8 @@
+---
+# Application configuration for open-webui
+app:
+  name: open-webui
+  namespace: open-webui
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2

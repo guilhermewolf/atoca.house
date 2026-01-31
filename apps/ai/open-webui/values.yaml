@@ -1,0 +1,59 @@
+---
+controllers:
+  open-webui:
+    pod:
+      annotations:
+        reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/open-webui/open-webui
+          tag: 0.7.2
+        env:
+          # Open-webui settings
+          ENABLE_OPENAI_API: "False"
+          ENABLE_OLLAMA_API: "True"
+          OLLAMA_BASE_URL: http://ollama.ollama.svc.cluster.local
+          ENABLE_WEBSOCKET_SUPPORT: "true"
+          WEBSOCKET_MANAGER: "redis"
+          WEBSOCKET_REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/5"
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            memory: 2Gi
+
+service:
+  app:
+    ports:
+      http:
+        port: &port 8080
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - open-webui.atoca.house
+    rules:
+      - backendRefs:
+          - name: open-webui
+            port: 8080
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /app/backend/data

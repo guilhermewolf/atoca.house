@@ -1,0 +1,78 @@
+---
+controllers:
+  ollama:
+    containers:
+      app:
+        image:
+          repository: docker.io/ollama/ollama
+          tag: 0.15.2
+        env:
+          HOME: /config
+          OLLAMA_HOST: 0.0.0.0:80
+          OLLAMA_MODELS: /models
+          OLLAMA_ORIGINS: "*"
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: &port 80
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: {drop: ["ALL"]}
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 5Gi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+service:
+  app:
+    ports:
+      http:
+        port: *port
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - ollama.atoca.house
+    rules:
+      - backendRefs:
+          - name: ollama
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    type: emptyDir
+  models:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /models
+  tmp:
+    type: emptyDir

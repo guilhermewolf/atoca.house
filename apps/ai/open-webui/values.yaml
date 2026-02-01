@@ -17,6 +17,10 @@ controllers:
           ENABLE_WEBSOCKET_SUPPORT: "true"
           WEBSOCKET_MANAGER: "redis"
           WEBSOCKET_REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/5"
+          SEARXNG_QUERY_URL: http://searxng.searxng.svc.cluster.local:8080/search?q=<query>
+          ENABLE_RAG_WEB_SEARCH: true
+          ENABLE_SEARCH_QUERY: true
+          RAG_WEB_SEARCH_ENGINE: searxng
         resources:
           requests:
             cpu: 500m

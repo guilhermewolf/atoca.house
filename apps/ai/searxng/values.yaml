@@ -1,0 +1,88 @@
+---
+controllers:
+  searxng:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    replicas: 2
+    strategy: RollingUpdate
+    containers:
+      main:
+        image:
+          repository: ghcr.io/searxng/searxng
+          tag: 2025.11.18-576c8ca99
+        env:
+          SEARXNG_BASE_URL: https://search.atoca.house
+          SEARXNG_PORT: &port 8080
+          SEARXNG_REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/6"
+        envFrom:
+          - secretRef:
+              name: searxng-secret
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /stats
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+        resources:
+          requests:
+            cpu: 10m
+            memory: 215Mi
+          limits:
+            memory: 4Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+            add:
+              - CHOWN
+              - SETGID
+              - SETUID
+              - DAC_OVERRIDE
+service:
+  app:
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - search.atoca.house
+    rules:
+      - backendRefs:
+          - name: searxng
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+persistence:
+  config:
+    type: configMap
+    name: searxng-configmap
+    globalMounts:
+      - path: /etc/searxng/settings.yml
+        subPath: settings.yml
+        readOnly: true
+      - path: /etc/searxng/limiter.toml
+        subPath: limiter.toml
+        readOnly: true
+  tmpfs:
+    enabled: true
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

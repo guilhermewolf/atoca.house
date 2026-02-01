@@ -1,0 +1,8 @@
+---
+# Application configuration for searxng
+app:
+  name: searxng
+  namespace: searxng
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2

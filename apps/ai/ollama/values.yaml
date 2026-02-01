@@ -30,10 +30,12 @@ controllers:
           capabilities: {drop: ["ALL"]}
         resources:
           requests:
-            cpu: 10m
-            memory: 32Mi
+            cpu: 4000m
+            memory: 2Gi
           limits:
-            memory: 5Gi
+            cpu: 8000m
+            memory: 8Gi
+
 defaultPodOptions:
   securityContext:
     runAsNonRoot: true
@@ -71,7 +73,7 @@ persistence:
     type: persistentVolumeClaim
     storageClass: ceph-block
     accessMode: ReadWriteOnce
-    size: 5Gi
+    size: 50Gi
     globalMounts:
       - path: /models
   tmp:

@@ -13,17 +13,17 @@ releases:
   - name: cloudflare-dns
     namespace: cloudflare-dns
     chart: oci://ghcr.io/home-operations/charts-mirror/external-dns
-    version: 1.20.0@sha256:52ae26d33bf79c14cef609d20cd5d7da3ffa1b96d0cc5c4d268ea5316b569236
+    version: 1.20.0
 
   - name: envoy-gateway
     namespace: envoy-gateway
     chart: oci://mirror.gcr.io/envoyproxy/gateway-helm
-    version: v1.6.2@sha256:1ad16ce22c3f6a9e764770ea25735c5b1cffaa3809c26c2744f5dfd54f7dfdbe
+    version: v1.6.2
 
   - name: grafana-operator
     namespace: grafana
     chart: oci://ghcr.io/grafana/helm-charts/grafana-operator
-    version: 5.21.4@sha256:e0ca50ad181d2f9826150db901c1ff2a358eb99091611ac6a8f7a6f7f070fac7
+    version: 5.21.4
 
   - name: kube-prometheus-stack
     namespace: monitoring

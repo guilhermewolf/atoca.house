@@ -118,7 +118,7 @@ repoServer:
   extraContainers:
     - name: avp
       command: [/var/run/argocd/argocd-cmp-server]
-      image: quay.io/argoproj/argocd:v3.2.6@sha256:64e4239359438fb0ad42d46ae2061daa841ae52d4e63f94017929f7e26dd51b2
+      image: quay.io/argoproj/argocd:v3.3.0@sha256:ed0740273790e58154816104c1e1b41fb308a9c516ade3d0f195fa56f1840cca
       env:
         - name: AVP_TYPE
           value: 1passwordconnect

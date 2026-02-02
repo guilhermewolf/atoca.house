@@ -1,0 +1,9 @@
+---
+image:
+  repository: nvcr.io/nvidia/k8s-device-plugin
+  tag: v0.18.2
+
+runtimeClassName: nvidia
+
+nodeSelector:
+  node.kubernetes.io/gpu: "true"

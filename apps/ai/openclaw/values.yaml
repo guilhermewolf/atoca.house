@@ -117,7 +117,7 @@ route:
       - name: atoca-house-internal
         namespace: kube-system
     hostnames:
-      - openclaw.atoca.house
+      - claw.atoca.house
     rules:
       - backendRefs:
           - name: openclaw

@@ -42,7 +42,7 @@ route:
       - name: atoca-house-internal
         namespace: kube-system
     hostnames:
-      - open-webui.atoca.house
+      - chat.atoca.house
     rules:
       - backendRefs:
           - name: open-webui

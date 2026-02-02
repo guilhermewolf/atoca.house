@@ -44,7 +44,7 @@ machine:
         nconnect=16
         noatime=True
   install:
-    image: factory.talos.dev/metal-installer/83f6d002527e710e640809a8247bf83d7bc41cfc513c278f5dd9b58c5b6f85ee:v1.12.1
+    image: factory.talos.dev/metal-installer/f54ee8da2b59510707cb6481e1872964fcad717eed957be216f73279e700f7b8:v1.12.2
     wipe: false
     grubUseUKICmdline: true
   kubelet:
@@ -101,7 +101,7 @@ cluster:
     {% if IS_CONTROLLER %}
     key: op://K8s/talos/CLUSTER_CA_KEY
     {% endif %}
-  clusterName: main
+  clusterName: atoca-house
   controlPlane:
     endpoint: https://k8s.internal:6443
   discovery:
@@ -137,6 +137,7 @@ cluster:
       - 192.168.40.11
       - 192.168.40.12
       - 192.168.40.13
+      - 192.168.40.14
     disablePodSecurityPolicy: true
     extraArgs:
       enable-aggregator-routing: "true"
@@ -185,43 +186,3 @@ cluster:
   serviceAccount:
     key: op://K8s/talos/CLUSTER_SERVICEACCOUNT_KEY
   {% endif %}
----
-apiVersion: v1alpha1
-kind: LinkAliasConfig
-name: enp5s0f3u2
-selector:
-  match: link.driver == "r8152"
----
-apiVersion: v1alpha1
-kind: LinkAliasConfig
-name: enp2s0
-selector:
-  match: link.driver == "r8169"
----
-apiVersion: v1alpha1
-kind: BondConfig
-name: bond0
-links:
-  - enp5s0f3u2
-  - enp2s0
-bondMode: active-backup
-mtu: 1500
----
-apiVersion: v1alpha1
-kind: DHCPv4Config
-name: bond0
-clientIdentifier: mac
----
-apiVersion: v1alpha1
-kind: VLANConfig
-name: bond0.5
-vlanID: 5
-parent: bond0
-mtu: 1500
----
-apiVersion: v1alpha1
-kind: VLANConfig
-name: bond0.6
-vlanID: 6
-parent: bond0
-mtu: 1500

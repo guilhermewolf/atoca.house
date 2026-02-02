@@ -1,0 +1,49 @@
+---
+controllers:
+  kokoro:
+    containers:
+      app:
+        image:
+          repository: ghcr.io/remsky/kokoro-fastapi-cpu
+          tag: v0.2.4
+        resources:
+          requests:
+            cpu: 10m
+            memory: 2Gi
+          limits:
+            memory: 4Gi
+
+service:
+  app:
+    controller: &app kokoro
+    ports:
+      http:
+        port: &port 8880
+
+persistence:
+  cache:
+    enabled: true
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    storageClass: ceph-block
+    globalMounts:
+      - path: /app/cache
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - tts.atoca.house
+    rules:
+      - backendRefs:
+          - name: kokoro
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /

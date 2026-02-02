@@ -1,18 +1,25 @@
 ---
-# Node-specific configuration for node-01 (192.168.40.11)
+# Node-specific configuration for node-04 (192.168.40.14)
 
 machine:
   type: controlplane
-  # Install configuration - node-01 specific disk
+  # Install configuration - node-04 specific disk
   install:
     diskSelector:
-      model: SSD 256GB
+      size: 500GB
+    image: factory.talos.dev/metal-installer/a59866333620a2b31ad4b0bfc813abb5629f852a12d41a78a2833789a0e53417:v1.12.2
   nodeLabels:
-    topology.kubernetes.io/zone: node-01
+    node.kubernetes.io/gpu: "true"
+  kernel:
+    modules:
+      - name: nvidia
+      - name: nvidia_uvm
+      - name: nvidia_drm
+      - name: nvidia_modeset
 ---
 apiVersion: v1alpha1
 kind: HostnameConfig
-hostname: node-01
+hostname: node-04
 ---
 apiVersion: v1alpha1
 kind: LinkAliasConfig

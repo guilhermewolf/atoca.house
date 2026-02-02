@@ -1,0 +1,8 @@
+---
+# Application configuration for kokoro
+app:
+  name: kokoro
+  namespace: kokoro
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2

@@ -3,5 +3,5 @@ app:
   namespace: kube-system
   chart: csi-driver-nfs
   chartRepo: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
-  chartVersion: v4.12.1
+  chartVersion: 4.13.0
   disableAutoSync: true

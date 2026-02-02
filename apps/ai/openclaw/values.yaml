@@ -117,7 +117,7 @@ route:
       - name: atoca-house-internal
         namespace: kube-system
     hostnames:
-      - openclaw.atoca.house
+      - claw.atoca.house
     rules:
       - backendRefs:
           - name: openclaw
@@ -132,13 +132,27 @@ rbac:
       type: ClusterRole
       rules:
         - apiGroups: [""]
-          resources: ["pods", "nodes", "services", "namespaces", "configmaps", "persistentvolumes", "persistentvolumeclaims", "endpoints", "resourcequotas", "limitranges", "serviceaccounts"]
+          resources:
+            [
+              "pods",
+              "nodes",
+              "services",
+              "namespaces",
+              "configmaps",
+              "persistentvolumes",
+              "persistentvolumeclaims",
+              "endpoints",
+              "resourcequotas",
+              "limitranges",
+              "serviceaccounts",
+            ]
           verbs: ["get", "list", "watch"]
         - apiGroups: [""]
           resources: ["pods/log"]
           verbs: ["get", "list"]
         - apiGroups: ["apps"]
-          resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
+          resources:
+            ["deployments", "daemonsets", "statefulsets", "replicasets"]
           verbs: ["get", "list", "watch"]
         - apiGroups: ["batch"]
           resources: ["jobs", "cronjobs"]
@@ -150,7 +164,8 @@ rbac:
           resources: ["storageclasses"]
           verbs: ["get", "list", "watch"]
         - apiGroups: ["rbac.authorization.k8s.io"]
-          resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+          resources:
+            ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
           verbs: ["get", "list", "watch"]
         - apiGroups: ["metrics.k8s.io"]
           resources: ["nodes", "pods"]

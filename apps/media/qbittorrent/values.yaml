@@ -79,13 +79,6 @@ route:
               type: PathPrefix
               value: /
 
-configMaps:
-  config:
-    data:
-      .qbt.toml: |-
-        [qbittorrent]
-        addr = "http://localhost:80"
-
 persistence:
   config:
     enabled: true
@@ -98,12 +91,7 @@ persistence:
 
   tmp:
     type: emptyDir
-  # scripts:
-  #   type: configMap
-  #   name: qbittorrent-scripts
-  #   defaultMode: 0775
-  #   globalMounts:
-  #     - readOnly: true
+
   media:
     type: nfs
     server: nas.internal

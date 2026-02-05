@@ -1,7 +1,7 @@
 configs:
   cm:
     statusbadge.enabled: true
-    url: https://argocd.atoca.house
+    url: &argocd-url https://argocd.atoca.house
 
     repositories: |
       - url: https://github.com/guilhermewolf/atoca.house
@@ -178,3 +178,112 @@ applicationSet:
     limits:
       cpu: 250m
       memory: 256Mi
+
+notifications:
+  enabled: true
+  argocdUrl: *argocd-url
+
+  secret:
+    create: false
+
+  notifiers:
+    service.webhook.discord: |
+      url: $discord-webhook-url
+      headers:
+      - name: Content-Type
+        value: application/json
+
+  templates:
+    template.app-health-degraded: |
+      webhook:
+        discord:
+          method: POST
+          body: |
+            {
+              "embeds": [
+                {
+                  "title": "⚠️ Application Degraded",
+                  "description": "Application **{{.app.metadata.name}}** health has degraded",
+                  "url": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+                  "color": 15548997,
+                  "fields": [
+                    {
+                      "name": "Health Status",
+                      "value": "{{.app.status.health.status}}",
+                      "inline": true
+                    },
+                    {
+                      "name": "Sync Status",
+                      "value": "{{.app.status.sync.status}}",
+                      "inline": true
+                    },
+                    {
+                      "name": "Repository",
+                      "value": "{{.app.spec.source.repoURL}}",
+                      "inline": false
+                    }
+                    {{range $index, $c := .app.status.conditions}}
+                    ,{
+                      "name": "{{$c.type}}",
+                      "value": "{{$c.message}}",
+                      "inline": false
+                    }
+                    {{end}}
+                  ]
+                }
+              ]
+            }
+
+    template.app-out-of-sync: |
+      webhook:
+        discord:
+          method: POST
+          body: |
+            {
+              "embeds": [
+                {
+                  "title": "🔄 Application Out of Sync",
+                  "description": "Application **{{.app.metadata.name}}** is out of sync",
+                  "url": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+                  "color": 16776960,
+                  "fields": [
+                    {
+                      "name": "Sync Status",
+                      "value": "{{.app.status.sync.status}}",
+                      "inline": true
+                    },
+                    {
+                      "name": "Health Status",
+                      "value": "{{.app.status.health.status}}",
+                      "inline": true
+                    },
+                    {
+                      "name": "Repository",
+                      "value": "{{.app.spec.source.repoURL}}",
+                      "inline": false
+                    },
+                    {
+                      "name": "Target Revision",
+                      "value": "{{.app.spec.source.targetRevision}}",
+                      "inline": true
+                    }
+                  ]
+                }
+              ]
+            }
+
+  triggers:
+    trigger.on-app-health-degraded: |
+      - when: app.status.health.status == 'Degraded'
+        send: [app-health-degraded]
+
+    trigger.on-app-out-of-sync: |
+      - when: app.status.sync.status == 'OutOfSync'
+        send: [app-out-of-sync]
+
+  subscriptions:
+    - recipients:
+        - discord
+      triggers:
+        - on-app-health-degraded
+        - on-app-out-of-sync

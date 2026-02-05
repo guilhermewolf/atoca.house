@@ -7,8 +7,6 @@ helmDefaults:
   waitForJobs: true
 
 repositories:
-  - name: 1password
-    url: https://1password.github.io/connect-helm-charts
   - name: argo
     url: https://argoproj.github.io/argo-helm
 
@@ -16,7 +14,7 @@ releases:
   - name: cilium
     namespace: kube-system
     chart: oci://quay.io/cilium/charts/cilium
-    version: 1.18.6
+    version: 1.19.0
     values:
       - ./templates/values.yaml.gotmpl
     hooks:
@@ -53,25 +51,25 @@ releases:
   - name: cert-manager
     namespace: cert-manager
     chart: oci://quay.io/jetstack/charts/cert-manager
-    version: v1.19.2
+    version: v1.19.3
     values:
       - ./templates/values.yaml.gotmpl
     needs:
       - spegel/spegel
 
-  - name: one-password
-    namespace: one-password
-    chart: 1password/connect
-    version: 1.17.1
+  - name: external-secrets
+    namespace: external-secrets
+    chart: oci://ghcr.io/external-secrets/charts/external-secrets
+    version: 1.3.2
     values:
       - ./templates/values.yaml.gotmpl
     needs:
       - cert-manager/cert-manager
 
-  - name: external-secrets
-    namespace: external-secrets
-    chart: oci://ghcr.io/external-secrets/charts/external-secrets
-    version: 1.3.1
+  - name: one-password
+    namespace: one-password
+    chart: oci://ghcr.io/bjw-s-labs/helm/app-template
+    version: 4.6.2
     values:
       - ./templates/values.yaml.gotmpl
     hooks:
@@ -89,12 +87,12 @@ releases:
           - apply
           - --server-side
           - --field-manager=kustomize-controller
-          - --filename=../../infra/k8s/security/external-secrets/clusterstore.yaml
+          - --filename=../../infra/k8s/security/one-password/clusterstore.yaml
         events:
           - postsync
         showlogs: true
     needs:
-      - one-password/one-password
+      - external-secrets/external-secrets
 
   - name: argocd
     namespace: argocd
@@ -122,4 +120,4 @@ releases:
           - postsync
         showlogs: true
     needs:
-      - external-secrets/external-secrets
+      - one-password/one-password

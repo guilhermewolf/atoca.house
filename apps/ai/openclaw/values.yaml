@@ -8,7 +8,7 @@ controllers:
       install-tools:
         image:
           repository: ghcr.io/openclaw/openclaw
-          tag: 2026.1.29@sha256:7b67c341d87f8e954dc1e8e9d7bb3aaeaf36acd49594abe4adb826ee89107170
+          tag: 2026.2.3@sha256:acc3631077173c8050278a44896947b6052dd5c8ebace4ee1a452a276bd28bab
         command:
           - /bin/sh
           - -c
@@ -69,7 +69,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/openclaw/openclaw
-          tag: 2026.1.29@sha256:7b67c341d87f8e954dc1e8e9d7bb3aaeaf36acd49594abe4adb826ee89107170
+          tag: 2026.2.3@sha256:acc3631077173c8050278a44896947b6052dd5c8ebace4ee1a452a276bd28bab
         command:
           - /bin/sh
           - -c
@@ -132,13 +132,27 @@ rbac:
       type: ClusterRole
       rules:
         - apiGroups: [""]
-          resources: ["pods", "nodes", "services", "namespaces", "configmaps", "persistentvolumes", "persistentvolumeclaims", "endpoints", "resourcequotas", "limitranges", "serviceaccounts"]
+          resources:
+            [
+              "pods",
+              "nodes",
+              "services",
+              "namespaces",
+              "configmaps",
+              "persistentvolumes",
+              "persistentvolumeclaims",
+              "endpoints",
+              "resourcequotas",
+              "limitranges",
+              "serviceaccounts",
+            ]
           verbs: ["get", "list", "watch"]
         - apiGroups: [""]
           resources: ["pods/log"]
           verbs: ["get", "list"]
         - apiGroups: ["apps"]
-          resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
+          resources:
+            ["deployments", "daemonsets", "statefulsets", "replicasets"]
           verbs: ["get", "list", "watch"]
         - apiGroups: ["batch"]
           resources: ["jobs", "cronjobs"]
@@ -150,7 +164,8 @@ rbac:
           resources: ["storageclasses"]
           verbs: ["get", "list", "watch"]
         - apiGroups: ["rbac.authorization.k8s.io"]
-          resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+          resources:
+            ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
           verbs: ["get", "list", "watch"]
         - apiGroups: ["metrics.k8s.io"]
           resources: ["nodes", "pods"]

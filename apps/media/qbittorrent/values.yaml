@@ -9,7 +9,7 @@ controllers:
           tag: 5.1.4@sha256:56ecd30a7f5e1357daf5eea2a6935134d329b7b268a3a9b9c67041b65fb87fc6
         env:
           QBT_WEBUI_PORT: &port 80
-          QBT_TORRENTING_PORT: &torrentPort 51820
+          QBT_TORRENTING_PORT: &torrentPort 36300
         probes:
           liveness: &probes
             enabled: true
@@ -79,13 +79,6 @@ route:
               type: PathPrefix
               value: /
 
-configMaps:
-  config:
-    data:
-      .qbt.toml: |-
-        [qbittorrent]
-        addr = "http://localhost:80"
-
 persistence:
   config:
     enabled: true
@@ -98,12 +91,7 @@ persistence:
 
   tmp:
     type: emptyDir
-  # scripts:
-  #   type: configMap
-  #   name: qbittorrent-scripts
-  #   defaultMode: 0775
-  #   globalMounts:
-  #     - readOnly: true
+
   media:
     type: nfs
     server: nas.internal

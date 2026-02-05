@@ -12,9 +12,9 @@ spec:
     pruneIntervalDays: 14
     repository: sonarr-r2-secret
     moverSecurityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
+      runAsUser: 99
+      runAsGroup: 100
+      fsGroup: 100
     retain:
       hourly: 5
       daily: 4

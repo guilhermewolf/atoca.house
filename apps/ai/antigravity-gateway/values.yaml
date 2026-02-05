@@ -1,0 +1,95 @@
+---
+controllers:
+  antigravity-gateway:
+    containers:
+      app:
+        image:
+          repository: ghcr.io/johnneerdael/antigravity-gateway
+          tag: latest
+        env:
+          PORT: "8080"
+          DEBUG: "false"
+          FALLBACK: "false"
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              tcpSocket:
+                port: &port 8080
+              initialDelaySeconds: 30
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              tcpSocket:
+                port: 8080
+              initialDelaySeconds: 10
+              periodSeconds: 5
+              timeoutSeconds: 1
+              failureThreshold: 3
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              tcpSocket:
+                port: 8080
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 1
+              failureThreshold: 30
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities: {drop: ["ALL"]}
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 1
+            memory: 1Gi
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+
+service:
+  app:
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - antigravity-gateway.atoca.house
+    rules:
+      - backendRefs:
+          - name: antigravity-gateway
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /home/node/.config/antigravity-gateway

@@ -13,7 +13,7 @@ spec:
       - job
     groupInterval: 10m
     groupWait: 1m
-    receiver: pushover
+    receiver: pushover-and-discord
     repeatInterval: 12h
     routes:
       - receiver: "null"
@@ -26,7 +26,7 @@ spec:
           - name: alertname
             value: Watchdog
             matchType: =
-      - receiver: pushover
+      - receiver: pushover-and-discord
         matchers:
           - name: severity
             value: critical
@@ -45,7 +45,24 @@ spec:
           matchType: =
   receivers:
     - name: "null"
-    - name: pushover
+    - name: pushover-and-discord
+      discordConfigs:
+        - sendResolved: true
+          title: >-
+            [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}
+          message: |-
+            {{- range .Alerts }}
+            **{{ .Labels.alertname }}** - {{ .Labels.severity }}
+            {{ if ne .Annotations.description "" }}{{ .Annotations.description }}{{ else if ne .Annotations.summary "" }}{{ .Annotations.summary }}{{ else if ne .Annotations.message "" }}{{ .Annotations.message }}{{ else }}Alert triggered{{ end }}
+
+            **Labels:**
+            {{- range .Labels.SortedPairs }}
+            • **{{ .Name }}:** {{ .Value }}
+            {{- end }}
+            {{- end }}
+          webhookURL:
+            name: alertmanager-secret
+            key: ALERTMANAGER_DISCORD_WEBHOOK_URL
       pushoverConfigs:
         - html: true
           message: |-

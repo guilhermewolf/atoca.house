@@ -59,6 +59,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: docmost
+      databases:
+        - docmost
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

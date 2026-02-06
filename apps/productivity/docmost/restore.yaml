@@ -1,0 +1,20 @@
+
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: docmost-restore
+  namespace: docmost
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: docmost-r2-secret
+    copyMethod: Direct
+    destinationPVC: docmost
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

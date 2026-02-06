@@ -1,0 +1,71 @@
+---
+controllers:
+  docmost:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      docmost:
+        image:
+          repository: docmost/docmost
+          tag: 0.25.1
+        env:
+          APP_URL: "https://hub.atoca.house"
+          PORT: &port 3000
+          REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/7"
+        envFrom:
+          - secretRef:
+              name: docmost-secret
+          - secretRef:
+              name: docmost-db-secret
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+        resources:
+          requests:
+            cpu: 25m
+            memory: 300Mi
+          limits:
+            memory: 1Gi
+    pod:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+service:
+  docmost:
+    controller: docmost
+    ports:
+      http:
+        port: *port
+
+route:
+  docmost:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - hub.atoca.house
+    rules:
+      - backendRefs:
+          - name: docmost
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 2Gi
+    globalMounts:
+      - path: /app/data/storage

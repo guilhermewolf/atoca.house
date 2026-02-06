@@ -7,7 +7,7 @@ controllers:
       docmost:
         image:
           repository: docmost/docmost
-          tag: 0.25.1
+          tag: 0.25.2
         env:
           APP_URL: "https://hub.atoca.house"
           PORT: &port 3000

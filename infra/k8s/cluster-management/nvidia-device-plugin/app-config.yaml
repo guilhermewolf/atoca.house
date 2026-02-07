@@ -3,6 +3,6 @@ app:
   namespace: nvidia-device-plugin
   chart: nvidia-device-plugin
   chartRepo: https://nvidia.github.io/k8s-device-plugin
-  chartVersion: 0.14.5
+  chartVersion: 0.18.2
   hasValues: true
   disableAutoSync: true

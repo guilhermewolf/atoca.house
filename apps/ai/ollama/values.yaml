@@ -13,6 +13,7 @@ controllers:
           OLLAMA_MODELS: /models
           OLLAMA_ORIGINS: "*"
           OLLAMA_NUM_PARALLEL: "4"
+          OLLAMA_CONTEXT_LENGTH: "15000"
         probes:
           liveness: &probes
             enabled: true

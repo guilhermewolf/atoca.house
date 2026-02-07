@@ -50,7 +50,7 @@ controllers:
             fi
 
             # Check if pip is available (either standalone or via python3 -m pip)
-            set +e  # Don't fail on pip errors
+            set +e # Don't fail on pip errors
             if command -v pip3 >/dev/null 2>&1 || command -v pip >/dev/null 2>&1 || python3 -m pip --version >/dev/null 2>&1; then
               echo "pip is available"
             else
@@ -62,9 +62,13 @@ controllers:
               echo "pip install skipped (use python3 -m pip instead)"
               rm -f get-pip.py
             fi
-            set -e  # Re-enable error checking
+            set -e # Re-enable error checking
 
             echo "Tool installation complete"
+
+            # Ensure config directory exists
+            mkdir -p /home/node/.openclaw
+            echo "Init container completed successfully"
     containers:
       app:
         image:
@@ -80,13 +84,15 @@ controllers:
             # Start gateway
             exec node dist/index.js gateway --bind lan --port 18789 --allow-unconfigured
         env:
-          HOME: &homepath /home/node
-          TERM: xterm-256color
-          PATH: /home/node/.local/bin:/home/node/.local/go/bin:/home/node/.local/homebrew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          BROWSER_WS_ENDPOINT: "ws://localhost:9222"
           GOPATH: /home/node/go
-          HOMEBREW_PREFIX: /home/node/.local/homebrew
+          HOME: &homepath /home/node
           HOMEBREW_CELLAR: /home/node/.local/homebrew/Cellar
+          HOMEBREW_PREFIX: /home/node/.local/homebrew
           HOMEBREW_REPOSITORY: /home/node/.local/homebrew
+          PATH: /home/node/.local/bin:/home/node/.local/go/bin:/home/node/.local/homebrew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          PIP_BREAK_SYSTEM_PACKAGES: "1"
+          TERM: xterm-256color
         envFrom:
           - secretRef:
               name: openclaw-secret
@@ -101,8 +107,8 @@ defaultPodOptions:
   shareProcessNamespace: true
   securityContext:
     runAsUser: 1000
-    runAsGroup: 100
-    fsGroup: 100
+    runAsGroup: 1000
+    fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
 service:
   app:
@@ -132,27 +138,13 @@ rbac:
       type: ClusterRole
       rules:
         - apiGroups: [""]
-          resources:
-            [
-              "pods",
-              "nodes",
-              "services",
-              "namespaces",
-              "configmaps",
-              "persistentvolumes",
-              "persistentvolumeclaims",
-              "endpoints",
-              "resourcequotas",
-              "limitranges",
-              "serviceaccounts",
-            ]
+          resources: ["pods", "nodes", "services", "namespaces", "configmaps", "persistentvolumes", "persistentvolumeclaims", "endpoints", "resourcequotas", "limitranges", "serviceaccounts", "events"]  # Added events
           verbs: ["get", "list", "watch"]
         - apiGroups: [""]
           resources: ["pods/log"]
           verbs: ["get", "list"]
         - apiGroups: ["apps"]
-          resources:
-            ["deployments", "daemonsets", "statefulsets", "replicasets"]
+          resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
           verbs: ["get", "list", "watch"]
         - apiGroups: ["batch"]
           resources: ["jobs", "cronjobs"]
@@ -164,11 +156,19 @@ rbac:
           resources: ["storageclasses"]
           verbs: ["get", "list", "watch"]
         - apiGroups: ["rbac.authorization.k8s.io"]
-          resources:
-            ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+          resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
           verbs: ["get", "list", "watch"]
         - apiGroups: ["metrics.k8s.io"]
           resources: ["nodes", "pods"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["helm.toolkit.fluxcd.io"]
+          resources: ["helmreleases"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["kustomize.toolkit.fluxcd.io"]
+          resources: ["kustomizations"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["external-secrets.io"]
+          resources: ["externalsecrets"]
           verbs: ["get", "list", "watch"]
     openclaw-write-restricted:
       type: Role
@@ -205,3 +205,22 @@ persistence:
     size: 5Gi
     globalMounts:
       - path: *homepath
+  openclaw-config:
+    type: secret
+    name: "openclaw-config"
+    globalMounts:
+      - path: /home/node/.openclaw/openclaw.json
+        subPath: openclaw.json
+  hooks-scripts:
+    type: configMap
+    name: openclaw-hooks-scripts
+    globalMounts:
+      - readOnly: true
+        path: /home/node/.openclaw/workspace/github-webhook-transform.js
+        subPath: github-webhook-transform.js
+      - readOnly: true
+        path: /home/node/.openclaw/workspace/github-app-token-manager.js
+        subPath: github-app-token-manager.js
+      - readOnly: true
+        path: /home/node/.openclaw/workspace/grumpy-sysadmin-agent.js
+        subPath: grumpy-sysadmin-agent.js

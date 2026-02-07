@@ -25,6 +25,10 @@ download-image version schematic:
 gen-schematic-id:
     curl -sX POST --data-binary @<(just template "{{ talos_dir }}/schematic.yaml.j2") "https://factory.talos.dev/schematics" | jq -r '.id'
 
+[doc('Generate NVIDIA schematic ID for GPU nodes')]
+gen-schematic-id-nvidia:
+    curl -sX POST --data-binary @<(just template "{{ talos_dir }}/schematic-nvidia.yaml.j2") "https://factory.talos.dev/schematics" | jq -r '.id'
+
 [doc('Reboot a node')]
 reboot-node node:
     gum confirm "Reboot node {{ node }}?" --default="No" && \

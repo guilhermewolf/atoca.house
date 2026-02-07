@@ -1,0 +1,22 @@
+---
+# NVIDIA GPU Schematic for node-04
+customization:
+  extraKernelArgs:
+    - -init_on_alloc # Less security, faster puter
+    - -init_on_free # Less security, faster puter
+    - -selinux # Less security, faster puter
+    - apparmor=0 # Less security, faster puter
+    - init_on_alloc=0 # Less security, faster puter
+    - init_on_free=0 # Less security, faster puter
+    - iommu=pt # PCI Passthrough
+    - mitigations=off # Less security, faster puter
+    - security=none # Less security, faster puter
+    - talos.auditd.disabled=1 # Less security, faster puter
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/amd-ucode # AMD CPU microcode (yes, AMD CPU even with NVIDIA GPU)
+      - siderolabs/iscsi-tools # iSCSI support
+      - siderolabs/nfs-utils # NFS client support
+      - siderolabs/util-linux-tools # Additional Linux utilities
+      - siderolabs/nvidia-container-toolkit-production # NVIDIA Container Runtime
+      - siderolabs/nonfree-kmod-nvidia-production # NVIDIA Kernel Modules

@@ -1,0 +1,64 @@
+---
+# Node-specific configuration for node-04 (192.168.40.14)
+
+machine:
+  type: controlplane
+  # Install configuration - node-04 specific disk
+  install:
+    diskSelector:
+      model: RONGSHU RP3500 256GB
+    image: factory.talos.dev/metal-installer/ab4e37cbb1c4b3d674b30d2e652e1f51c67accc31a81efa6cf39a2ebeb64d61b:v1.12.2
+  nodeLabels:
+    node.kubernetes.io/gpu: "true"
+  kernel:
+    modules:
+      - name: nvidia
+      - name: nvidia_uvm
+      - name: nvidia_drm
+        parameters:
+          - modeset=1
+      - name: nvidia_modeset
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: node-04
+---
+apiVersion: v1alpha1
+kind: LinkAliasConfig
+name: enp7s0
+selector:
+  match: link.driver == "igc"
+---
+apiVersion: v1alpha1
+kind: LinkAliasConfig
+name: enp2s0f0u2
+selector:
+  match: link.driver == "r8152"
+---
+apiVersion: v1alpha1
+kind: BondConfig
+name: bond0
+links:
+  - enp7s0
+  - enp2s0f0u2
+bondMode: active-backup
+mtu: 9000
+---
+apiVersion: v1alpha1
+kind: DHCPv4Config
+name: bond0
+clientIdentifier: mac
+---
+apiVersion: v1alpha1
+kind: VLANConfig
+name: bond0.5
+vlanID: 5
+parent: bond0
+mtu: 9000
+---
+apiVersion: v1alpha1
+kind: VLANConfig
+name: bond0.6
+vlanID: 6
+parent: bond0
+mtu: 9000

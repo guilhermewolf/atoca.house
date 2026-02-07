@@ -75,6 +75,9 @@ cephClusterSpec:
       - name: "node-03"
         devices:
           - name: "/dev/disk/by-id/nvme-FIKWOT_FN955_1TB_AA245040603"
+      - name: "node-04"
+        devices:
+          - name: "/dev/disk/by-id/nvme-Samsung_SSD_980_PRO_1TB_S5GXNS0X326250J"
     config:
       osdsPerDevice: "1"
 

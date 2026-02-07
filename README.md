@@ -152,6 +152,7 @@ While most of my infrastructure and workloads are self-hosted, I rely on cloud s
 | Device                          | Count | OS Disk Size | Data Disk Size   | RAM  | CPU              | Operating System | Purpose                    |
 |---------------------------------|-------|--------------|------------------|------|------------------|------------------|----------------------------|
 | Mini PC                         | 3     | 256GB NVMe   | 1TB NVMe         | 32GB | Ryzen 7 4800H    | Talos Linux      | K8s control plane nodes    |
+| AI PC                           | 1     | 256GB NVMe   | 1TB NVMe         | 32GB | Ryzen 5 5600X    | Talos Linux      | K8s AI Node                |
 | Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB + 4x 12TB | 32GB | Intel Celeron    | Unraid           | NAS (external storage)     |
 | Unifi Cloud Gateway Max         | 1     | -            | -                | -    | -                | -                | Router                     |
 | Unifi USW Enterprise 24 PoE     | 1     | -            | -                | -    | -                | -                | 2.5Gb PoE Switch           |

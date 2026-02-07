@@ -74,6 +74,12 @@ config:
       json_date_format iso8601
       compress gzip
       log_response_payload false
+      retry_limit 3
+      net.keepalive on
+      net.keepalive_idle_timeout 30
+      net.connect_timeout 10
+      workers 1
+
 dashboards:
   enabled: true
 serviceMonitor:

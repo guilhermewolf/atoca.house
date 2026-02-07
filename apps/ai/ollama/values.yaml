@@ -9,8 +9,10 @@ controllers:
         env:
           HOME: /config
           OLLAMA_HOST: 0.0.0.0:80
+          LIBVA_DRIVER_NAME: nvidia
           OLLAMA_MODELS: /models
           OLLAMA_ORIGINS: "*"
+          OLLAMA_NUM_PARALLEL: "4"
         probes:
           liveness: &probes
             enabled: true
@@ -31,17 +33,25 @@ controllers:
         resources:
           requests:
             cpu: 2
-            memory: 8Gi
+            memory: 6Gi
+            nvidia.com/gpu: 1
           limits:
             cpu: 8
             memory: 16Gi
+            nvidia.com/gpu: 1
+
 
 defaultPodOptions:
+  runtimeClassName: nvidia
+  priorityClassName: ai-gpu-critical
+  nodeSelector:
+    node.kubernetes.io/gpu: "true"
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
     runAsGroup: 1000
     fsGroup: 1000
+
 service:
   app:
     ports:

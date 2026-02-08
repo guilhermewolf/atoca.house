@@ -1,9 +1,19 @@
 ---
-image:
-  repository: nvcr.io/nvidia/k8s-device-plugin
-  tag: v0.18.2
-
 runtimeClassName: nvidia
-
-nodeSelector:
-  node.kubernetes.io/gpu: "true"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: extensions.talos.dev/nvidia-container-toolkit-production
+              operator: Exists
+config:
+  map:
+    default: |-
+      version: v1
+      sharing:
+        timeSlicing:
+          renameByDefault: false
+          resources:
+            - name: nvidia.com/gpu
+              replicas: 8

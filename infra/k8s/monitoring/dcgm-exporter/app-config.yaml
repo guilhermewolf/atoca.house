@@ -1,0 +1,8 @@
+---
+# Application configuration for dcgm-exporter
+app:
+  name: dcgm-exporter
+  namespace: dcgm-exporter
+  chart: dcgm-exporter
+  chartRepo: ghcr.io/home-operations/charts-mirror
+  chartVersion: 4.8.0

@@ -44,7 +44,6 @@ controllers:
 
 defaultPodOptions:
   runtimeClassName: nvidia
-  priorityClassName: ai-gpu-critical
   nodeSelector:
     node.kubernetes.io/gpu: "true"
   securityContext:

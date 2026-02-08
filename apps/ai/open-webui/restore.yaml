@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: open-webui-restore
+  namespace: open-webui
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: open-webui-r2-secret
+    copyMethod: Direct
+    destinationPVC: open-webui
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

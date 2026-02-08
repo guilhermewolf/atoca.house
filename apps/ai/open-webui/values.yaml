@@ -42,6 +42,9 @@ controllers:
           TTS_API_KEY: "not-needed"
           TTS_OPENAI_API_MODEL: "kokoro"
           TTS_OPENAI_API_VOICE: "af_bella"
+        envFrom:
+          - secretRef:
+              name: open-webui-secret
 
         resources:
           requests:

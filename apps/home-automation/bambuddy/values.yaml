@@ -1,0 +1,88 @@
+---
+
+controllers:
+  bambuddy:
+    pod:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: |-
+          [{
+            "name": "iot",
+            "namespace": "kube-system",
+            "ips": ["192.168.70.11/24"],
+            "mac": "6a:9c:f1:42:8d:b3"
+          }]
+
+    containers:
+      app:
+        image:
+          repository: ghcr.io/maziggy/bambuddy
+          tag: 0.1.8@sha256:7969d74b9b1e238774567b7145b4af9b322502c75e3e76b813238cfd021bb955
+        env:
+          PORT: &httpPort 8000
+        resources:
+          requests:
+            cpu: 5m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+
+defaultPodOptions:
+  securityContext:
+    fsGroup: 2000
+    fsGroupChangePolicy: OnRootMismatch
+    runAsGroup: 2000
+    runAsUser: 2000
+
+service:
+  app:
+    forceRename: bambuddy
+    controller: bambuddy
+    ports:
+      http:
+        appProtocol: kubernetes.io/wss
+        port: *httpPort
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /app/data
+        subPath: data
+
+  tmpfs:
+    type: emptyDir
+    advancedMounts:
+      bambuddy:
+        app:
+          - path: /tmp
+            subPath: tmp
+          - path: /app/logs
+            subPath: logs
+
+route:
+  homebridge:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - bambuddy.atoca.house
+    rules:
+      - backendRefs:
+          - name: bambuddy
+            port: *httpPort
+        matches:
+          - path:
+              type: PathPrefix
+              value: /

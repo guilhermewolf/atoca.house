@@ -1,0 +1,125 @@
+---
+controllers:
+  jellyfin:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/jellyfin/jellyfin
+          tag: 10.11.6@sha256:25db4eb10143c1c12adb79ed978e31d94fc98dc499fbae2d38b2c935089ced3e
+        env:
+          JELLYFIN_PublishedServerUrl: https://jelly.atoca.house
+          NVIDIA_VISIBLE_DEVICES: all
+          NVIDIA_DRIVER_CAPABILITIES: all
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: &port 8096
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 100m
+            memory: 1Gi
+            nvidia.com/gpu: 1
+          limits:
+            memory: 8Gi
+            nvidia.com/gpu: 1
+defaultPodOptions:
+  enableServiceLinks: false
+  runtimeClassName: nvidia
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: Always
+    seccompProfile:
+      type: RuntimeDefault
+    supplementalGroups:
+      - 44
+      - 109
+      - 100
+service:
+  app:
+    controller: jellyfin
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - jelly.atoca.house
+    rules:
+      - backendRefs:
+          - name: jellyfin
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /config
+
+  metadata:
+    size: 10Gi
+    accessMode: ReadWriteOnce
+    suffix: "metadata"
+    globalMounts:
+      - path: /metadata
+        subPath: metadata
+      - path: /config/data/introskipper
+        subPath: introskipper
+
+  transcode:
+    enabled: true
+    type: emptyDir
+    globalMounts:
+      - path: /transcode
+  cache:
+    enabled: true
+    type: emptyDir
+    globalMounts:
+      - path: /cache
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
+  media:
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/data/media/
+    globalMounts:
+      - path: /media
+        readOnly: false

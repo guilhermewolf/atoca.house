@@ -25,7 +25,9 @@ data:
           mail: mail
           member_of: memberOf
       password_reset:
-        disable: true
+        disable: false
+      password_change:
+        disable: false
       refresh_interval: 1m
 
     session:

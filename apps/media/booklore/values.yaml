@@ -1,0 +1,227 @@
+---
+controllers:
+  booklore:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    pod:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 99
+        runAsGroup: 100
+        fsGroup: 100
+        fsGroupChangePolicy: OnRootMismatch
+    initContainers:
+      mariadb:
+        image:
+          repository: docker.io/library/mariadb
+          tag: 12.1.2-noble
+        env:
+          MARIADB_DATABASE: booklore
+          MARIADB_USER: booklore
+          PGID: 1000
+          PUID: 1000
+        envFrom:
+          - secretRef:
+              name: mariadb-secret
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              exec:
+                command:
+                  - bash
+                  - -c
+                  - |-
+                    mariadb-admin ping --socket=/run/mysqld/mysqld.sock --user=root --password=$${MARIADB_ROOT_PASSWORD}
+        restartPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          # NOTE: io_uring is blocked by the default containerd v2 seccomp profile
+          # https://github.com/containerd/containerd/pull/9320
+          seccompProfile: {type: Unconfined}
+      nginx-config:
+        image:
+          repository: ghcr.io/booklore-app/booklore
+          tag: v1.18.5@sha256:44a39097fcf69e7373b51df0459da052640d07459fb02b429f2c47cceaa32485
+        command:
+          - /bin/sh
+          - -c
+        args:
+          - "envsubst '$${BOOKLORE_PORT}' < /etc/nginx/nginx.conf > /config/nginx.conf"
+        env:
+          BOOKLORE_PORT: &httpPort 6060
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          runAsUser: 100
+          runAsGroup: 101
+    containers:
+      booklore:
+        image:
+          repository: ghcr.io/booklore-app/booklore
+          tag: v1.18.5@sha256:44a39097fcf69e7373b51df0459da052640d07459fb02b429f2c47cceaa32485
+        command:
+          - java
+        args:
+          - -jar
+          - /app/app.jar
+        env:
+          DATABASE_URL: jdbc:mariadb://localhost:3306/booklore
+          DATABASE_USERNAME: booklore
+        envFrom:
+          - secretRef:
+              name: booklore-secret
+        probes:
+          liveness: &probe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v1/healthcheck
+                port: 8080
+          readiness: *probe
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v1/healthcheck
+                port: 8080
+              failureThreshold: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+      nginx:
+        image:
+          repository: ghcr.io/booklore-app/booklore
+          tag: v1.18.5@sha256:44a39097fcf69e7373b51df0459da052640d07459fb02b429f2c47cceaa32485
+        command:
+          - nginx
+        args:
+          - -c
+          - /config/nginx.conf
+          - -g
+          - "daemon off;"
+        probes:
+          liveness: &probe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: *httpPort
+          readiness: *probe
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          runAsUser: 100
+          runAsGroup: 101
+
+service:
+  booklore:
+    ports:
+      http:
+        port: *httpPort
+
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - booklore.atoca.house
+    rules:
+      - backendRefs:
+          - name: booklore
+            port: *httpPort
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    advancedMounts:
+      booklore:
+        booklore:
+          - path: /app/data
+            subPath: app
+        mariadb:
+          - path: /var/lib/mysql
+            subPath: mysql
+  nfs-nas-media:
+    type: nfs
+    server:  nas.internal
+    path: /mnt/user/data
+    advancedMounts:
+      booklore:
+        booklore:
+          - path: /books
+            subPath: media/books
+          - path: /bookdrop
+            subPath: torrents/books
+  mysqld:
+    type: emptyDir
+    medium: Memory
+    sizeLimit: 1Mi
+    advancedMounts:
+      booklore:
+        mariadb:
+          - path: /run/mysqld
+  nginx:
+    type: emptyDir
+    sizeLimit: 200Mi
+    advancedMounts:
+      booklore:
+        nginx:
+          - path: /config
+            subPath: config
+          - path: /var/lib/nginx/logs
+            subPath: log
+          - path: /var/lib/nginx/tmp
+            subPath: tmp
+        nginx-config:
+          - path: /config
+            subPath: config
+  nginx-run:
+    type: emptyDir
+    medium: Memory
+    sizeLimit: 100Mi
+    advancedMounts:
+      booklore:
+        nginx:
+          - path: /run/nginx
+  tmpfs:
+    type: emptyDir
+    medium: Memory
+    sizeLimit: 100Mi
+    advancedMounts:
+      booklore:
+        booklore:
+          - path: /tmp
+            subPath: app
+        mariadb:
+          - path: /tmp
+            subPath: mysql

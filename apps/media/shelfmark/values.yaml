@@ -86,12 +86,12 @@ persistence:
   nfs-nas-media:
     type: nfs
     server: nas.internal
-    path: /mnt/user/data/
+    path: /mnt/user/data
     advancedMounts:
       shelfmark:
         shelfmark:
           - path: /bookdrop
-            subPath: Library/Main/Books/Booklore/bookdrop
+            subPath: torrents/books
   tmpfs:
     type: emptyDir
     sizeLimit: 1Gi

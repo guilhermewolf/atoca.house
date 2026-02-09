@@ -1,0 +1,9 @@
+---
+# Application configuration for booklore
+app:
+  name: booklore
+  namespace: booklore
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2
+  volsyncPrivileged: false

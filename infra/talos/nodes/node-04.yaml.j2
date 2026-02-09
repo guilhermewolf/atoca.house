@@ -42,7 +42,7 @@ links:
   - enp7s0
   - enp2s0f0u2
 bondMode: active-backup
-mtu: 9000
+mtu: 1500
 ---
 apiVersion: v1alpha1
 kind: DHCPv4Config
@@ -54,11 +54,11 @@ kind: VLANConfig
 name: bond0.5
 vlanID: 5
 parent: bond0
-mtu: 9000
+mtu: 1500
 ---
 apiVersion: v1alpha1
 kind: VLANConfig
 name: bond0.6
 vlanID: 6
 parent: bond0
-mtu: 9000
+mtu: 1500

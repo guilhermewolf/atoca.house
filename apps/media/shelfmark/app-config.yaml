@@ -1,0 +1,9 @@
+---
+# Application configuration for shelfmark
+app:
+  name: shelfmark
+  namespace: shelfmark
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2
+  volsyncPrivileged: false

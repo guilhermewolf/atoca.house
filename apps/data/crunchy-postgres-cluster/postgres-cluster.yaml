@@ -59,6 +59,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: dispatcharr
+      databases:
+        - dispatcharr
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

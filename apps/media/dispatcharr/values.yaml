@@ -1,0 +1,81 @@
+---
+controllers:
+  dispatcharr:
+    pod:
+      annotations:
+        reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/dispatcharr/dispatcharr
+          tag: 0.18.1@sha256:425be855292df282db6f8daed0b3f0ac40a6dc451ddc66f7cbb299a4659e96da
+        env:
+          DISPATCHARR_LOG_LEVEL: info
+          DISPATCHARR_PORT: &port 9191
+        envFrom:
+          - secretRef:
+              name: dispatcharr-db-secret
+        resources:
+          requests:
+            cpu: 50m
+            memory: 1Gi
+            nvidia.com/gpu: 1
+          limits:
+            memory: 3Gi
+            nvidia.com/gpu: 1
+
+defaultPodOptions:
+  runtimeClassName: nvidia
+  nodeSelector:
+    node.kubernetes.io/gpu: "true"
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.17/24"],
+        "mac": "6e:54:a1:7c:2b:90"
+      }]
+
+service:
+  app:
+    ports:
+      http:
+        appProtocol: kubernetes.io/wss
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - dispatcharr.atoca.house
+    rules:
+      - backendRefs:
+          - name: dispatcharr
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    globalMounts:
+      - path: /data
+
+  tmpfs:
+    type: emptyDir
+    advancedMounts:
+      dispatcharr:
+        app:
+          - path: /tmp
+            subPath: tmp

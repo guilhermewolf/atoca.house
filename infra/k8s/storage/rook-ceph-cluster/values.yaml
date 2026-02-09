@@ -18,6 +18,8 @@ route:
 operatorNamespace: rook-ceph
 
 cephClusterSpec:
+  cephVersion:
+    image: quay.io/ceph/ceph:v20.2.0
   cephConfig:
     global:
       bdev_enable_discard: "true" # quote

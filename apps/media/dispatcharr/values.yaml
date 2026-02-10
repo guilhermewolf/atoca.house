@@ -51,10 +51,10 @@ route:
       - backendRefs:
           - name: dispatcharr
             port: *port
-        # matches:
-        #   - path:
-        #       type: PathPrefix
-        #       value: /
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 
 persistence:
   data:

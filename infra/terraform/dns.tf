@@ -4,7 +4,6 @@ locals {
     "compartilhado",
     "duplicati",
     "hass",
-    "jellyfin",
     "kuma",
     "lidarr",
     "kvm",

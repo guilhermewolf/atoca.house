@@ -7,7 +7,7 @@ controllers:
       dispatcharr:
         image:
           repository: ghcr.io/dispatcharr/dispatcharr
-          tag: 0.18.1@sha256:425be855292df282db6f8daed0b3f0ac40a6dc451ddc66f7cbb299a4659e96da
+          tag: 0.19.0
         env:
           CELERY_BROKER_URL: redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/7
           REDIS_HOST: dragonfly.dragonfly-cluster.svc.cluster.local

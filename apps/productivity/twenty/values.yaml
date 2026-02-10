@@ -14,11 +14,12 @@ controllers:
           NODE_TLS_REJECT_UNAUTHORIZED: "0"
           SERVER_URL: https://twenty.atoca.house
           REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379"
+          MESSAGE_QUEUE_TYPE: bull-mq
           SING_IN_PREFILLED: "false"
           ACCESS_TOKEN_EXPIRES_IN: "7d"
           LOGIN_TOKEN_EXPIRES_IN: "1h"
           STORAGE_TYPE: local
-          STORAGE_LOCAL_PATH: .local-storage
+          STORAGE_LOCAL_PATH: /app/packages/twenty-server/.local-storage
           IS_MULTIWORKSPACE_ENABLED: true
         envFrom:
           - secretRef:
@@ -63,8 +64,10 @@ controllers:
           NODE_TLS_REJECT_UNAUTHORIZED: "0"
           SERVER_URL: https://twenty.atoca.house
           REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379"
-          DISABLE_DB_MIGRATIONS: "false"
+          MESSAGE_QUEUE_TYPE: bull-mq
+          DISABLE_DB_MIGRATIONS: "true"
           STORAGE_TYPE: local
+          STORAGE_LOCAL_PATH: /app/packages/twenty-server/.local-storage
         envFrom:
           - secretRef:
               name: twenty-db-secret

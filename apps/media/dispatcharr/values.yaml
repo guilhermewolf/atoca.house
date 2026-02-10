@@ -1,11 +1,10 @@
 ---
 controllers:
   dispatcharr:
-    pod:
-      annotations:
-        reloader.stakater.com/auto: "true"
+    annotations:
+      reloader.stakater.com/auto: "true"
     containers:
-      app:
+      dispatcharr:
         image:
           repository: ghcr.io/dispatcharr/dispatcharr
           tag: 0.18.1@sha256:425be855292df282db6f8daed0b3f0ac40a6dc451ddc66f7cbb299a4659e96da
@@ -25,20 +24,28 @@ controllers:
             nvidia.com/gpu: 1
 
 defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.17/24"],
+        "mac": "6e:54:a1:7c:2b:90"
+      }]
   hostUsers: false
   runtimeClassName: nvidia
   nodeSelector:
     node.kubernetes.io/gpu: "true"
 
 service:
-  app:
+  dispatcharr:
     controller: dispatcharr
     ports:
       http:
         port: *port
 
 route:
-  app:
+  dispatcharr:
     enabled: true
     kind: HTTPRoute
     parentRefs:
@@ -70,6 +77,6 @@ persistence:
     type: emptyDir
     advancedMounts:
       dispatcharr:
-        app:
+        dispatcharr:
           - path: /tmp
             subPath: tmp

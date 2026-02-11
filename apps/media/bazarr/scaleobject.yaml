@@ -6,7 +6,7 @@ metadata:
 spec:
   advanced:
     restoreToOriginalReplicaCount: true
-  cooldownPeriod: 0
+  cooldownPeriod: 10
   minReplicaCount: 0
   maxReplicaCount: 1
   scaleTargetRef:
@@ -19,4 +19,4 @@ spec:
         serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
         query: probe_success{instance=~".+:2049"}
         threshold: "1"
-        ignoreNullValues: "0"
+        ignoreNullValues: "true"

@@ -72,7 +72,7 @@ route:
       - name: atoca-house-internal
         namespace: kube-system
     hostnames:
-      - jelly.atoca.house
+      - jellyfin.atoca.house
     rules:
       - backendRefs:
           - name: jellyfin

@@ -3,11 +3,11 @@ name: OpenTofu Plan
 on:
   pull_request:
     paths:
-      - 'infra/terraform/**/*.tf'
+      - "infra/terraform/**/*.tf"
 
 permissions:
-  id-token: write   # This is required for requesting the JWT
-  contents: read    # This is required for actions/checkout  
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
   pull-requests: write
 
 defaults:
@@ -16,7 +16,7 @@ defaults:
 
 jobs:
   tofu-plan:
-    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || 'arc-runners' }}
+    runs-on: "arc-runners"
     env:
       TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_cloudflare_api_token }}
       TF_VAR_zone_id: ${{ secrets.TF_VAR_zone_id }}
@@ -30,10 +30,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
-          node-version: '24'
+          node-version: "24"
 
       - uses: opentofu/setup-opentofu@9d84900f3238fab8cd84ce47d658d25dd008be2f # v1
-      
+
       - name: OpenTofu fmt
         id: fmt
         run: tofu fmt -check
@@ -42,7 +42,7 @@ jobs:
       - name: OpenTofu Init
         id: init
         run: tofu init
-        
+
       - name: OpenTofu Validate
         id: validate
         run: tofu validate -no-color
@@ -68,31 +68,31 @@ jobs:
             const botComment = comments.find(comment => {
               return comment.user.type === 'Bot' && comment.body.includes('OpenTofu Format and Style')
             })
-      
+
             // 2. Prepare format of the comment
             const output = `#### OpenTofu Format and Style 🖌\`${{ steps.fmt.outcome }}\`
             #### OpenTofu Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### OpenTofu Validation 🤖\`${{ steps.validate.outcome }}\`
             <details><summary>Validation Output</summary>
-      
+
             \`\`\`\n
             ${{ steps.validate.outputs.stdout }}
             \`\`\`
-      
+
             </details>
-      
+
             #### OpenTofu Plan 📖\`${{ steps.plan.outcome }}\`
-      
+
             <details><summary>Show Plan</summary>
-      
+
             \`\`\`\n
             ${process.env.PLAN}
             \`\`\`
-      
+
             </details>
-      
+
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-      
+
             // 3. If we have a comment, update it, otherwise create a new one
             if (botComment) {
               github.rest.issues.updateComment({

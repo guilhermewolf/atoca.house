@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: jellyfin-restore
+  namespace: jellyfin
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: jellyfin-r2-secret
+    copyMethod: Direct
+    destinationPVC: jellyfin-config
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool
+    moverSecurityContext:
+      runAsUser: 99
+      runAsGroup: 100
+      fsGroup: 100

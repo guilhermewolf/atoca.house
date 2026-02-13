@@ -81,7 +81,9 @@ server:
     hostnames:
       - argocd.atoca.house
     parentRefs:
-      - name: atoca-house-internal
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: atoca-house-internal
         namespace: kube-system
     annotations: {}
     rules:

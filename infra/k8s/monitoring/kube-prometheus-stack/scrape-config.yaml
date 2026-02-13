@@ -30,19 +30,6 @@ spec:
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: ScrapeConfig
 metadata:
-  name: &name compartilhado-cadvisor
-spec:
-  staticConfigs:
-    - targets:
-        - nas.internal:8083
-  relabelings:
-    - action: replace
-      targetLabel: job
-      replacement: *name
----
-apiVersion: monitoring.coreos.com/v1alpha1
-kind: ScrapeConfig
-metadata:
   name: &name hass-node-exporter
 spec:
   staticConfigs:

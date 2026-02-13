@@ -38,16 +38,6 @@ _... managed with ArgoCD and GitHub Actions_
 
 </div>
 
-<div align="center">
-
-![Unraid](https://img.shields.io/badge/NAS-grey?style=flat-square&logo=unraid)&nbsp;
-[![Uptime-Days](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Fnas_uptime_days&style=flat-square&label=Uptime)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;
-[![Container-Count](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Fnas_containers_count&style=flat-square&label=Containers)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;
-[![CPU-Usage](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Fnas_cpu_usage&style=flat-square&label=CPU)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;
-[![Memory-Usage](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Fnas_memory_usage&style=flat-square&label=Memory)](https://github.com/kashalls/kromgo/)&nbsp;&nbsp;
-
-</div>
-
 ---
 
 ## 📖 Overview

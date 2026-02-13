@@ -1,0 +1,7 @@
+services:
+  openspeedtest:
+    image: openspeedtest/latest
+    container_name: SpeedTest-By-OpenSpeedTest
+    restart: unless-stopped
+    ports:
+      - "3002:3000"

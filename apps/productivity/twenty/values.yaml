@@ -3,6 +3,9 @@ controllers:
     replicas: 1
     annotations:
       reloader.stakater.com/auto: "true"
+    pod:
+      securityContext:
+        fsGroup: 1000
     containers:
       server:
         image:
@@ -13,14 +16,19 @@ controllers:
           NODE_PORT: &port 3000
           NODE_TLS_REJECT_UNAUTHORIZED: "0"
           SERVER_URL: https://twenty.atoca.house
+          FRONT_BASE_URL: https://twenty.atoca.house
+          CACHE_STORAGE_TYPE: redis
           REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379"
+          ENABLE_DB_MIGRATIONS: "true"
           MESSAGE_QUEUE_TYPE: bull-mq
           SING_IN_PREFILLED: "false"
           ACCESS_TOKEN_EXPIRES_IN: "7d"
           LOGIN_TOKEN_EXPIRES_IN: "1h"
           STORAGE_TYPE: local
           STORAGE_LOCAL_PATH: /app/packages/twenty-server/.local-storage
-          IS_MULTIWORKSPACE_ENABLED: true
+          IS_MULTIWORKSPACE_ENABLED: false
+          EMAIL_DRIVER: smtp
+          LOG_LEVELS: log
         envFrom:
           - secretRef:
               name: twenty-db-secret
@@ -62,12 +70,17 @@ controllers:
           - worker:prod
         env:
           NODE_TLS_REJECT_UNAUTHORIZED: "0"
+          PORT: *port
+          LOG_LEVELS: log
           SERVER_URL: https://twenty.atoca.house
+          FRONT_BASE_URL: https://twenty.atoca.house
+          CACHE_STORAGE_TYPE: redis
           REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379"
           MESSAGE_QUEUE_TYPE: bull-mq
           DISABLE_DB_MIGRATIONS: "true"
           STORAGE_TYPE: local
           STORAGE_LOCAL_PATH: /app/packages/twenty-server/.local-storage
+          EMAIL_DRIVER: smtp
         envFrom:
           - secretRef:
               name: twenty-db-secret

@@ -3,6 +3,20 @@ controllers:
   dispatcharr:
     annotations:
       reloader.stakater.com/auto: "true"
+    initContainers:
+      chown-dbdir:
+        image:
+          repository: docker.io/library/alpine
+          tag: "3.23"
+        command:
+          - /bin/sh
+          - -c
+        args:
+          - |
+            mkdir -p /data/db
+            chmod 0750 /data/db
+        securityContext:
+          runAsUser: 0
     containers:
       dispatcharr:
         image:
@@ -39,6 +53,9 @@ defaultPodOptions:
   runtimeClassName: nvidia
   nodeSelector:
     node.kubernetes.io/gpu: "true"
+  securityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: "OnRootMismatch"
 
 service:
   dispatcharr:
@@ -73,8 +90,14 @@ persistence:
     storageClass: ceph-block
     accessMode: ReadWriteOnce
     size: 3Gi
-    globalMounts:
-      - path: /data
+    advancedMounts:
+      dispatcharr:
+        dispatcharr:
+          - path: /data
+            subPath: data
+        chown-dbdir:
+          - path: /data
+            subPath: data
 
   tmpfs:
     type: emptyDir

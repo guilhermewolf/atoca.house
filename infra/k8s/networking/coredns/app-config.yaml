@@ -1,0 +1,7 @@
+app:
+  name: coredns
+  namespace: kube-system
+  chart: coredns
+  chartRepo: ghcr.io/coredns/charts
+  chartVersion: 1.45.2
+  useVaultPlugin: false

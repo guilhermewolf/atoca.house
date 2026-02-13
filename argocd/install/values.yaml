@@ -12,6 +12,7 @@ configs:
         ignoreDifferences: |
           jsonPointers:
           - /spec/preserveUnknownFields
+          - /metadata/annotations/kubectl.kubernetes.io~1last-applied-configuration
 
       apps/Deployment:
         ignoreDifferences: |
@@ -65,7 +66,7 @@ configs:
             - 'find . -name ''*.yaml'' -o -name ''*.yml'' | xargs -I {} sh -c ''grep -q "^kind:" "{}" && cat "{}" && echo "---" || true'' 2>/dev/null | argocd-vault-plugin generate -'
 
 crds:
-  install: true
+  install: false
   keep: true
 
 redisSecretInit:

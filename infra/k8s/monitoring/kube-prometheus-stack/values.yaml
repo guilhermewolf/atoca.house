@@ -30,9 +30,10 @@ prometheus:
     externalUrl: https://prometheus.atoca.house
     resources:
       requests:
-        cpu: 100m
+        cpu: 500m
+        memory: 3000Mi
       limits:
-        memory: 2000Mi
+        memory: 3000Mi
     podMonitorSelectorNilUsesHelmValues: false
     probeSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false

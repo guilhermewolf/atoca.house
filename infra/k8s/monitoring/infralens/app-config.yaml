@@ -1,8 +1,0 @@
----
-# Application configuration for Infralens
-app:
-  name: infralens
-  namespace: infralens
-  chart: infralens
-  chartRepo: ghcr.io/herenn/infralens
-  chartVersion: 0.1.0

@@ -1,0 +1,104 @@
+---
+# Infralens configuration
+# Zero-Instrumentation Observability for Kubernetes using eBPF
+
+# Override namespace
+namespace: infralens
+
+# Backend configuration
+backend:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: ghcr.io/herenn/infralens/backend
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8080
+
+  # AI Provider configuration
+  aiProvider:
+    ollama:
+      enabled: true
+      endpoint: "http://ollama.ollama.svc.cluster.local:11434"
+      model: "qwen3:8b-q4_K_M"
+
+    # Default provider to use
+    defaultProvider: "ollama"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Frontend configuration
+frontend:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: ghcr.io/herenn/infralens/frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 3000
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# Agent configuration (DaemonSet - runs on all nodes)
+# Collects eBPF-based observability data
+agent:
+  enabled: true
+  clusterName: "atoca-house"
+
+  image:
+    repository: ghcr.io/herenn/infralens/agent
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  # External backend configuration (if using backend outside cluster)
+  externalBackend:
+    enabled: false
+    # url: "http://external-backend:8080"
+
+  # Security context - required for eBPF capabilities
+  securityContext:
+    privileged: true
+
+  # Tolerations to run on all nodes including masters
+  tolerations:
+    - operator: Exists
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# Ingress configuration (disabled by default)
+ingress:
+  enabled: false
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: "infralens"
+
+# RBAC
+rbac:
+  create: true

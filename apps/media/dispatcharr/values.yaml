@@ -3,31 +3,18 @@ controllers:
   dispatcharr:
     annotations:
       reloader.stakater.com/auto: "true"
-    initContainers:
-      chown-dbdir:
-        image:
-          repository: docker.io/library/alpine
-          tag: "3.23"
-        command:
-          - /bin/sh
-          - -c
-        args:
-          - |
-            mkdir -p /data/db
-            chmod 0750 /data/db
-        securityContext:
-          runAsUser: 0
     containers:
       dispatcharr:
         image:
           repository: ghcr.io/dispatcharr/dispatcharr
           tag: 0.19.0
         env:
-          CELERY_BROKER_URL: redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/7
-          REDIS_HOST: dragonfly.dragonfly-cluster.svc.cluster.local
-          #DISPATCHARR_ENV: aio
+          DISPATCHARR_ENV: modular
           DISPATCHARR_LOG_LEVEL: info
           DISPATCHARR_PORT: &port 9191
+          REDIS_HOST: dragonfly.dragonfly-cluster.svc.cluster.local
+          REDIS_PORT: 6379
+          POSTGRES_PORT: 5432
         envFrom:
           - secretRef:
               name: dispatcharr-db-secret
@@ -39,6 +26,29 @@ controllers:
           limits:
             memory: 3Gi
             nvidia.com/gpu: 1
+      celery:
+        image:
+          repository: ghcr.io/dispatcharr/dispatcharr
+          tag: 0.19.0
+        command:
+          - /app/docker/entrypoint.celery.sh
+        env:
+          DISPATCHARR_ENV: modular
+          DISPATCHARR_LOG_LEVEL: info
+          REDIS_HOST: dragonfly.dragonfly-cluster.svc.cluster.local
+          REDIS_PORT: 6379
+          POSTGRES_PORT: 5432
+          DJANGO_SETTINGS_MODULE: dispatcharr.settings
+          PYTHONUNBUFFERED: "1"
+        envFrom:
+          - secretRef:
+              name: dispatcharr-db-secret
+        resources:
+          requests:
+            cpu: 10m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
 
 defaultPodOptions:
   annotations:
@@ -90,14 +100,8 @@ persistence:
     storageClass: ceph-block
     accessMode: ReadWriteOnce
     size: 3Gi
-    advancedMounts:
-      dispatcharr:
-        dispatcharr:
-          - path: /data
-            subPath: data
-        chown-dbdir:
-          - path: /data
-            subPath: data
+    globalMounts:
+      - path: /data
 
   tmpfs:
     type: emptyDir

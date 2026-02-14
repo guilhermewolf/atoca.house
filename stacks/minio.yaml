@@ -3,7 +3,7 @@ version: '3.8'
 services:
   minio:
     # renovate: datasource=docker depName=minio/minio
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
     container_name: minio
     network_mode: bridge
     ports:
@@ -16,6 +16,7 @@ services:
       - MINIO_ROOT_USER=$MINIO_USER
       - MINIO_ROOT_PASSWORD=$MINIO_PASSWORD
       - MINIO_SERVER_URL=$MINIO_SERVER_URL
+      - MINIO_BROWSER_REDIRECT_URL=$MINIO_BROWSER_REDIRECT_URL
       - MINIO_SITE_REGION=eu-west-1
       - TZ=Europe/Amsterdam
     restart: unless-stopped

@@ -1,0 +1,90 @@
+---
+controllers:
+  outline:
+    labels:
+      postgres: "true"
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: docker.io/outlinewiki/outline
+          tag: 1.4.0@sha256:26aabb32fc2a2382908e80326de0d07ba7a4eedeab57ff1389b1efbe32f8209a
+        env:
+          URL: "https://outline.atoca.house"
+          ENABLE_UPDATES: false
+          AWS_REGION: eu-west-1
+          AWS_S3_ACL: private
+          AWS_S3_FORCE_PATH_STYLE: "true"
+          AWS_S3_UPLOAD_BUCKET_NAME: outline
+          AWS_S3_UPLOAD_BUCKET_URL: "https://minio-data.atoca.house"
+          FILE_STORAGE: s3
+          FILE_STORAGE_UPLOAD_MAX_SIZE: "26214400"
+          FILE_STORAGE_IMPORT_MAX_SIZE: "26214400"
+          OIDC_CLIENT_ID: outline
+          OIDC_AUTH_URI: https://auth.atoca.house/api/oidc/authorization
+          OIDC_TOKEN_URI: https://auth.atoca.house/api/oidc/token
+          OIDC_USERINFO_URI: https://auth.atoca.house/api/oidc/userinfo
+          OIDC_USERNAME_CLAIM: preferred_username
+          OIDC_DISPLAY_NAME: Authelia
+          OIDC_SCOPES: openid offline_access profile email
+          REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/7"
+          NODE_TLS_REJECT_UNAUTHORIZED: "0"
+          PORT: &port 8080
+          WEB_CONCURRENCY: 10
+        envFrom:
+          - secretRef:
+              name: outline-secret
+          - secretRef:
+              name: outline-db-secret
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+          limits:
+            memory: 1000Mi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+service:
+  app:
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - outline.atoca.house
+    rules:
+      - backendRefs:
+          - name: outline
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  tmpfs:
+    type: emptyDir
+    advancedMounts:
+      outline:
+        app:
+          - path: /home/node
+            subPath: node
+          - path: /tmp
+            subPath: tmp

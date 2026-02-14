@@ -65,6 +65,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: outline
+      databases:
+        - outline
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:
@@ -81,12 +87,12 @@ spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
-            podAffinityTerm:
-              topologyKey: kubernetes.io/hostname
-              labelSelector:
-                matchLabels:
-                  postgres-operator.crunchydata.com/cluster: *name
+            - weight: 1
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    postgres-operator.crunchydata.com/cluster: *name
 
   patroni: # turn on sync writes to at least 1 other replica
     dynamicConfiguration:

@@ -1,0 +1,105 @@
+---
+controllers:
+  garage:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: dxflrs/garage
+          tag: v2.2.0@sha256:45a61ce3f7c9c24fc23d9ed2b09b27ed560ab87b34605d175d5c588f539c24e4
+        envFrom:
+          - secretRef:
+              name: garage-secrets
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: [ALL] }
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            memory: 512Mi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+    supplementalGroups: [10000]
+    seccompProfile: { type: RuntimeDefault }
+
+service:
+  app:
+    ports:
+      s3:
+        port: &port 3900
+      api:
+        port: 3903
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - s3.atoca.house
+    rules:
+      - backendRefs:
+          - name: garage
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+configMaps:
+  config:
+    data:
+      configuration.toml: |
+        metadata_dir = "/meta"
+        data_dir = "/data"
+        db_engine = "sqlite"
+        metadata_auto_snapshot_interval = "6h"
+
+        block_size = "10MiB"
+
+        replication_factor = 1
+        compression_level = 2
+
+        rpc_bind_addr = "[::]:3901"
+        rpc_public_addr = "127.0.0.1:3901"
+
+        [s3_api]
+        s3_region = "eu-east-1"
+        api_bind_addr = "[::]:3900"
+        root_domain = ".s3.atoca.house"
+
+        [admin]
+        api_bind_addr = "[::]:3903"
+
+persistence:
+  config:
+    enabled: true
+    type: configMap
+    name: garage
+    globalMounts:
+      - path: /etc/garage.toml
+        subPath: configuration.toml
+  data:
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/garage/data
+    globalMounts:
+      - path: /data
+  meta:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /meta

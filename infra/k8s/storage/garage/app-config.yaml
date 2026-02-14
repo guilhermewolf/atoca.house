@@ -1,8 +1,8 @@
 ---
-# Application configuration for dispatcharr
+# Application configuration for Garage
 app:
-  name: dispatcharr
-  namespace: dispatcharr
+  name: garage
+  namespace: garage
   chart: app-template
   chartRepo: ghcr.io/bjw-s-labs/helm
   chartVersion: 4.6.2

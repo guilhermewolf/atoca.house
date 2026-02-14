@@ -1,0 +1,74 @@
+---
+controllers:
+  outline:
+    labels:
+      postgres: "true"
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: docker.io/outlinewiki/outline
+          tag: 1.4.0@sha256:26aabb32fc2a2382908e80326de0d07ba7a4eedeab57ff1389b1efbe32f8209a
+        env:
+          URL: "https://outline.atoca.house"
+          ENABLE_UPDATES: false
+          AWS_REGION: us-east-1
+          AWS_S3_ACL: private
+          AWS_S3_FORCE_PATH_STYLE: "true"
+          AWS_S3_UPLOAD_BUCKET_NAME: outline
+          AWS_S3_UPLOAD_BUCKET_URL: "https://s3.atoca.house"
+          FILE_STORAGE: s3
+          FILE_STORAGE_UPLOAD_MAX_SIZE: "26214400"
+          FILE_STORAGE_IMPORT_MAX_SIZE: "26214400"
+          OIDC_DISPLAY_NAME: Pocket ID
+          OIDC_SCOPES: "openid profile email"
+          OIDC_AUTH_URI: "https://auth.atoca.house/authorize"
+          OIDC_TOKEN_URI: "https://auth.atoca.house/api/oidc/token"
+          OIDC_USERINFO_URI: "https://auth.atoca.house/api/oidc/userinfo"
+          OIDC_USERNAME_CLAIM: email
+          REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/7"
+          PORT: &port 8080
+          WEB_CONCURRENCY: 10
+        envFrom:
+          - secretRef:
+              name: outline-secret
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+          limits:
+            memory: 1000Mi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+service:
+  app:
+    ports:
+      http:
+        port: *port
+route:
+  app:
+    hostnames:
+      - outline.atoca.house
+    parentRefs:
+      - name: envoy-internal
+        namespace: networking
+persistence:
+  tmpfs:
+    type: emptyDir
+    advancedMounts:
+      outline:
+        app:
+          - path: /home/node
+            subPath: node
+          - path: /tmp
+            subPath: tmp

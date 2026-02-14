@@ -7,4 +7,4 @@ app:
   chartRepo: ghcr.io/bjw-s-labs/helm
   # renovate: datasource=helm registryUrl=oci://ghcr.io/bjw-s-labs/helm depName=app-template
   chartVersion: 4.6.2
-  volsyncPrivileged: false
+  volsyncPrivileged: true

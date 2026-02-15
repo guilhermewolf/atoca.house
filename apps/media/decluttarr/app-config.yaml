@@ -1,9 +1,0 @@
----
-# Application configuration for decluttarr
-app:
-  name: decluttarr
-  namespace: decluttarr
-  chart: app-template
-  chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 4.6.2
-  volsyncPrivileged: true

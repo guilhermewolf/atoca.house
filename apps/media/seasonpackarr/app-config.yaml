@@ -1,9 +1,0 @@
----
-# Application configuration for seasonpackarr
-app:
-  name: seasonpackarr
-  namespace: seasonpackarr
-  chart: app-template
-  chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 4.6.2
-  volsyncPrivileged: true

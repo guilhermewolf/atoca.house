@@ -9,10 +9,10 @@ data:
     const { spawn } = require('child_process');
 
     // Import the existing GitHub App token manager
-    const { getTokenManager } = require('./github-app-token-manager.js');
+    const { getTokenManager } = require('/home/node/.openclaw/hooks/transforms/github-app-token-manager.js');
 
     // Import the grumpy-sysadmin agent to execute review directly
-    const { processPRReview } = require('./grumpy-sysadmin-agent.js');
+    const { processPRReview } = require('/home/node/.openclaw/hooks/transforms/grumpy-sysadmin-agent.js');
 
     /**
      * Transform function for GitHub webhook events
@@ -334,7 +334,7 @@ data:
     const { spawn } = require('child_process');
 
     // Import the GitHub App token manager
-    const { getTokenManager } = require('./github-app-token-manager.js');
+    const { getTokenManager } = require('/home/node/.openclaw/hooks/transforms/github-app-token-manager.js');
 
     /**
      * Process a pull request review request

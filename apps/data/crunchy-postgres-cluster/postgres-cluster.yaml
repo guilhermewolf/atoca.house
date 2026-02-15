@@ -71,6 +71,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: mealie
+      databases:
+        - mealie
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

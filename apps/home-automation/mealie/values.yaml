@@ -1,0 +1,73 @@
+---
+controllers:
+  mealie:
+    annotations:
+      reloader.stakater.com/search: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/mealie-recipes/mealie
+          tag: v3.10.2@sha256:58b54bca4c729fcc7f272cfac5086623866430956838de3f5d763fcaf9e64115
+        env:
+          BASE_URL: https://mealie.atoca.house
+          ALLOW_SIGNUP: "false"
+          AUTO_BACKUP_ENABLED: "true"
+          WORKERS_PER_CORE: "1"
+          MAX_WORKERS: "1"
+          WEB_CONCURRENCY: "1"
+          # database settings
+          DB_ENGINE: postgres
+          # OIDC
+          OIDC_AUTH_ENABLED: true
+          OIDC_SIGNUP_ENABLED: true
+          OIDC_CONFIGURATION_URL: https://auth.atoca.house/.well-known/openid-configuration
+          OIDC_CLIENT_ID: mealie
+          OIDC_AUTO_REDIRECT: false
+          OIDC_ADMIN_GROUP: mealie_admins
+          OIDC_USER_GROUP: mealie_users
+        envFrom:
+          - secretRef:
+              name: mealie-db-secrets
+          - secretRef:
+              name: mealie-secrets
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128M
+          limits:
+            memory: 512M
+
+service:
+  app:
+    controller: mealie
+    ports:
+      http:
+        port: &port 9000
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - mealie.atoca.house
+    rules:
+      - backendRefs:
+          - name: mealie
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    globalMounts:
+      - path: /app/data

@@ -1,6 +1,7 @@
 csi:
   cephFSKernelMountOptions: ms_mode=prefer-crc
   enableLiveness: true
+  enableMetadata: true
   serviceMonitor:
     enabled: true
 image:

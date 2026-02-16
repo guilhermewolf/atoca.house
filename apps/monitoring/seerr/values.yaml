@@ -6,7 +6,7 @@ controllers:
       seerr:
         image:
           repository: ghcr.io/seerr-team/seerr
-          tag: v3.0.1@sha256:1b5fc1ea825631d9d165364472663b817a4c58ef6aa1013f58d82c1570d7c866
+          tag: develop@sha256:2ccea9984e67507bff847aa12538e6a58d78aec6d3efb0fc44951e9bb0c113c5
         env:
           LOG_LEVEL: "info"
           PORT: &port 80

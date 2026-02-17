@@ -3,7 +3,7 @@ app:
   namespace: kube-system
   chart: cilium
   chartRepo: https://helm.cilium.io/
-  chartVersion: 1.19.0 # renovate: datasource=helm depName=cilium registryUrl=https://helm.cilium.io
+  chartVersion: 1.19.1 # renovate: datasource=helm depName=cilium registryUrl=https://helm.cilium.io
   hasValues: true
   customIgnoreDifferences: true
   disableAutoSync: true

@@ -15,7 +15,6 @@ controllers:
           SONARR__LOG__DBENABLED: "False"
           SONARR__LOG__LEVEL: info
           SONARR__SERVER__PORT: &port 80
-          SONARR__UPDATE__BRANCH: develop
         envFrom:
           - secretRef:
               name: "sonarr-anime-secret"
@@ -35,7 +34,7 @@ controllers:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          capabilities: {drop: ["ALL"]}
+          capabilities: { drop: ["ALL"] }
         resources:
           requests:
             cpu: 100m

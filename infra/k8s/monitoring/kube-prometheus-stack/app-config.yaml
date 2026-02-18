@@ -5,7 +5,7 @@ app:
   namespace: monitoring
   chart: kube-prometheus-stack
   chartRepo: https://prometheus-community.github.io/helm-charts
-  chartVersion: 82.0.2
+  chartVersion: 82.1.0
   volsyncPrivileged: true
   podSecurityPrivileged: true
   ignoreWebhooks: true  # Ignore webhook configuration diffs

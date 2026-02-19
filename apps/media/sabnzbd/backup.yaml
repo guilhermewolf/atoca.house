@@ -2,15 +2,15 @@
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationSource
 metadata:
-  name: nzbget-backup
-  namespace: nzbget
+  name: sabnzbd-backup
+  namespace: sabnzbd
 spec:
-  sourcePVC: nzbget
+  sourcePVC: sabnzbd
   trigger:
     schedule: "0 0 * * *"
   restic:
     pruneIntervalDays: 14
-    repository: nzbget-r2-secret
+    repository: sabnzbd-r2-secret
     moverSecurityContext:
       runAsUser: 99
       runAsGroup: 100

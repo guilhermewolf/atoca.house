@@ -1,25 +1,39 @@
+---
 controllers:
-  nzbget:
+  sabnzbd:
     containers:
-      nzbget:
+      app:
         image:
-          repository: ghcr.io/home-operations/nzbget
-          tag: 26.0.0@sha256:a60b71e46cb01b41874c0b8028f661e9e3a958b20402a7403517ca6f9d95976f
+          repository: ghcr.io/home-operations/sabnzbd
+          tag: 4.5.5@sha256:485440a3e9209a3515c01e1c73d6088726491a292302a721d4cb9e7c6375c768
         env:
-          NZBGET__PORT: &port 80
+          SABNZBD__PORT: &port 80
+          SABNZBD__HOST_WHITELIST_ENTRIES: sabnzbd.atoca.house
+        envFrom:
+          - secretRef:
+              name: "sabnzbd-secrets"
         probes:
-          liveness: &probes
+          liveness:
+            enabled: true
+            spec:
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 5
+          readiness:
             enabled: true
             custom: true
             spec:
               httpGet:
-                path: /jsonrpc/status
+                path: /api?mode=version
                 port: *port
-              initialDelaySeconds: 0
               periodSeconds: 10
-              timeoutSeconds: 1
-              failureThreshold: 3
-          readiness: *probes
+              timeoutSeconds: 5
+              failureThreshold: 5
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 10
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -27,9 +41,8 @@ controllers:
         resources:
           requests:
             cpu: 100m
-            memory: 128Mi
           limits:
-            memory: 500Mi
+            memory: 12Gi
 defaultPodOptions:
   annotations:
     k8s.v1.cni.cncf.io/networks: |-
@@ -47,28 +60,29 @@ defaultPodOptions:
     fsGroupChangePolicy: OnRootMismatch
 
 service:
-  nzbget:
-    controller: nzbget
+  app:
     ports:
       http:
         port: *port
+
 route:
-  nzbget:
+  app:
     enabled: true
     kind: HTTPRoute
     parentRefs:
       - name: atoca-house-internal
         namespace: kube-system
     hostnames:
-      - nzbget.atoca.house
+      - sabnzbd.atoca.house
     rules:
       - backendRefs:
-          - name: nzbget
-            port: 80
+          - name: sabnzbd
+            port: *port
         matches:
           - path:
               type: PathPrefix
               value: /
+
 persistence:
   config:
     enabled: true

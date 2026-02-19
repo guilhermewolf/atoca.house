@@ -2,7 +2,7 @@
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: nzbget
+  name: sabnzbd
 spec:
   advanced:
     restoreToOriginalReplicaCount: true
@@ -12,7 +12,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: nzbget
+    name: sabnzbd
   triggers:
     - type: prometheus
       metadata:

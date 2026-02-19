@@ -2,15 +2,15 @@
 apiVersion: volsync.backube/v1alpha1
 kind: ReplicationDestination
 metadata:
-  name: nzbget-restore
-  namespace: nzbget
+  name: sabnzbd-restore
+  namespace: sabnzbd
 spec:
   trigger:
     manual: restore-once
   restic:
-    repository: nzbget-r2-secret
+    repository: sabnzbd-r2-secret
     copyMethod: Direct
-    destinationPVC: nzbget
+    destinationPVC: sabnzbd
     storageClassName: ceph-block
     volumeSnapshotClassName: csi-ceph-blockpool
     moverSecurityContext:

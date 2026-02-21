@@ -6,19 +6,18 @@ metadata:
 data:
   recyclarr.yml: |
     ---
-    # yaml-language-server: $schema=https://raw.githubusercontent.com/recyclarr/recyclarr/master/schemas/config-schema.json
+    # yaml-language-server: $schema=https://raw.githubusercontent.com/recyclarr/recyclarr/refs/tags/v8.0.0/schemas/config-schema.json
     sonarr:
       sonarr:
         base_url: http://sonarr.sonarr.svc.cluster.local
         api_key: !env_var SONARR_API_KEY
         delete_old_custom_formats: true
-        replace_existing_custom_formats: true
-        include:
-          - template: sonarr-quality-definition-series
-          - template: sonarr-v4-quality-profile-web-1080p
-          - template: sonarr-v4-custom-formats-web-1080p
+        quality_definition:
+          type: series
         quality_profiles:
-          - name: WEB-1080p
+          - trash_id: 72dae194fc92bf828f32cde7744e51a1 # WEB-1080p
+            reset_unmatched_scores:
+              enabled: true
         custom_formats:
           - trash_ids:
               - 32b367365729d530ca1c124a0b180c64 # Bad Dual Groups
@@ -31,44 +30,43 @@ data:
       anime-sonarr-v4:
         base_url: http://sonarr-anime.sonarr-anime.svc.cluster.local
         api_key: !env_var SONARR_ANIME_API_KEY
-
-        include:
-          # Comment out any of the following includes to disable them
-          - template: sonarr-quality-definition-anime
-          - template: sonarr-v4-quality-profile-anime
-          - template: sonarr-v4-custom-formats-anime
-
+        delete_old_custom_formats: true
+        quality_definition:
+          type: anime
+        quality_profiles:
+          - trash_id: 20e0fc959f1f1704bed501f23bdae76f # [Anime] Remux-1080p
+            reset_unmatched_scores:
+              enabled: true
         # Custom Formats: https://recyclarr.dev/reference/configuration/custom-formats/
         custom_formats:
           - trash_ids:
               - 026d5aadd1a6b4e550b134cb6c72b3ca # Uncensored
             assign_scores_to:
-              - name: Remux-1080p - Anime
+              - name: "[Anime] Remux-1080p"
                 score: 0 # Adjust scoring as desired
 
           - trash_ids:
               - b2550eb333d27b75833e25b8c2557b38 # 10bit
             assign_scores_to:
-              - name: Remux-1080p - Anime
+              - name: "[Anime] Remux-1080p"
                 score: 0 # Adjust scoring as desired
 
           - trash_ids:
               - 418f50b10f1907201b6cfdf881f467b7 # Anime Dual Audio
             assign_scores_to:
-              - name: Remux-1080p - Anime
+              - name: "[Anime] Remux-1080p"
                 score: 0 # Adjust scoring as desired
     radarr:
       radarr:
         base_url: http://radarr.radarr.svc.cluster.local
         api_key: !env_var RADARR_API_KEY
         delete_old_custom_formats: true
-        replace_existing_custom_formats: true
+        quality_definition:
+          type: sqp-uhd
         quality_profiles:
-          - name: SQP-5 (2160p)
-        include:
-          - template: radarr-quality-definition-sqp-uhd
-          - template: radarr-quality-profile-sqp-5
-          - template: radarr-custom-formats-sqp-5
+          - trash_id: a7bb1539fd147256b21b1098f3dc2016 # SQP-5
+            reset_unmatched_scores:
+              enabled: true
         custom_formats:
           # Movie Versions
           # Uncomment any of the following lines to prefer these movie versions

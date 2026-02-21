@@ -1,0 +1,67 @@
+---
+controllers:
+  unifi-toolkit:
+    annotations:
+      reloader.stakater.com/auto: "true"
+
+    containers:
+      app:
+        image:
+          repository: ghcr.io/crosstalk-solutions/unifi-toolkit
+          tag: 1.9.11@sha256:52594fe873e05c4543a04b8d8f37fd8d2e4a8e1a3b7861526d2d5df5952cbcb0
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    ports:
+      http:
+        port: 8000
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - ui-toolkit.atoca.house
+    rules:
+      - backendRefs:
+          - name: unifi-toolkit
+            port: 8000
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    globalMounts:
+      - path: /app/data
+  env:
+    type: secret
+    name: unifi-toolkit-secret
+    globalMounts:
+      - path: /app/.env
+        subPath: .env
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

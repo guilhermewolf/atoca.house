@@ -1,0 +1,8 @@
+---
+# Application configuration for unifi-toolkit
+app:
+  name: unifi-toolkit
+  namespace: unifi-toolkit
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2

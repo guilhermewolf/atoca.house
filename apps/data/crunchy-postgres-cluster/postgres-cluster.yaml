@@ -77,6 +77,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: affine
+      databases:
+        - affine
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

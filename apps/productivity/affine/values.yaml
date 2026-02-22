@@ -1,0 +1,96 @@
+---
+controllers:
+  affine:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    initContainers:
+      migration:
+        image:
+          repository: ghcr.io/toeverything/affine
+          tag: 0.26.1@sha256:81aee30114a5766da35751046915bc02b603e6c9c4643182a2f591a098e05f67
+        command: ["sh", "-c", "node ./scripts/self-host-predeploy.js"]
+        env:
+          NODE_ENV: production
+          AFFINE_INDEXER_ENABLED: false
+          AFFINE_SERVER_EXTERNAL_URL: "https://affine.atoca.house"
+          CONFIG_LOCATION: /root/.affine/config
+          UPLOAD_LOCATION: /root/.affine/storage
+        envFrom:
+          - secretRef:
+              name: affine-secrets
+          - secretRef:
+              name: affine-db-secrets
+    containers:
+      app:
+        image:
+          repository: ghcr.io/toeverything/affine
+          tag: 0.26.1@sha256:81aee30114a5766da35751046915bc02b603e6c9c4643182a2f591a098e05f67
+        env:
+          NODE_ENV: production
+          AFFINE_INDEXER_ENABLED: false
+          AFFINE_SERVER_EXTERNAL_URL: "https://affine.atoca.house"
+          CONFIG_LOCATION: /root/.affine/config
+          UPLOAD_LOCATION: /root/.affine/storage
+        envFrom:
+          - secretRef:
+              name: affine-secrets
+          - secretRef:
+              name: affine-db-secrets
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 5
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+service:
+  app:
+    controller: affine
+    ports:
+      http:
+        port: 3010
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - affine.atoca.house
+    rules:
+      - backendRefs:
+          - name: affine
+            port: 3010
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    globalMounts:
+      - path: /root/.affine/config
+
+  uploads:
+    type: nfs
+    server: nas.atoca.house
+    path: /mnt/user/affine
+    globalMounts:
+      - path: /root/.affine/storage
+  tmp:
+    type: emptyDir

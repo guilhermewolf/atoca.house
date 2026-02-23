@@ -1,0 +1,9 @@
+---
+# Application configuration for sparkfitness-server
+app:
+  name: sparkyfitness-server
+  namespace: sparkyfitness
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2
+  volsyncPrivileged: true

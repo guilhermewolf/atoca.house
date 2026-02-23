@@ -1,0 +1,48 @@
+---
+controllers:
+  main:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      main:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/codewithcj/sparkyfitness-server
+          repository: ghcr.io/codewithcj/sparkyfitness-server
+          tag: v0.16.4.5
+        env:
+          SPARKY_FITNESS_LOG_LEVEL: info
+          SPARKY_FITNESS_FRONTEND_URL: fitness.atoca.house
+          SPARKY_FITNESS_DISABLE_SIGNUP: false
+          #SPARKY_FITNESS_ADMIN_EMAIL: ${SPARKY_FITNESS_ADMIN_EMAIL}  #User with this email can access the admin panel
+        envFrom:
+          - secretRef:
+              name: sparkyfitness-secrets
+          - secretRef:
+              name: sparkyfitness-db-secrets
+        resources:
+          requests:
+            cpu: 15m
+            memory: 512M
+          limits:
+            memory: 1Gi
+service:
+  main:
+    controller: main
+    ports:
+      http:
+        port: 3010
+persistence:
+  # backup:
+  #   type: nfs
+  #   server: nas.internal
+  #   path: /mnt/storage-0/backups/sparkyfitness
+  #   globalMounts:
+  #     - path: /backup
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /uploads

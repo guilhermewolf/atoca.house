@@ -77,6 +77,18 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: sparkyfitness
+      databases:
+        - sparkyfitness
+      password:
+        type: AlphaNumeric
+
+    - name: sparkyfitness-app
+      databases:
+        - sparkyfitness
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

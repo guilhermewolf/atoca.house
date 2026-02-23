@@ -8,7 +8,7 @@ controllers:
       install-tools:
         image:
           repository: ghcr.io/openclaw/openclaw
-          tag: 2026.2.19@sha256:5352d3ababbc12237fda60fe00a25237441eb7bb5e3d3062a6b0b5fbd938734d
+          tag: 2026.2.22@sha256:51c3fe85913545ca6c15c0fe2447230167ed1d329a07088f67d2a1612541b64b
         command:
           - /bin/sh
           - -c
@@ -73,7 +73,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/openclaw/openclaw
-          tag: 2026.2.19@sha256:5352d3ababbc12237fda60fe00a25237441eb7bb5e3d3062a6b0b5fbd938734d
+          tag: 2026.2.22@sha256:51c3fe85913545ca6c15c0fe2447230167ed1d329a07088f67d2a1612541b64b
         command:
           - /bin/sh
           - -c

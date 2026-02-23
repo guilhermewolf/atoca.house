@@ -12,7 +12,7 @@ controllers:
       recyclarr:
         image:
           repository: ghcr.io/recyclarr/recyclarr
-          tag: 8.0.1@sha256:d9dcb82a2a23cb07b9c0caf7e4f8cb15b558390d953d591f5d35a68e12ff6bd7
+          tag: 8.2.1@sha256:791bdc0d2a35b0f24b89a0b14159591269ef070f19fcccfc5fb518a863141373
         envFrom:
           - secretRef:
               name: "recyclarr-secret"

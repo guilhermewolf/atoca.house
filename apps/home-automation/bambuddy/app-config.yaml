@@ -1,9 +1,0 @@
----
-# Application configuration for bambuddy
-app:
-  name: bambuddy
-  namespace: bambuddy
-  chart: app-template
-  chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 4.6.2
-  volsyncPrivileged: false

@@ -1,0 +1,7 @@
+app:
+  name: kguardian
+  namespace: kguardian
+  chart: kguardian
+  chartRepo: ghcr.io/kguardian-dev/charts
+  chartVersion: 1.9.1
+  disableAutoSync: true

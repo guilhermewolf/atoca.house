@@ -1,0 +1,4 @@
+---
+controller:
+  excludedNamespaces:
+    - kguardian

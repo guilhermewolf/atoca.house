@@ -89,6 +89,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: crowdsec
+      databases:
+        - crowdsec
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

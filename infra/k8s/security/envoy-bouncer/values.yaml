@@ -1,0 +1,51 @@
+---
+controllers:
+  crowdsec-envoy-bouncer:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/kdwils/envoy-proxy-bouncer
+          tag: v0.5.2@sha256:919e0988b377544f66b159224f650cf097e946502a962a359fa6933bfcc13417
+        env:
+          ENVOY_BOUNCER_BOUNCER_BANSTATUSCODE: 418
+          ENVOY_BOUNCER_BOUNCER_ENABLED: true
+          ENVOY_BOUNCER_BOUNCER_LAPIURL: http://crowdsec-service.crowdsec.svc.cluster.local:8080
+          ENVOY_BOUNCER_BOUNCER_METRICS: true
+          ENVOY_BOUNCER_TEMPLATES_DENIEDTEMPLATEPATH: /ban.html
+          ENVOY_BOUNCER_TRUSTEDPROXIES: 192.168.0.0/16,10.96.0.0/16
+          ENVOY_BOUNCER_WAF_APPSECURL: http://crowdsec-appsec-service.crowdsec.svc.cluster.local:7422
+          ENVOY_BOUNCER_WAF_ENABLED: true
+        envFrom:
+          - secretRef:
+              name: envoy-bouncer-secrets
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+service:
+  app:
+    ports:
+      http:
+        port: 8080
+persistence:
+  ban:
+    type: configMap
+    name: "envoy-bouncer-configmap"
+    globalMounts:
+      - path: /ban.html
+        subPath: ban.html

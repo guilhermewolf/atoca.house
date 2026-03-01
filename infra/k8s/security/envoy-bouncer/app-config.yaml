@@ -1,0 +1,9 @@
+---
+app:
+  name: envoy-bouncer
+  namespace: envoy-bouncer
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2
+  hasValues: true
+  disableAutoSync: true

@@ -8,7 +8,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=ghcr.io/codewithcj/sparkyfitness-server
           repository: ghcr.io/codewithcj/sparkyfitness-server
-          tag: v0.16.4.7
+          tag: v0.16.4.8
         env:
           SPARKY_FITNESS_LOG_LEVEL: info
           SPARKY_FITNESS_FRONTEND_URL: fitness.atoca.house

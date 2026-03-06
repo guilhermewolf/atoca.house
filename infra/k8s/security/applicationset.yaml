@@ -44,6 +44,13 @@ spec:
           directory:
             exclude: '{application.yaml,values.yaml,app-config.yaml}'
 
+      ignoreDifferences:
+        - group: ""
+          kind: Secret
+          name: kguardian-db-credentials
+          namespace: kguardian
+          jsonPointers:
+            - /data
       syncPolicy:
         syncOptions:
           - CreateNamespace=true

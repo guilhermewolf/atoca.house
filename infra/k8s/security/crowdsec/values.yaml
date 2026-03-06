@@ -81,6 +81,9 @@ config:
       - type: ban
         duration: 24h
     on_success: break
+secrets:
+  externalSecret:
+    name: crowdsec-lapi-secrets
 lapi:
   strategy:
     type: RollingUpdate

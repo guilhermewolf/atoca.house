@@ -44,7 +44,7 @@ route:
         namespace: kube-system
     annotations:
       gatus.home-operations.com/endpoint: |-
-        conditions: ["[STATUS] == 404"]
+        conditions: ["[STATUS] == 200"]
     hostnames:
       - kromgo.atoca.house
     rules:

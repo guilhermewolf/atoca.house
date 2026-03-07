@@ -25,7 +25,7 @@ affinity:
             - key: extensions.talos.dev/nvidia-container-toolkit-production
               operator: Exists
 serviceMonitor:
-  interval: 15s
+  interval: 5s
   honorLabels: true
   labels:
     prometheus: kube-prometheus-stack

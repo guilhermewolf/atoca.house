@@ -26,6 +26,7 @@ affinity:
               operator: Exists
 serviceMonitor:
   interval: 5s
+  scrapeTimeout: 5s
   honorLabels: true
   labels:
     prometheus: kube-prometheus-stack

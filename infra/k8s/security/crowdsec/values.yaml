@@ -111,7 +111,7 @@ lapi:
 agent:
   acquisition:
     - namespace: kube-system
-      podName: envoy-*
+      podName: atoca-house-*
       program: envoy
       poll_without_inotify: true
   env:

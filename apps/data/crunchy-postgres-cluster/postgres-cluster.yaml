@@ -95,6 +95,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: spoolman
+      databases:
+        - spoolman
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

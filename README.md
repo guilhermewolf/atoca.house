@@ -21,7 +21,7 @@ _... managed with ArgoCD and GitHub Actions_
 
 [![Home-Internet](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.atoca.house%2Fapi%2Fv1%2Fendpoints%2Fconnectivity_cloudflare%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=ubiquiti&logoColor=white&label=Home%20Internet)](https://status.atoca.house)&nbsp;&nbsp;
 [![Status-Page](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.atoca.house%2Fapi%2Fv1%2Fendpoints%2Fconnectivity_google%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=statuspage&logoColor=white&label=Status%20Page)](https://status.atoca.house)&nbsp;&nbsp;
-[![Alertmanager](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.atoca.house%2Fapi%2Fv1%2Fendpoints%2Finternal_alertmanager%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=prometheus&logoColor=white&label=Alertmanager)](https://status.atoca.house)
+[![Alertmanager](https://img.shields.io/endpoint?url=https%3A%2F%2Fstatus.atoca.house%2Fapi%2Fv1%2Fendpoints%2Finternal_kube-prometheus-stack-moni-alertmanager%2Fhealth%2Fbadge.shields&style=for-the-badge&logo=prometheus&logoColor=white&label=Alertmanager)](https://status.atoca.house)
 
 </div>
 
@@ -114,12 +114,12 @@ This Git repository contains the following directories.
 
 ### Networking
 
-| Name                      | CIDR                |
-|---------------------------|---------------------|
-| Server VLAN               | `192.168.40.0/24`   |
-| Kubernetes pods (Cilium)  | `10.244.0.0/16`     |
-| Kubernetes services       | `10.96.0.0/12`      |
-| Gateway LoadBalancer IP   | `192.168.60.10`     |
+| Name                     | CIDR              |
+| ------------------------ | ----------------- |
+| Server VLAN              | `192.168.40.0/24` |
+| Kubernetes pods (Cilium) | `10.244.0.0/16`   |
+| Kubernetes services      | `10.96.0.0/12`    |
+| Gateway LoadBalancer IP  | `192.168.60.10`   |
 
 ---
 
@@ -127,25 +127,25 @@ This Git repository contains the following directories.
 
 While most of my infrastructure and workloads are self-hosted, I rely on cloud services for critical functions that need to remain available regardless of cluster status.
 
-| Service                                         | Use                                                               | Cost            |
-|-------------------------------------------------|-------------------------------------------------------------------|-----------------|
-| [1Password](https://1password.com/)             | Secrets management with 1Password Connect                         | ~$65/yr         |
-| [Cloudflare](https://www.cloudflare.com/)       | Domain, DNS, R2 object storage, Zero Trust Tunnel                 | ~$30/yr         |
-| [GitHub](https://github.com/)                   | Repository hosting, CI/CD workflows                               | Free            |
-| [Tailscale](https://tailscale.com/)             | VPN service for secure remote access                              | Free            |
-|                                                 |                                                                   |Total: ~$7.90/mo |
+| Service                                   | Use                                               | Cost             |
+| ----------------------------------------- | ------------------------------------------------- | ---------------- |
+| [1Password](https://1password.com/)       | Secrets management with 1Password Connect         | ~$65/yr          |
+| [Cloudflare](https://www.cloudflare.com/) | Domain, DNS, R2 object storage, Zero Trust Tunnel | ~$30/yr          |
+| [GitHub](https://github.com/)             | Repository hosting, CI/CD workflows               | Free             |
+| [Tailscale](https://tailscale.com/)       | VPN service for secure remote access              | Free             |
+|                                           |                                                   | Total: ~$7.90/mo |
 
 ---
 
 ## 🔧 Hardware
 
-| Device                          | Count | OS Disk Size | Data Disk Size   | RAM  | CPU              | Operating System | Purpose                    |
-|---------------------------------|-------|--------------|------------------|------|------------------|------------------|----------------------------|
-| Mini PC                         | 3     | 256GB NVMe   | 1TB NVMe         | 32GB | Ryzen 7 4800H    | Talos Linux      | K8s control plane nodes    |
-| AI PC                           | 1     | 256GB NVMe   | 1TB NVMe         | 32GB | Ryzen 5 5600X    | Talos Linux      | K8s AI Node                |
-| Asustor AS5404T                 | 1     | 32GB (USB)   | 4x 1TB + 4x 12TB | 32GB | Intel Celeron    | Unraid           | NAS (external storage)     |
-| Unifi Cloud Gateway Max         | 1     | -            | -                | -    | -                | -                | Router                     |
-| Unifi USW Enterprise 24 PoE     | 1     | -            | -                | -    | -                | -                | 2.5Gb PoE Switch           |
+| Device                      | Count | OS Disk Size | Data Disk Size   | RAM  | CPU           | Operating System | Purpose                 |
+| --------------------------- | ----- | ------------ | ---------------- | ---- | ------------- | ---------------- | ----------------------- |
+| Mini PC                     | 3     | 256GB NVMe   | 1TB NVMe         | 32GB | Ryzen 7 4800H | Talos Linux      | K8s control plane nodes |
+| AI PC                       | 1     | 256GB NVMe   | 1TB NVMe         | 32GB | Ryzen 5 5600X | Talos Linux      | K8s AI Node             |
+| Asustor AS5404T             | 1     | 32GB (USB)   | 4x 1TB + 4x 12TB | 32GB | Intel Celeron | Unraid           | NAS (external storage)  |
+| Unifi Cloud Gateway Max     | 1     | -            | -                | -    | -             | -                | Router                  |
+| Unifi USW Enterprise 24 PoE | 1     | -            | -                | -    | -             | -                | 2.5Gb PoE Switch        |
 
 ---
 

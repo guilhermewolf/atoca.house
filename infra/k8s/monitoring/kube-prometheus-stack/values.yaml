@@ -5,6 +5,14 @@ nameOverride: "monitoring"
 cleanPrometheusOperatorObjectNames: true
 
 alertmanager:
+  route:
+    main:
+      enabled: true
+      hostnames:
+        - alertmanager.atoca.house
+      parentRefs:
+        - name: atoca-house-internal
+          namespace: kube-system
   alertmanagerSpec:
     cleanPrometheusOperatorObjectNames: true
     alertmanagerConfiguration:
@@ -26,6 +34,14 @@ kubeEtcd:
       component: kube-apiserver
 
 prometheus:
+  route:
+    main:
+      enabled: true
+      hostnames:
+        - prometheus.atoca.house
+      parentRefs:
+        - name: atoca-house-internal
+          namespace: kube-system
   prometheusSpec:
     externalUrl: https://prometheus.atoca.house
     resources:
@@ -54,9 +70,45 @@ prometheus:
 
 prometheus-node-exporter:
   fullnameOverride: node-exporter
+  prometheus:
+    monitor:
+      enabled: true
+      relabelings:
+    relabelings:
+      - action: replace
+        regex: (.*)
+        replacement: $1
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: kubernetes_node
+      - action: replace
+        regex: (.*)
+        replacement: $1
+        sourceLabels:
+          - __meta_kubernetes_pod_node_name
+        targetLabel: nodename
+      - action: replace
+        regex: (.*)
+        replacement: $1.rafaribe.internal:9100
+        sourceLabels:
+          - kubernetes_node
+        targetLabel: instance
 
 kube-state-metrics:
   fullnameOverride: kube-state-metrics
+  metricLabelsAllowlist:
+    - pods=[*]
+    - deployments=[*]
+    - persistentvolumeclaims=[*]
+  prometheus:
+    monitor:
+      enabled: true
+      relabelings:
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels: ["__meta_kubernetes_pod_node_name"]
+          targetLabel: kubernetes_node
 
 additionalPrometheusRulesMap:
   dockerhub-rules:
@@ -77,6 +129,17 @@ additionalPrometheusRulesMap:
             annotations:
               summary: Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }} has been OOMKilled {{ $value }} times in the last 10 minutes.
             expr: (kube_pod_container_status_restarts_total - kube_pod_container_status_restarts_total offset 10m >= 1) and ignoring (reason) min_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[10m]) == 1
+            labels:
+              severity: critical
+
+  zfs-rules:
+    groups:
+      - name: zfs
+        rules:
+          - alert: ZfsUnexpectedPoolState
+            annotations:
+              summary: ZFS pool {{$labels.zpool}} on {{$labels.instance}} is in a unexpected state {{$labels.state}}
+            expr: node_zfs_zpool_state{state!="online"} > 0
             labels:
               severity: critical
 kubeProxy:

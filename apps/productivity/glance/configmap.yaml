@@ -1,0 +1,446 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: glance
+  annotations:
+    reloader.stakater.com/match: "true"
+data:
+  glance.yml: |
+    server:
+      port: 80
+      proxied: true
+
+    theme:
+      background-color: 240 21 15
+      primary-color: 224 76 65
+      positive-color: 142 71 45
+      negative-color: 0 72 51
+
+    pages:
+      # -----------------------------------------------------------------------
+      # HOME — default landing page, friendly for everyone
+      # -----------------------------------------------------------------------
+      - name: Home
+        columns:
+          - size: small
+            widgets:
+              - type: clock
+                hour-format: 24h
+                timezones:
+                  - timezone: Europe/Amsterdam
+                    label: Home
+
+              - type: weather
+                location: Amsterdam
+                units: metric
+                hour-format: 24h
+
+          - size: full
+            widgets:
+              - type: search
+                search-engine: https://search.atoca.house/search?q={query}
+                new-tab: true
+                autofocus: true
+
+              - type: bookmarks
+                groups:
+                  - title: Watch
+                    color: 224 90 65
+                    links:
+                      - title: Jellyfin
+                        url: https://jellyfin.atoca.house
+                        icon: si:jellyfin
+                      - title: Request a Movie or Show
+                        url: https://seerr.atoca.house
+                        icon: sh:jellyseerr
+
+                  - title: Kitchen
+                    color: 30 85 55
+                    links:
+                      - title: Recipes
+                        url: https://mealie.atoca.house
+                        icon: si:mealie
+
+                  - title: Get Things Done
+                    color: 262 72 65
+                    links:
+                      - title: Tasks
+                        url: https://vikunja.atoca.house
+                        icon: si:vikunja
+                      - title: Notes
+                        url: https://outline.atoca.house
+                        icon: si:outline
+                      - title: Wiki
+                        url: https://wiki.atoca.house
+
+                  - title: Personal
+                    color: 160 60 45
+                    links:
+                      - title: Fitness Tracker
+                        url: https://fitness.atoca.house
+                      - title: Library
+                        url: https://booklore.atoca.house
+                        icon: sh:booklore
+                      - title: Bookmarks
+                        url: https://shelfmark.atoca.house
+                        icon: sh:shelfmark
+                      - title: Homebridge
+                        url: https://homebridge.atoca.house
+                        icon: si:homebridge
+                      - title: AI Chat
+                        url: https://chat.atoca.house
+                        icon: sh:open-webui
+
+      # -----------------------------------------------------------------------
+      # ENTERTAINMENT — streaming + download automation
+      # -----------------------------------------------------------------------
+      - name: Entertainment
+        columns:
+          - size: small
+            widgets:
+              - type: bookmarks
+                groups:
+                  - title: Streaming
+                    color: 224 90 65
+                    links:
+                      - title: Jellyfin
+                        url: https://jellyfin.atoca.house
+                        icon: si:jellyfin
+                      - title: Seerr (Requests)
+                        url: https://seerr.atoca.house
+                        icon: sh:jellyseerr
+                      - title: Dispatcharr
+                        url: https://dispatcharr.atoca.house
+                        icon: sh:dispatcharr
+
+                  - title: Downloads
+                    color: 38 85 55
+                    links:
+                      - title: qBittorrent
+                        url: https://qbittorrent.atoca.house
+                        icon: si:qbittorrent
+                      - title: SABnzbd
+                        url: https://sabnzbd.atoca.house
+                        icon: sh:sabnzbd
+                      - title: Autobrr
+                        url: https://autobrr.atoca.house
+                        icon: sh:autobrr
+                      - title: SLSKD (Music)
+                        url: https://slskd.atoca.house
+                        icon: sh:slskd
+
+                  - title: Reading & Music
+                    color: 262 72 65
+                    links:
+                      - title: Booklore
+                        url: https://booklore.atoca.house
+                        icon: sh:booklore
+                      - title: Shelfmark
+                        url: https://shelfmark.atoca.house
+                        icon: sh:shelfmark
+                      - title: Soulsync
+                        url: https://soulsync.atoca.house
+
+          - size: full
+            widgets:
+              - type: monitor
+                title: Media Services
+                cache: 2m
+                sites:
+                  - title: Jellyfin
+                    url: https://jellyfin.atoca.house
+                    icon: si:jellyfin
+                  - title: Seerr
+                    url: https://seerr.atoca.house
+                    icon: sh:jellyseerr
+                  - title: Radarr
+                    url: https://radarr.atoca.house
+                    icon: si:radarr
+                  - title: Sonarr
+                    url: https://sonarr.atoca.house
+                    icon: si:sonarr
+                  - title: Sonarr Anime
+                    url: https://anime.atoca.house
+                    icon: si:sonarr
+                  - title: Bazarr
+                    url: https://bazarr.atoca.house
+                    icon: sh:bazarr
+                  - title: Prowlarr
+                    url: https://prowlarr.atoca.house
+                    icon: sh:prowlarr
+                  - title: qBittorrent
+                    url: https://qbittorrent.atoca.house
+                    icon: si:qbittorrent
+                  - title: SABnzbd
+                    url: https://sabnzbd.atoca.house
+                    icon: sh:sabnzbd
+                  - title: Autobrr
+                    url: https://autobrr.atoca.house
+                    icon: sh:autobrr
+                  - title: SLSKD
+                    url: https://slskd.atoca.house
+                    icon: sh:slskd
+
+              - type: bookmarks
+                groups:
+                  - title: Content Managers
+                    links:
+                      - title: Radarr (Movies)
+                        url: https://radarr.atoca.house
+                        icon: si:radarr
+                      - title: Sonarr (TV)
+                        url: https://sonarr.atoca.house
+                        icon: si:sonarr
+                      - title: Sonarr (Anime)
+                        url: https://anime.atoca.house
+                        icon: si:sonarr
+                      - title: Bazarr (Subtitles)
+                        url: https://bazarr.atoca.house
+                        icon: sh:bazarr
+                      - title: Prowlarr (Indexers)
+                        url: https://prowlarr.atoca.house
+                        icon: sh:prowlarr
+                      - title: 3D Printing — Spoolman
+                        url: https://spoolman.atoca.house
+                        icon: sh:spoolman
+
+      # -----------------------------------------------------------------------
+      # FEED — tech news, self-hosted community, release tracking
+      # -----------------------------------------------------------------------
+      - name: Feed
+        head-widgets:
+          - type: markets
+            hide-header: true
+            markets:
+              - symbol: SPY
+                name: S&P 500
+              - symbol: BTC-USD
+                name: Bitcoin
+              - symbol: NVDA
+                name: NVIDIA
+              - symbol: EURUSD=X
+                name: EUR/USD
+
+        columns:
+          - size: full
+            widgets:
+              - type: group
+                widgets:
+                  - type: hacker-news
+                    sort-by: best
+                    limit: 18
+                    collapse-after: 8
+
+                  - type: lobsters
+                    sort-by: hot
+                    limit: 18
+                    collapse-after: 8
+
+                  - type: reddit
+                    subreddit: selfhosted
+                    show-thumbnails: true
+                    sort-by: top
+                    limit: 15
+                    collapse-after: 8
+
+                  - type: reddit
+                    subreddit: homelab
+                    show-thumbnails: true
+                    sort-by: top
+                    limit: 15
+                    collapse-after: 8
+
+                  - type: reddit
+                    subreddit: kubernetes
+                    show-thumbnails: true
+                    sort-by: top
+                    limit: 15
+                    collapse-after: 8
+
+                  - type: reddit
+                    subreddit: homeautomation
+                    show-thumbnails: true
+                    sort-by: top
+                    limit: 15
+                    collapse-after: 8
+
+          - size: small
+            widgets:
+              - type: releases
+                title: Latest Releases
+                cache: 24h
+                show-source-icon: true
+                repositories:
+                  - glanceapp/glance
+                  - jellyfin/jellyfin
+                  - radarr/Radarr
+                  - Sonarr/Sonarr
+                  - bazarr/bazarr
+                  - authelia/authelia
+                  - siderolabs/talos
+                  - argoproj/argo-cd
+
+              - type: rss
+                title: Self-Hosted News
+                cache: 12h
+                limit: 10
+                collapse-after: 5
+                feeds:
+                  - url: https://selfh.st/rss/
+                    title: selfh.st
+                  - url: https://blog.cloudflare.com/rss
+                    title: Cloudflare Blog
+
+      # -----------------------------------------------------------------------
+      # ADMIN — cluster management, monitoring, infra tools
+      # -----------------------------------------------------------------------
+      - name: Admin
+        columns:
+          - size: small
+            widgets:
+              - type: extension
+                title: Cluster Nodes
+                url: http://glance-k8s-extension:8080/extension/nodes
+                allow-potentially-dangerous-html: true
+                cache: 10s
+
+              - type: bookmarks
+                groups:
+                  - title: Cluster
+                    color: 224 90 65
+                    links:
+                      - title: ArgoCD
+                        url: https://argocd.atoca.house
+                        icon: sh:argo-cd
+                      - title: Headlamp
+                        url: https://headlamp.atoca.house
+                        icon: sh:headlamp
+
+                  - title: Identity & Auth
+                    color: 262 72 65
+                    links:
+                      - title: Authelia
+                        url: https://auth.atoca.house
+                        icon: si:authelia
+                      - title: LLDAP
+                        url: https://lldap.atoca.house
+                        icon: sh:lldap
+
+                  - title: Storage
+                    color: 38 85 55
+                    links:
+                      - title: Rook-Ceph
+                        url: https://rook.atoca.house
+                        icon: si:ceph
+                      - title: pgAdmin
+                        url: https://pgadmin.atoca.house
+                        icon: sh:pgadmin
+
+                  - title: Network
+                    color: 160 60 45
+                    links:
+                      - title: Cloudflare
+                        url: https://dash.cloudflare.com
+                        icon: si:cloudflare
+                      - title: UniFi Toolkit
+                        url: https://ui-toolkit.atoca.house
+                        icon: si:ubiquiti
+
+                  - title: Files & Automation
+                    links:
+                      - title: FileBrowser
+                        url: https://filebrowser.atoca.house
+                        icon: sh:file-browser
+                      - title: n8n
+                        url: https://n8n.atoca.house
+                        icon: si:n8n
+
+          - size: full
+            widgets:
+              - type: monitor
+                title: Infrastructure Health
+                cache: 1m
+                sites:
+                  - title: ArgoCD
+                    url: https://argocd.atoca.house
+                    icon: sh:argo-cd
+                  - title: Authelia
+                    url: https://auth.atoca.house/api/health
+                    icon: si:authelia
+                  - title: Grafana
+                    url: https://grafana.atoca.house
+                    icon: si:grafana
+                  - title: Prometheus
+                    url: https://prometheus.atoca.house
+                    icon: si:prometheus
+                  - title: Gatus
+                    url: https://status.atoca.house
+                    icon: sh:gatus
+                  - title: VictoriaLogs
+                    url: https://victorialogs.atoca.house
+                    icon: sh:victorialogs
+                  - title: Open WebUI
+                    url: https://chat.atoca.house
+                    icon: sh:open-webui
+                  - title: Outline
+                    url: https://outline.atoca.house
+                    icon: si:outline
+                  - title: Vikunja
+                    url: https://vikunja.atoca.house
+                    icon: si:vikunja
+                  - title: Mealie
+                    url: https://mealie.atoca.house
+                    icon: si:mealie
+                  - title: n8n
+                    url: https://n8n.atoca.house
+                    icon: si:n8n
+
+              - type: bookmarks
+                groups:
+                  - title: Observability
+                    links:
+                      - title: Grafana
+                        url: https://grafana.atoca.house
+                        icon: si:grafana
+                      - title: Prometheus
+                        url: https://prometheus.atoca.house
+                        icon: si:prometheus
+                      - title: Alertmanager
+                        url: https://alertmanager.atoca.house
+                        icon: sh:alertmanager
+                      - title: Gatus
+                        url: https://status.atoca.house
+                        icon: sh:gatus
+                      - title: VictoriaLogs
+                        url: https://victorialogs.atoca.house
+                        icon: sh:victorialogs
+
+                  - title: AI & Dev
+                    links:
+                      - title: Open WebUI
+                        url: https://chat.atoca.house
+                        icon: sh:open-webui
+                      - title: OpenClaw
+                        url: https://claw.atoca.house
+                        icon: sh:openclaw
+                      - title: SearXNG
+                        url: https://search.atoca.house
+                        icon: si:searxng
+                      - title: IRC — TheLounge
+                        url: https://thelounge.atoca.house
+                        icon: sh:the-lounge
+
+                  - title: Productivity
+                    links:
+                      - title: Twenty CRM
+                        url: https://twenty.atoca.house
+                        icon: si:twenty
+                      - title: Vikunja
+                        url: https://vikunja.atoca.house
+                        icon: si:vikunja
+                      - title: Outline
+                        url: https://outline.atoca.house
+                        icon: si:outline
+                      - title: Wiki
+                        url: https://wiki.atoca.house

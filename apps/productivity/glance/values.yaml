@@ -1,0 +1,132 @@
+---
+controllers:
+  glance:
+    annotations:
+      reloader.stakater.com/auto: "true"
+
+    serviceAccount:
+      identifier: &app glance
+
+    containers:
+      glance:
+        image:
+          repository: glanceapp/glance
+          tag: v0.8.4@sha256:6df86a7e8868d1eda21f35205134b1962c422957e42a0c44d4717c8e8f741b1a
+        env:
+          TZ: Europe/Amsterdam
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+      k8s-extension:
+        image:
+          repository: ghcr.io/lukasdietrich/glance-k8s/glance-k8s
+          tag: v0.4.4@sha256:b5423dc3cd0efde78f86532e0eb58f97baffbb5303fadd53d899005d50252e51
+        env:
+          TZ: Europe/Amsterdam
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: 8080
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: 8080
+
+    pod:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+serviceAccount:
+  glance: {}
+
+rbac:
+  roles:
+    glance:
+      type: ClusterRole
+      rules:
+        - apiGroups: ["", "metrics.k8s.io"]
+          resources: ["nodes"]
+          verbs: ["list"]
+        - apiGroups: [""]
+          resources: ["services"]
+          verbs: ["list"]
+        - apiGroups: ["networking.k8s.io"]
+          resources: ["ingresses", "ingressclasses"]
+          verbs: ["list"]
+        - apiGroups: ["gateway.networking.k8s.io"]
+          resources: ["gateways", "httproutes"]
+          verbs: ["list"]
+        - apiGroups: ["apps"]
+          resources: ["deployments", "statefulsets", "daemonsets"]
+          verbs: ["list"]
+  bindings:
+    glance:
+      type: ClusterRoleBinding
+      roleRef:
+        identifier: *app
+      subjects:
+        - identifier: *app
+
+service:
+  glance:
+    controller: glance
+    ports:
+      http:
+        port: &port 80
+  k8s-extension:
+    controller: glance
+    ports:
+      http:
+        port: 8080
+
+route:
+  glance:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - glance.atoca.house
+    rules:
+      - backendRefs:
+          - name: glance
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    type: configMap
+    name: glance
+    globalMounts:
+      - path: /app/config/glance.yml
+        subPath: glance.yml
+        readOnly: true

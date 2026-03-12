@@ -8,7 +8,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=boulderbadgedad/soulsync
           repository: boulderbadgedad/soulsync
-          tag: 1.8
+          tag: 1.9
         env:
           PUID: 99
           PGID: 100

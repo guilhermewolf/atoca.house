@@ -112,7 +112,7 @@ route:
       - name: atoca-house-internal
         namespace: kube-system
     hostnames:
-      - glance.atoca.house
+      - home.atoca.house
     rules:
       - backendRefs:
           - name: glance

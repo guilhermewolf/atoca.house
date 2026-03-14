@@ -47,8 +47,8 @@ area/auth:
 # Generic apps (when not in specific category)
 area/apps:
   - changed-files:
-      - any-glob-to-any-file:
-          - "apps/**/*"
+      - any-glob-to-any-file: "apps/**/*"
+      - all-globs-to-all-files:
           - "!apps/media/**/*"
           - "!apps/data/**/*"
           - "!apps/auth/**/*"
@@ -94,9 +94,7 @@ area/docs:
 
 area/github:
   - changed-files:
-      - any-glob-to-any-file:
-          - ".github/**/*"
-          - "!.github/renovate/**/*"  # Exclude renovate (handled separately)
+      - any-glob-to-any-file: ".github/**/*"
 
 # =============================================================================
 # Type Labels - Based on file patterns

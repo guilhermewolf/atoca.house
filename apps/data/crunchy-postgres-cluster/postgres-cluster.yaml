@@ -101,6 +101,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: open-webui
+      databases:
+        - open-webui
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

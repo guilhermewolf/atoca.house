@@ -14,14 +14,22 @@ controllers:
           ENABLE_OPENAI_API: "False"
           ENABLE_OLLAMA_API: "True"
           OLLAMA_BASE_URL: http://ollama.ollama.svc.cluster.local
+          ENABLE_SEARCH_QUERY_GENERATION: True
+          ENABLE_WEB_SEARCH: True
+          ENABLE_LOGIN_FORM: False
+          DATABASE_PORT: "5432"
+          DATABASE_TYPE: postgres
+          WEBUI_URL: https://chat.atoca.house
+          # Redis
           ENABLE_WEBSOCKET_SUPPORT: "true"
           WEBSOCKET_MANAGER: "redis"
           WEBSOCKET_REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/5"
+
+          # Searx
+          WEB_SEARCH_ENGINE: searxng
           SEARXNG_QUERY_URL: http://searxng.searxng.svc.cluster.local:8080/search?q=<query>
-          ENABLE_RAG_WEB_SEARCH: true
-          ENABLE_SEARCH_QUERY: true
-          RAG_WEB_SEARCH_ENGINE: searxng
-          WEBUI_URL: https://chat.atoca.house
+
+          # Vector
           VECTOR_DB: qdrant
           QDRANT_URI: http://qdrant.qdrant.svc.cluster.local:6333
           # Auth
@@ -43,10 +51,15 @@ controllers:
           TTS_API_KEY: "not-needed"
           TTS_OPENAI_API_MODEL: "kokoro"
           TTS_OPENAI_API_VOICE: "af_bella"
+
+          # Document extraction
+          CONTENT_EXTRACTION_ENGINE: tika
+          TIKA_SERVER_URL: http://localhost:9998
         envFrom:
           - secretRef:
               name: open-webui-secret
-
+          - secretRef:
+              name: open-webui-db-secret
         resources:
           requests:
             cpu: 500m
@@ -54,6 +67,13 @@ controllers:
           limits:
             memory: 2Gi
 
+      tika:
+        image:
+          repository: docker.io/apache/tika
+          tag: 3.2.3.0-full
+          pullPolicy: IfNotPresent
+        ports:
+          - containerPort: 9998
 service:
   app:
     ports:

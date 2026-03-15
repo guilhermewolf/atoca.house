@@ -1,8 +1,8 @@
 ---
-# Application configuration for local-ai
+# Application configuration for mem0
 app:
-  name: local-ai
-  namespace: local-ai
+  name: mem0
+  namespace: mem0
   chart: app-template
   chartRepo: ghcr.io/bjw-s-labs/helm
   chartVersion: 4.6.2

@@ -22,19 +22,20 @@ controllers:
           ENABLE_SEARCH_QUERY: true
           RAG_WEB_SEARCH_ENGINE: searxng
           WEBUI_URL: https://chat.atoca.house
-
+          VECTOR_DB: qdrant
+          QDRANT_URI: http://qdrant.qdrant.svc.cluster.local:6333
           # Auth
           ENABLE_OAUTH_SIGNUP: "true"
           OAUTH_MERGE_ACCOUNTS_BY_EMAIL: "true"
           OAUTH_PROVIDER_NAME: "Authelia"
-          OPENID_PROVIDER_URL: 'https://auth.atoca.house/.well-known/openid-configuration'
-          OAUTH_CLIENT_ID: 'open-webui'
-          OAUTH_SCOPES: 'openid email profile groups'
-          ENABLE_OAUTH_ROLE_MANAGEMENT: 'true'
-          OAUTH_ALLOWED_ROLES: 'openwebui,openwebui-admin'
-          OAUTH_ADMIN_ROLES: 'openwebui-admin'
-          OAUTH_ROLES_CLAIM: 'groups'
-          OAUTH_CODE_CHALLENGE_METHOD: 'S256'
+          OPENID_PROVIDER_URL: "https://auth.atoca.house/.well-known/openid-configuration"
+          OAUTH_CLIENT_ID: "open-webui"
+          OAUTH_SCOPES: "openid email profile groups"
+          ENABLE_OAUTH_ROLE_MANAGEMENT: "true"
+          OAUTH_ALLOWED_ROLES: "openwebui,openwebui-admin"
+          OAUTH_ADMIN_ROLES: "openwebui-admin"
+          OAUTH_ROLES_CLAIM: "groups"
+          OAUTH_CODE_CHALLENGE_METHOD: "S256"
 
           # Text-to-Speech Configuration
           TTS_ENGINE: "openai"

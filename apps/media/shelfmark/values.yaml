@@ -90,8 +90,7 @@ persistence:
     advancedMounts:
       shelfmark:
         shelfmark:
-          - path: /bookdrop
-            subPath: torrents/books
+          - path: /data
   tmpfs:
     type: emptyDir
     sizeLimit: 1Gi

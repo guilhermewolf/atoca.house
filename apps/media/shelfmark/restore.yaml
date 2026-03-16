@@ -10,7 +10,7 @@ spec:
   restic:
     repository: shelfmark-r2-secret
     copyMethod: Direct
-    destinationPVC: shelfmark-config
+    destinationPVC: shelfmark
     storageClassName: ceph-block
     volumeSnapshotClassName: csi-ceph-blockpool
     moverSecurityContext:

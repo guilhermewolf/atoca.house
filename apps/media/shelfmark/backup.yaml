@@ -5,7 +5,7 @@ metadata:
   name: shelfmark-backup
   namespace: shelfmark
 spec:
-  sourcePVC: shelfmark-config
+  sourcePVC: shelfmark
   trigger:
     schedule: "0 0 * * *"
   restic:

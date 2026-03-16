@@ -18,6 +18,7 @@ controllers:
           ENVOY_BOUNCER_TRUSTEDPROXIES: 192.168.0.0/16,10.96.0.0/16
           ENVOY_BOUNCER_WAF_APPSECURL: http://crowdsec-appsec-service.crowdsec.svc.cluster.local:7422
           ENVOY_BOUNCER_WAF_ENABLED: true
+          ENVOY_BOUNCER_WAF_FAILOVERHTTP: true
         envFrom:
           - secretRef:
               name: envoy-bouncer-secrets

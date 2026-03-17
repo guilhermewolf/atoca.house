@@ -52,6 +52,19 @@ machine:
     disableManifestsDirectory: true
     extraConfig:
       serializeImagePulls: false
+      imageGCHighThresholdPercent: 75
+      imageGCLowThresholdPercent: 60
+      imageMinimumGCAge: 15m
+      evictionHard:
+        imagefs.available: "8%"
+        imagefs.inodesFree: "5%"
+        memory.available: 100Mi
+        nodefs.available: "10%"
+        nodefs.inodesFree: "5%"
+      evictionSoft:
+        imagefs.available: "12%"
+      evictionSoftGracePeriod:
+        imagefs.available: 2m
     extraMounts:
       - destination: /var/local
         type: bind

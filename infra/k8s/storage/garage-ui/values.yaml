@@ -1,0 +1,82 @@
+---
+controllers:
+  garage-webui:
+    annotations:
+      secret.reloader.stakater.com/reload: garage
+    containers:
+      app:
+        image:
+          repository: khairul169/garage-webui
+          tag: 1.1.0@sha256:17c793551873155065bf9a022dabcde874de808a1f26e648d4b82e168806439c
+        env:
+          API_BASE_URL: http://garage.garage.svc.cluster.local:3903
+          S3_ENDPOINT_URL: http://garage.garage.svc.cluster.local:3900
+        envFrom:
+          - secretRef:
+              name: garage-ui-secrets
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: [ALL] }
+        resources:
+          requests:
+            cpu: 10m
+          limits:
+            memory: 1Gi
+service:
+  app:
+    ports:
+      http:
+        port: &port 3909
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - garage.atoca.house
+    rules:
+      - backendRefs:
+          - name: garage-ui
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+configMaps:
+  config:
+    data:
+      configuration.toml: |
+        metadata_dir = "/meta"
+        data_dir = "/data"
+        db_engine = "sqlite"
+        metadata_auto_snapshot_interval = "6h"
+
+        block_size = "10MiB"
+
+        replication_factor = 1
+        compression_level = 2
+
+        rpc_bind_addr = "[::]:3901"
+        rpc_public_addr = "127.0.0.1:3901"
+
+        [s3_api]
+        s3_region = "eu-east-1"
+        api_bind_addr = "[::]:3900"
+        root_domain = ".s3.atoca.house"
+
+        [admin]
+        api_bind_addr = "[::]:3903"
+
+persistence:
+  config:
+    enabled: true
+    type: configMap
+    name: garage-ui
+    globalMounts:
+      - path: /etc/garage.toml
+        subPath: configuration.toml

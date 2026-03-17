@@ -169,8 +169,8 @@ spec:
         - name: repo1
           s3: &minio
             bucket: "crunchy-postgres"
-            endpoint: minio-data.atoca.house
-            region: eu-west-1
+            endpoint: https://s3.atoca.house
+            region: eu-east-1
           schedules:
             full: "15 1 * * 0" # Sunday at 01:15
             differential: "15 1 * * 1-6" # Mon-Sat at 01:15

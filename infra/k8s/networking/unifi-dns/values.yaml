@@ -27,6 +27,9 @@ provider:
       initialDelaySeconds: 10
       timeoutSeconds: 5
 
+extraArgs:
+  - --annotation-filter=externaldns.enable.custom/internal notin (false,no)
+
 triggerLoopOnEvent: true
 policy: sync
 

@@ -97,9 +97,8 @@ persistence:
       - path: /data
   meta:
     enabled: true
-    type: persistentVolumeClaim
-    storageClass: ceph-block
-    accessMode: ReadWriteOnce
-    size: 5Gi
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/garage/meta
     globalMounts:
       - path: /meta

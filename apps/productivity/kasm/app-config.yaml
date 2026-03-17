@@ -1,8 +1,0 @@
----
-app:
-  name: kasm
-  namespace: kasm
-  chart: kasm
-  chartRepo: https://kasmtech.github.io/kasm-helm
-  # renovate: datasource=helm registryUrl=https://kasmtech.github.io/kasm-helm depName=kasm
-  chartVersion: 1.1181.0

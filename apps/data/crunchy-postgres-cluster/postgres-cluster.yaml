@@ -107,12 +107,6 @@ spec:
       password:
         type: AlphaNumeric
 
-    - name: kasmapp
-      databases:
-        - kasm
-      password:
-        type: AlphaNumeric
-
   instances:
     - name: postgres
       metadata:

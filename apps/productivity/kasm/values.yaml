@@ -1,0 +1,45 @@
+---
+deploymentSize: "small"
+
+# Must match the hostname used in httproute.yaml
+publicAddr: "kasm.atoca.house"
+
+# ClusterIP — routed through the internal Envoy Gateway like all other apps
+proxyService:
+  type: ClusterIP
+
+# Tells Kasm proxy to run in HTTP mode (TLS terminated by Envoy Gateway)
+# The Kubernetes Ingress object created here is ignored — routing is in httproute.yaml
+ingress:
+  enabled: true
+  tls: false
+  backendProtocol: http
+
+# TLS handled by the wildcard cert on atoca-house-internal gateway
+certificate:
+  certManager:
+    enabled: false
+
+# External Crunchy Postgres — disable the built-in Kasm DB StatefulSet
+database:
+  standalone: true
+  hostname: postgres-pgbouncer.crunchy-postgres-cluster.svc.cluster.local
+  port: 5432
+  kasmDbName: kasm
+  kasmDbUser: kasmapp
+  kasmDbSecret:
+    name: kasm-db-secret
+    key: password
+  postgresMasterUser:
+    username: postgres
+    secret:
+      name: kasm-postgres-master-secret
+      key: password
+
+dbManagement:
+  # Set to false after the first successful deployment
+  initialize: true
+  upgrade:
+    enable: false
+  backupCron:
+    enabled: false

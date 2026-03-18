@@ -9,9 +9,6 @@ spec:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: atoca-house-external
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: atoca-house-internal
   extAuth:
     failOpen: true
     grpc:

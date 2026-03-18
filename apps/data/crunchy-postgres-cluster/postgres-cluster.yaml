@@ -169,7 +169,7 @@ spec:
         - name: repo1
           s3: &minio
             bucket: "crunchy-postgres"
-            endpoint: https://s3.atoca.house
+            endpoint: s3.atoca.house
             region: eu-east-1
           schedules:
             full: "15 1 * * 0" # Sunday at 01:15

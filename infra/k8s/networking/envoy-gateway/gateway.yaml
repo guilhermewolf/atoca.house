@@ -214,6 +214,7 @@ apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
 metadata:
   name: envoy
+  namespace: kube-system
 spec:
   clientIPDetection:
     xForwardedFor:

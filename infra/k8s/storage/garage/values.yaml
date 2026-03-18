@@ -38,23 +38,23 @@ service:
       api:
         port: 3903
 
-# route:
-#   app:
-#     enabled: true
-#     kind: HTTPRoute
-#     parentRefs:
-#       - name: atoca-house-internal
-#         namespace: kube-system
-#     hostnames:
-#       - s33.atoca.house
-#     rules:
-#       - backendRefs:
-#           - name: garage
-#             port: *port
-#         matches:
-#           - path:
-#               type: PathPrefix
-#               value: /
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - s3.atoca.house
+    rules:
+      - backendRefs:
+          - name: garage
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
 
 configMaps:
   config:
@@ -62,7 +62,7 @@ configMaps:
       configuration.toml: |
         metadata_dir = "/meta"
         data_dir = "/data"
-        db_engine = "sqlite"
+        db_engine = "lmdb"
         metadata_auto_snapshot_interval = "6h"
 
         block_size = "10MiB"

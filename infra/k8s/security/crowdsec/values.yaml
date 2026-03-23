@@ -1,6 +1,4 @@
 ---
-podAnnotations:
-  reloader.stakater.com/auto: "true"
 container_runtime: containerd
 config:
   parsers:
@@ -85,8 +83,13 @@ secrets:
   externalSecret:
     name: crowdsec-lapi-secrets
 lapi:
+  podAnnotations:
+    reloader.stakater.com/auto: "true"
   strategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   env:
     - name: ENROLL_INSTANCE_NAME
       value: cluster
@@ -109,6 +112,8 @@ lapi:
     serviceMonitor:
       enabled: true
 agent:
+  podAnnotations:
+    reloader.stakater.com/auto: "true"
   acquisition:
     - namespace: kube-system
       podName: atoca-house-*
@@ -127,8 +132,13 @@ agent:
       enabled: true
 appsec:
   enabled: true
+  podAnnotations:
+    reloader.stakater.com/auto: "true"
   strategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   acquisitions:
     - source: appsec
       listen_addr: "0.0.0.0:7422"

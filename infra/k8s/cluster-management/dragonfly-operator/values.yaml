@@ -46,6 +46,8 @@ controllers:
     serviceAccount:
       identifier: &app dragonfly-operator
     pod:
+      labels:
+        control-plane: controller-manager
       securityContext:
         runAsUser: 65534
         runAsGroup: 65534
@@ -90,6 +92,9 @@ rbac:
           verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
         - apiGroups: ["apps"]
           resources: ["statefulsets"]
+          verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+        - apiGroups: ["networking.k8s.io"]
+          resources: ["networkpolicies"]
           verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
         - apiGroups: ["policy"]
           resources: ["poddisruptionbudgets"]

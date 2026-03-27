@@ -3,5 +3,5 @@ app:
   namespace: cert-manager
   chart: cert-manager
   chartRepo: https://charts.jetstack.io
-  chartVersion: v1.20.0
+  chartVersion: v1.20.1
   disableAutoSync: true

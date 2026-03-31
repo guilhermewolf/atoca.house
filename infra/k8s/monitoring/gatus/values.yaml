@@ -27,6 +27,7 @@ controllers:
         env:
           GATUS_DELAY_START_SECONDS: 5
           GATUS_CONFIG_PATH: /config
+          GATUS_LOG_LEVEL: WARN
           GATUS_WEB_PORT: &port 80
         probes:
           liveness: &probes

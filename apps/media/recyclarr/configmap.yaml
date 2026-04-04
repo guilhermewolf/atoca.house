@@ -18,7 +18,11 @@ data:
           - trash_id: 72dae194fc92bf828f32cde7744e51a1 # WEB-1080p
             reset_unmatched_scores:
               enabled: true
+          - trash_id: 20e0fc959f1f1704bed501f23bdae76f # [Anime] Remux-1080p
+            reset_unmatched_scores:
+              enabled: true
         custom_formats:
+          # TV
           - trash_ids:
               - 32b367365729d530ca1c124a0b180c64 # Bad Dual Groups
               - 82d40da2bc6923f41e14394075dd4b03 # No-RlsGroup
@@ -27,35 +31,13 @@ data:
               - 1b3994c551cbb92a2c781af061f4ab44 # Scene
             assign_scores_to:
               - name: WEB-1080p
-      anime-sonarr-v4:
-        base_url: http://sonarr-anime.sonarr-anime.svc.cluster.local
-        api_key: !env_var SONARR_ANIME_API_KEY
-        delete_old_custom_formats: true
-        quality_definition:
-          type: anime
-        quality_profiles:
-          - trash_id: 20e0fc959f1f1704bed501f23bdae76f # [Anime] Remux-1080p
-            reset_unmatched_scores:
-              enabled: true
-        # Custom Formats: https://recyclarr.dev/reference/configuration/custom-formats/
-        custom_formats:
+          # Anime
           - trash_ids:
               - 026d5aadd1a6b4e550b134cb6c72b3ca # Uncensored
-            assign_scores_to:
-              - name: "[Anime] Remux-1080p"
-                score: 0 # Adjust scoring as desired
-
-          - trash_ids:
               - b2550eb333d27b75833e25b8c2557b38 # 10bit
-            assign_scores_to:
-              - name: "[Anime] Remux-1080p"
-                score: 0 # Adjust scoring as desired
-
-          - trash_ids:
               - 418f50b10f1907201b6cfdf881f467b7 # Anime Dual Audio
             assign_scores_to:
               - name: "[Anime] Remux-1080p"
-                score: 0 # Adjust scoring as desired
     radarr:
       radarr:
         base_url: http://radarr.radarr.svc.cluster.local

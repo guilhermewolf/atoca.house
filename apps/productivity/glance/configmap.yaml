@@ -201,9 +201,6 @@ data:
                   - title: Sonarr
                     url: https://sonarr.atoca.house
                     icon: sh:sonarr-light
-                  - title: Sonarr Anime
-                    url: https://anime.atoca.house
-                    icon: sh:sonarr-light
                   - title: Bazarr
                     url: https://bazarr.atoca.house
                     icon: sh:bazarr-light
@@ -232,9 +229,6 @@ data:
                         icon: sh:radarr-light
                       - title: Sonarr (TV)
                         url: https://sonarr.atoca.house
-                        icon: sh:sonarr-light
-                      - title: Sonarr (Anime)
-                        url: https://anime.atoca.house
                         icon: sh:sonarr-light
                       - title: Bazarr (Subtitles)
                         url: https://bazarr.atoca.house

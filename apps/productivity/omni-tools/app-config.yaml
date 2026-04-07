@@ -1,0 +1,8 @@
+---
+# Application configuration for omni-tools
+app:
+  name: omni-tools
+  namespace: omni-tools
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2

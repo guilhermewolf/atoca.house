@@ -1,0 +1,70 @@
+---
+controllers:
+  omni-tools:
+    replicas: 1
+    annotations:
+      reloader.stakater.com/auto: "true"
+    pod:
+      securityContext:
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        fsGroupChangePolicy: OnRootMismatch
+    containers:
+      app:
+        image:
+          repository: iib0011/omni-tools
+          tag: 0.6.0
+        command: ["nginx"]
+        args: ["-g", "daemon off;"]
+
+        resources:
+          requests:
+            cpu: 5m
+            memory: 32Mi
+          limits:
+            memory: 256Mi
+
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+
+service:
+  app:
+    ports:
+      http:
+        port: 80
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - omni-tools.atoca.house
+    rules:
+      - backendRefs:
+          - name: omni-tools
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
+  nginx-cache:
+    type: emptyDir
+    globalMounts:
+      - path: /var/cache/nginx
+  nginx-run:
+    type: emptyDir
+    globalMounts:
+      - path: /var/run

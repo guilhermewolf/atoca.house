@@ -1,0 +1,8 @@
+---
+# Application configuration for it-tools
+app:
+  name: it-tools
+  namespace: it-tools
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2

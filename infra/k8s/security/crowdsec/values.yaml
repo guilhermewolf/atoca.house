@@ -54,14 +54,6 @@ config:
           reason: "envoy bouncer response to already banned ips"
           expression:
             - "evt.Meta.http_status == '418'"
-  config.yaml.local: |-
-    api:
-      server:
-        auto_registration:
-          enabled: true
-          token: ${REGISTRATION_TOKEN}
-          allowed_ranges:
-            - 10.244.0.0/16
   agent_config.yaml.local: |-
     api:
       client:

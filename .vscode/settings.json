@@ -10,10 +10,7 @@
   "editor.guides.highlightActiveBracketPair": true,
   "editor.hover.delay": 1500,
   "editor.stickyScroll.enabled": true,
-  "editor.rulers": [
-    80,
-    120
-  ],
+  "editor.rulers": [],
   "editor.renderWhitespace": "boundary",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {

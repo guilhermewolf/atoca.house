@@ -54,6 +54,23 @@ config:
           reason: "envoy bouncer response to already banned ips"
           expression:
             - "evt.Meta.http_status == '418'"
+  config.yaml.local: |-
+    api:
+      server:
+        auto_registration:
+          enabled: true
+          token: "${REGISTRATION_TOKEN}"
+          allowed_ranges:
+            - "127.0.0.1/32"
+            - "10.244.0.0/16"
+    db_config:
+      type: postgresql
+      host: "${DB_HOST}"
+      port: 5432
+      user: "${DB_USERNAME}"
+      password: "${DB_PASSWORD}"
+      db_name: "${DB_NAME}"
+      sslmode: require
   agent_config.yaml.local: |-
     api:
       client:
@@ -85,10 +102,6 @@ lapi:
   env:
     - name: ENROLL_INSTANCE_NAME
       value: cluster
-    - name: DB_TYPE
-      value: postgresql
-    - name: DB_PORT
-      value: "5432"
   envFrom:
     - secretRef:
         name: crowdsec-secrets

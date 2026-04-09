@@ -1,0 +1,75 @@
+---
+controllers:
+  freshrss:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    pod:
+      hostUsers: false
+    containers:
+      app:
+        image:
+          repository: freshrss/freshrss
+          tag: 1.28.1-alpine
+        env:
+          CRON_MIN: "*"
+          DOMAIN: &hostName freshrss.atoca.house
+          LISTEN: &port 8080
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+          startup:
+            enabled: true
+        resources:
+          requests:
+            cpu: 12m
+            memory: 128M
+          limits:
+            memory: 512M
+service:
+  app:
+    ports:
+      http:
+        port: *port
+
+route:
+  freshrss:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - *hostName
+    rules:
+      - backendRefs:
+          - name: freshrss
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    advancedMounts:
+      freshrss:
+        app:
+          - path: /var/www/FreshRSS/data
+            subPath: data
+            readOnly: false
+          - path: /var/www/FreshRSS/extensions
+            subPath: extensions
+            readOnly: false
+  tmpfs:
+    type: emptyDir
+    advancedMounts:
+      freshrss:
+        app:
+          - path: /var/www/FreshRSS/data/cache
+            subPath: cache

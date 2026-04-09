@@ -1,8 +1,8 @@
 ---
-# Application configuration for filebrowser
+# Application configuration for freshrss
 app:
-  name: filebrowser
-  namespace: filebrowser
+  name: freshrss
+  namespace: freshrss
   chart: app-template
   chartRepo: ghcr.io/bjw-s-labs/helm
   chartVersion: 4.6.2

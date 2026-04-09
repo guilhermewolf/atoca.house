@@ -4,7 +4,9 @@ config:
   parsers:
     s01-parse:
       envoy-logs.yaml: |-
-        filter: "evt.Parsed.program startsWith 'envoy' && evt.Parsed.message contains ':authority'"
+        # Exact match on 'envoy' so the cilium-envoy fallback acquisition
+        # (program: cilium-envoy) does not accidentally get parsed here.
+        filter: "evt.Parsed.program == 'envoy' && evt.Parsed.message contains ':authority'"
         onsuccess: next_stage
         name: hydaz/envoy-logs
         description: "Parse Envoy access logs to match nginx parser outputs"
@@ -80,6 +82,21 @@ config:
       client:
         unregister_on_exit: false
   profiles.yaml: |-
+    # AppSec/WAF hits: short ban (5 minutes). CRS and virtual-patching can
+    # throw false positives on SPAs and API clients; don't nuke a legit
+    # session for 24h because of a single bad query string.
+    name: appsec_remediation
+    filters:
+      - Alert.Remediation == true && Alert.GetScope() == "Ip" && Alert.GetScenario() contains "appsec"
+    decisions:
+      - type: ban
+        duration: 5m
+    on_success: break
+    ---
+    # Default IP ban for all other scenarios. 24h is the CrowdSec recommended
+    # default. Escalation via duration_expr was considered but the expr
+    # helper surface in v1.7.7 doesn't expose historical ban duration in a
+    # way we can cleanly use from a profile — revisit on a newer release.
     name: default_ip_remediation
     debug: false
     filters:
@@ -120,12 +137,26 @@ agent:
   podAnnotations:
     reloader.stakater.com/auto: "true"
   acquisition:
-    # Read both gateways — internal traffic is mostly whitelisted (LAN
-    # monitoring) but tailing it keeps every agent that lands on a node with
-    # a gateway pod busy, avoiding false "Log Processor: no logs read" alerts.
+    # Envoy Gateway access logs (both external and internal). This is the
+    # primary signal source — the `hydaz/envoy-logs` custom parser turns the
+    # envoy JSON access-log format into nginx-compatible fields.
     - namespace: kube-system
       podName: atoca-house-*
       program: envoy
+      poll_without_inotify: true
+    # Cilium agent runs as a DaemonSet on every node and writes several
+    # thousand lines per day (health checks, policy updates). We don't have
+    # a parser for it, so lines are silently dropped at s01-parse — but the
+    # `lines_read` counter still increments, which is what the CrowdSec
+    # Console checks to decide whether an agent is healthy. Without this,
+    # agents scheduled on nodes that happen to host neither an atoca-house
+    # nor an authelia pod would trigger false "Log Processor: no logs read"
+    # alerts. Pattern matches both `cilium-*` (agent) and `cilium-envoy-*`.
+    # The `envoy-logs` parser uses an exact program match (`== 'envoy'`)
+    # so it will not try to parse these lines.
+    - namespace: kube-system
+      podName: cilium-*
+      program: cilium
       poll_without_inotify: true
     # Authelia access/auth logs for brute-force detection.
     - namespace: authelia

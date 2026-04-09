@@ -1,0 +1,92 @@
+---
+# yaml-language-server: $schema=https://kubernetes-schemas.pages.dev/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: crowdsec-health
+  namespace: crowdsec
+spec:
+  groups:
+    - name: crowdsec.health
+      rules:
+        - alert: CrowdSecLAPIDown
+          expr: |-
+            up{service="crowdsec-service", namespace="crowdsec"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: CrowdSec LAPI pod {{ $labels.pod }} is unreachable
+            description: >-
+              The CrowdSec Local API has been unreachable for 5 minutes.
+              Bouncers will continue serving stale decisions but no new
+              signals will be processed. Check `kubectl -n crowdsec logs
+              deployment/crowdsec-lapi` and external PostgreSQL reachability.
+
+        - alert: CrowdSecAppSecDown
+          expr: |-
+            up{service="crowdsec-appsec-service", namespace="crowdsec"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: CrowdSec AppSec (WAF) pod {{ $labels.pod }} is unreachable
+            description: >-
+              The CrowdSec AppSec engine has been unreachable for 5 minutes.
+              With WAF_FAILOVERHTTP=true the bouncer will fall back to plain
+              IP checks (no WAF inspection). Check the appsec pod logs.
+
+        - alert: CrowdSecAgentNoLogs
+          expr: |-
+            sum by (pod) (rate(cs_parser_hits_total{namespace="crowdsec", pod=~"crowdsec-agent-.*"}[30m])) == 0
+          for: 1h
+          labels:
+            severity: warning
+          annotations:
+            summary: CrowdSec agent {{ $labels.pod }} has read zero lines for 1h
+            description: >-
+              This agent's acquisition sources matched no log files or the
+              tailer is stuck. Verify `cscli metrics show acquisition` on the
+              pod. The cilium-envoy fallback source should prevent this from
+              firing under normal conditions — if it does, check whether the
+              cilium-envoy DaemonSet is healthy on this node.
+
+        - alert: CrowdSecParsingErrors
+          expr: |-
+            sum by (pod) (rate(cs_parser_hits_total{namespace="crowdsec", type="ko"}[10m])) > 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: CrowdSec parser errors on {{ $labels.pod }}
+            description: >-
+              More than 1 parser failure per second sustained for 15 minutes.
+              Usually means an upstream log format changed or a custom parser
+              is broken. Check `cscli metrics show parsers` on the pod.
+
+        - alert: CrowdSecLAPIDecisionErrors
+          expr: |-
+            sum(rate(cs_lapi_route_requests_total{namespace="crowdsec", route=~"/v1/decisions.*", code=~"5.."}[5m])) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: CrowdSec LAPI /v1/decisions is returning 5xx
+            description: >-
+              Bouncers polling decisions are getting server errors. Usually a
+              PostgreSQL connectivity or migration issue. Check the LAPI pod
+              logs and the crunchy-postgres cluster health.
+
+        - alert: EnvoyBouncerDown
+          expr: |-
+            up{service="envoy-bouncer", namespace="envoy-bouncer"} == 0
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: Envoy-proxy-bouncer is down
+            description: >-
+              All bouncer replicas are unreachable. The SecurityPolicy has
+              extAuth.failOpen=true, so gateway traffic still flows — but
+              with no CrowdSec enforcement and no WAF. Check
+              `kubectl -n envoy-bouncer describe deployment envoy-bouncer`.

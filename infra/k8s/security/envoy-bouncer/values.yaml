@@ -8,12 +8,17 @@ controllers:
       app:
         image:
           repository: ghcr.io/kdwils/envoy-proxy-bouncer
-          tag: 0.5.4@sha256:61ec5b933859d2f6b629a17833856600b83a3d48b150e4bee7b5b5d4183b65f8
+          # renovate: datasource=github-releases depName=kdwils/envoy-proxy-bouncer
+          tag: v0.6.0@sha256:4d7778a4bccb13ecd6d6b732e8d41b82cd3abf729fd552457e02bddf100d23e0
         env:
           ENVOY_BOUNCER_BOUNCER_BANSTATUSCODE: 418
           ENVOY_BOUNCER_BOUNCER_ENABLED: true
           ENVOY_BOUNCER_BOUNCER_LAPIURL: http://crowdsec-service.crowdsec.svc.cluster.local:8080
-          ENVOY_BOUNCER_BOUNCER_METRICS: true
+          # v0.6+: report bouncer heartbeat/metrics to LAPI every 60s.
+          ENVOY_BOUNCER_BOUNCER_METRICSINTERVAL: 60s
+          # v0.6+: native Prometheus /metrics endpoint.
+          ENVOY_BOUNCER_PROMETHEUS_ENABLED: true
+          ENVOY_BOUNCER_PROMETHEUS_PORT: 9090
           ENVOY_BOUNCER_TEMPLATES_DENIEDTEMPLATEPATH: /ban.html
           # Pod CIDR must be trusted so the bouncer walks X-Forwarded-For back to
           # the real client IP when requests arrive via cloudflare-tunnel pods.
@@ -46,6 +51,15 @@ service:
     ports:
       http:
         port: 8080
+      metrics:
+        port: 9090
+serviceMonitor:
+  app:
+    serviceName: envoy-bouncer
+    endpoints:
+      - port: metrics
+        path: /metrics
+        interval: 30s
 persistence:
   ban:
     type: configMap

@@ -120,15 +120,25 @@ agent:
   podAnnotations:
     reloader.stakater.com/auto: "true"
   acquisition:
+    # Read both gateways — internal traffic is mostly whitelisted (LAN
+    # monitoring) but tailing it keeps every agent that lands on a node with
+    # a gateway pod busy, avoiding false "Log Processor: no logs read" alerts.
     - namespace: kube-system
       podName: atoca-house-*
       program: envoy
+      poll_without_inotify: true
+    # Authelia access/auth logs for brute-force detection.
+    - namespace: authelia
+      podName: authelia-*
+      program: authelia
       poll_without_inotify: true
   env:
     - name: COLLECTIONS
       value: >-
         crowdsecurity/base-http-scenarios
         crowdsecurity/http-cve
+        LePresidente/authelia
+        MrShippeR/filebrowser
     - name: PARSERS
       value: crowdsecurity/cri-logs
   metrics:
@@ -156,6 +166,7 @@ appsec:
       value: >-
         crowdsecurity/appsec-virtual-patching
         crowdsecurity/appsec-generic-rules
+        crowdsecurity/appsec-crs
   metrics:
     enabled: true
     serviceMonitor:

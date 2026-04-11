@@ -16,7 +16,7 @@ spec:
         replicas: 2
         container:
           #imageRepository: mirror.gcr.io/envoyproxy/envoy
-          image: mirror.gcr.io/envoyproxy/envoy:v1.37.1
+          image: mirror.gcr.io/envoyproxy/envoy:v1.37.2
           resources:
             requests:
               cpu: 100m

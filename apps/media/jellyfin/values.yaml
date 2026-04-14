@@ -9,7 +9,7 @@ controllers:
           repository: ghcr.io/jellyfin/jellyfin
           tag: 10.11.8@sha256:93227545077893cc9516f28b3adb733b67bc4691f41b6167428a2a0e3220b81c
         env:
-          JELLYFIN_PublishedServerUrl: https://jelly.atoca.house
+          JELLYFIN_PublishedServerUrl: https://jellyfin.atoca.house
           NVIDIA_VISIBLE_DEVICES: all
           NVIDIA_DRIVER_CAPABILITIES: all
         probes:

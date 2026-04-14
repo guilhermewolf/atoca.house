@@ -1,0 +1,74 @@
+---
+controllers:
+  jellystat:
+    annotations:
+      reloader.stakater.com/auto: "true"
+
+    containers:
+      app:
+        image:
+          repository: cyfershepard/jellystat
+          tag: 1.1.9@sha256:f7f56aabad139faa996b8bb21a36dd3e65f7c87e10408921815b95a28a4efbaf
+        envFrom:
+          - secretRef:
+              name: jellystat-secret
+          - secretRef:
+              name: jellystat-db-secret
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities: { drop: ["ALL"] }
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 5
+        resources:
+          requests:
+            cpu: 10m
+            memory: 200Mi
+          limits:
+            memory: 1000Mi
+    pod:
+      securityContext:
+        seccompProfile: { type: RuntimeDefault }
+service:
+  app:
+    controller: jellystat
+    ports:
+      http:
+        port: &port 3000
+
+route:
+  jellystat:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-external
+        namespace: kube-system
+    hostnames:
+      - jellystat.atoca.house
+    rules:
+      - backendRefs:
+          - name: jellystat
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+# persistence:
+#   backup:
+#     enabled: true
+#     type: nfs
+#     server: ${NFS_SERVER}
+#     path: /volume1/apps/media
+#     advancedMounts:
+#       jellystat:
+#         app:
+#           - subPath: jellystat
+#             path: /app/backend/backup-data

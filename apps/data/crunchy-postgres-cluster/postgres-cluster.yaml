@@ -95,15 +95,15 @@ spec:
       password:
         type: AlphaNumeric
 
-    - name: spoolman
-      databases:
-        - spoolman
-      password:
-        type: AlphaNumeric
-
     - name: open-webui
       databases:
         - open-webui
+      password:
+        type: AlphaNumeric
+
+    - name: jellystat
+      databases:
+        - jellystat
       password:
         type: AlphaNumeric
 

@@ -1,0 +1,173 @@
+---
+controllers:
+  moltis:
+    type: statefulset
+    annotations:
+      reloader.stakater.com/auto: "true"
+
+    initContainers:
+      daemon:
+        image:
+          repository: docker
+          tag: 29.3.1-dind@sha256:686d2c5464787b0ca42420e0aa03a94fc9781ff9bf8b5ff947614b9fa4c3c3e0
+        restartPolicy: Always
+        securityContext:
+          privileged: true
+        env:
+          - name: DOCKER_TLS_CERTDIR
+            value: /certs
+          - name: DOCKER_HOST
+            value: tcp://localhost:2376
+          - name: DOCKER_CERT_PATH
+            value: /certs/client
+          - name: DOCKER_TLS_VERIFY
+            value: "1"
+        probes:
+          startup:
+            enabled: true
+            custom: true
+            spec: &probeSpec
+              exec:
+                command: ["docker", "info"]
+              periodSeconds: 2
+              timeoutSeconds: 3
+              failureThreshold: 60
+
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              <<: *probeSpec
+              periodSeconds: 5
+              timeoutSeconds: 3
+              failureThreshold: 3
+
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              <<: *probeSpec
+              periodSeconds: 20
+              timeoutSeconds: 3
+              failureThreshold: 3
+
+    containers:
+      app:
+        image:
+          repository: ghcr.io/moltis-org/moltis
+          tag: 0.10.18@sha256:b155dd370fd26d5ea7286ea41011fcfec5ea6effd93486dd0809e310f02ec9bc
+        args:
+          - --bind
+          - "[::]"
+          - --port
+          - "13131"
+          - --no-tls
+        env:
+          MOLTIS_BEHIND_PROXY: "true"
+
+          MOLTIS_CONFIG_DIR: /config
+          MOLTIS_DATA_DIR: /data
+
+          MOLTIS_WEBAUTHN_RP_ID: "moltis.atoca.house"
+          MOLTIS_WEBAUTHN_ORIGIN: "https://moltis.atoca.house"
+
+          DOCKER_HOST: tcp://localhost:2376
+          DOCKER_CERT_PATH: /certs/client
+          DOCKER_TLS_VERIFY: "1"
+        # envFrom:
+        #   - secretRef:
+        #       name: moltis
+        probes:
+          liveness: &probe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: &port 13131
+              initialDelaySeconds: 10
+              periodSeconds: 30
+              timeoutSeconds: 10
+              failureThreshold: 3
+          readiness: *probe
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  securityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile: { type: RuntimeDefault }
+
+service:
+  app:
+    controller: moltis
+    ports:
+      http:
+        port: 80
+        targetPort: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    hostnames: ["moltis.atoca.house"]
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+        sectionName: https
+    rules:
+      - backendRefs:
+          - name: moltis
+            port: 80
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    advancedMounts:
+      moltis:
+        app:
+          - path: /config
+            subPath: config
+          - path: /data
+            subPath: data
+
+  docker:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    advancedMounts:
+      moltis:
+        daemon:
+          - path: /var/lib/docker
+
+  certs:
+    type: emptyDir
+    advancedMounts:
+      moltis:
+        daemon:
+          - path: /certs
+        app:
+          - path: /certs
+
+  tmp:
+    type: emptyDir
+    advancedMounts:
+      moltis:
+        app:
+          - path: /tmp

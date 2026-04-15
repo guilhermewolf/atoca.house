@@ -15,3 +15,5 @@ Thumbs.db
 kubeconfig
 talosconfig
 .grepai/
+CLAUDE.md
+.claude/

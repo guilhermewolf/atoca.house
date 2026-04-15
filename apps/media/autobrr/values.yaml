@@ -27,13 +27,13 @@ controllers:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          capabilities: {drop: ["ALL"]}
+          capabilities: { drop: ["ALL"] }
         probes:
           liveness:
             enabled: true
             spec:
               periodSeconds: 30
-              timeoutSeconds: 15
+              timeoutSeconds: 5
               failureThreshold: 5
           readiness:
             enabled: true
@@ -42,20 +42,14 @@ controllers:
               httpGet:
                 path: /api/healthz/readiness
                 port: *port
-              initialDelaySeconds: 10
               periodSeconds: 10
-              timeoutSeconds: 15
+              timeoutSeconds: 5
               failureThreshold: 5
           startup:
             enabled: true
             spec:
               failureThreshold: 30
               periodSeconds: 10
-        resources:
-          requests:
-            cpu: 10m
-          limits:
-            memory: 256Mi
 
 defaultPodOptions:
   annotations:

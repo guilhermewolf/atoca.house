@@ -3,16 +3,6 @@ controllers:
     replicas: 1
     annotations:
       reloader.stakater.com/auto: "true"
-    initContainers:
-      init-db:
-        image:
-          repository: ghcr.io/home-operations/postgres-init
-          tag: 17.6.0@sha256:86a1992d46273c58fd4ad95b626081dfaabfe16bd56944675169e406d1a660dd
-        envFrom: &envFrom
-          - secretRef:
-              name: vikunja-db-secret
-          - secretRef:
-              name: vikunja-dbinit-secret
     containers:
       vikunja:
         image:
@@ -31,7 +21,7 @@ controllers:
           VIKUNJA_REDIS_DB: 3
           VIKUNJA_KEYVALUE_TYPE: redis
           discoverable_by_email: true
-          overdue_tasks_reminders_time: '11:00'
+          overdue_tasks_reminders_time: "11:00"
           VIKUNJA_DEFAULTSETTINGS_WEEK_START: 1
 
           # postgres
@@ -104,7 +94,7 @@ persistence:
     storageClass: ceph-block
     accessMode: ReadWriteOnce
     globalMounts:
-      - path:  /app/vikunja/files
+      - path: /app/vikunja/files
   config:
     type: secret
     name: vikunja-secret

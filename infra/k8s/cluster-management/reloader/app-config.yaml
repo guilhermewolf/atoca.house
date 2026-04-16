@@ -3,7 +3,7 @@ app:
   namespace: reloader
   chart: reloader
   chartRepo: https://stakater.github.io/stakater-charts
-  chartVersion: 2.2.10
+  chartVersion: 2.2.11
   hasValues: true
   customIgnoreDifferences: true
   disableAutoSync: true

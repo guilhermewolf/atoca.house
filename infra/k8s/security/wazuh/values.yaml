@@ -1,0 +1,120 @@
+---
+# morgoved/wazuh-helm values tuned for atoca.house homelab
+# - Single-node indexer + manager master (no workers)
+# - Dashboard exposed via Gateway API HTTPRoute (see route.yaml), not Ingress
+# - Cert-manager is cluster-wide already; the chart provisions its own self-signed
+#   issuer for the internal OpenSearch/filebeat mTLS chain
+# - All credentials flow in from 1Password via the ExternalSecret in secrets.yaml
+
+cert-manager:
+  enabled: false
+
+certificates:
+  enabled: true
+  issuer:
+    name: null
+    type: issuer
+  duration: 8760h # 1y
+  renewBefore: 720h # 30d
+
+indexer:
+  enabled: true
+  replicas: 1
+  storageSize: 50Gi
+  storageClass: ceph-block
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      memory: 2Gi
+  cred:
+    existingSecret: wazuh-secret
+  # Talos nodes run with vm.max_map_count=65530 by default; this privileged
+  # initContainer bumps it to 262144 (OpenSearch bootstrap requirement).
+  sysctlImage:
+    enabled: true
+  # Chart omits action_groups.yml from the security configmap; securityadmin.sh
+  # fails without it. Seeding an empty one satisfies the loader.
+  additionalConfigs:
+    action_groups.yml: |
+      _meta:
+        type: "actiongroups"
+        config_version: 2
+  # Run securityadmin bootstrap as an ArgoCD PostSync hook so it fires after
+  # the indexer + secret are in place (the chart ships Helm post-install hooks
+  # that Argo doesn't translate cleanly).
+  job:
+    annotations:
+      argocd.argoproj.io/hook: PostSync
+      argocd.argoproj.io/hook-delete-policy: HookSucceeded,BeforeHookCreation
+  networkPolicy:
+    enabled: true
+
+dashboard:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+  cred:
+    existingSecret: wazuh-secret
+  # Ingress handled externally via HTTPRoute -> atoca-house-internal gateway.
+  ingress:
+    enabled: false
+  networkPolicy:
+    enabled: true
+    # Allow the envoy-gateway pods in envoy-gateway-system to reach :5601
+    extraIngresses:
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: envoy-gateway-system
+
+wazuh:
+  enabled: true
+  # Cluster encryption key. Replace with `openssl rand -hex 16` output.
+  # Cannot come from a Secret: baked into ossec.conf at template time.
+  key: "c98b62a9b6169ac5f67dae55ae4a9088"
+  apiCred:
+    existingSecret: wazuh-secret
+  authd:
+    enabled: true
+    existingSecret: wazuh-secret
+  # LB for external agents (OPNsense, remote hosts) on the homelab LAN pool.
+  loadBalancer:
+    enabled: true
+    annotations:
+      io.cilium/lb-ipam-ips: "192.168.60.29"
+  master:
+    enabled: true
+    storageSize: 20Gi
+    storageClass: ceph-block
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    networkPolicy:
+      enabled: true
+      # Let external agents reach registration/events/syslog via the LB.
+      extraIngresses:
+        - from:
+            - ipBlock:
+                cidr: 0.0.0.0/0
+          ports:
+            - port: 1515
+              protocol: TCP
+            - port: 1514
+              protocol: TCP
+            - port: 514
+              protocol: UDP
+  worker:
+    enabled: false
+
+agent:
+  enabled: false

@@ -1,0 +1,65 @@
+---
+# Disabled: the morgoved/wazuh-helm chart ships its own post-install job
+# (templates/indexer/job.yaml) that runs securityadmin.sh. This custom job
+# was duplicative and hung on silent auth failures. Kept here commented
+# in case we need to revert to a manual init.
+#
+# apiVersion: batch/v1
+# kind: Job
+# metadata:
+#   name: wazuh-indexer-init
+#   namespace: wazuh
+#   labels:
+#     app.kubernetes.io/name: wazuh
+#     app.kubernetes.io/component: indexer-init
+# spec:
+#   backoffLimit: 6
+#   ttlSecondsAfterFinished: 300
+#   template:
+#     spec:
+#       restartPolicy: OnFailure
+#       containers:
+#         - name: securityadmin
+#           image: wazuh/wazuh-indexer:4.14.4
+#           command: ["sh"]
+#           args:
+#             - /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh
+#             - -cd
+#             - /usr/share/wazuh-indexer/config/opensearch-security/
+#             - -nhnv
+#             - -cacert
+#             - /usr/share/wazuh-indexer/config/certs/root-ca.pem
+#             - -cert
+#             - /usr/share/wazuh-indexer/config/certs/admin.pem
+#             - -key
+#             - /usr/share/wazuh-indexer/config/certs/admin-key.pem
+#             - -p
+#             - "9200"
+#             - -icl
+#             - -h
+#             - wazuh-indexer
+#           env:
+#             - name: JAVA_HOME
+#               value: /usr/share/wazuh-indexer/jdk/
+#           volumeMounts:
+#             - mountPath: /usr/share/wazuh-indexer/config/certs/root-ca.pem
+#               name: node-certs
+#               subPath: ca.crt
+#             - mountPath: /usr/share/wazuh-indexer/config/certs/admin.pem
+#               name: admin-certs
+#               subPath: tls.crt
+#             - mountPath: /usr/share/wazuh-indexer/config/certs/admin-key.pem
+#               name: admin-certs
+#               subPath: tls.key
+#             - name: indexer-conf
+#               mountPath: /usr/share/wazuh-indexer/config/opensearch-security/
+#       volumes:
+#         - name: admin-certs
+#           secret:
+#             secretName: admin-tls
+#         - name: node-certs
+#           secret:
+#             secretName: node-tls
+#         - name: indexer-conf
+#           configMap:
+#             name: wazuh-indexer-config

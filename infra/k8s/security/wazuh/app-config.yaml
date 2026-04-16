@@ -1,0 +1,8 @@
+---
+app:
+  name: wazuh
+  namespace: wazuh
+  chart: wazuh
+  chartRepo: https://morgoved.github.io/wazuh-helm/
+  chartVersion: 1.0.21
+  hasValues: true

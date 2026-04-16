@@ -1,0 +1,111 @@
+---
+# Wazuh security users sync.
+#
+# Why this exists:
+#   The chart generates internal_users.yml at Helm template time. When the
+#   existingSecret is set, the chart uses Helm's `lookup` function to pull the
+#   bcrypt hashes out of the Secret — but ArgoCD renders Helm with `helm
+#   template`, which does not execute `lookup`. So the chart always falls back
+#   to its built-in *demo* hashes, while the manager + dashboard pods connect
+#   using the real passwords from 1Password. Every auth attempt fails.
+#
+# What this Job does:
+#   Runs as a Sync-phase hook (wave 7) after the indexer (wave 0) and the
+#   chart's own securityadmin Job (pinned to wave 5 via values.yaml). It
+#   reads the real bcrypt hashes out of wazuh-secret, rewrites
+#   internal_users.yml in a tmp dir, and re-runs securityadmin.sh so the
+#   running security index ends up with the 1Password hashes. Idempotent —
+#   reruns on every Argo sync, so rotating the password in 1Password and
+#   refreshing the app is enough to roll credentials.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wazuh-users-sync
+  namespace: wazuh
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "7"
+  labels:
+    app.kubernetes.io/name: wazuh
+    app.kubernetes.io/component: users-sync
+spec:
+  backoffLimit: 20
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: wazuh
+        app.kubernetes.io/component: users-sync
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: securityadmin
+          image: wazuh/wazuh-indexer:4.14.1
+          env:
+            - name: JAVA_HOME
+              value: /usr/share/wazuh-indexer/jdk/
+            - name: INDEXER_PASSWORD_HASH
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-secret
+                  key: INDEXER_PASSWORD_HASH
+            - name: DASHBOARD_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-secret
+                  key: DASHBOARD_USERNAME
+            - name: DASHBOARD_PASSWORD_HASH
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-secret
+                  key: DASHBOARD_PASSWORD_HASH
+          command: ["/bin/bash", "-ec"]
+          args:
+            - |
+              echo "Waiting for wazuh-indexer:9200 ..."
+              until curl -sk -o /dev/null --connect-timeout 2 https://wazuh-indexer:9200; do sleep 5; done
+
+              echo "Building security config with real hashes from wazuh-secret ..."
+              mkdir -p /tmp/sec
+              cp /cm/*.yml /tmp/sec/
+              cat > /tmp/sec/internal_users.yml <<EOF
+              _meta:
+                type: "internalusers"
+                config_version: 2
+              admin:
+                hash: "${INDEXER_PASSWORD_HASH}"
+                reserved: true
+                backend_roles:
+                  - "admin"
+                description: "admin user"
+              ${DASHBOARD_USERNAME}:
+                hash: "${DASHBOARD_PASSWORD_HASH}"
+                reserved: true
+                description: "${DASHBOARD_USERNAME} user"
+              EOF
+
+              echo "Pushing config to the running indexer ..."
+              /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh \
+                -cd /tmp/sec \
+                -icl -nhnv \
+                -h wazuh-indexer -p 9200 \
+                -cacert /node-certs/ca.crt \
+                -cert /admin-certs/tls.crt \
+                -key /admin-certs/tls.key
+
+              echo "Users sync complete."
+          volumeMounts:
+            - { name: cm, mountPath: /cm }
+            - { name: node-certs, mountPath: /node-certs }
+            - { name: admin-certs, mountPath: /admin-certs }
+      volumes:
+        - name: cm
+          configMap:
+            name: wazuh-indexer-config
+        - name: node-certs
+          secret:
+            secretName: node-tls
+        - name: admin-certs
+          secret:
+            secretName: admin-tls

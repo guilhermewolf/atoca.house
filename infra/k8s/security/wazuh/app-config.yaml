@@ -1,0 +1,9 @@
+---
+app:
+  name: wazuh
+  namespace: wazuh
+  chart: wazuh
+  chartRepo: https://morgoved.github.io/wazuh-helm/
+  # renovate: datasource=helm registryUrl=https://morgoved.github.io/wazuh-helm/ depName=wazuh
+  chartVersion: 1.0.22
+  hasValues: true

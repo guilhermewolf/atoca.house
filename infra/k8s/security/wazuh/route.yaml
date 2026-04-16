@@ -1,0 +1,25 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: wazuh
+  namespace: wazuh
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: atoca-house-internal
+      namespace: kube-system
+  hostnames:
+    - wazuh.atoca.house
+  rules:
+    - backendRefs:
+        - group: ''
+          kind: Service
+          name: wazuh-dashboard
+          port: 5601
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

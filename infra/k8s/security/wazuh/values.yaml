@@ -1,0 +1,164 @@
+---
+# morgoved/wazuh-helm values for atoca.house
+# ---------------------------------------------------------------------------
+# Topology: single-replica everywhere. 4-node Talos cluster with 32 GB/node
+# and hyper-converged Rook-Ceph leaves plenty of headroom; scale out later
+# by bumping indexer.replicas (requires 3 nodes) and flipping worker.enabled.
+#
+# Access: dashboard exposed via Gateway API (route.yaml) on the internal
+# Envoy gateway (wazuh.atoca.house). External agents reach the manager
+# through a Cilium LoadBalancer on the LAN pool.
+#
+# Secrets: every credential comes from 1Password via the ExternalSecret in
+# secrets.yaml. wazuh.key is the only plaintext value, because the chart
+# bakes it into ossec.conf at template time.
+
+cert-manager:
+  enabled: false
+
+# Self-signed issuer created by the chart for the internal OpenSearch/filebeat
+# mTLS chain. Long validity — these certs are not user-facing.
+certificates:
+  enabled: true
+  issuer:
+    name: null
+    type: issuer
+  duration: 8760h # 1y
+  renewBefore: 720h # 30d
+  subject:
+    organization: atoca.house
+    country: BR
+    locality: Homelab
+
+indexer:
+  enabled: true
+  replicas: 1
+  storageSize: 50Gi
+  storageClass: ceph-block
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      memory: 2Gi
+  cred:
+    existingSecret: wazuh-secret
+  # OpenSearch bootstrap requires vm.max_map_count >= 262144. Talos defaults
+  # to 65530. Once the Talos machine config is patched cluster-wide, flip
+  # this to false and drop the privileged initContainer.
+  sysctlImage:
+    enabled: true
+  # Chart omits action_groups.yml from the security configmap; securityadmin.sh
+  # refuses to load the directory without it. Seeding an empty one satisfies it.
+  additionalConfigs:
+    action_groups.yml: |
+      _meta:
+        type: "actiongroups"
+        config_version: 2
+  # Pin the chart's built-in securityadmin job into the Sync phase at wave 5
+  # so it runs after the indexer (wave 0) and BEFORE our custom wave-7
+  # users-sync Job (init-job.yaml). If it stayed on PostSync it would fire
+  # last and overwrite the 1Password-sourced hashes with the chart's demo
+  # hashes baked into the ConfigMap.
+  job:
+    annotations:
+      argocd.argoproj.io/hook: Sync
+      argocd.argoproj.io/hook-delete-policy: HookSucceeded,BeforeHookCreation
+      argocd.argoproj.io/sync-wave: "5"
+  networkPolicy:
+    enabled: true
+    # Allow our users-sync Job (init-job.yaml) to reach the indexer on 9200.
+    extraIngresses:
+      - from:
+          - podSelector:
+              matchLabels:
+                app.kubernetes.io/component: users-sync
+        ports:
+          - protocol: TCP
+            port: 9200
+  pdb:
+    enabled: false # single replica — PDB just blocks drains
+
+dashboard:
+  enabled: true
+  replicas: 1
+  # Deploy after the users-sync Job (wave 7) has pushed the real hashes into
+  # the indexer's security index. If the dashboard deployed at wave 0 it
+  # would stall ArgoCD's wave gating (auth fails -> Deployment never Healthy
+  # -> later waves never run).
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+  cred:
+    existingSecret: wazuh-secret
+  # HTTP in-cluster; TLS terminates at the Envoy gateway (route.yaml).
+  enable_ssl: false
+  ingress:
+    enabled: false
+  networkPolicy:
+    enabled: true
+    # Allow the Envoy gateway pods to hit :5601.
+    extraIngresses:
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: envoy-gateway-system
+
+wazuh:
+  enabled: true
+  # Cluster encryption key for manager<->worker traffic. Unused with a single
+  # master, but still baked into ossec.conf. Replace with your own 32-char hex
+  # (openssl rand -hex 16) before going multi-node.
+  apiCred:
+    existingSecret: wazuh-secret
+  authd:
+    enabled: true
+    existingSecret: wazuh-secret
+  # LoadBalancer for agents outside the cluster (OPNsense, remote hosts).
+  # Static IP on the internal LAN pool managed by Cilium LB-IPAM.
+  loadBalancer:
+    enabled: true
+    annotations:
+      io.cilium/lb-ipam-ips: "192.168.60.29"
+  master:
+    enabled: true
+    storageSize: 20Gi
+    storageClass: ceph-block
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    networkPolicy:
+      enabled: true
+      # LoadBalancer traffic arrives with the original client IP (Cilium
+      # eBPF, externalTrafficPolicy=Local), so permit the world on the
+      # agent-facing ports. 1515=enrollment, 1514=events, 514=syslog.
+      extraIngresses:
+        - from:
+            - ipBlock:
+                cidr: 0.0.0.0/0
+          ports:
+            - port: 1515
+              protocol: TCP
+            - port: 1514
+              protocol: TCP
+            - port: 514
+              protocol: UDP
+  # Single-master setup. Flip worker.enabled + pick replicas once agent
+  # volume outgrows one node's event-processing budget.
+  worker:
+    enabled: false
+
+# Wazuh agents as a DaemonSet on cluster nodes. Disabled by default — this
+# deployment is aimed at external endpoints (OPNsense, IoT). Enable later
+# for in-cluster host monitoring; requires privileged pods and extensive
+# hostPath mounts.
+agent:
+  enabled: false

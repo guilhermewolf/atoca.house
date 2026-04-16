@@ -43,8 +43,8 @@ controllers:
                 path: /api/healthz/readiness
                 port: *port
               periodSeconds: 10
-              timeoutSeconds: 5
-              failureThreshold: 5
+              timeoutSeconds: 10
+              failureThreshold: 10
           startup:
             enabled: true
             spec:

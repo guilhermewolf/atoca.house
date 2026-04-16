@@ -36,10 +36,13 @@ controllers:
           capabilities: { drop: ["ALL"] }
         resources:
           requests:
-            cpu: 10m
+            cpu: 25m
             memory: 64Mi
           limits:
-            cpu: 100m
+            # CPU limit intentionally unset — the bouncer sits on the request
+            # path (ext_authz for every external call) and CFS throttling here
+            # directly raises tail latency for the whole gateway. Requests
+            # still guarantee baseline; memory limit stays for OOM safety.
             memory: 128Mi
 defaultPodOptions:
   securityContext:

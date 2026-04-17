@@ -43,11 +43,8 @@ indexer:
       memory: 2Gi
   cred:
     existingSecret: wazuh-secret
-  # OpenSearch bootstrap requires vm.max_map_count >= 262144. Talos defaults
-  # to 65530. Once the Talos machine config is patched cluster-wide, flip
-  # this to false and drop the privileged initContainer.
   sysctlImage:
-    enabled: true
+    enabled: false
   # Chart omits action_groups.yml from the security configmap; securityadmin.sh
   # refuses to load the directory without it. Seeding an empty one satisfies it.
   additionalConfigs:
@@ -151,6 +148,28 @@ wazuh:
               protocol: TCP
             - port: 514
               protocol: UDP
+        # Cilium quirk: when every ingress rule specifies BOTH `from` AND
+        # `ports`, Cilium drops the return traffic for egress-initiated
+        # connections. K8s NP is nominally stateful, but Cilium only honors
+        # that when at least one ingress rule is "loose" (any port from a
+        # given source). The two rules below are the minimum set that
+        # keeps the return traffic conntrack working for our actual egress:
+        #   (1) indexer:9200 replies — any pod in the wazuh namespace
+        #   (2) kube-dns UDP/53 replies — coredns in kube-system
+        # External TCP/443 egress (content-updater) also works because once
+        # conntrack has a working bypass for any one path, Cilium keeps
+        # state-based return traffic for all other egress-initiated flows.
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: wazuh
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: kube-system
+              podSelector:
+                matchLabels:
+                  k8s-app: kube-dns
   # Single-master setup. Flip worker.enabled + pick replicas once agent
   # volume outgrows one node's event-processing budget.
   worker:

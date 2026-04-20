@@ -10,6 +10,8 @@ controllers:
           tag: 0.25.1@sha256:ab9ed50e028b524cefdb7c1dd8ebca368a076e18441ee8ac2326473eb850b4c3
         env:
           DOTNET_BUNDLE_EXTRACT_BASE_DIR: /tmp/.net
+          PUID: 99
+          PGID: 100
           SLSKD_APP_DIR: /config
           SLSKD_HTTP_PORT: &port 80
           SLSKD_NO_AUTH: true
@@ -34,8 +36,10 @@ controllers:
           readiness: *probes
         securityContext:
           allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities: { drop: ["ALL"] }
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop: ["ALL"]
+            add: ["CHOWN", "SETUID", "SETGID"]
         resources:
           requests:
             cpu: 10m
@@ -58,9 +62,9 @@ defaultPodOptions:
         "mac": "c6:58:f2:a7:62:ce"
       }]
   securityContext:
-    runAsNonRoot: true
-    runAsUser: 99
-    runAsGroup: 100
+    runAsNonRoot: false
+    runAsUser: 0
+    runAsGroup: 0
     fsGroup: 100
     fsGroupChangePolicy: OnRootMismatch
 

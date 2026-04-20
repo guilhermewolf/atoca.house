@@ -1,7 +1,26 @@
+global:
+  logging:
+    format: json
+    level: info
+  # Soft anti-affinity keeps replicas spread across nodes but doesn't block
+  # scheduling during drains/rolling updates.
+  affinity:
+    podAntiAffinity: soft
+  # Hostname-level spread across the 4 control-plane nodes.
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+
 configs:
   cm:
     statusbadge.enabled: true
     url: &argocd-url https://argocd.atoca.house
+
+    # Poll git every 60s (was 120s). Lower = faster UI updates on push,
+    # since the internal gateway can't receive GitHub webhooks.
+    timeout.reconciliation: 60s
+    timeout.reconciliation.jitter: 30s
 
     repositories: |
       - url: https://github.com/guilhermewolf/atoca.house
@@ -72,10 +91,29 @@ crds:
 redisSecretInit:
   enabled: false
 
+# Single redis is fine at this scale; just enable Prometheus metrics.
+# (No PDB — with one replica a PDB would block node drains.)
+redis:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
 dex:
   enabled: false
 
 server:
+  replicas: 2
+
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
   httproute:
     enabled: true
     hostnames:
@@ -93,6 +131,29 @@ server:
               value: /
 
 repoServer:
+  replicas: 2
+
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+  env:
+    # Cap manifest generation work in flight per repo-server pod.
+    - name: ARGOCD_EXEC_TIMEOUT
+      value: 5m
+    - name: ARGOCD_GIT_ATTEMPTS_COUNT
+      value: "3"
+
+  # --parallelismlimit caps concurrent manifest generations per pod.
+  # With 2 replicas that's up to 20 parallel generations cluster-wide.
+  args:
+    - --parallelismlimit=10
+
   # Increase probe timeouts to handle storage I/O latency
   livenessProbe:
     timeoutSeconds: 10
@@ -165,26 +226,67 @@ repoServer:
       memory: 1000Mi
 
 controller:
+  replicas: 2
+  # Enables graceful cluster rebalancing between controller replicas.
+  dynamicClusterDistribution: true
+
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+  env:
+    # Must equal .replicas when dynamicClusterDistribution is on.
+    - name: ARGOCD_CONTROLLER_REPLICAS
+      value: "2"
+
+  # Headroom for a large app count (100+ Applications).
+  # Defaults are operation=10, status=20, kubectl-parallelism=20.
+  args:
+    - --operation-processors=25
+    - --status-processors=50
+    - --kubectl-parallelism-limit=20
+
   resources:
     requests:
       cpu: 500m
       memory: 1000Mi
     limits:
-      cpu: 1000m
-      memory: 1500Mi
+      cpu: 1500m
+      memory: 2Gi
 
 applicationSet:
+  replicas: 2
+
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
   resources:
     requests:
       cpu: 100m
       memory: 128Mi
     limits:
-      cpu: 250m
-      memory: 256Mi
+      cpu: 500m
+      memory: 512Mi
 
 notifications:
   enabled: true
   argocdUrl: *argocd-url
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
 
   secret:
     create: false

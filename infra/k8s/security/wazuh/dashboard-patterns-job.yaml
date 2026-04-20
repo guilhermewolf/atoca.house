@@ -1,0 +1,108 @@
+---
+# Wazuh dashboard index pattern sync.
+#
+# Why this exists:
+#   The Wazuh dashboard plugin auto-creates the `wazuh-monitoring-*` and
+#   `wazuh-statistics-*` index patterns on first boot because data for those
+#   indices arrives immediately (the manager writes heartbeats + stats as
+#   soon as it starts). But `wazuh-alerts-*` only auto-creates once the
+#   plugin observes real alert data, and a fresh install with no enrolled
+#   agents may never trigger that path. Without the saved object, the
+#   plugin's Alerts tab 302-redirects its bootstrap lookups.
+#
+# What this Job does:
+#   Runs as a Sync-phase hook at wave 11 (right after the dashboard at
+#   wave 10) and POSTs the `wazuh-alerts-*` index pattern saved object via
+#   the dashboard API. Idempotent — a 409 (already exists) counts as
+#   success, so the Job re-runs safely on every sync and also re-seeds
+#   the pattern if the indexer PVC is ever wiped.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wazuh-dashboard-patterns
+  namespace: wazuh
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "11"
+  labels:
+    app.kubernetes.io/name: wazuh
+    app.kubernetes.io/component: dashboard-patterns
+spec:
+  backoffLimit: 10
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: wazuh
+        app.kubernetes.io/component: dashboard-patterns
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: patterns
+          # renovate: datasource=docker depName=docker.io/curlimages/curl
+          image: docker.io/curlimages/curl:8.11.1
+          env:
+            - name: DASH_URL
+              value: http://wazuh-dashboard:5601
+            - name: ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-secret
+                  key: INDEXER_USERNAME
+            - name: ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: wazuh-secret
+                  key: INDEXER_PASSWORD
+          command: ["/bin/sh", "-ec"]
+          args:
+            - |
+              echo "Waiting for dashboard at $DASH_URL ..."
+              # /api/status answers 200 (unauthenticated for health) once
+              # the dashboard server is up. Accept 200 or 401 as "reachable".
+              until code=$(curl -sk -o /dev/null -w '%{http_code}' --connect-timeout 2 "$DASH_URL/api/status" 2>/dev/null); [ "$code" = "200" ] || [ "$code" = "401" ]; do
+                sleep 5
+              done
+              echo "Dashboard reachable (HTTP $code)."
+
+              ensure_pattern() {
+                id="$1"; title="$2"; time_field="$3"
+                echo "Ensuring index-pattern/$id (title=$title, timeField=$time_field)"
+                resp_code=$(curl -sk -u "$ADMIN_USER:$ADMIN_PASS" \
+                  -H 'osd-xsrf: osd-fetch' \
+                  -H 'Content-Type: application/json' \
+                  -o /tmp/resp -w '%{http_code}' \
+                  -X POST "$DASH_URL/api/saved_objects/index-pattern/${id}" \
+                  -d "{\"attributes\":{\"title\":\"${title}\",\"timeFieldName\":\"${time_field}\"}}")
+                case "$resp_code" in
+                  200|201)
+                    echo "  -> created ($resp_code)"
+                    ;;
+                  409)
+                    echo "  -> already exists (409)"
+                    ;;
+                  *)
+                    echo "  -> FAIL ($resp_code)"
+                    cat /tmp/resp 2>/dev/null || true
+                    return 1
+                    ;;
+                esac
+              }
+
+              ensure_pattern "wazuh-alerts-*" "wazuh-alerts-*" "timestamp"
+              echo "Done."
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 100
+            runAsGroup: 101
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: tmp
+          emptyDir: {}

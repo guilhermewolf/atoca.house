@@ -41,7 +41,7 @@ spec:
       containers:
         - name: patterns
           # renovate: datasource=docker depName=docker.io/curlimages/curl
-          image: docker.io/curlimages/curl:8.11.1
+          image: docker.io/curlimages/curl:8.19.0
           env:
             - name: DASH_URL
               value: http://wazuh-dashboard:5601

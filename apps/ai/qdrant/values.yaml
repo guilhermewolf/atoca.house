@@ -8,6 +8,9 @@ controllers:
         image:
           repository: docker.io/qdrant/qdrant
           tag: v1.17.1@sha256:94728574965d17c6485dd361aa3c0818b325b9016dac5ea6afec7b4b2700865f
+        args:
+          - ./qdrant
+          - --disable-telemetry
         envFrom:
           - secretRef:
               name: qdrant-secrets

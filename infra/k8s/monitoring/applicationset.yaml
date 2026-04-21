@@ -50,7 +50,7 @@ spec:
             - /spec/volumeClaimTemplates/0/apiVersion
             - /spec/volumeClaimTemplates/0/kind
         # Ignore runtime modifications on HTTPRoutes from Gateway controllers
-        - group: gateway.monitoring.k8s.io
+        - group: gateway.networking.k8s.io
           kind: HTTPRoute
           jsonPointers:
             - /status

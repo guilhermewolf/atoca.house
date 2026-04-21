@@ -76,13 +76,18 @@ configs:
             command:
               - sh
               - "-c"
-              - "find . -name '*.yaml' -o -name '*.yml' | xargs -I {} sh -c 'grep -q \"^kind:\" \"{}\" && grep -q \"<[^>]*>\\|avp\\.kubernetes\\.io\" \"{}\" && echo \"{}\" || true' 2>/dev/null"
+              - "find . -name '*.yaml' -o -name '*.yml' | xargs -I {} sh -c
+                'grep -q \"^kind:\" \"{}\" && grep -q
+                \"<[^>]*>\\|avp\\.kubernetes\\.io\" \"{}\" && echo \"{}\" ||
+                true' 2>/dev/null"
         generate:
           command:
             - sh
           args:
             - "-c"
-            - 'find . -name ''*.yaml'' -o -name ''*.yml'' | xargs -I {} sh -c ''grep -q "^kind:" "{}" && cat "{}" && echo "---" || true'' 2>/dev/null | argocd-vault-plugin generate -'
+            - "find . -name '*.yaml' -o -name '*.yml' | xargs -I {} sh -c 'grep
+              -q \"^kind:\" \"{}\" && cat \"{}\" && echo \"---\" || true'
+              2>/dev/null | argocd-vault-plugin generate -"
 
 crds:
   install: false
@@ -165,15 +170,15 @@ repoServer:
   initContainers:
     - name: download-tools
       image: alpine:3.23@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11
-      command: [sh, -c]
+      command: [ sh, -c ]
       env:
         - name: AVP_VERSION
           value: "1.18.0"
       args:
         - >-
           wget -O /custom-tools/argocd-vault-plugin
-          https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64 &&
-          chmod +x /custom-tools/argocd-vault-plugin
+          https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64
+          && chmod +x /custom-tools/argocd-vault-plugin
       volumeMounts:
         - mountPath: /custom-tools
           name: custom-tools
@@ -181,13 +186,13 @@ repoServer:
   # ArgoCD Vault Plugin sidecar container
   extraContainers:
     - name: avp
-      command: [/var/run/argocd/argocd-cmp-server]
+      command: [ /var/run/argocd/argocd-cmp-server ]
       image: quay.io/argoproj/argocd:v3.3.7@sha256:31f494ef5ad17b8dfd4e03fbae79c57cfadede325ed16a1794ee9ce20ca5d759
       env:
         - name: AVP_TYPE
           value: 1passwordconnect
         - name: OP_CONNECT_HOST
-          value: http://one-password.one-password.svc.cluster.local
+          value: http://onepassword-connect.one-password.svc.cluster.local
         - name: OP_CONNECT_TOKEN
           valueFrom:
             secretKeyRef:

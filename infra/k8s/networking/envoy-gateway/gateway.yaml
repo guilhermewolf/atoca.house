@@ -270,10 +270,17 @@ metadata:
   name: atoca-house-tls
   namespace: kube-system
 spec:
-  secretName: atoca-house-tls
-  issuerRef:
-    name: cloudflare-prod
-    kind: ClusterIssuer
   dnsNames:
+    - atoca.house
     - "*.atoca.house"
-    - "atoca.house"
+  duration: 160h
+  issuerRef:
+    kind: ClusterIssuer
+    name: cloudflare-prod
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  secretName: atoca-house-tls
+  usages:
+    - digital signature

@@ -7,7 +7,7 @@ metadata:
   namespace: argocd
 spec:
   goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
+  goTemplateOptions: [ "missingkey=error" ]
 
   generators:
     - git:
@@ -17,18 +17,18 @@ spec:
           - path: "infra/k8s/monitoring/*/app-config.yaml"
   template:
     metadata:
-      name: '{{.app.name}}'
+      name: "{{.app.name}}"
       namespace: argocd
     spec:
       project: infra
       destination:
-        namespace: '{{.app.namespace}}'
+        namespace: "{{.app.namespace}}"
         server: https://kubernetes.default.svc
 
       sources:
-        - chart: '{{.app.chart}}'
-          repoURL: '{{.app.chartRepo}}'
-          targetRevision: '{{.app.chartVersion}}'
+        - chart: "{{.app.chart}}"
+          repoURL: "{{.app.chartRepo}}"
+          targetRevision: "{{.app.chartVersion}}"
           helm:
             valueFiles:
               - $values/infra/k8s/monitoring/{{.app.name}}/values.yaml
@@ -39,9 +39,9 @@ spec:
 
         - repoURL: https://github.com/guilhermewolf/atoca.house
           targetRevision: HEAD
-          path: 'infra/k8s/monitoring/{{.app.name}}'
+          path: "infra/k8s/monitoring/{{.app.name}}"
           directory:
-            exclude: '{application.yaml,values.yaml,app-config.yaml}'
+            exclude: "{application.yaml,values.yaml,app-config.yaml}"
 
       ignoreDifferences:
         - group: apps
@@ -50,7 +50,7 @@ spec:
             - /spec/volumeClaimTemplates/0/apiVersion
             - /spec/volumeClaimTemplates/0/kind
         # Ignore runtime modifications on HTTPRoutes from Gateway controllers
-        - group: gateway.networking.k8s.io
+        - group: gateway.monitoring.k8s.io
           kind: HTTPRoute
           jsonPointers:
             - /status
@@ -66,3 +66,24 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+
+  templatePatch: |
+    {{- if dig "app" "useVaultPlugin" false . }}
+    spec:
+      sources:
+        - chart: '{{.app.chart}}'
+          repoURL: '{{.app.chartRepo}}'
+          targetRevision: '{{.app.chartVersion}}'
+          helm:
+            valueFiles:
+              - $values/infra/k8s/monitoring/{{.app.name}}/values.yaml
+            ignoreMissingValueFiles: true
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          ref: values
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          path: 'infra/k8s/monitoring/{{.app.name}}'
+          plugin:
+            name: argocd-vault-plugin
+    {{- end }}

@@ -8,5 +8,6 @@ app:
   chartVersion: 83.6.0
   volsyncPrivileged: true
   podSecurityPrivileged: true
-  ignoreWebhooks: true  # Ignore webhook configuration diffs
-  disableAutoSync: true  # Manual sync only for critical monitoring
+  ignoreWebhooks: true # Ignore webhook configuration diffs
+  disableAutoSync: true # Manual sync only for critical monitoring
+  useVaultPlugin: false

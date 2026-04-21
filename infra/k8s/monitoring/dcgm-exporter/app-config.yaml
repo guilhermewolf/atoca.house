@@ -6,3 +6,4 @@ app:
   chart: dcgm-exporter
   chartRepo: ghcr.io/home-operations/charts-mirror
   chartVersion: 4.8.0
+  useVaultPlugin: false

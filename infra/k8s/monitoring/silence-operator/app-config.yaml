@@ -6,3 +6,4 @@ app:
   chart: silence-operator
   chartRepo: gsoci.azurecr.io/charts/giantswarm
   chartVersion: 0.20.0
+  useVaultPlugin: false

@@ -3,6 +3,8 @@ apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
   name: lan-icmp
+  annotations:
+    avp.kubernetes.io/path: "vaults/K8s/items/ip-address"
 spec:
   module: icmp
   prober:
@@ -10,7 +12,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - nas.internal
+        - <COMPARTILHADO_IP>
   metricRelabelings:
     - targetLabel: service
       replacement: blackbox-exporter-lan
@@ -21,6 +23,8 @@ apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
   name: lan-tcp
+  annotations:
+    avp.kubernetes.io/path: "vaults/K8s/items/ip-address"
 spec:
   module: tcp_connect
   prober:
@@ -28,7 +32,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - nas.internal:2049
+        - <COMPARTILHADO_IP>:2049
   metricRelabelings:
     - targetLabel: service
       replacement: blackbox-exporter-lan

@@ -6,3 +6,4 @@ app:
   chart: fluent-bit
   chartRepo: ghcr.io/home-operations/charts-mirror
   chartVersion: 0.54.1
+  useVaultPlugin: false

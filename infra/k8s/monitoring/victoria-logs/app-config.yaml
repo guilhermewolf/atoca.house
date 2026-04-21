@@ -6,3 +6,4 @@ app:
   chart: victoria-logs-single
   chartRepo: ghcr.io/victoriametrics/helm-charts
   chartVersion: 0.11.24
+  useVaultPlugin: false

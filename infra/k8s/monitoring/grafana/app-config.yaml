@@ -6,4 +6,5 @@ app:
   chart: grafana-operator
   chartRepo: ghcr.io/grafana/helm-charts
   chartVersion: v5.20.0
-  pruneEnabled: false  # Grafana operator should not auto-prune
+  pruneEnabled: false # Grafana operator should not auto-prune
+  useVaultPlugin: false

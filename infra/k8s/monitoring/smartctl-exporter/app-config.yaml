@@ -6,3 +6,4 @@ app:
   chart: prometheus-smartctl-exporter
   chartRepo: ghcr.io/prometheus-community/charts
   chartVersion: 0.16.0
+  useVaultPlugin: false

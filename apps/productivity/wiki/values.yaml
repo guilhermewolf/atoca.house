@@ -8,7 +8,7 @@ controllers:
       wiki:
         image:
           repository: ghcr.io/requarks/wiki
-          tag: 2.5.312
+          tag: 2.5.313
         env:
           APP_URL: "https://wiki.atoca.house"
           DB_TYPE: postgres

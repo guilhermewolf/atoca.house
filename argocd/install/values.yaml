@@ -12,6 +12,8 @@ global:
       topologyKey: kubernetes.io/hostname
       whenUnsatisfiable: ScheduleAnyway
 
+  addPrometheusAnnotations: false
+
 configs:
   cm:
     statusbadge.enabled: true

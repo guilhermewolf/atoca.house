@@ -14,6 +14,7 @@ _... managed with ArgoCD and GitHub Actions_
 
 [![Kubernetes](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Fkubernetes_version&style=for-the-badge&logo=kubernetes&color=grey&label=%20)](https://k3s.io/)&nbsp;&nbsp;
 [![Talos](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Ftalos_version&style=for-the-badge&logo=talos&color=grey&label=%20)](https://talos.dev)&nbsp;&nbsp;
+[![Argocd](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Fargocd_version&style=for-the-badge&logo=argo&color=grey&label=%20)](https://argo-cd.readthedocs.io/en/stable/)&nbsp;&nbsp;
 [![Unraid](https://img.shields.io/endpoint?url=https%3A%2F%2Fkromgo.atoca.house%2Funraid_version&style=for-the-badge&logo=unraid&color=grey&label=%20)](https://unraid.net/)&nbsp;&nbsp;
 </div>
 

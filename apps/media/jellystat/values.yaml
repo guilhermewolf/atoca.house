@@ -17,7 +17,7 @@ controllers:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: false
-          capabilities: { drop: ["ALL"] }
+          capabilities: { drop: [ "ALL" ] }
         probes:
           liveness:
             enabled: true
@@ -49,7 +49,7 @@ route:
     enabled: true
     kind: HTTPRoute
     parentRefs:
-      - name: atoca-house-external
+      - name: atoca-house-internal
         namespace: kube-system
     hostnames:
       - jellystat.atoca.house
@@ -61,14 +61,3 @@ route:
           - path:
               type: PathPrefix
               value: /
-# persistence:
-#   backup:
-#     enabled: true
-#     type: nfs
-#     server: ${NFS_SERVER}
-#     path: /volume1/apps/media
-#     advancedMounts:
-#       jellystat:
-#         app:
-#           - subPath: jellystat
-#             path: /app/backend/backup-data

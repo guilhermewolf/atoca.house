@@ -124,7 +124,7 @@ wazuh:
       io.cilium/lb-ipam-ips: "192.168.60.29"
   master:
     enabled: true
-    storageSize: 20Gi
+    storageSize: 40Gi
     storageClass: ceph-block
     resources:
       requests:

@@ -22,3 +22,4 @@ spec:
       yearly: 1
     copyMethod: Clone
     storageClassName: ceph-block
+    cacheCapacity: 8Gi

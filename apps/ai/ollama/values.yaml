@@ -83,7 +83,7 @@ persistence:
     type: persistentVolumeClaim
     storageClass: ceph-block
     accessMode: ReadWriteOnce
-    size: 50Gi
+    size: 100Gi
     globalMounts:
       - path: /models
   tmp:

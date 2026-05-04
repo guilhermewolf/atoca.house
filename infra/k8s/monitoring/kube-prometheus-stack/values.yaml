@@ -61,9 +61,9 @@ prometheus:
           storageClassName: ceph-block
           resources:
             requests:
-              storage: 50Gi
+              storage: 100Gi
     retention: 14d
-    retentionSize: "50GB"
+    retentionSize: "90GB"
     walCompression: true
   ingress:
     enabled: false

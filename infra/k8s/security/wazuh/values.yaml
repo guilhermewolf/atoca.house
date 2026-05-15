@@ -129,9 +129,9 @@ wazuh:
     resources:
       requests:
         cpu: 500m
-        memory: 512Mi
-      limits:
         memory: 1Gi
+      limits:
+        memory: 2Gi
     networkPolicy:
       enabled: true
       # LoadBalancer traffic arrives with the original client IP (Cilium

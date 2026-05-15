@@ -3,8 +3,8 @@
 
 # Kube-proxy replacement configuration
 kubeProxyReplacement: true
-k8sServiceHost: 127.0.0.1  # KubePrism endpoint
-k8sServicePort: 7445       # KubePrism port
+k8sServiceHost: 127.0.0.1 # KubePrism endpoint
+k8sServicePort: 7445 # KubePrism port
 
 # IPAM configuration - use Kubernetes mode
 ipam:
@@ -38,12 +38,9 @@ loadBalancer:
   algorithm: maglev
   mode: dsr
   serviceTopology: true
-# This will be configured via LB IPAM CRDs below
-bgpControlPlane:
-  enabled: false  # Not using BGP, using L2 instead
+
 localRedirectPolicies:
   enabled: true
-
 
 # Security context for Talos Linux
 securityContext:
@@ -73,7 +70,7 @@ socketLB:
 # Talos-specific configuration
 cgroup:
   autoMount:
-    enabled: false  # Talos manages cgroup mounts
+    enabled: false # Talos manages cgroup mounts
   hostRoot: /sys/fs/cgroup
 
 # Container runtime configuration
@@ -103,7 +100,7 @@ tunnelProtocol: vxlan
 
 # Enable host firewall
 hostFirewall:
-  enabled: false  # Talos handles host firewall
+  enabled: false # Talos handles host firewall
 
 autoDirectNodeRoutes: true
 
@@ -124,7 +121,6 @@ localRedirectPolicy: true
 # Disable CNI chaining (Cilium is the primary CNI)
 cni:
   exclusive: false
-
 
 # Enable endpoint routes for better performance
 endpointRoutes:

@@ -42,7 +42,7 @@ controllers:
           requests:
             cpu: 100m
           limits:
-            memory: 12Gi
+            memory: 4Gi
 defaultPodOptions:
   annotations:
     k8s.v1.cni.cncf.io/networks: |-

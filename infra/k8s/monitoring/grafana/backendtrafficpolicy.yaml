@@ -1,0 +1,48 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: grafana
+  namespace: grafana
+spec:
+  mergeType: StrategicMerge
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: grafana
+  # Custom error page redirects — 5xx only.
+  # 403/404/500 are intentionally omitted: Grafana returns them as valid API
+  # responses, and redirecting them to error-pages breaks the dashboard SPA.
+  responseOverride:
+    # 502 Bad Gateway
+    - match:
+        statusCodes:
+          - type: Value
+            value: 502
+      redirect: &redirect
+        scheme: https
+        hostname: error-pages.atoca.house
+        path:
+          type: &pathType ReplaceFullPath
+          replaceFullPath: /502.html
+        statusCode: 302
+
+    # 503 Service Unavailable
+    - match:
+        statusCodes: [{ type: Value, value: 503 }]
+      redirect:
+        <<: *redirect
+        path:
+          type: *pathType
+          replaceFullPath: /503.html
+        statusCode: 302
+
+    # 504 Gateway Timeout
+    - match:
+        statusCodes: [{ type: Value, value: 504 }]
+      redirect:
+        <<: *redirect
+        path:
+          type: *pathType
+          replaceFullPath: /504.html
+        statusCode: 302

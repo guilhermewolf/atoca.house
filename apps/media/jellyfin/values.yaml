@@ -7,7 +7,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/jellyfin/jellyfin
-          tag: 10.11.7@sha256:2b93aa3830dcd0aab7185c635e20edef1f8dc5d2e999768baf1724e88c078004
+          tag: 10.11.9@sha256:ef4d95143a5475d1ba4d9a6983342cac300044d676a30648b7d0e0688961712a
         env:
           JELLYFIN_PublishedServerUrl: https://jellyfin.atoca.house
           NVIDIA_VISIBLE_DEVICES: all

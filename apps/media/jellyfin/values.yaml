@@ -40,7 +40,7 @@ controllers:
             memory: 1Gi
             nvidia.com/gpu: 1
           limits:
-            memory: 8Gi
+            memory: 16Gi
             nvidia.com/gpu: 1
 defaultPodOptions:
   enableServiceLinks: false

@@ -121,7 +121,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=elasticsearch
           repository: elasticsearch
-          tag: 7.17.27
+          tag: 7.17.28
         env:
           cluster.routing.allocation.disk.threshold_enabled: "true"
           cluster.routing.allocation.disk.watermark.low: "512mb"

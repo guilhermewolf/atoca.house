@@ -51,7 +51,7 @@ controllers:
       wait-for-postgres:
         image:
           repository: postgres
-          tag: "16-alpine"
+          tag: "18-alpine"
         command:
           - sh
           - -c
@@ -149,7 +149,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=postgres
           repository: postgres
-          tag: "16-alpine"
+          tag: "18-alpine"
         env:
           POSTGRES_USER: "temporal"
           POSTGRES_PASSWORD: "temporal"

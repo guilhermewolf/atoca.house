@@ -62,7 +62,7 @@ controllers:
       wait-for-elasticsearch:
         image:
           repository: curlimages/curl
-          tag: "8.11.1"
+          tag: "8.20.0"
         command:
           - sh
           - -c

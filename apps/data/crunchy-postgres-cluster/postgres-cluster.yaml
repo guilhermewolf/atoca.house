@@ -107,12 +107,6 @@ spec:
       password:
         type: AlphaNumeric
 
-    - name: postiz
-      databases:
-        - postiz
-      password:
-        type: AlphaNumeric
-
   instances:
     - name: postgres
       metadata:

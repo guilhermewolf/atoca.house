@@ -105,7 +105,7 @@ controllers:
       fix-data-perms:
         image:
           repository: busybox
-          tag: "1.36"
+          tag: "1.38"
         command:
           - sh
           - -c

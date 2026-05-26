@@ -1,0 +1,9 @@
+---
+# Application configuration for Audiobookshelf
+app:
+  name: audiobookshelf
+  namespace: audiobookshelf
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2
+  volsyncPrivileged: true

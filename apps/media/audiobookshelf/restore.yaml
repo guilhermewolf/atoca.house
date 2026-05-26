@@ -1,0 +1,19 @@
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: audiobookshelf-restore
+  namespace: audiobookshelf
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: audiobookshelf-r2-secret
+    copyMethod: Direct
+    destinationPVC: audiobookshelf
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool
+    moverSecurityContext:
+      runAsUser: 99
+      runAsGroup: 100
+      fsGroup: 100

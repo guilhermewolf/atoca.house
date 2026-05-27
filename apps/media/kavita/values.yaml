@@ -1,0 +1,74 @@
+---
+controllers:
+  kavita:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/kareadita/kavita
+          tag: 0.8.9@sha256:1f2acae7466d022f037ea09f7989eb7c487f916b881174c7a6de33dbfa8acb39
+        resources:
+          requests:
+            cpu: 15m
+            memory: 1Gi
+          limits:
+            memory: 4Gi
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    ports:
+      http:
+        port: 5000
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - kavita.atoca.house
+    rules:
+      - backendRefs:
+          - name: kavita
+            port: 5000
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    globalMounts:
+      - path: /kavita/config
+
+  media:
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/data/
+    globalMounts:
+      - path: /data

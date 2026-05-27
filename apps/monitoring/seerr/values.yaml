@@ -14,18 +14,36 @@ controllers:
         #   - secretRef:
         #       name: "seerr-secret"
         probes:
-          liveness: &probes
+          liveness:
             enabled: true
             custom: true
             spec:
               httpGet:
                 path: /api/v1/status
                 port: *port
-              initialDelaySeconds: 0
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 5
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v1/status
+                port: *port
               periodSeconds: 10
-              timeoutSeconds: 1
+              timeoutSeconds: 5
               failureThreshold: 3
-          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v1/status
+                port: *port
+              periodSeconds: 5
+              timeoutSeconds: 5
+              failureThreshold: 30
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

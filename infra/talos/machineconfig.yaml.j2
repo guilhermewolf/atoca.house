@@ -186,14 +186,12 @@ cluster:
             score:
               disabled:
                 - name: ImageLocality
+          # PodTopologySpread plugin uses built-in System defaults.
+          # Custom args (defaultConstraints.maxSkew: int) triggers a Talos v1.13.3
+          # RenderConfigsStaticPodController panic ("cannot deep copy int") that
+          # prevents all control-plane static pods from rendering.
           pluginConfig:
             - name: PodTopologySpread
-              args:
-                defaultingType: List
-                defaultConstraints:
-                  - maxSkew: 1
-                    topologyKey: kubernetes.io/hostname
-                    whenUnsatisfiable: ScheduleAnyway
     extraArgs:
       bind-address: 0.0.0.0
     image: registry.k8s.io/kube-scheduler:v1.36.1

@@ -44,6 +44,9 @@ prometheus:
           namespace: kube-system
   prometheusSpec:
     externalUrl: https://prometheus.atoca.house
+    # Temporary: enable to delete stale ceph-mgr pod-labeled series after Talos upgrade mgr failovers.
+    # Remove once cleanup is done.
+    enableAdminAPI: true
     resources:
       requests:
         cpu: 500m

@@ -1,6 +1,7 @@
 # Main Gateway resource for atoca.house
 # This Gateway will handle all HTTPS traffic and replace ingress-nginx
 ---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/gateway.envoyproxy.io/envoyproxy_v1alpha1.json
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:

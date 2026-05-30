@@ -1,6 +1,8 @@
 ---
 # Create a selfsigned Issuer, in order to create a root CA certificate for
 # signing webhook serving certificates
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cert-manager.io/issuer_v1.json
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:

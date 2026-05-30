@@ -1,5 +1,7 @@
 ---
 # LoadBalancer IP Pool - 192.168.60.x network
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/cilium.io/ciliumloadbalancerippool_v2alpha1.json
 apiVersion: cilium.io/v2alpha1
 kind: CiliumLoadBalancerIPPool
 metadata:

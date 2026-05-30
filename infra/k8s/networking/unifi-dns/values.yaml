@@ -39,7 +39,7 @@ sources:
 
 txtOwnerId: main
 
-txtPrefix: k8s.main.
+txtPrefix: "k8s-%{record_type}."
 
 domainFilters:
   - atoca.house

@@ -108,6 +108,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: atuin
+      databases:
+        - atuin
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

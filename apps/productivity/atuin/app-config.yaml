@@ -1,0 +1,8 @@
+---
+# Application configuration for atuin
+app:
+  name: atuin
+  namespace: atuin
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 4.6.2

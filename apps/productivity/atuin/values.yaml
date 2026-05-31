@@ -1,0 +1,89 @@
+---
+controllers:
+  atuin:
+    containers:
+      app:
+        image:
+          repository: ghcr.io/atuinsh/atuin
+          tag: 18.16.1@sha256:9d4d79507b51be6d292b218f5cc791d79ca0a72f51ab48f786b091bd6eafb39f
+        env:
+          ATUIN_HOST: "0.0.0.0"
+          ATUIN_PORT: &port 80
+          ATUIN_OPEN_REGISTRATION: "true"
+        envFrom:
+          - secretRef:
+              name: atuin-db-secret
+        args:
+          - start
+        probes:
+          liveness:
+            enabled: true
+            spec:
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 5
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: *port
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 5
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+          limits:
+            memory: 256Mi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - "atuin.atoca.house"
+    rules:
+      - backendRefs:
+          - name: atuin
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /config

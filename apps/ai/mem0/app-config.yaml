@@ -1,8 +1,0 @@
----
-# Application configuration for mem0
-app:
-  name: mem0
-  namespace: mem0
-  chart: app-template
-  chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 4.6.2

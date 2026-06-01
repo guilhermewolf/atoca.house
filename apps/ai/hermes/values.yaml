@@ -1,0 +1,229 @@
+---
+defaultPodOptions:
+  automountServiceAccountToken: true
+  securityContext:
+    # hermes-agent uses s6-overlay: the entrypoint must start as root to fix
+    # /run permissions, then drops to the image's internal hermes user (uid 10000).
+    # Forcing runAsNonRoot/runAsUser breaks s6 preinit, so only set fsGroup to
+    # match the image user. This intentionally deviates from the repo-wide
+    # readOnlyRootFilesystem/runAsNonRoot 99:100 defaults — required by this image.
+    fsGroup: 10000
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
+
+controllers:
+  hermes:
+    strategy: Recreate
+    annotations:
+      reloader.stakater.com/auto: "true"
+
+    initContainers:
+      # Seed the writable data volume with the read-only ConfigMap and create the
+      # agent workspace. chown to the image's hermes user (10000) so the gateway
+      # can read/rewrite its own config on start.
+      copy-config:
+        image:
+          repository: docker.io/library/alpine
+          tag: "3.23"
+        command:
+          - sh
+          - -c
+          - |
+            set -euo pipefail
+            mkdir -p /opt/data/workspace
+            cp /tmp/config.yaml /opt/data/config.yaml
+            chown 10000:10000 /opt/data/config.yaml
+
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=nousresearch/hermes-agent
+          repository: docker.io/nousresearch/hermes-agent
+          tag: v2026.5.29@sha256:192a40783e9227b5f162b76af4d133050557adebd46e1c9cb40cb79a1317a9f7
+        args:
+          - gateway
+          - run
+        env:
+          TZ: Europe/Amsterdam
+          HOME: /opt/data
+          HERMES_HOME: /opt/data
+          # Gateway HTTP API (programmatic access, e.g. from Open WebUI)
+          API_SERVER_ENABLED: "true"
+          API_SERVER_HOST: 0.0.0.0
+          API_SERVER_PORT: &apiPort "8642"
+          # Web dashboard. Runs under s6 in this same container so it can manage
+          # the gateway via the local service tree. INSECURE skips the OAuth gate
+          # (trusted LAN behind the internal gateway).
+          HERMES_DASHBOARD: "1"
+          HERMES_DASHBOARD_HOST: 0.0.0.0
+          HERMES_DASHBOARD_PORT: &dashPort "9119"
+          HERMES_DASHBOARD_INSECURE: "1"
+          # Web search backend (in-cluster SearXNG)
+          SEARXNG_URL: http://searxng.searxng.svc.cluster.local:8080
+        envFrom:
+          - secretRef:
+              name: hermes-secret
+        securityContext:
+          # Do NOT drop capabilities or force runAsNonRoot: s6-overlay init needs
+          # CAP_CHOWN/SETUID/SETGID to fix /run and drop to uid 10000. The image
+          # also writes to its root fs, so readOnlyRootFilesystem must stay false.
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: 9119
+              initialDelaySeconds: 30
+              periodSeconds: 15
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: 9119
+              initialDelaySeconds: 10
+              periodSeconds: 5
+              timeoutSeconds: 5
+              failureThreshold: 30
+        resources:
+          requests:
+            cpu: 100m
+            memory: 1Gi
+          limits:
+            memory: 4Gi
+
+service:
+  app:
+    controller: hermes
+    ports:
+      http:
+        port: *dashPort
+      api:
+        port: *apiPort
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - hermes.atoca.house
+    rules:
+      - filters:
+          # The dashboard pins its CORS/origin allow-list to localhost, so the
+          # WebSocket handshake (Origin: https://hermes.atoca.house) is rejected
+          # with 403. Rewrite Origin to an allowed value — browsers don't enforce
+          # CORS on the WS upgrade, so this only satisfies the server-side check.
+          - type: RequestHeaderModifier
+            requestHeaderModifier:
+              set:
+                - name: Origin
+                  value: http://localhost:9119
+        backendRefs:
+          - name: hermes
+            port: 9119
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    globalMounts:
+      - path: /opt/data
+  config:
+    type: configMap
+    name: hermes-config
+    defaultMode: 0755
+    globalMounts:
+      - path: /tmp/config.yaml
+        subPath: config.yaml
+
+serviceAccount:
+  hermes: {}
+
+# Broad read-only cluster access so the agent can introspect the homelab.
+# Secrets are intentionally excluded.
+rbac:
+  roles:
+    hermes-read-all:
+      type: ClusterRole
+      rules:
+        - apiGroups: [""]
+          resources:
+            ["pods", "pods/log", "nodes", "services", "namespaces", "configmaps",
+             "persistentvolumes", "persistentvolumeclaims", "endpoints",
+             "resourcequotas", "limitranges", "serviceaccounts", "events"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["apps"]
+          resources:
+            ["deployments", "daemonsets", "statefulsets", "replicasets", "controllerrevisions"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["batch"]
+          resources: ["jobs", "cronjobs"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["networking.k8s.io"]
+          resources: ["ingresses", "ingressclasses", "networkpolicies"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["gateway.networking.k8s.io"]
+          resources: ["gateways", "httproutes", "grpcroutes", "referencegrants"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["storage.k8s.io"]
+          resources: ["storageclasses", "csinodes", "csidrivers", "volumeattachments"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["autoscaling"]
+          resources: ["horizontalpodautoscalers"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["policy"]
+          resources: ["poddisruptionbudgets"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["rbac.authorization.k8s.io"]
+          resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["apiextensions.k8s.io"]
+          resources: ["customresourcedefinitions"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["metrics.k8s.io"]
+          resources: ["nodes", "pods"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["argoproj.io"]
+          resources: ["applications", "applicationsets", "appprojects"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["external-secrets.io"]
+          resources: ["externalsecrets", "secretstores", "clustersecretstores"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["volsync.backube"]
+          resources: ["replicationsources", "replicationdestinations"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["monitoring.coreos.com"]
+          resources:
+            ["prometheuses", "alertmanagers", "servicemonitors", "podmonitors",
+             "prometheusrules", "thanosrulers", "probes"]
+          verbs: ["get", "list", "watch"]
+        - apiGroups: ["snapshot.storage.k8s.io"]
+          resources: ["volumesnapshots", "volumesnapshotcontents", "volumesnapshotclasses"]
+          verbs: ["get", "list", "watch"]
+  bindings:
+    hermes-read-all:
+      type: ClusterRoleBinding
+      roleRef:
+        identifier: hermes-read-all
+      subjects:
+        - identifier: hermes
+          serviceAccount: hermes

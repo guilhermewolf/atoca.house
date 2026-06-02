@@ -8,6 +8,9 @@ controllers:
         image:
           repository: ghcr.io/kareadita/kavita
           tag: 0.9.0@sha256:36aab0c578d488f8b10bd33910953b50965aff9ac6adc476ef4692c38c60427e
+        env:
+          # readOnlyRootFilesystem makes /tmp & /var/tmp read-only; point SQLite/temp at the writable emptyDir
+          TMPDIR: /tmp
         resources:
           requests:
             cpu: 15m
@@ -57,6 +60,11 @@ route:
               value: /
 
 persistence:
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
+
   config:
     enabled: true
     type: persistentVolumeClaim

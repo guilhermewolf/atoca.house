@@ -1,0 +1,25 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/volsync.backube/replicationsource_v1alpha1.json
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: mousetrap-backup
+  namespace: mousetrap
+spec:
+  sourcePVC: mousetrap-config
+  trigger:
+    schedule: "0 0 * * *"
+  restic:
+    pruneIntervalDays: 14
+    repository: mousetrap-r2-secret
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+    retain:
+      hourly: 5
+      daily: 4
+      monthly: 1
+      yearly: 1
+    copyMethod: Clone
+    storageClassName: ceph-block

@@ -1,0 +1,90 @@
+---
+controllers:
+  mousetrap:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: docker.io/sirjmann92/mousetrap
+          tag: 2.3.27@sha256:cb517b6998496fc924ac1a9eb64dfa08fa836f759c53316e9e330d0cc14f8f64
+        env:
+          LOGLEVEL: INFO
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              tcpSocket:
+                port: &port 39842
+              initialDelaySeconds: 10
+              periodSeconds: 30
+              timeoutSeconds: 3
+              failureThreshold: 3
+          readiness: *probes
+        resources:
+          requests:
+            cpu: 10m
+          limits:
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"], add: ["SETUID", "SETGID", "CHOWN"] }
+          readOnlyRootFilesystem: false
+
+defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.19/24"],
+        "mac": "aa:11:5c:3e:9f:2b"
+      }]
+  securityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+    runAsUser: 0
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /config
+  logs:
+    type: emptyDir
+    globalMounts:
+      - path: /app/logs
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
+
+service:
+  app:
+    controller: mousetrap
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - mousetrap.atoca.house
+    rules:
+      - backendRefs:
+          - name: mousetrap
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /

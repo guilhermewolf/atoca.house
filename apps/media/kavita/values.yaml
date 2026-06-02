@@ -7,7 +7,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/kareadita/kavita
-          tag: 0.9.0@sha256:36aab0c578d488f8b10bd33910953b50965aff9ac6adc476ef4692c38c60427e
+          tag: 0.9.0.2@sha256:880a8feff0833e860575f8e08788e4b4f59f8659afd17206566aae88a525130d
         env:
           # readOnlyRootFilesystem makes /tmp & /var/tmp read-only; point SQLite/temp at the writable emptyDir
           TMPDIR: /tmp

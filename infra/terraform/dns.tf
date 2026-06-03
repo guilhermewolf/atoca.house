@@ -20,7 +20,6 @@ resource "unifi_dns_record" "subdomain" {
   for_each    = toset(local.subdomains)
   name        = "${each.value}.${local.domain}"
   enabled     = true
-  priority    = 10
   record_type = "A"
   ttl         = 300
   value       = var.npm_ip

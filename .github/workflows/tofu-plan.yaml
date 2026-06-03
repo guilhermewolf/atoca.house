@@ -23,6 +23,8 @@ jobs:
       TF_VAR_account_id: ${{ secrets.TF_VAR_account_id }}
       TF_VAR_domain: ${{ secrets.TF_VAR_domain }}
       TF_VAR_npm_ip: ${{ secrets.TF_VAR_npm_ip }}
+      TF_VAR_unifi_api_url: ${{ secrets.TF_VAR_unifi_api_url }}
+      TF_VAR_unifi_api_key: ${{ secrets.TF_VAR_unifi_api_key }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

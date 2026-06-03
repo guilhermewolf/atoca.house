@@ -36,3 +36,16 @@ variable "npm_ip" {
   default     = ""
   sensitive   = true
 }
+
+variable "unifi_api_url" {
+  description = "The API URL for the Unifi controller"
+  type        = string
+  default     = ""
+}
+
+variable "unifi_api_key" {
+  description = "The API key for the Unifi controller"
+  type        = string
+  default     = ""
+  sensitive   = true
+}

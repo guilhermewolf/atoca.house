@@ -5,11 +5,8 @@ locals {
     "duplicati",
     "hass",
     "kuma",
-    "lidarr",
     "kvm",
     "mass",
-    "minio",
-    "minio-data",
     "npm",
     "portainer",
     "syncthing",
@@ -19,12 +16,12 @@ locals {
 }
 
 # Create DNS records for each subdomain
-resource "cloudflare_dns_record" "subdomain" {
-  for_each = toset(local.subdomains)
-  zone_id  = var.zone_id
-  name     = "${each.value}.${local.domain}"
-  content  = var.npm_ip
-  type     = "A"
-  ttl      = 1
-  proxied  = false
+resource "unifi_dns_record" "subdomain" {
+  for_each    = toset(local.subdomains)
+  name        = "${each.value}.${local.domain}"
+  enabled     = true
+  priority    = 10
+  record_type = "A"
+  ttl         = 300
+  value       = var.npm_ip
 }

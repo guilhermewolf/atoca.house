@@ -7,7 +7,7 @@ controllers:
       app:
         image:
           repository: docker.io/qdrant/qdrant
-          tag: v1.18.1@sha256:45f8e3ddc2570a4d029877e1b5ec1045c19b3852b4e22a55c7f43b05aea0ca89
+          tag: v1.18.2@sha256:75eab8c4ba42096724fdcfde8b4de0b5713d529dde32f285a1f86fdcb2c9e50c
         args:
           - ./qdrant
           - --disable-telemetry

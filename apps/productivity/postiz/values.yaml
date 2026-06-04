@@ -1,0 +1,102 @@
+---
+controllers:
+  postiz:
+    labels:
+      postgres: "true"
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/gitroomhq/postiz-app
+          # renovate: datasource=docker depName=ghcr.io/gitroomhq/postiz-app
+          tag: v2.21.8@sha256:3ec7bc8ecf61f08c22e0954291702b097f944def515dc259cb3a441aba4046c0
+        env:
+          # Combined image: Caddy on 5000 proxies / -> frontend(4200), /api -> backend(3000)
+          MAIN_URL: "https://postiz.atoca.house"
+          FRONTEND_URL: "https://postiz.atoca.house"
+          NEXT_PUBLIC_BACKEND_URL: "https://postiz.atoca.house/api"
+          BACKEND_INTERNAL_URL: "http://localhost:3000"
+          IS_GENERAL: "true"
+          # Crunchy Postgres presents a self-signed CA; Node's pg/Mastra client
+          # rejects it otherwise (SELF_SIGNED_CERT_IN_CHAIN).
+          NODE_TLS_REJECT_UNAUTHORIZED: "0"
+          # Temporal workflow engine (required since Postiz v2.12.0)
+          TEMPORAL_ADDRESS: "temporal-app.temporal.svc.cluster.local:7233"
+          # Local file storage on a ceph-block PVC (backed up to R2 via Volsync)
+          STORAGE_PROVIDER: "local"
+          UPLOAD_DIRECTORY: "/uploads"
+          NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY: "/uploads"
+          # Redis (Dragonfly) - DB index 8 (5/6/7 already in use)
+          REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/8"
+          # Flip to "true" once your first user is registered
+          DISABLE_REGISTRATION: "false"
+          API_LIMIT: "30"
+        envFrom:
+          - secretRef:
+              name: postiz-secret
+          - secretRef:
+              name: postiz-db-secret
+        # Combined image runs nginx (master as root, workers drop to the `nginx`
+        # user) + pm2; it needs the default Docker capability set (SETUID/SETGID/
+        # CHOWN/DAC_OVERRIDE). Dropping ALL caps makes nginx fail to write
+        # /var/lib/nginx. This image is not built for cap-hardening.
+        securityContext:
+          allowPrivilegeEscalation: false
+        resources:
+          requests:
+            cpu: 100m
+            memory: 1Gi
+          limits:
+            # Combined image runs nginx + 3 Node procs (backend/frontend/
+            # orchestrator) and builds the orchestrator at startup -> memory spikes.
+            memory: 4Gi
+
+service:
+  app:
+    ports:
+      http:
+        port: 5000
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - postiz.atoca.house
+    rules:
+      - backendRefs:
+          - name: postiz
+            port: 5000
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  uploads:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    advancedMounts:
+      postiz:
+        app:
+          - path: /uploads
+            subPath: uploads
+  config:
+    type: emptyDir
+    advancedMounts:
+      postiz:
+        app:
+          - path: /config
+  tmpfs:
+    type: emptyDir
+    advancedMounts:
+      postiz:
+        app:
+          - path: /tmp

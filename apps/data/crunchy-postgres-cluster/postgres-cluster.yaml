@@ -114,6 +114,19 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: postiz
+      databases:
+        - postiz
+      password:
+        type: AlphaNumeric
+
+    - name: temporal
+      databases:
+        - temporal
+        - temporal_visibility
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

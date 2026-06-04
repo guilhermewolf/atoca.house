@@ -1,0 +1,124 @@
+---
+controllers:
+  temporal:
+    labels:
+      postgres: "true"
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: docker.io/temporalio/auto-setup
+          # renovate: datasource=docker depName=docker.io/temporalio/auto-setup
+          tag: 1.29.6@sha256:1263120feed69d82e4ca23b8ca6f1d702c3029fe70714e382966d0192318eab6
+        env:
+          # --- Postgres backend (Crunchy) ---
+          DB: postgres12
+          DBNAME: temporal
+          VISIBILITY_DBNAME: temporal_visibility
+          # DBs are pre-created by the Crunchy operator (user `temporal` owns them)
+          SKIP_DB_CREATE: "true"
+          # Elasticsearch advanced visibility. Postiz registers >3 Text search
+          # attributes, which SQL visibility cannot hold (max 3 of each type).
+          ENABLE_ES: "true"
+          ES_SEEDS: temporal-elasticsearch.temporal.svc.cluster.local
+          ES_VERSION: v7
+          # Crunchy presents a self-signed CA -> TLS on, host verification off.
+          # POSTGRES_TLS_* is used by the schema-setup tool, SQL_* by the server.
+          POSTGRES_TLS_ENABLED: "true"
+          POSTGRES_TLS_DISABLE_HOST_VERIFICATION: "true"
+          SQL_TLS_ENABLED: "true"
+          SQL_HOST_VERIFICATION: "false"
+          # Listen on all interfaces so Postiz can reach the frontend; advertise
+          # the real pod IP for intra-process service membership (ringpop).
+          BIND_ON_IP: "0.0.0.0"
+          TEMPORAL_BROADCAST_ADDRESS:
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+        envFrom:
+          - secretRef:
+              name: temporal-db-secret
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: [ "ALL" ] }
+        probes:
+          liveness:
+            enabled: false
+          readiness:
+            enabled: true
+            type: TCP
+          startup:
+            enabled: false
+        resources:
+          requests:
+            cpu: 25m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
+
+  elasticsearch:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: docker.io/library/elasticsearch
+          # renovate: datasource=docker depName=docker.io/library/elasticsearch
+          tag: 7.17.27@sha256:9a6443f55243f6acbfeb4a112d15eb3b9aac74bf25e0e39fa19b3ddd3a6879d0
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+          ES_JAVA_OPTS: "-Xms256m -Xmx256m"
+          # Keep ES writable on a small disk (default flips index to read-only).
+          cluster.routing.allocation.disk.threshold_enabled: "true"
+          cluster.routing.allocation.disk.watermark.low: 512mb
+          cluster.routing.allocation.disk.watermark.high: 256mb
+          cluster.routing.allocation.disk.watermark.flood_stage: 128mb
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: [ "ALL" ] }
+        probes:
+          liveness:
+            enabled: false
+          readiness:
+            enabled: true
+            type: TCP
+          startup:
+            enabled: false
+        resources:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+
+service:
+  app:
+    controller: temporal
+    ports:
+      grpc:
+        port: 7233
+  elasticsearch:
+    controller: elasticsearch
+    ports:
+      http:
+        port: 9200
+
+persistence:
+  es-data:
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    advancedMounts:
+      elasticsearch:
+        app:
+          - path: /usr/share/elasticsearch/data

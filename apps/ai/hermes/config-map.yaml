@@ -9,22 +9,21 @@ data:
     # Hermes Agent configuration
     # Docs: https://hermes-agent.nousresearch.com/docs
     #
-    # Model provider: routed to the in-cluster Ollama (OpenAI-compatible /v1 API).
-    # Ollama ignores the api_key, so a literal placeholder is fine here.
-    # `default` MUST be the exact tag present in Ollama (`/v1/models`). The agent
-    # needs function/tool-calling support — chat-only models won't drive toolsets.
-    # Currently pulled tool-capable tags: qwen3:8b-q4_K_M, qwen2.5:7b-instruct-q4_K_M.
-    #
-    # NOTE: do NOT use `provider: openai-codex` / `gpt-5.5` here — that targets the
-    # ChatGPT/Codex *subscription* backend (https://chatgpt.com/backend-api/codex),
-    # which needs Codex OAuth creds and is unreachable from the cluster (HTTP 503).
+    # Model provider: routed through the in-cluster LiteLLM gateway (OpenAI-compatible
+    # /v1 API). LiteLLM fans out to local Ollama, free-tier cloud (Groq/Cerebras/
+    # OpenRouter/Mistral) and the ChatGPT subscription, with rate limits + fallbacks.
+    # `default` MUST be a LiteLLM model_name (see litellm config.yaml model_list). The
+    # agent needs function/tool-calling — pick a tool-capable model. Tool-capable
+    # LiteLLM names: qwen3-14b, qwen2.5-coder-14b, gpt-oss-20b, qwen3-8b,
+    # groq-llama-3.3-70b. (chatgpt/gpt-5.4 is Responses-only — avoid for the agent.)
+    # api_key is the LiteLLM master key, injected from env via ${...} substitution.
     model:
-      default: qwen3:8b-q4_K_M
-      provider: custom:ollama
+      default: qwen3-14b
+      provider: custom:litellm
     providers:
-      ollama:
-        base_url: http://ollama.ollama.svc.cluster.local/v1
-        api_key: ollama
+      litellm:
+        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
+        api_key: ${LITELLM_MASTER_KEY}
     toolsets:
       - hermes-cli
     terminal:

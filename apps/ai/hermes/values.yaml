@@ -61,6 +61,9 @@ controllers:
           HERMES_DASHBOARD_INSECURE: "1"
           # Web search backend (in-cluster SearXNG)
           SEARXNG_URL: http://searxng.searxng.svc.cluster.local:8080
+          # Discord gateway creds + allowlist + channel come from hermes-secret
+          # (envFrom below): DISCORD_BOT_TOKEN, DISCORD_ALLOWED_USERS,
+          # DISCORD_FREE_RESPONSE_CHANNELS. Kept out of git on purpose.
         envFrom:
           - secretRef:
               name: hermes-secret

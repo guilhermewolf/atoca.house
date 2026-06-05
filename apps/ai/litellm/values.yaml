@@ -1,0 +1,113 @@
+---
+controllers:
+  litellm:
+    strategy: Recreate
+    labels:
+      postgres: "true"
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/berriai/litellm-non_root
+          tag: v1.87.1@sha256:7c0bcf795d2e7563d645796ef04a570dadc24847828b6d69f4d33bf5903090fb
+        args: ["--config=/app/config.yaml"]
+        env:
+          LITELLM_LOG: INFO
+          LITELLM_MODE: PRODUCTION
+          REDIS_HOST: dragonfly.dragonfly-cluster.svc.cluster.local
+          REDIS_PORT: 6379
+          # ChatGPT subscription provider: OAuth device-flow token persisted on PVC
+          CHATGPT_TOKEN_DIR: /data/chatgpt
+        envFrom:
+          - secretRef:
+              name: litellm-secret
+          - secretRef:
+              name: litellm-db-secret
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities: { drop: ["ALL"] }
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: &port 4000
+              initialDelaySeconds: 5
+              periodSeconds: 10
+              failureThreshold: 3
+          readiness: *probes
+          # litellm runs chatgpt provider init inside FastAPI startup (before binding
+          # :4000). Give startup a long grace window so liveness can't kill it mid-init.
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: *port
+              initialDelaySeconds: 10
+              periodSeconds: 10
+              failureThreshold: 60
+        resources:
+          requests:
+            cpu: 10m
+            memory: 256Mi
+          limits:
+            memory: 2Gi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - litellm.atoca.house
+    rules:
+      - backendRefs:
+          - name: litellm
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+persistence:
+  config:
+    type: configMap
+    name: litellm-configmap
+    globalMounts:
+      - path: /app/config.yaml
+        subPath: config.yaml
+        readOnly: true
+  tmpfs:
+    type: emptyDir
+    globalMounts:
+      - path: /cache
+        subPath: cache
+      - path: /tmp
+        subPath: tmp
+  chatgpt-auth:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 64Mi
+    storageClass: ceph-block
+    globalMounts:
+      - path: /data/chatgpt

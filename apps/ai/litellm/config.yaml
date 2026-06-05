@@ -1,0 +1,88 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-configmap
+  namespace: litellm
+data:
+  config.yaml: |
+    model_list:
+      # --- ChatGPT subscription (OAuth device-flow, only gpt-5.4 supported) ---
+      - model_name: chatgpt/gpt-5.4
+        model_info:
+          mode: responses
+        litellm_params:
+          model: chatgpt/gpt-5.4
+
+      # --- Free-tier cloud providers (rpm/tpm = free-plan caps; router throttles
+      #     and fails over to local ollama on 429/cooldown) ---
+      - model_name: groq-llama-3.3-70b
+        litellm_params:
+          model: groq/llama-3.3-70b-versatile
+          rpm: 30
+          tpm: 6000
+      - model_name: cerebras-llama-3.3-70b
+        litellm_params:
+          model: cerebras/llama-3.3-70b
+          rpm: 30
+          tpm: 60000
+      - model_name: openrouter-deepseek-r1
+        litellm_params:
+          model: openrouter/deepseek/deepseek-r1:free
+          rpm: 20
+      - model_name: mistral-small
+        litellm_params:
+          model: mistral/mistral-small-latest
+          rpm: 60
+
+      # --- Local ollama (RTX 4060 Ti 16GB, no rate limits) ---
+      - model_name: gpt-oss-20b
+        litellm_params:
+          model: ollama_chat/gpt-oss:20b
+          api_base: http://ollama.ollama.svc.cluster.local
+      - model_name: qwen3-14b
+        litellm_params:
+          model: ollama_chat/qwen3:14b
+          api_base: http://ollama.ollama.svc.cluster.local
+      - model_name: qwen2.5-coder-14b
+        litellm_params:
+          model: ollama_chat/qwen2.5-coder:14b
+          api_base: http://ollama.ollama.svc.cluster.local
+      - model_name: qwen3-8b
+        litellm_params:
+          model: ollama_chat/qwen3:8b-q4_K_M
+          api_base: http://ollama.ollama.svc.cluster.local
+
+    general_settings:
+      health_check_endpoint: /v1/health
+
+    router_settings:
+      routing_strategy: simple-shuffle
+      redis_url: os.environ/REDIS_URL
+      redis_port: os.environ/REDIS_PORT
+      # On free-tier 429/limit, cool the deployment down and fail over to local ollama
+      allowed_fails: 2
+      cooldown_time: 60
+      fallbacks:
+        - groq-llama-3.3-70b: ["cerebras-llama-3.3-70b", "qwen3-14b"]
+        - cerebras-llama-3.3-70b: ["groq-llama-3.3-70b", "qwen3-14b"]
+        - openrouter-deepseek-r1: ["gpt-oss-20b"]
+        - mistral-small: ["qwen3-14b"]
+
+    litellm_settings:
+      success_callback: ["prometheus"]
+      prometheus_adapter: true
+      cache: true
+      cache_params:
+        type: redis
+        host: os.environ/REDIS_HOST
+        port: os.environ/REDIS_PORT
+      drop_params: false
+      request_timeout: 600
+      num_retries: 2
+      retry_after: 5
+      set_verbose: false
+
+    environment:
+      - REDIS_HOST
+      - REDIS_PORT

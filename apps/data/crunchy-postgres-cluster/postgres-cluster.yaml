@@ -120,6 +120,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: litellm
+      databases:
+        - litellm
+      password:
+        type: AlphaNumeric
+
     - name: temporal
       databases:
         - temporal

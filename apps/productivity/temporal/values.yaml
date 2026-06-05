@@ -65,7 +65,7 @@ controllers:
         image:
           repository: docker.io/library/elasticsearch
           # renovate: datasource=docker depName=docker.io/library/elasticsearch
-          tag: 7.17.27@sha256:9a6443f55243f6acbfeb4a112d15eb3b9aac74bf25e0e39fa19b3ddd3a6879d0
+          tag: 7.17.28@sha256:a06b03a2db8db2be43d3c3851e7bcebdd4fff79f4db08c7da6bad7a8776d3e15
         env:
           discovery.type: single-node
           xpack.security.enabled: "false"

@@ -9,8 +9,16 @@ spec:
   trigger:
     manual: restore-once
   restic:
+    accessModes:
+      - ReadWriteOnce
+    cacheAccessModes:
+      - ReadWriteOnce
+    cacheStorageClassName: openebs-hostpath
+    cleanupCachePVC: true
+    cleanupTempPVC: true
+    copyMethod: Snapshot
     repository: radarr-r2-secret
-    copyMethod: Direct
+    enableFileDeletion: true
     destinationPVC: radarr
     storageClassName: ceph-block
     volumeSnapshotClassName: csi-ceph-blockpool

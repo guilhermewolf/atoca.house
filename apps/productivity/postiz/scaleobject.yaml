@@ -3,7 +3,7 @@
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: cross-seed
+  name: postiz
 spec:
   advanced:
     restoreToOriginalReplicaCount: true
@@ -13,7 +13,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: cross-seed
+    name: postiz
   triggers:
     - type: prometheus
       metadata:

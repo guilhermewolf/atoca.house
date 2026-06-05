@@ -78,16 +78,12 @@ route:
 
 persistence:
   uploads:
-    enabled: true
-    type: persistentVolumeClaim
-    storageClass: ceph-block
-    accessMode: ReadWriteOnce
-    size: 10Gi
-    advancedMounts:
-      postiz:
-        app:
-          - path: /uploads
-            subPath: uploads
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/media/
+    globalMounts:
+      - path: /uploads
+
   config:
     type: emptyDir
     advancedMounts:

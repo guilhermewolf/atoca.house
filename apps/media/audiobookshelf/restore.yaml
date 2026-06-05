@@ -9,8 +9,16 @@ spec:
   trigger:
     manual: restore-once
   restic:
+    accessModes:
+      - ReadWriteOnce
+    cacheAccessModes:
+      - ReadWriteOnce
+    cacheStorageClassName: openebs-hostpath
+    cleanupCachePVC: true
+    cleanupTempPVC: true
+    enableFileDeletion: true
     repository: audiobookshelf-r2-secret
-    copyMethod: Direct
+    copyMethod: Snapshot
     destinationPVC: audiobookshelf
     storageClassName: ceph-block
     volumeSnapshotClassName: csi-ceph-blockpool

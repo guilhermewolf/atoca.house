@@ -9,8 +9,16 @@ spec:
   trigger:
     manual: restore-once
   restic:
+    accessModes:
+      - ReadWriteOnce
+    cacheAccessModes:
+      - ReadWriteOnce
+    cacheStorageClassName: openebs-hostpath
+    cleanupCachePVC: true
+    cleanupTempPVC: true
+    enableFileDeletion: true
     repository: dispatcharr-r2-secret
-    copyMethod: Direct
+    copyMethod: Snapshot
     destinationPVC: dispatcharr
     storageClassName: ceph-block
     volumeSnapshotClassName: csi-ceph-blockpool

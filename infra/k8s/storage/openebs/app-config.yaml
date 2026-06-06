@@ -3,5 +3,5 @@ app:
   namespace: openebs
   chart: openebs
   chartRepo: https://openebs.github.io/openebs
-  chartVersion: 4.4.0
+  chartVersion: 4.5.0
   disableAutoSync: true

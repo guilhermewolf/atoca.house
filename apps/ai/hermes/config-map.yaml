@@ -13,17 +13,28 @@ data:
     # /v1 API). LiteLLM fans out to local Ollama, free-tier cloud (Groq/Cerebras/
     # OpenRouter/Mistral) and the ChatGPT subscription, with rate limits + fallbacks.
     # `default` MUST be a LiteLLM model_name (see litellm config.yaml model_list). The
-    # agent needs function/tool-calling — pick a tool-capable model. Tool-capable
-    # LiteLLM names: qwen3-14b, qwen2.5-coder-14b, gpt-oss-20b, qwen3-8b,
-    # groq-llama-3.3-70b. (chatgpt/gpt-5.4 is Responses-only — avoid for the agent.)
-    # api_key is the LiteLLM master key, injected from env via ${...} substitution.
+    # agent needs function/tool-calling — all of these support it: chatgpt/gpt-5.4
+    # (ChatGPT subscription; tools verified through LiteLLM's chat→Responses bridge),
+    # qwen3-14b, qwen2.5-coder-14b, gpt-oss-20b, qwen3-8b, groq-llama-3.3-70b.
+    # LiteLLM falls chatgpt/gpt-5.4 back to qwen3-14b on quota/limit, so the agent
+    # never hard-errors. api_key is the LiteLLM master key via ${...} substitution.
     model:
-      default: qwen3-14b
+      default: chatgpt/gpt-5.4
       provider: custom:litellm
     providers:
       litellm:
         base_url: http://litellm.litellm.svc.cluster.local:4000/v1
         api_key: ${LITELLM_MASTER_KEY}
+    # Auxiliary side-tasks default to openrouter/nous (no credit → errors). Pin them
+    # to the main provider (litellm) but on a cheap local model instead of burning
+    # gpt-5.4 quota on titles/compression.
+    auxiliary:
+      title_generation:
+        provider: main
+        model: qwen3-8b
+      compression:
+        provider: main
+        model: qwen3-8b
     toolsets:
       - hermes-cli
     terminal:

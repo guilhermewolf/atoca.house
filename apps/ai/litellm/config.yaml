@@ -68,6 +68,13 @@ data:
         - cerebras-llama-3.3-70b: ["groq-llama-3.3-70b", "qwen3-14b"]
         - openrouter-deepseek-r1: ["gpt-oss-20b"]
         - mistral-small: ["qwen3-14b"]
+        # Local models: cover cold-load/timeout hiccups. qwen3-8b loads faster,
+        # then cloud (groq) as last resort so the agent never sees a hard error.
+        - qwen3-14b: ["qwen3-8b", "groq-llama-3.3-70b"]
+        - qwen2.5-coder-14b: ["qwen3-14b", "groq-llama-3.3-70b"]
+        - gpt-oss-20b: ["qwen3-14b", "groq-llama-3.3-70b"]
+        # ChatGPT subscription: on rate-limit/quota, drop to local + cloud free
+        - chatgpt/gpt-5.4: ["qwen3-14b", "groq-llama-3.3-70b"]
 
     litellm_settings:
       success_callback: ["prometheus"]

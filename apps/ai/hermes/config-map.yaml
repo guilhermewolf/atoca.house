@@ -8,6 +8,10 @@ data:
   config.yaml: |
     # Hermes Agent configuration
     # Docs: https://hermes-agent.nousresearch.com/docs
+    # Main model: ChatGPT Plus subscription (gpt-5.4) via litellm. This is the only
+    # model the Plus plan exposes — codex-* names are rejected by the Codex backend
+    # for ChatGPT accounts, so they can't be the main model here. On rate-limit/quota
+    # litellm fails this over to local ollama (qwen3-14b) then cloud free-tier.
     model:
       default: chatgpt/gpt-5.4
       provider: custom:litellm
@@ -15,13 +19,16 @@ data:
       litellm:
         base_url: http://litellm.litellm.svc.cluster.local:4000/v1
         api_key: ${LITELLM_MASTER_KEY}
+    # Auxiliary tasks run on cheap local ollama models instead of burning the
+    # subscription. Titles -> small/fast gemma4-e4b; compression (conversation
+    # summarization) -> the strongest local model, qwen3-14b, for fidelity.
     auxiliary:
       title_generation:
         provider: main
-        model: qwen3-8b
+        model: gemma4-e4b
       compression:
         provider: main
-        model: qwen3-8b
+        model: qwen3-14b
     toolsets:
       - hermes-cli
     terminal:

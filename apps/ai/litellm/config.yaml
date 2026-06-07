@@ -36,21 +36,36 @@ data:
           rpm: 60
 
       # --- Local ollama (RTX 4060 Ti 16GB, no rate limits) ---
-      - model_name: gpt-oss-20b
-        litellm_params:
-          model: ollama_chat/gpt-oss:20b
-          api_base: http://ollama.ollama.svc.cluster.local
+      # Model names below mirror exactly what `ollama list` has pulled. Only one
+      # ~9GB model fits in VRAM at a time, so cross-model fallbacks pay a cold-load.
       - model_name: qwen3-14b
         litellm_params:
           model: ollama_chat/qwen3:14b
           api_base: http://ollama.ollama.svc.cluster.local
-      - model_name: qwen2.5-coder-14b
+      - model_name: qwen3.5-9b
         litellm_params:
-          model: ollama_chat/qwen2.5-coder:14b
+          model: ollama_chat/qwen3.5:9b
           api_base: http://ollama.ollama.svc.cluster.local
-      - model_name: qwen3-8b
+      - model_name: gemma4-12b
         litellm_params:
-          model: ollama_chat/qwen3:8b-q4_K_M
+          model: ollama_chat/gemma4:12b
+          api_base: http://ollama.ollama.svc.cluster.local
+      - model_name: gemma4-e4b
+        litellm_params:
+          model: ollama_chat/gemma4:e4b
+          api_base: http://ollama.ollama.svc.cluster.local
+      # Specialized: Home Assistant tool-calling model (3B). Routable for HA, not
+      # used as a general fallback.
+      - model_name: home-3b
+        litellm_params:
+          model: ollama_chat/fixt/home-3b-v3:latest
+          api_base: http://ollama.ollama.svc.cluster.local
+      # Embeddings (text-embedding). No chat fallback — different modality.
+      - model_name: nomic-embed-text
+        model_info:
+          mode: embedding
+        litellm_params:
+          model: ollama/nomic-embed-text
           api_base: http://ollama.ollama.svc.cluster.local
 
     general_settings:
@@ -66,14 +81,17 @@ data:
       fallbacks:
         - groq-llama-3.3-70b: ["cerebras-llama-3.3-70b", "qwen3-14b"]
         - cerebras-llama-3.3-70b: ["groq-llama-3.3-70b", "qwen3-14b"]
-        - openrouter-deepseek-r1: ["gpt-oss-20b"]
-        - mistral-small: ["qwen3-14b"]
-        # Local models: cover cold-load/timeout hiccups. qwen3-8b loads faster,
-        # then cloud (groq) as last resort so the agent never sees a hard error.
-        - qwen3-14b: ["qwen3-8b", "groq-llama-3.3-70b"]
-        - qwen2.5-coder-14b: ["qwen3-14b", "groq-llama-3.3-70b"]
-        - gpt-oss-20b: ["qwen3-14b", "groq-llama-3.3-70b"]
-        # ChatGPT subscription: on rate-limit/quota, drop to local + cloud free
+        - openrouter-deepseek-r1: ["qwen3-14b", "groq-llama-3.3-70b"]
+        - mistral-small: ["qwen3.5-9b", "groq-llama-3.3-70b"]
+        # Local models: cover cold-load/timeout hiccups. qwen3.5-9b loads faster
+        # (smaller), then cloud (groq) as last resort so the agent never sees a
+        # hard error.
+        - qwen3-14b: ["qwen3.5-9b", "groq-llama-3.3-70b"]
+        - qwen3.5-9b: ["qwen3-14b", "groq-llama-3.3-70b"]
+        - gemma4-12b: ["qwen3-14b", "groq-llama-3.3-70b"]
+        - gemma4-e4b: ["qwen3.5-9b", "groq-llama-3.3-70b"]
+        # ChatGPT subscription is the main model: on rate-limit/quota, drop to the
+        # strongest local model, then cloud free-tier.
         - chatgpt/gpt-5.4: ["qwen3-14b", "groq-llama-3.3-70b"]
 
     litellm_settings:

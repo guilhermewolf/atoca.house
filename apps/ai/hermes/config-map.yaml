@@ -8,16 +8,6 @@ data:
   config.yaml: |
     # Hermes Agent configuration
     # Docs: https://hermes-agent.nousresearch.com/docs
-    #
-    # Model provider: routed through the in-cluster LiteLLM gateway (OpenAI-compatible
-    # /v1 API). LiteLLM fans out to local Ollama, free-tier cloud (Groq/Cerebras/
-    # OpenRouter/Mistral) and the ChatGPT subscription, with rate limits + fallbacks.
-    # `default` MUST be a LiteLLM model_name (see litellm config.yaml model_list). The
-    # agent needs function/tool-calling — all of these support it: chatgpt/gpt-5.4
-    # (ChatGPT subscription; tools verified through LiteLLM's chat→Responses bridge),
-    # qwen3-14b, qwen2.5-coder-14b, gpt-oss-20b, qwen3-8b, groq-llama-3.3-70b.
-    # LiteLLM falls chatgpt/gpt-5.4 back to qwen3-14b on quota/limit, so the agent
-    # never hard-errors. api_key is the LiteLLM master key via ${...} substitution.
     model:
       default: chatgpt/gpt-5.4
       provider: custom:litellm
@@ -25,9 +15,6 @@ data:
       litellm:
         base_url: http://litellm.litellm.svc.cluster.local:4000/v1
         api_key: ${LITELLM_MASTER_KEY}
-    # Auxiliary side-tasks default to openrouter/nous (no credit → errors). Pin them
-    # to the main provider (litellm) but on a cheap local model instead of burning
-    # gpt-5.4 quota on titles/compression.
     auxiliary:
       title_generation:
         provider: main
@@ -65,6 +52,10 @@ data:
       redact_pii: true
     web:
       search_backend: searxng
+    discord:
+      require_mention: false
+      auto_thread: false
+      reactions: false
     agent:
       max_turns: 90
       gateway_timeout: 1800

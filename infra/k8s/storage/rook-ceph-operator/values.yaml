@@ -1,7 +1,7 @@
 csi:
-  cephFSKernelMountOptions: ms_mode=prefer-crc
-  enableLiveness: true
-  enableMetadata: true
+  # CSI driver settings (cephFSKernelMountOptions, enableMetadata, enableLiveness)
+  # moved out of this chart in Rook v1.20 -> see rook-ceph-csi-drivers/values.yaml.
+  installCsiOperator: true
   serviceMonitor:
     enabled: true
 image:

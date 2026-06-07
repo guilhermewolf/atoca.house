@@ -1,0 +1,40 @@
+---
+# Admin-managed Ceph-CSI drivers (Rook v1.20+). Replaces the CSI settings that
+# previously lived in the rook-ceph operator chart. Values here reproduce the
+# live Driver/OperatorConfig CRs to keep CSI behaviour unchanged across upgrade.
+operatorConfig:
+  driverSpecDefaults:
+    clusterName: rook-ceph
+    # Preserve: live CRs have enableMetadata: true (RBD image metadata).
+    # Per-driver fields render null and inherit this default.
+    enableMetadata: true
+    controllerPlugin:
+      # Required: CephCluster uses host networking (network.provider: host),
+      # so the CSI provisioner must be on the host network to reach the mons.
+      hostNetwork: true
+      replicas: 2
+
+drivers:
+  rbd:
+    enabled: true
+    name: rook-ceph.rbd.csi.ceph.com
+    snapshotPolicy: volumeSnapshot
+    controllerPlugin:
+      hostNetwork: true
+      replicas: 2
+
+  cephfs:
+    enabled: true
+    name: rook-ceph.cephfs.csi.ceph.com
+    snapshotPolicy: volumeGroupSnapshot
+    kernelMountOptions:
+      ms_mode: prefer-crc
+    controllerPlugin:
+      hostNetwork: true
+      replicas: 2
+
+  nfs:
+    enabled: false
+
+  nvmeof:
+    enabled: false

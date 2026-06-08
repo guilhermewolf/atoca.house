@@ -5,6 +5,11 @@
 operatorConfig:
   driverSpecDefaults:
     clusterName: rook-ceph
+    # Chart default maxLogSize "10Gi" breaks the CSI log-rotator: logrotate's
+    # size directive only accepts k/M/G, so "Gi" -> "unknown unit 'i'".
+    log:
+      rotation:
+        maxLogSize: "10G"
     # Preserve: live CRs have enableMetadata: true (RBD image metadata).
     # Per-driver fields render null and inherit this default.
     enableMetadata: true

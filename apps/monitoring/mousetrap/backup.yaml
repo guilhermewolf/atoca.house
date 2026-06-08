@@ -6,7 +6,7 @@ metadata:
   name: mousetrap-backup
   namespace: mousetrap
 spec:
-  sourcePVC: mousetrap-config
+  sourcePVC: mousetrap
   trigger:
     schedule: "0 0 * * *"
   restic:

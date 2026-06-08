@@ -7,6 +7,8 @@ metadata:
   namespace: grafana
   labels:
     grafana.internal/instance: grafana
+    # victoria-logs chart dashboards select on this label (chart default)
+    dashboards: grafana
 spec:
   config:
     analytics:

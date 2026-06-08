@@ -4,6 +4,13 @@ dashboards:
   enabled: true
   grafanaOperator:
     enabled: true
+    spec:
+      # Grafana CR is grafana/grafana, labelled grafana.internal/instance=grafana.
+      # Chart default selector {dashboards: grafana} matches nothing.
+      allowCrossNamespaceImport: true
+      instanceSelector:
+        matchLabels:
+          grafana.internal/instance: grafana
 server:
   persistentVolume:
     enabled: true

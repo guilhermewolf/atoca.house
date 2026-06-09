@@ -17,19 +17,22 @@ spec:
       path: infra/k8s
       directory:
         recurse: true
-        include: '{*/application.yaml,*/applicationset.yaml}'
-        exclude: '**/*/application.yaml'  # Only direct subdirectories
+        include: "{*/application.yaml,*/applicationset.yaml}"
+        exclude: "**/*/application.yaml" # Only direct subdirectories
     # Application categories
     - repoURL: https://github.com/guilhermewolf/atoca.house
       targetRevision: HEAD
       path: apps
       directory:
         recurse: true
-        include: '{*/application.yaml,*/applicationset.yaml}'
-        exclude: '**/*/application.yaml'  # Only direct subdirectories
+        include: "{*/application.yaml,*/applicationset.yaml}"
+        exclude: "**/*/application.yaml" # Only direct subdirectories
   destination:
     namespace: argocd
     server: https://kubernetes.default.svc
   syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true

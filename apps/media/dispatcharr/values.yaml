@@ -48,7 +48,7 @@ controllers:
             cpu: 10m
             memory: 512Mi
           limits:
-            memory: 1Gi
+            memory: 2Gi
 
 defaultPodOptions:
   annotations:

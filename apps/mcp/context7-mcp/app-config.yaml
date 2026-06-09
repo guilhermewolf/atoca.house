@@ -1,0 +1,5 @@
+---
+# Application configuration for context7-mcp
+app:
+  name: context7-mcp
+  namespace: mcp

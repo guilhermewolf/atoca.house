@@ -1,0 +1,5 @@
+---
+# Application configuration for tailscale-mcp
+app:
+  name: tailscale-mcp
+  namespace: mcp

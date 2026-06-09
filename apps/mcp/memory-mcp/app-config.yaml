@@ -1,0 +1,5 @@
+---
+# Application configuration for memory-mcp
+app:
+  name: memory-mcp
+  namespace: mcp

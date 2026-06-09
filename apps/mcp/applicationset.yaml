@@ -1,0 +1,40 @@
+---
+# ApplicationSet for ai applications
+# Discovers apps from app-config.yaml files in subdirectories
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps-mcp
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+
+  generators:
+    - git:
+        repoURL: https://github.com/guilhermewolf/atoca.house
+        revision: HEAD
+        files:
+          - path: "apps/mcp/*/app-config.yaml"
+
+  template:
+    metadata:
+      name: "{{.app.name}}"
+      namespace: argocd
+    spec:
+      project: applications
+      destination:
+        namespace: "{{.app.namespace}}"
+        server: https://kubernetes.default.svc
+
+      sources:
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          path: "apps/mcp/{{.app.name}}"
+          directory:
+            exclude: "{app-config.yaml}"
+
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

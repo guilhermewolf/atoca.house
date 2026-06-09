@@ -54,7 +54,12 @@ data:
       ban_time: 1h
 
     webauthn:
-      disable: true
+      disable: false
+      enable_passkey_login: true
+      timeout: '60 seconds'
+      selection_criteria:
+        discoverability: preferred
+        user_verification: preferred
 
     duo_api:
       disable: true

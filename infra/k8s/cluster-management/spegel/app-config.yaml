@@ -4,6 +4,5 @@ app:
   chart: spegel
   chartRepo: ghcr.io/spegel-org/helm-charts
   chartVersion: 0.6.0
-  hasValues: true
   podSecurityPrivileged: true
   disableAutoSync: true

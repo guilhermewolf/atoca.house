@@ -4,5 +4,4 @@ app:
   chart: metrics-server
   chartRepo: https://kubernetes-sigs.github.io/metrics-server/
   chartVersion: 3.13.0
-  hasValues: true
   disableAutoSync: true

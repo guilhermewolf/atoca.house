@@ -4,6 +4,6 @@ app:
   chart: cilium
   chartRepo: https://helm.cilium.io/
   chartVersion: 1.19.4 # renovate: datasource=helm depName=cilium registryUrl=https://helm.cilium.io
-  hasValues: true
+
   customIgnoreDifferences: true
   disableAutoSync: true

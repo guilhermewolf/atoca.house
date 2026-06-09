@@ -4,5 +4,4 @@ app:
   chart: gateway-helm
   chartRepo: mirror.gcr.io/envoyproxy
   chartVersion: 1.6.3
-  hasValues: true
   disableAutoSync: true

@@ -4,5 +4,4 @@ app:
   chart: descheduler
   chartRepo: https://kubernetes-sigs.github.io/descheduler/
   chartVersion: 0.36.0
-  hasValues: true
   disableAutoSync: true

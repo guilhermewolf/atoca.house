@@ -4,6 +4,5 @@ app:
   chart: ceph-csi-drivers
   chartRepo: https://ceph.github.io/ceph-csi-operator
   chartVersion: 1.0.1 # renovate: datasource=helm depName=ceph-csi-drivers registryUrl=https://ceph.github.io/ceph-csi-operator
-  hasValues: true
   disableAutoSync: true
   podSecurityPrivileged: true

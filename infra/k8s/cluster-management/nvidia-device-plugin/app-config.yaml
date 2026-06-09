@@ -4,5 +4,4 @@ app:
   chart: nvidia-device-plugin
   chartRepo: https://nvidia.github.io/k8s-device-plugin
   chartVersion: 0.19.2
-  hasValues: true
   disableAutoSync: true

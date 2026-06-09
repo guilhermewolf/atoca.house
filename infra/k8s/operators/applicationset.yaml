@@ -18,21 +18,22 @@ spec:
 
   template:
     metadata:
-      name: '{{.app.name}}'
+      name: "{{.app.name}}"
       namespace: argocd
     spec:
       project: infra
       destination:
-        namespace: '{{.app.namespace}}'
+        namespace: "{{.app.namespace}}"
         server: https://kubernetes.default.svc
 
       sources:
-        - chart: '{{.app.chart}}'
-          repoURL: '{{.app.chartRepo}}'
-          targetRevision: '{{.app.chartVersion}}'
+        - chart: "{{.app.chart}}"
+          repoURL: "{{.app.chartRepo}}"
+          targetRevision: "{{.app.chartVersion}}"
           helm:
             valueFiles:
               - $values/infra/k8s/operators/{{.app.name}}/values.yaml
+            ignoreMissingValueFiles: true
 
         - repoURL: https://github.com/guilhermewolf/atoca.house
           targetRevision: HEAD
@@ -40,9 +41,9 @@ spec:
 
         - repoURL: https://github.com/guilhermewolf/atoca.house
           targetRevision: HEAD
-          path: 'infra/k8s/operators/{{.app.name}}'
+          path: "infra/k8s/operators/{{.app.name}}"
           directory:
-            exclude: '{application.yaml,values.yaml,app-config.yaml}'
+            exclude: "{application.yaml,values.yaml,app-config.yaml}"
 
       syncPolicy:
         syncOptions:

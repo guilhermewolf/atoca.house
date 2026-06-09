@@ -4,5 +4,4 @@ app:
   chart: crowdsec
   chartRepo: https://crowdsecurity.github.io/helm-charts
   chartVersion: 0.24.0
-  hasValues: true
   disableAutoSync: true

@@ -4,6 +4,5 @@ app:
   chart: reloader
   chartRepo: https://stakater.github.io/stakater-charts
   chartVersion: 2.2.12
-  hasValues: true
   customIgnoreDifferences: true
   disableAutoSync: true

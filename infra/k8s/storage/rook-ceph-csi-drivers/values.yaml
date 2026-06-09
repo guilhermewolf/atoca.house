@@ -24,6 +24,12 @@ drivers:
     enabled: true
     name: rook-ceph.rbd.csi.ceph.com
     snapshotPolicy: volumeSnapshot
+    # Chart renders the per-driver Driver CR with its own default maxLogSize
+    # "10Gi", which beats operatorConfig.driverSpecDefaults in the operator
+    # merge. Must override here too or logrotate fails: "unknown unit 'i'".
+    log:
+      rotation:
+        maxLogSize: "10G"
     controllerPlugin:
       hostNetwork: true
       replicas: 2
@@ -34,6 +40,9 @@ drivers:
     snapshotPolicy: volumeGroupSnapshot
     kernelMountOptions:
       ms_mode: prefer-crc
+    log:
+      rotation:
+        maxLogSize: "10G"
     controllerPlugin:
       hostNetwork: true
       replicas: 2

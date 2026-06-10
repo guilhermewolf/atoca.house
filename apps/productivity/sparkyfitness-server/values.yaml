@@ -10,6 +10,7 @@ controllers:
           repository: ghcr.io/codewithcj/sparkyfitness-server
           tag: v0.16.6.3
         env:
+          NODE_EXTRA_CA_CERTS: /etc/ssl/postgres/ca.crt
           SPARKY_FITNESS_LOG_LEVEL: info
           SPARKY_FITNESS_FRONTEND_URL: fitness.atoca.house
           SPARKY_FITNESS_DISABLE_SIGNUP: false
@@ -32,6 +33,13 @@ service:
       http:
         port: 3010
 persistence:
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    globalMounts:
+      - path: /etc/ssl/postgres/ca.crt
+        subPath: ca.crt
+        readOnly: true
   # backup:
   #   type: nfs
   #   server: nas.internal

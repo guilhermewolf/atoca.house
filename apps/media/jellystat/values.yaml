@@ -9,6 +9,8 @@ controllers:
         image:
           repository: cyfershepard/jellystat
           tag: 1.1.10@sha256:bb7ebe42424dedeff52d8da4130232d67e3fdd6dc2dd4a66091e32ddd835ea42
+        env:
+          NODE_EXTRA_CA_CERTS: /etc/ssl/postgres/ca.crt
         envFrom:
           - secretRef:
               name: jellystat-secret
@@ -37,6 +39,15 @@ controllers:
     pod:
       securityContext:
         seccompProfile: { type: RuntimeDefault }
+persistence:
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    globalMounts:
+      - path: /etc/ssl/postgres/ca.crt
+        subPath: ca.crt
+        readOnly: true
+
 service:
   app:
     controller: jellystat

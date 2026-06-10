@@ -29,7 +29,7 @@ controllers:
           OIDC_DISPLAY_NAME: Authelia
           OIDC_SCOPES: openid offline_access profile email
           REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/7"
-          NODE_TLS_REJECT_UNAUTHORIZED: "0"
+          NODE_EXTRA_CA_CERTS: /etc/ssl/postgres/ca.crt
           PORT: &port 8080
           WEB_CONCURRENCY: 10
         envFrom:
@@ -79,6 +79,13 @@ route:
               value: /
 
 persistence:
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    globalMounts:
+      - path: /etc/ssl/postgres/ca.crt
+        subPath: ca.crt
+        readOnly: true
   tmpfs:
     type: emptyDir
     advancedMounts:

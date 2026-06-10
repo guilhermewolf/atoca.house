@@ -15,6 +15,9 @@ controllers:
           AUTHELIA_TELEMETRY_METRICS_ENABLED: "true"
           AUTHELIA_THEME: auto
           AUTHELIA_LOG_LEVEL: info
+          # Trust the cert-manager postgres-ca for verified Postgres TLS
+          # (storage.postgres.tls.skip_verify=false). Augments the system trust.
+          AUTHELIA_CERTIFICATES_DIRECTORY: /certificates
           X_AUTHELIA_CONFIG: /config/configuration.yaml
           X_AUTHELIA_CONFIG_FILTERS: template
         envFrom:
@@ -125,3 +128,10 @@ persistence:
     name: authelia-secret
     globalMounts:
       - path: /config/secret
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    globalMounts:
+      - path: /certificates/postgres-ca.crt
+        subPath: ca.crt
+        readOnly: true

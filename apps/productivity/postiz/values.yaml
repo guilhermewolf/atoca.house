@@ -18,9 +18,10 @@ controllers:
           NEXT_PUBLIC_BACKEND_URL: "https://postiz.atoca.house/api"
           BACKEND_INTERNAL_URL: "http://localhost:3000"
           IS_GENERAL: "true"
-          # Crunchy Postgres presents a self-signed CA; Node's pg/Mastra client
-          # rejects it otherwise (SELF_SIGNED_CERT_IN_CHAIN).
-          NODE_TLS_REJECT_UNAUTHORIZED: "0"
+          # Crunchy Postgres TLS is signed by the cert-manager postgres-ca,
+          # mounted at /etc/ssl/postgres/ca.crt and added to Node's trust store
+          # so the pg/Mastra client verifies it (no SELF_SIGNED_CERT_IN_CHAIN).
+          NODE_EXTRA_CA_CERTS: /etc/ssl/postgres/ca.crt
           # Temporal workflow engine (required since Postiz v2.12.0)
           TEMPORAL_ADDRESS: "temporal-app.temporal.svc.cluster.local:7233"
           # Local file storage on a ceph-block PVC (backed up to R2 via Volsync)
@@ -77,6 +78,13 @@ route:
               value: /
 
 persistence:
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    globalMounts:
+      - path: /etc/ssl/postgres/ca.crt
+        subPath: ca.crt
+        readOnly: true
   uploads:
     type: nfs
     server: nas.internal

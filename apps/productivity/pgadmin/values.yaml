@@ -58,7 +58,8 @@ configMaps:
               "TunnelKeepAlive": 0,
               "KerberosAuthentication": false,
               "ConnectionParameters": {
-                "sslmode": "prefer",
+                "sslmode": "verify-full",
+                "sslrootcert": "/etc/ssl/postgres/ca.crt",
                 "connect_timeout": 10
               }
             }
@@ -116,3 +117,10 @@ persistence:
     globalMounts:
       - path: /pgadmin4/servers.json
         subPath: servers.json
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    globalMounts:
+      - path: /etc/ssl/postgres/ca.crt
+        subPath: ca.crt
+        readOnly: true

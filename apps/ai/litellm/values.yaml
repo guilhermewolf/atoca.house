@@ -90,6 +90,13 @@ route:
               type: PathPrefix
               value: /
 persistence:
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    globalMounts:
+      - path: /etc/ssl/postgres/ca.crt
+        subPath: ca.crt
+        readOnly: true
   config:
     type: configMap
     name: litellm-configmap

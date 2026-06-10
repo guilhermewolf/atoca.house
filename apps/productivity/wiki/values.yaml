@@ -13,6 +13,9 @@ controllers:
           APP_URL: "https://wiki.atoca.house"
           DB_TYPE: postgres
           DB_SSL: "true"
+          # Trust the cert-manager postgres-ca (trust-manager ConfigMap mounted
+          # below) via Node's trust store, so DB_SSL verifies the server cert.
+          NODE_EXTRA_CA_CERTS: /etc/ssl/postgres/ca.crt
         envFrom:
           - secretRef:
               name: wiki-db-secret
@@ -32,6 +35,15 @@ controllers:
               timeoutSeconds: 1
               failureThreshold: 3
           readiness: *probes
+persistence:
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    globalMounts:
+      - path: /etc/ssl/postgres/ca.crt
+        subPath: ca.crt
+        readOnly: true
+
 service:
   wiki:
     controller: wiki

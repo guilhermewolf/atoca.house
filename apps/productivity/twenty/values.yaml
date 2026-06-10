@@ -14,7 +14,7 @@ controllers:
           pullPolicy: Always
         env:
           NODE_PORT: &port 3000
-          NODE_TLS_REJECT_UNAUTHORIZED: "0"
+          NODE_EXTRA_CA_CERTS: /etc/ssl/postgres/ca.crt
           SERVER_URL: https://twenty.atoca.house
           FRONT_BASE_URL: https://twenty.atoca.house
           CACHE_STORAGE_TYPE: redis
@@ -69,7 +69,7 @@ controllers:
           - yarn
           - worker:prod
         env:
-          NODE_TLS_REJECT_UNAUTHORIZED: "0"
+          NODE_EXTRA_CA_CERTS: /etc/ssl/postgres/ca.crt
           PORT: *port
           LOG_LEVELS: log
           SERVER_URL: https://twenty.atoca.house
@@ -124,6 +124,13 @@ route:
               value: /
 
 persistence:
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    globalMounts:
+      - path: /etc/ssl/postgres/ca.crt
+        subPath: ca.crt
+        readOnly: true
   storage:
     enabled: true
     type: persistentVolumeClaim

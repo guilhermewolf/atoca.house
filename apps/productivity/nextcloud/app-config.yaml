@@ -1,8 +1,0 @@
----
-# Application configuration for nextcloud
-app:
-  name: nextcloud
-  namespace: nextcloud
-  chart: nextcloud
-  chartRepo: ghcr.io/nextcloud/helm
-  chartVersion: 9.1.2

@@ -26,7 +26,7 @@ controllers:
       ledfx:
         image:
           repository: ghcr.io/ledfx/ledfx
-          tag: 2.1.9@ssha256:a5ff8549a847d1b2a10595a1137cc4e7352f7d29aafb96eff63cef92634b3036
+          tag: 2.1.9@sha256:a5ff8549a847d1b2a10595a1137cc4e7352f7d29aafb96eff63cef92634b3036
         args:
           - --offline
           - --clear-effects

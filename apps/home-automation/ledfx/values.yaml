@@ -8,7 +8,7 @@ controllers:
         image:
           # renovate: datasource=docker
           repository: ghcr.io/ledfx/ledfx
-          tag: 2.0.111@sha256:94cb9f5091785a790b7a23df0c4854a6ef393543f468a68951ddc3cf9aebd960
+          tag: 2.1.9@sha256:a5ff8549a847d1b2a10595a1137cc4e7352f7d29aafb96eff63cef92634b3036
         args:
           - --offline
           - --clear-effects

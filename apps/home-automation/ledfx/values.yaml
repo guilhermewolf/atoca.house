@@ -1,0 +1,97 @@
+---
+controllers:
+  ledfx:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      ledfx:
+        image:
+          # renovate: datasource=docker
+          repository: ghcr.io/ledfx/ledfx
+          tag: 2.0.111@sha256:94cb9f5091785a790b7a23df0c4854a6ef393543f468a68951ddc3cf9aebd960
+        args:
+          - --offline
+          - --clear-effects
+        env:
+          # pulseaudio (server mode) needs a writable XDG_RUNTIME_DIR; default
+          # /run/user/1000 does not exist in the pod and the daemon aborts
+          # ("Daemon startup failed"), and start.sh runs under `set -e`.
+          XDG_RUNTIME_DIR: /run/ledfx
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: &port 8888
+              initialDelaySeconds: 30
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+        securityContext:
+          # LedFx image runs as the ledfx user (UID/GID 1000)
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          capabilities:
+            drop: ["ALL"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+
+defaultPodOptions:
+  securityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  ledfx:
+    controller: ledfx
+    ports:
+      http:
+        port: *port
+
+route:
+  ledfx:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - ledfx.atoca.house
+    rules:
+      - backendRefs:
+          - name: ledfx
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /home/ledfx/ledfx-config
+  # pulseaudio socket/cookie dir (start.sh wipes + recreates the socket here)
+  pulse:
+    enabled: true
+    type: emptyDir
+    globalMounts:
+      - path: /home/ledfx/.config/pulse
+  # XDG_RUNTIME_DIR for the pulseaudio daemon — must be writable by uid 1000
+  pulse-run:
+    enabled: true
+    type: emptyDir
+    globalMounts:
+      - path: /run/ledfx

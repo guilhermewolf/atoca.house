@@ -1,0 +1,25 @@
+---
+# Distributes the internal Postgres CA (cert-manager `postgres-ca`) to every
+# namespace as a ConfigMap named `postgres-ca` (key `ca.crt`). Apps mount that
+# ConfigMap to verify the Postgres server cert — no per-app ExternalSecret CA
+# plumbing and the server private key is never read.
+#
+# Source key is tls.crt: in the postgres-ca Certificate secret, tls.crt is the
+# CA cert that signs the server/replication leaves (the trust anchor apps need).
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: postgres-ca
+  annotations:
+    # Apply after the trust-manager chart (incl. the Bundle CRD) is installed.
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  sources:
+    - secret:
+        name: postgres-ca
+        key: tls.crt
+  target:
+    configMap:
+      key: ca.crt
+    namespaceSelector:
+      matchLabels: {}

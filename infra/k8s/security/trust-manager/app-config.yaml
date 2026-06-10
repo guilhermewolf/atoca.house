@@ -1,0 +1,8 @@
+app:
+  name: trust-manager
+  namespace: cert-manager
+  chart: trust-manager
+  chartRepo: https://charts.jetstack.io
+  # renovate: datasource=helm depName=trust-manager registryUrl=https://charts.jetstack.io
+  chartVersion: v0.22.1
+  disableAutoSync: true

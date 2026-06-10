@@ -1,0 +1,16 @@
+crds:
+  enabled: true
+# Installed into the cert-manager namespace so the "trust namespace" (where
+# Bundle Secret/ConfigMap sources are read from) defaults to cert-manager —
+# exactly where the postgres-ca CA secret lives. No extra trust-namespace config.
+#
+# We only distribute our own internal CA, never the public CA package, so skip
+# pulling the default-package image.
+defaultPackage:
+  enabled: false
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 128Mi

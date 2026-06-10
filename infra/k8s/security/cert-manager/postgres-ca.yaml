@@ -1,0 +1,41 @@
+---
+# Internal PKI for Postgres mTLS.
+# selfSigned ClusterIssuer bootstraps a long-lived CA, which in turn backs the
+# `postgres-ca` ClusterIssuer used to sign the Postgres server + replication
+# leaf certificates (see apps/data/crunchy-postgres-cluster/certificates.yaml).
+#
+# The CA secret lives in the cert-manager namespace because a ClusterIssuer's
+# `ca.secretName` is resolved from cert-manager's cluster-resource namespace.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: postgres-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: postgres-ca
+  secretName: postgres-ca
+  duration: 87600h # 10y
+  renewBefore: 8760h # 1y
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: postgres-ca
+spec:
+  ca:
+    secretName: postgres-ca

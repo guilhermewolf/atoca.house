@@ -1,0 +1,67 @@
+---
+# cert-manager-issued TLS for the Postgres cluster, signed by the internal
+# `postgres-ca` ClusterIssuer (infra/k8s/security/cert-manager/postgres-ca.yaml).
+#
+# Both certs chain to the SAME CA, so the `ca.crt` baked into each secret is
+# identical — a hard requirement for PGO custom TLS. Apps trust this CA to do
+# sslmode=verify-full instead of NODE_TLS_REJECT_UNAUTHORIZED=0.
+#
+# Server cert -> spec.customTLSSecret. SANs must cover every name clients and
+# Patroni dial: the primary/replicas/ha Services, the per-pod headless names,
+# and pgBouncer.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: postgres-tls
+spec:
+  secretName: postgres-tls
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
+  commonName: postgres-primary.crunchy-postgres-cluster.svc
+  dnsNames:
+    - postgres-primary.crunchy-postgres-cluster.svc
+    - postgres-primary.crunchy-postgres-cluster.svc.cluster.local
+    - postgres-replicas.crunchy-postgres-cluster.svc
+    - postgres-replicas.crunchy-postgres-cluster.svc.cluster.local
+    - postgres-ha.crunchy-postgres-cluster.svc
+    - postgres-ha.crunchy-postgres-cluster.svc.cluster.local
+    - postgres-pods.crunchy-postgres-cluster.svc
+    - "*.postgres-pods.crunchy-postgres-cluster.svc"
+    - postgres-pgbouncer.crunchy-postgres-cluster.svc
+    - postgres-pgbouncer.crunchy-postgres-cluster.svc.cluster.local
+  issuerRef:
+    name: postgres-ca
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+# Replication cert -> spec.customReplicationTLSSecret.
+# CN MUST be _crunchyrepl: PGO authenticates streaming replication / Patroni via
+# this client certificate's common name.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: postgres-repl-tls
+spec:
+  secretName: postgres-repl-tls
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  commonName: _crunchyrepl
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - digital signature
+    - key encipherment
+    - client auth
+  issuerRef:
+    name: postgres-ca
+    kind: ClusterIssuer
+    group: cert-manager.io

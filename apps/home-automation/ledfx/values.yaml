@@ -1,0 +1,112 @@
+---
+controllers:
+  ledfx:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    initContainers:
+      fix-permissions:
+        image: busybox:1.36
+        command:
+          - sh
+          - -c
+          - |
+            set -eux
+            mkdir -p /home/ledfx/.config/pulse /run/ledfx
+            chown -R 1000:1000 /home/ledfx/.config/pulse /run/ledfx
+            chmod 700 /run/ledfx
+            chmod 700 /home/ledfx/.config/pulse
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+
+    containers:
+      ledfx:
+        image:
+          repository: ghcr.io/ledfx/ledfx
+          tag: 2.1.9@ssha256:a5ff8549a847d1b2a10595a1137cc4e7352f7d29aafb96eff63cef92634b3036
+        args:
+          - --offline
+          - --clear-effects
+        env:
+          XDG_RUNTIME_DIR: /run/ledfx
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: &port 8888
+              initialDelaySeconds: 60
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 6
+          readiness: *probes
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+
+defaultPodOptions:
+  securityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  ledfx:
+    controller: ledfx
+    ports:
+      http:
+        port: *port
+
+route:
+  ledfx:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - ledfx.atoca.house
+    rules:
+      - backendRefs:
+          - name: ledfx
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /home/ledfx/ledfx-config
+
+  pulse:
+    enabled: true
+    type: emptyDir
+    globalMounts:
+      - path: /home/ledfx/.config/pulse
+
+  pulse-run:
+    enabled: true
+    type: emptyDir
+    globalMounts:
+      - path: /run/ledfx

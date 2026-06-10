@@ -8,6 +8,8 @@ spec:
   groupRef:
     name: mcp-tools
   image: docker.io/hexsleeves/tailscale-mcp-server:1.2.0@sha256:dcef428e647683330015d33e56bb814481634e784621fb0da2ee2a40ac9b8fbc
+  # Backend listens on 3000; tell the ToolHive proxy to target it (default is 8080).
+  mcpPort: 3000
   env:
     - name: MCP_TRANSPORT
       value: http
@@ -15,6 +17,10 @@ spec:
       value: 0.0.0.0
     - name: MCP_HTTP_PORT
       value: "3000"
+    # Host-header allowlist (auth.ts). Defaults only permit localhost/*.ts.net;
+    # add the gateway hostname + in-cluster proxy services or every request 403s.
+    - name: MCP_ALLOWED_HOSTS
+      value: tailscale-mcp.atoca.house,mcp-tailscale-mcp,mcp-tailscale-mcp-proxy
     - name: TAILSCALE_TAILNET
       value: "-"
     - name: TAILSCALE_ALLOWED_TOOL_RISK
@@ -23,6 +29,16 @@ spec:
     spec:
       containers:
         - name: mcp
+          # Image CMD hardcodes `--host 127.0.0.1`, which overrides MCP_HTTP_BIND_HOST
+          # and makes the backend unreachable from the proxy. Force 0.0.0.0.
+          command:
+            - bun
+            - dist/index.js
+            - --http
+            - --host
+            - 0.0.0.0
+            - --port
+            - "3000"
           volumeMounts:
             - mountPath: /tmp
               name: tmpfs

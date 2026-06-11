@@ -27,14 +27,22 @@ spec:
     - client auth
   commonName: postgres-primary.crunchy-postgres-cluster.svc
   dnsNames:
+    # Bare Service names are required: PGO's pgBouncer dials the backend as
+    # `host=postgres-primary` with server_tls_sslmode=verify-full, so the bare
+    # name must be a SAN or every backend conn fails the TLS handshake, the pool
+    # starves, and clients get `pq: query_wait_timeout`.
+    - postgres-primary
     - postgres-primary.crunchy-postgres-cluster.svc
     - postgres-primary.crunchy-postgres-cluster.svc.cluster.local
+    - postgres-replicas
     - postgres-replicas.crunchy-postgres-cluster.svc
     - postgres-replicas.crunchy-postgres-cluster.svc.cluster.local
+    - postgres-ha
     - postgres-ha.crunchy-postgres-cluster.svc
     - postgres-ha.crunchy-postgres-cluster.svc.cluster.local
     - postgres-pods.crunchy-postgres-cluster.svc
     - "*.postgres-pods.crunchy-postgres-cluster.svc"
+    - postgres-pgbouncer
     - postgres-pgbouncer.crunchy-postgres-cluster.svc
     - postgres-pgbouncer.crunchy-postgres-cluster.svc.cluster.local
   issuerRef:

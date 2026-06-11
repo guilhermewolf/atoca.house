@@ -108,6 +108,9 @@ data:
                       - title: Tasks
                         url: https://vikunja.atoca.house
                         icon: sh:vikunja-light
+                      - title: CRM
+                        url: https://twenty.atoca.house
+                        icon: sh:twenty-light
                       - title: Notes
                         url: https://outline.atoca.house
                         icon: sh:outline-light
@@ -122,9 +125,12 @@ data:
                         url: https://fitness.atoca.house
                         icon:
                       - title: Library
-                        url: https://booklore.atoca.house
-                        icon: sh:booklore-light
-                      - title: Bookmarks
+                        url: https://kativa.atoca.house
+                        icon: sh:kativa-light
+                      - title: Audio Library
+                        url: https://audiobookshelf.atoca.house
+                        icon: sh:audiobookshelf-light
+                      - title: Get Books
                         url: https://shelfmark.atoca.house
                         icon: sh:shelfmark-light
                       - title: Home Assistant
@@ -172,16 +178,23 @@ data:
                       - title: SLSKD (Music)
                         url: https://slskd.atoca.house
                         icon: sh:slskd-light
-
-                  - title: Reading & Music
-                    color: 262 72 65
-                    links:
-                      - title: Shelfmark
+                      - title: Shelfmark (Books)
                         url: https://shelfmark.atoca.house
                         icon: sh:shelfmark-light
                       - title: Soulsync
                         url: https://soulsync.atoca.house
                         icon: sh:soulsync
+
+                  - title: Reading & Music
+                    color: 262 72 65
+                    links:
+                      - title: AudioBookShelf
+                        url: https://audiobookshelf.atoca.house
+                        icon: sh:audiobookshelf-light
+                      - title: Kativa (Ebooks)
+                        url: https://kativa.atoca.house
+                        icon: sh:kativa-light
+
 
           - size: full
             widgets:

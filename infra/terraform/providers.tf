@@ -6,7 +6,7 @@ terraform {
     }
     unifi = {
       source  = "ubiquiti-community/unifi"
-      version = "0.46.0"
+      version = "0.47.2"
     }
   }
 }

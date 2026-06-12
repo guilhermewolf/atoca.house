@@ -168,6 +168,8 @@ spec:
       synchronous_mode: true
       postgresql:
         synchronous_commit: "on"
+        parameters:
+          max_connections: 300
 
   backups:
     pgbackrest:

@@ -3,5 +3,5 @@ app:
   namespace: kube-system
   chart: metrics-server
   chartRepo: https://kubernetes-sigs.github.io/metrics-server/
-  chartVersion: 3.13.0
+  chartVersion: 3.13.1
   disableAutoSync: true

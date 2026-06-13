@@ -10,7 +10,7 @@ controllers:
         image:
           repository: docker.io/temporalio/auto-setup
           # renovate: datasource=docker depName=docker.io/temporalio/auto-setup
-          tag: 1.29.6@sha256:1263120feed69d82e4ca23b8ca6f1d702c3029fe70714e382966d0192318eab6
+          tag: 1.29.7@sha256:f14912b699cf73015ad5c4fc18d522d4b014db90e794039214dfb7c022c2644f
         env:
           # --- Postgres backend (Crunchy) ---
           DB: postgres12

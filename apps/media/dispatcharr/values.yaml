@@ -26,6 +26,38 @@ controllers:
           limits:
             memory: 3Gi
             nvidia.com/gpu: 1
+        probes:
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: *port
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 5
+              failureThreshold: 30
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: *port
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 5
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: *port
+              periodSeconds: 15
+              timeoutSeconds: 5
+              failureThreshold: 3
       celery:
         image:
           repository: ghcr.io/dispatcharr/dispatcharr
@@ -46,9 +78,9 @@ controllers:
         resources:
           requests:
             cpu: 10m
-            memory: 512Mi
+            memory: 1Gi
           limits:
-            memory: 2Gi
+            memory: 6Gi
 
 defaultPodOptions:
   annotations:

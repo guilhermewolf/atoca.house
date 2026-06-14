@@ -7,7 +7,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/tarampampam/error-pages
-          tag: 4.2.1
+          tag: 4.2.2
         env:
           TEMPLATE_NAME: lost-in-space
           SHOW_DETAILS: "false"

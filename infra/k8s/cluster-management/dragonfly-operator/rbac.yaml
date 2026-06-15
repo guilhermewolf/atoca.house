@@ -13,8 +13,17 @@ rules:
   - apiGroups: [""]
     resources: ["pods", "services"]
     verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/status"]
+    verbs: ["get", "patch", "update"]
   - apiGroups: ["apps"]
     resources: ["statefulsets"]
+    verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+  - apiGroups: ["policy"]
+    resources: ["poddisruptionbudgets"]
     verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
   - apiGroups: ["dragonflydb.io"]
     resources: ["dragonflies"]
@@ -40,4 +49,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: dragonfly-operator
-    namespace: database
+    namespace: dragonfly-operator

@@ -3,6 +3,29 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
+  name: dragonfly-allow-clients
+  namespace: dragonfly-cluster
+spec:
+  podSelector:
+    matchLabels:
+      app: dragonfly
+      app.kubernetes.io/name: dragonfly
+      app.kubernetes.io/part-of: dragonfly
+  policyTypes:
+    - Ingress
+  ingress:
+    # Data port (6379) reachable cluster-wide for cross-namespace clients
+    # (vikunja, authelia, litellm, outline, twenty, etc.). The operator-managed
+    # `dragonfly` NetworkPolicy only permits same-namespace pods on 6379.
+    # Ports-only rule (no `from`) keeps it loose — see Cilium SYN-ACK quirk.
+    - ports:
+        - port: 6379
+          protocol: TCP
+---
+# yaml-language-server: $schema=https://kube-schemas.pages.dev/networking.k8s.io/networkpolicy_v1.json
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
   name: dragonfly-allow-prometheus
   namespace: dragonfly-cluster
 spec:

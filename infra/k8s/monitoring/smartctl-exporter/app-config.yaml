@@ -5,5 +5,5 @@ app:
   namespace: smartctl-exporter
   chart: prometheus-smartctl-exporter
   chartRepo: ghcr.io/prometheus-community/charts
-  chartVersion: 0.16.0
+  chartVersion: 0.16.1
   useVaultPlugin: false

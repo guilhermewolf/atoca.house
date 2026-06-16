@@ -43,6 +43,9 @@ controllers:
           capabilities:
             drop: ["ALL"]
 
+defaultPodOptions:
+  automountServiceAccountToken: true
+
 serviceAccount:
   amd-gpu-node-labeller: {}
 

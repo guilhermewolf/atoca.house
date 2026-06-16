@@ -61,6 +61,9 @@ controllers:
         seccompProfile:
           type: RuntimeDefault
 
+defaultPodOptions:
+  automountServiceAccountToken: true
+
 serviceAccount:
   glance: {}
 

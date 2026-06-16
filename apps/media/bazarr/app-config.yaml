@@ -5,5 +5,5 @@ app:
   namespace: bazarr
   chart: app-template
   chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 4.6.2
+  chartVersion: 5.0.1
   volsyncPrivileged: true

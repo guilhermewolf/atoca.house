@@ -27,7 +27,7 @@
     },
     {
       customType: "regex",
-      description: "Process HTTP-based Helm charts in app-config.yaml files (OCI charts require manual annotations)",
+      description: "Process HTTP-based Helm charts in app-config.yaml files",
       managerFilePatterns: [
         "/(^|/)infra/k8s/.+/app-config\\.ya?ml$/",
         "/(^|/)apps/.+/app-config\\.ya?ml$/",
@@ -36,6 +36,22 @@
         "chart:\\s+(?<depName>[^\\s]+)\\s+chartRepo:\\s+(?<registryUrl>https?://[^\\s]+)\\s+chartVersion:\\s+(?<currentValue>[^\\s#]+)",
       ],
       datasourceTemplate: "helm",
+    },
+    {
+      customType: "regex",
+      description: "Process OCI-registry Helm charts in app-config.yaml files",
+      managerFilePatterns: [
+        "/(^|/)infra/k8s/.+/app-config\\.ya?ml$/",
+        "/(^|/)apps/.+/app-config\\.ya?ml$/",
+      ],
+      // chartRepo must be an OCI registry reference (host with a dot, e.g.
+      // ghcr.io/foo/bar). The host pattern structurally excludes https:// repos,
+      // which are handled by the HTTP manager above. RE2-safe: no lookarounds.
+      matchStrings: [
+        "chart:\\s+(?<chart>\\S+)\\s+chartRepo:\\s+(?<chartRepo>[a-z0-9][a-z0-9.-]*\\.[a-z]{2,}(?::[0-9]+)?(?:/\\S+)?)\\s+chartVersion:\\s+(?<currentValue>[^\\s#]+)",
+      ],
+      depNameTemplate: "{{{chartRepo}}}/{{{chart}}}",
+      datasourceTemplate: "docker",
     },
   ],
 }

@@ -1,0 +1,13 @@
+---
+# The conversion webhook autogenerates a self-signed cert via Helm on every
+# render, so Argo CD sees the Secret + CRD caBundle drift on each sync. Hand the
+# cert to cert-manager instead: it issues a stable cert and ca-injector keeps the
+# CRDs' caBundle in sync (chart annotates them with cert-manager.io/inject-ca-from).
+# This removes the drift without an ignoreDifferences workaround.
+webhook:
+  tls:
+    autogenerate: false
+    certManagerIssuerRef:
+      name: selfsigned
+      kind: ClusterIssuer
+      group: cert-manager.io

@@ -1,5 +1,12 @@
 ---
 fullnameOverride: blackbox-exporter-vpn
+# Pod pins a static macvlan IP/MAC (below), so two pods can never coexist.
+# RollingUpdate spins up the new pod before killing the old one -> the new pod
+# fails with "address already in use" and the rollout wedges. Recreate forces the
+# old pod down first.
+strategy:
+  type: Recreate
+  rollingUpdate: null
 podAnnotations:
   k8s.v1.cni.cncf.io/networks: |-
     [{

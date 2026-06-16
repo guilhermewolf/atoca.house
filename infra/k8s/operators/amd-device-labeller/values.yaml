@@ -46,9 +46,6 @@ controllers:
 defaultPodOptions:
   automountServiceAccountToken: true
 
-serviceAccount:
-  amd-gpu-node-labeller: {}
-
 service:
   app:
     enabled: false

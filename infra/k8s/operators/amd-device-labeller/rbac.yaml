@@ -1,21 +1,7 @@
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: amd-gpu-node-labeller
-  namespace: kube-system
-secrets:
-  - name: amd-gpu-node-labeller
----
-apiVersion: v1
-kind: Secret
-type: kubernetes.io/service-account-token
-metadata:
-  name: amd-gpu-node-labeller
-  namespace: kube-system
-  annotations:
-    kubernetes.io/service-account.name: amd-gpu-node-labeller
----
+# app-template v5 runs the daemonset under the release-name ServiceAccount it
+# creates by default (amd-device-labeller). Bind the node-labeller permissions to
+# that SA. No standalone ServiceAccount/token is needed — the chart owns it.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -35,5 +21,5 @@ roleRef:
   name: amd-gpu-node-labeller
 subjects:
   - kind: ServiceAccount
-    name: amd-gpu-node-labeller
+    name: amd-device-labeller
     namespace: kube-system

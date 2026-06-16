@@ -1,7 +1,7 @@
 app:
   name: multus
   namespace: kube-system
-  chart: multus
+  chart: app-template
   chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 1.3.2
+  chartVersion: 5.0.1
   disableAutoSync: true

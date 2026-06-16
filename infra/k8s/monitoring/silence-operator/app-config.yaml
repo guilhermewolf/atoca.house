@@ -5,5 +5,5 @@ app:
   namespace: silence-operator
   chart: silence-operator
   chartRepo: gsoci.azurecr.io/charts/giantswarm
-  chartVersion: 0.20.0
+  chartVersion: 0.20.1
   useVaultPlugin: false

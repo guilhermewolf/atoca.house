@@ -5,4 +5,4 @@ app:
   namespace: k8tz
   chart: k8tz
   chartRepo: ghcr.io/home-operations/charts-mirror
-  chartVersion: 0.18.0
+  chartVersion: 0.19.0

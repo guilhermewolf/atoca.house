@@ -5,5 +5,5 @@ app:
   namespace: blackbox-exporter-lan
   chart: prometheus-blackbox-exporter
   chartRepo: ghcr.io/prometheus-community/charts
-  chartVersion: 11.7.0
+  chartVersion: 11.12.0
   useVaultPlugin: true

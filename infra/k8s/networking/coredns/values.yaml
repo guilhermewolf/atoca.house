@@ -49,6 +49,12 @@ affinity:
         - matchExpressions:
             - key: node-role.kubernetes.io/control-plane
               operator: Exists
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchLabels:
+            k8s-app: kube-dns
 tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists

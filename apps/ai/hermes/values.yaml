@@ -38,7 +38,6 @@ controllers:
     containers:
       app:
         image:
-          # renovate: datasource=docker depName=nousresearch/hermes-agent
           repository: docker.io/nousresearch/hermes-agent
           tag: v2026.6.5@sha256:9ad3b04ec916ea2c2da22358fd43b024c788d74073210695af88bfc2e63869b4
         args:

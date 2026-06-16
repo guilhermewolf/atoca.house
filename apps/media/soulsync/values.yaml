@@ -6,7 +6,6 @@ controllers:
     containers:
       soulsync:
         image:
-          # renovate: datasource=docker depName=boulderbadgedad/soulsync
           repository: boulderbadgedad/soulsync
           tag: 2.3
         env:

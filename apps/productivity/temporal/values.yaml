@@ -9,7 +9,6 @@ controllers:
       app:
         image:
           repository: docker.io/temporalio/auto-setup
-          # renovate: datasource=docker depName=docker.io/temporalio/auto-setup
           tag: 1.29.7@sha256:f14912b699cf73015ad5c4fc18d522d4b014db90e794039214dfb7c022c2644f
         env:
           # --- Postgres backend (Crunchy) ---
@@ -41,7 +40,7 @@ controllers:
               name: temporal-db-secret
         securityContext:
           allowPrivilegeEscalation: false
-          capabilities: { drop: [ "ALL" ] }
+          capabilities: { drop: ["ALL"] }
         probes:
           liveness:
             enabled: false
@@ -64,7 +63,6 @@ controllers:
       app:
         image:
           repository: docker.io/library/elasticsearch
-          # renovate: datasource=docker depName=docker.io/library/elasticsearch
           tag: 7.17.28@sha256:a06b03a2db8db2be43d3c3851e7bcebdd4fff79f4db08c7da6bad7a8776d3e15
         env:
           discovery.type: single-node
@@ -77,7 +75,7 @@ controllers:
           cluster.routing.allocation.disk.watermark.flood_stage: 128mb
         securityContext:
           allowPrivilegeEscalation: false
-          capabilities: { drop: [ "ALL" ] }
+          capabilities: { drop: ["ALL"] }
         probes:
           liveness:
             enabled: false

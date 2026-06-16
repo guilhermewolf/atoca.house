@@ -9,7 +9,6 @@ controllers:
       app:
         image:
           repository: ghcr.io/gitroomhq/postiz-app
-          # renovate: datasource=docker depName=ghcr.io/gitroomhq/postiz-app
           tag: v2.21.8@sha256:3ec7bc8ecf61f08c22e0954291702b097f944def515dc259cb3a441aba4046c0
         env:
           # Combined image: Caddy on 5000 proxies / -> frontend(4200), /api -> backend(3000)

@@ -5,4 +5,4 @@ app:
   namespace: toolhive
   chart: toolhive-operator-crds
   chartRepo: ghcr.io/stacklok/toolhive
-  chartVersion: 0.29.1
+  chartVersion: 0.29.3

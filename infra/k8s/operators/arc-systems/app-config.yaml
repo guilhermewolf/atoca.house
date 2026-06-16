@@ -3,5 +3,5 @@ app:
   namespace: arc-systems
   chart: gha-runner-scale-set-controller
   chartRepo: ghcr.io/actions/actions-runner-controller-charts
-  chartVersion: 0.13.0
+  chartVersion: 0.14.2
   disableAutoSync: true

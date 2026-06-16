@@ -169,9 +169,6 @@ data:
                       - title: qBittorrent
                         url: https://qbittorrent.atoca.house
                         icon: sh:qbittorrent-light
-                      - title: SABnzbd
-                        url: https://sabnzbd.atoca.house
-                        icon: sh:sabnzbd-light
                       - title: Autobrr
                         url: https://autobrr.atoca.house
                         icon: sh:autobrr-light
@@ -223,9 +220,6 @@ data:
                   - title: qBittorrent
                     url: https://qbittorrent.atoca.house
                     icon: sh:qbittorrent-light
-                  - title: SABnzbd
-                    url: https://sabnzbd.atoca.house
-                    icon: sh:sabnzbd-light
                   - title: Autobrr
                     url: https://autobrr.atoca.house
                     icon: sh:autobrr-light

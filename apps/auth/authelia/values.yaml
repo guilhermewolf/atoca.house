@@ -1,6 +1,6 @@
 controllers:
   authelia:
-    replicas: 1
+    replicas: 2
     annotations:
       reloader.stakater.com/auto: "true"
     containers:
@@ -76,6 +76,13 @@ controllers:
         - name: k8s.ksgate.org/postgres-ready
         - name: k8s.ksgate.org/postgres-service
         - name: k8s.ksgate.org/lldap-deployment
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: authelia
 
 service:
   authelia:

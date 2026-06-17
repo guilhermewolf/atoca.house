@@ -21,6 +21,6 @@ resource "unifi_dns_record" "subdomain" {
   name        = "${each.value}.${local.domain}"
   enabled     = true
   record_type = "A"
-  ttl         = 300
+  ttl         = "5m"
   value       = var.npm_ip
 }

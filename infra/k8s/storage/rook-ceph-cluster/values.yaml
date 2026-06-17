@@ -63,6 +63,12 @@ cephClusterSpec:
     osd:
       limits:
         memory: 8Gi
+    mgr:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        memory: 2Gi # bumped from 1Gi default; mgr OOMKilled on a spike (modules + k8s-client buffering)
   storage:
     useAllNodes: false
     useAllDevices: false

@@ -10,6 +10,9 @@ controllers:
           tag: 2.3.30@sha256:916780732f262ae8fd7645a97f027cd81fb9b576026a6a3f784f1f03ecd16898
         env:
           LOGLEVEL: INFO
+        envFrom:
+          - secretRef:
+              name: mousetrap-secret
         probes:
           liveness: &probes
             enabled: true

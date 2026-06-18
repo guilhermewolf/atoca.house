@@ -5,5 +5,5 @@ app:
   namespace: headlamp
   chart: headlamp
   chartRepo: ghcr.io/home-operations/charts-mirror
-  chartVersion: 0.42.0
+  chartVersion: 0.43.0
   useVaultPlugin: false

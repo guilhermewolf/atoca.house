@@ -13,6 +13,9 @@ controllers:
           QUI__HOST: 0.0.0.0
           QUI__PORT: &port 80
           QUI__LOG_LEVEL: INFO
+          QUI__METRICS_ENABLED: true
+          QUI__METRICS_HOST: 0.0.0.0
+          QUI__METRICS_PORT: &metricsPort 8080
         envFrom:
           - secretRef:
               name: "qui-secret"
@@ -54,6 +57,13 @@ service:
     ports:
       http:
         port: *port
+      metrics:
+        port: *metricsPort
+
+serviceMonitor:
+  app:
+    endpoints:
+      - port: metrics
 
 route:
   qui:

@@ -19,6 +19,9 @@ router bgp 64513
   neighbor 192.168.40.13 peer-group k8s
   neighbor 192.168.40.13 description "node-03"
 
+  neighbor 192.168.40.14 peer-group k8s
+  neighbor 192.168.40.14 description "node-04"
+
   ! IPv4 unicast address family
   address-family ipv4 unicast
     neighbor k8s next-hop-self

@@ -34,7 +34,7 @@ cephClusterSpec:
     disable: false
   csi:
     readAffinity:
-      enabled: true
+      enabled: false # https://github.com/ceph/ceph-csi/issues/5772
   dashboard:
     enabled: true
     urlPrefix: /
@@ -92,13 +92,13 @@ cephClusterSpec:
 cephBlockPools:
   - name: ceph-blockpool
     spec:
-      failureDomain: host  # Replicate across hosts
+      failureDomain: host # Replicate across hosts
       replicated:
         size: 3
     storageClass:
       enabled: true
       name: ceph-block
-      isDefault: true  # Make this the default storage class
+      isDefault: true # Make this the default storage class
       reclaimPolicy: Delete
       allowVolumeExpansion: true
       volumeBindingMode: Immediate
@@ -122,7 +122,6 @@ cephBlockPoolsVolumeSnapshotClass:
   name: csi-ceph-blockpool
   isDefault: false
   deletionPolicy: Delete
-
 
 cephFileSystems: []
 cephObjectStores: []

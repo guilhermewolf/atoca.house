@@ -16,6 +16,10 @@ controllers:
           GENERIC_TIMEZONE: Europe/Amsterdam
           N8N_DIAGNOSTICS_ENABLED: "false"
           N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+          N8N_COMMUNITY_PACKAGES_ENABLED: "true"
+          N8N_PROXY_HOPS: "1"
+          N8N_MCP_MANAGED_BY_ENV: "true"
+          N8N_MCP_ACCESS_ENABLED: "true"
         resources:
           requests:
             cpu: 500m

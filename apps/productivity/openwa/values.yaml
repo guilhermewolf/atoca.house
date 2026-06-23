@@ -1,0 +1,123 @@
+controllers:
+  openwa:
+    replicas: 1
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      openwa:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/rmyndharis/openwa
+          repository: ghcr.io/rmyndharis/openwa
+          tag: 0.2.10@sha256:f79fa1a419770eeaf0f75d5d669607ce8ba5cac3b1b2915b807052e028f7f1df
+          pullPolicy: IfNotPresent
+        env:
+          PORT: &port 2785
+          NODE_ENV: production
+          LOG_LEVEL: info
+          # Engine: whatsapp-web.js with bundled Chromium
+          ENGINE_TYPE: whatsapp-web.js
+          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+          # Database: SQLite on the persistent volume
+          DATABASE_TYPE: sqlite
+          DATABASE_NAME: /app/data/openwa.sqlite
+          POSTGRES_BUILTIN: "false"
+          # Storage: local on the persistent volume
+          STORAGE_TYPE: local
+          STORAGE_LOCAL_PATH: /app/data/media
+          MINIO_BUILTIN: "false"
+          # Redis: disabled (no queue needed for single-instance)
+          REDIS_ENABLED: "false"
+          REDIS_BUILTIN: "false"
+          # URLs
+          BASE_URL: &hostName https://openwa.atoca.house
+          DASHBOARD_URL: *hostName
+          CORS_ORIGINS: *hostName
+          # Proxy trust — gateway pods forward real client IPs
+          TRUSTED_PROXIES: 10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+          # Allow webhooks to reach n8n internally
+          SSRF_ALLOWED_HOSTS: n8n.n8n.svc.cluster.local
+          # Auto-restore sessions on restart
+          SESSION_AUTO_START: "true"
+        envFrom:
+          - secretRef:
+              name: openwa-secret
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: true
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop: ["ALL"]
+            # Entrypoint chowns /app/data then gosu-drops to openwa user
+            # SYS_ADMIN required for Chromium sandbox (whatsapp-web.js engine)
+            add: ["CHOWN", "FOWNER", "SETGID", "SETUID", "SYS_ADMIN"]
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/health
+                port: *port
+              initialDelaySeconds: 30
+              periodSeconds: 15
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/health
+                port: *port
+              initialDelaySeconds: 10
+              periodSeconds: 5
+              timeoutSeconds: 5
+              failureThreshold: 30
+    pod:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+service:
+  openwa:
+    controller: openwa
+    ports:
+      http:
+        port: *port
+
+route:
+  openwa:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - openwa.atoca.house
+    rules:
+      - backendRefs:
+          - name: openwa
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /app/data

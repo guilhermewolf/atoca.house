@@ -133,6 +133,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: openwa
+      databases:
+        - openwa
+      password:
+        type: AlphaNumeric
+
     - name: temporal
       databases:
         - temporal

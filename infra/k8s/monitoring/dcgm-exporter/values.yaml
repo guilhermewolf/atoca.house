@@ -6,6 +6,8 @@ extraEnv:
     value: "all"
   - name: NVIDIA_VISIBLE_DEVICES
     value: "all"
+  - name: DCGM_EXPORTER_INTERVAL
+    value: "5000"
 runtimeClassName: nvidia
 resources:
   requests:
@@ -26,7 +28,7 @@ affinity:
               operator: Exists
 serviceMonitor:
   interval: 5s
-  scrapeTimeout: 5s
-  honorLabels: true
+  scrapeTimeout: 4s
+  honorLabels: false
   labels:
     prometheus: kube-prometheus-stack

@@ -1,24 +1,27 @@
+runtimeClassName: nvidia
+
 image:
   repository: mirror.gcr.io/nvidia/dcgm-exporter
   tag: 4.5.1-4.8.0-distroless
+
 extraEnv:
   - name: NVIDIA_DRIVER_CAPABILITIES
     value: "all"
   - name: NVIDIA_VISIBLE_DEVICES
     value: "all"
-  - name: DCGM_EXPORTER_INTERVAL
-    value: "5000"
-runtimeClassName: nvidia
+
 resources:
   requests:
     memory: 128Mi
   limits:
     memory: 1024Mi
     nvidia.com/gpu: 1
+
 tolerations:
   - key: nvidia.com/gpu
     operator: Exists
     effect: NoSchedule
+
 affinity:
   nodeAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:
@@ -27,8 +30,8 @@ affinity:
             - key: extensions.talos.dev/nvidia-container-toolkit-production
               operator: Exists
 serviceMonitor:
-  interval: 5s
-  scrapeTimeout: 4s
-  honorLabels: false
+  interval: 1s
+  scrapeTimeout: 1s
+  honorLabels: true
   labels:
     prometheus: kube-prometheus-stack

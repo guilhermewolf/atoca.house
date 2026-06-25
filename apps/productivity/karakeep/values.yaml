@@ -29,6 +29,7 @@ controllers:
           INFERENCE_JOB_TIMEOUT_SEC: 600 # 10 Minutes
           OLLAMA_BASE_URL: "http://ollama.ollama.svc.cluster.local:80"
           OLLAMA_KEEP_ALIVE: 5m
+          CRAWLER_PARSER_MEM_LIMIT_MB: 1500
           # OIDC (Authelia)
           OAUTH_WELLKNOWN_URL: https://auth.atoca.house/.well-known/openid-configuration
           OAUTH_CLIENT_ID: karakeep
@@ -47,7 +48,7 @@ controllers:
           requests:
             cpu: 10m
           limits:
-            memory: 2Gi
+            memory: 3Gi
 
   chrome:
     annotations:

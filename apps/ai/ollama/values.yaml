@@ -38,7 +38,7 @@ controllers:
             nvidia.com/gpu: 1
           limits:
             cpu: 8
-            memory: 4Gi
+            memory: 8Gi
             nvidia.com/gpu: 1
 
 

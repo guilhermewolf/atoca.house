@@ -29,7 +29,7 @@ spec:
       storage: 10Gi
 ```
 
-**Use for:** Databases, stateful apps, single-pod storage
+**Use for:*Databases, stateful apps, single-pod storage
 
 ### 2. Shared Filesystem (RWX) - `ceph-filesystem`
 
@@ -47,7 +47,7 @@ spec:
       storage: 100Gi
 ```
 
-**Use for:** Media libraries, shared configs, multi-pod access
+**Use for:*Media libraries, shared configs, multi-pod access
 
 ### 3. Object Storage (S3) - `ceph-bucket`
 
@@ -61,7 +61,7 @@ spec:
   storageClassName: ceph-bucket
 ```
 
-**Use for:** Backups, media storage, S3-compatible apps
+**Use for:*Backups, media storage, S3-compatible apps
 
 ## Resource Usage
 
@@ -79,7 +79,7 @@ spec:
 
 ## Talos Configuration
 
-You **must** configure Talos to use the 1TB disk:
+You **must*configure Talos to use the 1TB disk:
 
 ```yaml
 # In each controlplane config
@@ -113,10 +113,10 @@ Update `deviceFilter` in values.yaml to match your disk pattern.
 
 ## Deployment Order
 
-1. **Operator first** (rook-ceph-operator)
-2. **Wait 2-3 minutes** for operator to be ready
-3. **Cluster second** (rook-ceph-cluster)
-4. **Wait 10-15 minutes** for cluster bootstrap
+1. **Operator first*(rook-ceph-operator)
+2. **Wait 2-3 minutes*for operator to be ready
+3. **Cluster second*(rook-ceph-cluster)
+4. **Wait 10-15 minutes*for cluster bootstrap
 
 ## Accessing Ceph Dashboard
 
@@ -213,9 +213,9 @@ kubectl -n rook-ceph logs -l app=rook-ceph-osd
 
 **Common issues:**
 
-- **OSDs not coming up:** Check disk is empty and not partitioned
-- **Slow performance:** Check network latency between nodes
-- **Out of space:** Ceph reserves 15% of disk space by default
+- **OSDs not coming up:*Check disk is empty and not partitioned
+- **Slow performance:*Check network latency between nodes
+- **Out of space:*Ceph reserves 15% of disk space by default
 
 ## Disaster Recovery
 

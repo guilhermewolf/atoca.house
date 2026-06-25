@@ -15,7 +15,7 @@ talos:
     just log info "Running stage..." "stage" "$0"
     for n in {{ nodes }}; do \
         if ! op=$(just talos apply-node "$n" --insecure 2>&1); then \
-            if [[ "$op" == *"certificate required"* ]]; then \
+            if [[ "$op" == *"certificate required"]]; then \
                 just log info "Talos already configured, skipping apply of config" "stage" "$0" "node" "$n"; \
                 continue; \
             fi; \
@@ -26,7 +26,7 @@ talos:
 [doc('Install Kubernetes')]
 kube:
     just log info "Running stage..." "stage" "$0"
-    until op=$(talosctl -n "{{ controller }}" bootstrap 2>&1 || true) && [[ "$op" == *"AlreadyExists"* ]]; do \
+    until op=$(talosctl -n "{{ controller }}" bootstrap 2>&1 || true) && [[ "$op" == *"AlreadyExists"]]; do \
         just log info "Kubernetes bootstrap in progress. Retrying in 5 seconds..." "stage" "$0"; \
         sleep 5; \
     done

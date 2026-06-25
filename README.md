@@ -49,31 +49,31 @@ This is a mono repository for my home infrastructure and Kubernetes cluster impl
 
 ### Installation
 
-My cluster is a 3-node high-availability setup running **Talos Linux** with **Kubernetes**. All three nodes function as control planes (no dedicated workers), providing both compute and distributed storage via Rook-Ceph. This hyper-converged architecture maximizes resource utilization across all nodes, with each node contributing:
+My cluster is a 3-node high-availability setup running **Talos Linux*with **Kubernetes**. All three nodes function as control planes (no dedicated workers), providing both compute and distributed storage via Rook-Ceph. This hyper-converged architecture maximizes resource utilization across all nodes, with each node contributing:
 
-- **Compute:** Kubernetes workload scheduling
-- **Storage:** 1TB NVMe disk for Ceph distributed storage (block, filesystem, and object)
-- **Control Plane:** etcd member and Kubernetes API server
+- **Compute:*Kubernetes workload scheduling
+- **Storage:*1TB NVMe disk for Ceph distributed storage (block, filesystem, and object)
+- **Control Plane:*etcd member and Kubernetes API server
 
-The cluster uses **2-way replication** for storage, tolerating one node failure while maintaining data availability. Initial bootstrap is managed with [Helmfile](https://github.com/helmfile/helmfile) and [Just](https://github.com/casey/just), with ArgoCD taking over for ongoing GitOps management using an app-of-apps pattern.
+The cluster uses **2-way replication*for storage, tolerating one node failure while maintaining data availability. Initial bootstrap is managed with [Helmfile](https://github.com/helmfile/helmfile) and [Just](https://github.com/casey/just), with ArgoCD taking over for ongoing GitOps management using an app-of-apps pattern.
 
 ---
 
 ### Core Components
 
-**Networking & Ingress:** [Cilium](https://cilium.io/) provides eBPF-based networking with L2 announcements for LoadBalancer IPs. [Envoy Gateway](https://gateway.envoyproxy.io/) implements Gateway API, while [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) secures external access. [External-DNS](https://github.com/kubernetes-sigs/external-dns) syncs DNS records to Cloudflare, UniFi, and internal DNS. [Multus](https://github.com/k8snetworkplumbingwg/multus-cni) enables multi-network support with VLAN configurations.
+**Networking & Ingress:*[Cilium](https://cilium.io/) provides eBPF-based networking with L2 announcements for LoadBalancer IPs. [Envoy Gateway](https://gateway.envoyproxy.io/) implements Gateway API, while [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) secures external access. [External-DNS](https://github.com/kubernetes-sigs/external-dns) syncs DNS records to Cloudflare, UniFi, and internal DNS. [Multus](https://github.com/k8snetworkplumbingwg/multus-cni) enables multi-network support with VLAN configurations.
 
-**Security & Secrets:** [Cert-Manager](https://cert-manager.io/) automates SSL/TLS certificate management using Cloudflare DNS-01 challenges. [External Secrets Operator](https://external-secrets.io/) integrates with [1Password Connect](https://github.com/1Password/connect-helm-charts) to inject secrets from 1Password vaults into Kubernetes.
+**Security & Secrets:*[Cert-Manager](https://cert-manager.io/) automates SSL/TLS certificate management using Cloudflare DNS-01 challenges. [External Secrets Operator](https://external-secrets.io/) integrates with [1Password Connect](https://github.com/1Password/connect-helm-charts) to inject secrets from 1Password vaults into Kubernetes.
 
-**Storage & Backup:** [Rook-Ceph](https://rook.io/) provides distributed storage with block (RBD), filesystem (CephFS), and object (S3) storage capabilities across the 3-node cluster. [Volsync](https://volsync.readthedocs.io/) handles automated backup/restore using Restic. [Spegel](https://github.com/spegel-org/spegel) runs a stateless cluster-local OCI image mirror.
+**Storage & Backup:*[Rook-Ceph](https://rook.io/) provides distributed storage with block (RBD), filesystem (CephFS), and object (S3) storage capabilities across the 3-node cluster. [Volsync](https://volsync.readthedocs.io/) handles automated backup/restore using Restic. [Spegel](https://github.com/spegel-org/spegel) runs a stateless cluster-local OCI image mirror.
 
-**Data Management:** [Crunchy PostgreSQL Operator](https://github.com/CrunchyData/postgres-operator) manages HA PostgreSQL clusters with 3 replicas and dual backup repositories (MinIO local + Cloudflare R2). [Dragonfly Operator](https://github.com/dragonflydb/dragonfly-operator) provides a Redis-compatible in-memory datastore.
+**Data Management:*[Crunchy PostgreSQL Operator](https://github.com/CrunchyData/postgres-operator) manages HA PostgreSQL clusters with 3 replicas and dual backup repositories (MinIO local + Cloudflare R2). [Dragonfly Operator](https://github.com/dragonflydb/dragonfly-operator) provides a Redis-compatible in-memory datastore.
 
-**Monitoring & Observability:** [Kube-Prometheus-Stack](https://github.com/prometheus-operator/kube-prometheus) delivers comprehensive monitoring with Prometheus, Alertmanager, and Grafana. [Victoria Logs](https://victoriametrics.com/products/victorialogs/) aggregates logs via [Fluent-Bit](https://fluentbit.io/). [Gatus](https://github.com/TwiN/gatus) provides uptime monitoring, [Headlamp](https://headlamp.dev/) offers a Kubernetes dashboard, and specialized exporters (Blackbox, Smartctl, Unpoller) monitor infrastructure. [KEDA](https://keda.sh/) enables event-driven autoscaling.
+**Monitoring & Observability:*[Kube-Prometheus-Stack](https://github.com/prometheus-operator/kube-prometheus) delivers comprehensive monitoring with Prometheus, Alertmanager, and Grafana. [Victoria Logs](https://victoriametrics.com/products/victorialogs/) aggregates logs via [Fluent-Bit](https://fluentbit.io/). [Gatus](https://github.com/TwiN/gatus) provides uptime monitoring, [Headlamp](https://headlamp.dev/) offers a Kubernetes dashboard, and specialized exporters (Blackbox, Smartctl, Unpoller) monitor infrastructure. [KEDA](https://keda.sh/) enables event-driven autoscaling.
 
-**Automation & CI/CD:** [Actions Runner Controller](https://github.com/actions/actions-runner-controller) runs self-hosted GitHub Actions runners in-cluster. [Renovate Bot](https://renovatebot.com/) automatically creates PRs for dependency updates with custom auto-merge rules.
+**Automation & CI/CD:*[Actions Runner Controller](https://github.com/actions/actions-runner-controller) runs self-hosted GitHub Actions runners in-cluster. [Renovate Bot](https://renovatebot.com/) automatically creates PRs for dependency updates with custom auto-merge rules.
 
-**Cluster Utilities:** [Descheduler](https://github.com/kubernetes-sigs/descheduler) optimizes pod placement, [Reloader](https://github.com/stakater/Reloader) auto-restarts pods on config changes, and [Metrics Server](https://github.com/kubernetes-sigs/metrics-server) provides resource metrics. [AMD Device Plugin](https://github.com/ROCm/k8s-device-plugin) enables GPU workloads.
+**Cluster Utilities:*[Descheduler](https://github.com/kubernetes-sigs/descheduler) optimizes pod placement, [Reloader](https://github.com/stakater/Reloader) auto-restarts pods on config changes, and [Metrics Server](https://github.com/kubernetes-sigs/metrics-server) provides resource metrics. [AMD Device Plugin](https://github.com/ROCm/k8s-device-plugin) enables GPU workloads.
 
 ---
 
@@ -108,7 +108,7 @@ This Git repository contains the following directories.
   └─📁 talos            # Talos Linux configurations (Jinja2 templates)
   └─📁 terraform        # OpenTofu/Terraform for Cloudflare (DNS, R2, Tunnel)
 📁 stacks               # Docker Compose files for Unraid NAS
-  └─📁 *                # Jellyfin, Lidarr, MinIO, Syncthing, etc.
+  └─📁                # Jellyfin, Lidarr, MinIO, Syncthing, etc.
 ```
 
 ---

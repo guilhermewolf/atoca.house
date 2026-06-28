@@ -56,7 +56,7 @@ route:
     enabled: true
     kind: HTTPRoute
     parentRefs:
-      - name: atoca-house-internal
+      - name: atoca-house-external
         namespace: kube-system
     hostnames:
       - wiki.atoca.house

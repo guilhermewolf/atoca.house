@@ -63,9 +63,9 @@ controllers:
         resources:
           requests:
             cpu: 500m
-            memory: 1Gi
+            memory: 256Mi
           limits:
-            memory: 2Gi
+            memory: 1Gi
 
       tika:
         image:

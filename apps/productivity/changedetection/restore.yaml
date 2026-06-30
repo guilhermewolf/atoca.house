@@ -1,0 +1,28 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/volsync.backube/replicationdestination_v1alpha1.json
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: changedetection-restore
+  namespace: changedetection
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    accessModes:
+      - ReadWriteOnce
+    cacheAccessModes:
+      - ReadWriteOnce
+    cacheStorageClassName: openebs-hostpath
+    cleanupCachePVC: true
+    cleanupTempPVC: true
+    enableFileDeletion: true
+    repository: changedetection-r2-secret
+    copyMethod: Snapshot
+    destinationPVC: changedetection
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000

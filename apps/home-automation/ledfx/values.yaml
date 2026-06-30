@@ -52,6 +52,7 @@ controllers:
           allowPrivilegeEscalation: false
           capabilities:
             drop: ["ALL"]
+            add: ["SYS_NICE"]
         resources:
           requests:
             cpu: 100m
@@ -89,6 +90,15 @@ route:
               type: PathPrefix
               value: /
 
+configMaps:
+  pulse-config:
+    data:
+      default.pa: |
+        .nofail
+        load-module module-null-sink sink_name=ledfx
+        set-default-sink ledfx
+        load-module module-native-protocol-unix auth-anonymous=1
+
 persistence:
   config:
     enabled: true
@@ -110,3 +120,12 @@ persistence:
     type: emptyDir
     globalMounts:
       - path: /run/ledfx
+
+  pulse-config:
+    enabled: true
+    type: configMap
+    name: ledfx
+    globalMounts:
+      - path: /etc/pulse/default.pa
+        subPath: default.pa
+        readOnly: true

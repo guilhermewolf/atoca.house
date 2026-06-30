@@ -1,0 +1,120 @@
+---
+values:
+controllers:
+  changedetection:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/dgtlmoon/changedetection.io
+          tag: 0.55.7
+        env:
+          PORT: &port 5000
+          USE_X_SETTINGS: 1
+          PLAYWRIGHT_DRIVER_URL: ws://localhost:3000/?stealth=1&--disable-web-security=true&--user-data-dir=~/browserless-cache-123
+          BASE_URL: "https://changedetection.atoca.house"
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: *port
+              initialDelaySeconds: 10
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+        resources:
+          requests:
+            cpu: 10m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+      browser:
+        image:
+          repository: mirror.gcr.io/browserless/chrome
+          tag: latest@sha256:57d19e414d9fe4ae9d2ab12ba768c97f38d51246c5b31af55a009205c136012f
+        env:
+          - { name: SCREEN_WIDTH, value: "1920" }
+          - { name: SCREEN_HEIGHT, value: "1024" }
+          - { name: SCREEN_DEPTH, value: "16" }
+          - { name: ENABLE_DEBUGGER, value: "false" }
+          - { name: PREBOOT_CHROME, value: "true" }
+          - { name: CONNECTION_TIMEOUT, value: "300000" }
+          - { name: MAX_CONCURRENT_SESSIONS, value: "10" }
+          - { name: CHROME_REFRESH_TIME, value: "600000" }
+          - { name: DEFAULT_BLOCK_ADS, value: "true" }
+          - { name: DEFAULT_STEALTH, value: "true" }
+        resources:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+
+defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.20/24"],
+        "mac": "3e:d2:65:8a:17:c9"
+      }]
+
+service:
+  app:
+    controller: changedetection
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+        sectionName: https
+    hostnames:
+      - changedetection.atoca.house
+    rules:
+      - backendRefs:
+          - name: changedetection
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    globalMounts:
+      - path: /datastore
+
+  tmp:
+    type: emptyDir
+    medium: Memory
+    sizeLimit: 1Gi
+    advancedMounts:
+      changedetection:
+        browser:
+          - path: /tmp
+
+  shm:
+    type: emptyDir
+    medium: Memory
+    sizeLimit: 256Mi
+    advancedMounts:
+      changedetection:
+        browser:
+          - path: /dev/shm

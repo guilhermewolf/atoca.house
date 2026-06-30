@@ -1,0 +1,8 @@
+---
+# Application configuration for changedetection
+app:
+  name: changedetection
+  namespace: changedetection
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.0.1

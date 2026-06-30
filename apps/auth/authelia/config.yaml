@@ -211,26 +211,6 @@ data:
             userinfo_signed_response_alg: 'none'
             token_endpoint_auth_method: 'client_secret_basic'
 
-          - client_id: 'mealie'
-            client_name: 'Mealie'
-            client_secret: '{{ secret "/config/secret/MEALIE_OAUTH_CLIENT_SECRET" }}'
-            require_pkce: true
-            pkce_challenge_method: 'S256'
-            redirect_uris:
-              - 'https://mealie.atoca.house/login'
-            scopes:
-              - 'openid'
-              - 'email'
-              - 'profile'
-              - 'groups'
-            response_types:
-              - 'code'
-            grant_types:
-              - 'authorization_code'
-            access_token_signed_response_alg: 'none'
-            userinfo_signed_response_alg: 'none'
-            token_endpoint_auth_method: 'client_secret_basic'
-
           - client_id: 'wikijs'
             client_name: 'Wiki'
             client_secret: '{{ secret "/config/secret/WIKI_OAUTH_CLIENT_SECRET" }}'

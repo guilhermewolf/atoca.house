@@ -95,13 +95,6 @@ data:
                         url: https://seerr.atoca.house
                         icon: sh:seerr-light
 
-                  - title: Kitchen
-                    color: 30 85 55
-                    links:
-                      - title: Recipes
-                        url: https://mealie.atoca.house
-                        icon: sh:mealie-light
-
                   - title: Get Things Done
                     color: 262 72 65
                     links:

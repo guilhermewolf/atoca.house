@@ -79,24 +79,6 @@ spec:
       password:
         type: AlphaNumeric
 
-    - name: mealie
-      databases:
-        - mealie
-      password:
-        type: AlphaNumeric
-
-    - name: sparkyfitness
-      databases:
-        - sparkyfitness
-      password:
-        type: AlphaNumeric
-
-    - name: sparkyfitness-app
-      databases:
-        - sparkyfitness
-      password:
-        type: AlphaNumeric
-
     - name: crowdsec
       databases:
         - crowdsec

@@ -14,7 +14,7 @@ global:
 
   addPrometheusAnnotations: false
   networkPolicy:
-    enabled: false
+    create: false
 
 configs:
   cm:

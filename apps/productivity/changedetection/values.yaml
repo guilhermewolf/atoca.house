@@ -31,9 +31,9 @@ controllers:
         resources:
           requests:
             cpu: 10m
-            memory: 128Mi
+            memory: 256Mi
           limits:
-            memory: 512Mi
+            memory: 1Gi
       browser:
         image:
           repository: mirror.gcr.io/browserless/chrome

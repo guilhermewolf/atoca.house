@@ -1,8 +1,0 @@
----
-# Application configuration for freshrss
-app:
-  name: freshrss
-  namespace: freshrss
-  chart: app-template
-  chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 5.0.1

@@ -52,12 +52,15 @@ controllers:
           API_SERVER_HOST: 0.0.0.0
           API_SERVER_PORT: &apiPort "8642"
           # Web dashboard. Runs under s6 in this same container so it can manage
-          # the gateway via the local service tree. INSECURE skips the OAuth gate
-          # (trusted LAN behind the internal gateway).
+          # the gateway via the local service tree. Gated by the basic-auth
+          # username/password provider (creds in secrets.yaml) since it's
+          # bound to 0.0.0.0. --insecure must stay unset: combining it with
+          # basic_auth breaks the health/startup probe (unauthenticated
+          # /health gets redirected into the OAuth-only /auth/login route,
+          # which 500s for a password-only provider).
           HERMES_DASHBOARD: "1"
           HERMES_DASHBOARD_HOST: 0.0.0.0
           HERMES_DASHBOARD_PORT: &dashPort "9119"
-          HERMES_DASHBOARD_INSECURE: "1"
           # Web search backend (in-cluster SearXNG)
           SEARXNG_URL: http://searxng.searxng.svc.cluster.local:8080
           # Discord gateway creds + allowlist + channel come from hermes-secret
@@ -78,7 +81,11 @@ controllers:
             custom: true
             spec:
               httpGet:
-                path: /health
+                # /health redirects through the dashboard auth gate and 500s
+                # once basic_auth creds are set (BasicAuthProvider has no
+                # OAuth start_login). /api/status is documented as always
+                # public regardless of the gate — use that instead.
+                path: /api/status
                 port: 9119
               initialDelaySeconds: 30
               periodSeconds: 15
@@ -90,7 +97,7 @@ controllers:
             custom: true
             spec:
               httpGet:
-                path: /health
+                path: /api/status
                 port: 9119
               initialDelaySeconds: 10
               periodSeconds: 5

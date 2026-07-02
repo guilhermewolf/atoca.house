@@ -3,6 +3,6 @@ app:
   namespace: rook-ceph
   chart: ceph-csi-drivers
   chartRepo: https://ceph.github.io/ceph-csi-operator
-  chartVersion: 1.0.1
+  chartVersion: 1.0.3
   disableAutoSync: true
   podSecurityPrivileged: true

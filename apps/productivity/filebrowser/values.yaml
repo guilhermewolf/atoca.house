@@ -120,3 +120,11 @@ persistence:
     globalMounts:
       - path: /mnt/media
         readOnly: false
+  kf:
+    enabled: true
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/KitchenFrequencies.TV
+    globalMounts:
+      - path: /mnt/media/KitchenFrequencies.TV
+        readOnly: false

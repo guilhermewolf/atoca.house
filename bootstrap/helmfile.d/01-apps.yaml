@@ -97,7 +97,7 @@ releases:
   - name: argocd
     namespace: argocd
     chart: argo/argo-cd
-    version: 10.1.0
+    version: 10.1.1
     values:
       - ./templates/values.yaml.gotmpl
     hooks:

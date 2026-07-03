@@ -97,6 +97,23 @@ data:
     identity_providers:
       oidc:
         hmac_secret: '{{ env "AUTHELIA_IDENTITY_PROVIDERS_OIDC_HMAC_SECRET" }}'
+        # Postiz's generic OIDC client omits the 'state' param entirely
+        # (upstream bug, closed as "not planned": gitroomhq/postiz-app#924).
+        # -1 disables Authelia's min-entropy check for state/nonce so Postiz
+        # login works; only affects clients that skip/shorten state.
+        minimum_parameter_entropy: -1
+        # access_control (domain/subject) rules do NOT gate OIDC authorization
+        # requests - Authelia issues tokens to the client, not a domain, so
+        # per-client group restriction must go through authorization_policies
+        # instead. See identity_providers.oidc.clients[postiz].authorization_policy.
+        authorization_policies:
+          postiz_policy:
+            default_policy: 'deny'
+            rules:
+              - policy: 'two_factor'
+                subject:
+                  - ["group:postiz_users"]
+                  - ["group:postiz_admins"]
         jwks:
           - key_id: authelia-rsa-1
             use: sig
@@ -256,6 +273,27 @@ data:
             access_token_signed_response_alg: 'none'
             userinfo_signed_response_alg: 'none'
             token_endpoint_auth_method: 'client_secret_basic'
+
+          - client_id: '{{ secret "/config/secret/POSTIZ_OAUTH_CLIENT_ID" }}'
+            client_name: 'Postiz'
+            client_secret: '{{ secret "/config/secret/POSTIZ_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            authorization_policy: 'postiz_policy'
+            require_pkce: false
+            pkce_challenge_method: ''
+            redirect_uris:
+              - 'https://postiz.atoca.house/settings'
+            scopes:
+              - 'openid'
+              - 'profile'
+              - 'email'
+            response_types:
+              - 'code'
+            grant_types:
+              - 'authorization_code'
+            access_token_signed_response_alg: 'none'
+            userinfo_signed_response_alg: 'none'
+            token_endpoint_auth_method: 'client_secret_post'
 
           - client_id: 'kavita'
             client_name: 'Kavita'

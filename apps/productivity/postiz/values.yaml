@@ -30,8 +30,15 @@ controllers:
           # Redis (Dragonfly) - DB index 8 (5/6/7 already in use)
           REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/8"
           # Flip to "true" once your first user is registered
-          DISABLE_REGISTRATION: "false"
+          DISABLE_REGISTRATION: "true"
           API_LIMIT: "30"
+          # OIDC login via Authelia (disables GitHub/Google login providers)
+          POSTIZ_GENERIC_OAUTH: "true"
+          NEXT_PUBLIC_POSTIZ_OAUTH_DISPLAY_NAME: "Authelia"
+          POSTIZ_OAUTH_URL: "https://auth.atoca.house"
+          POSTIZ_OAUTH_AUTH_URL: "https://auth.atoca.house/api/oidc/authorization"
+          POSTIZ_OAUTH_TOKEN_URL: "https://auth.atoca.house/api/oidc/token"
+          POSTIZ_OAUTH_USERINFO_URL: "https://auth.atoca.house/api/oidc/userinfo"
         envFrom:
           - secretRef:
               name: postiz-secret

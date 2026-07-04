@@ -129,6 +129,23 @@ route:
     hostnames:
       - hermes.atoca.house
     rules:
+      # Workaround for upstream bug (hermes-agent v2026.7.1): with exactly one
+      # auth provider registered, _auto_sso_response 302s unauthenticated page
+      # loads to /auth/login?provider=basic — the OAuth-initiation route — but
+      # BasicAuthProvider has no start_login, so it 500s. Redirect that route
+      # back to the /login password form at the gateway. Safe here: basic is
+      # the only provider, so no real OAuth flow can ever hit /auth/login.
+      - matches:
+          - path:
+              type: Exact
+              value: /auth/login
+        filters:
+          - type: RequestRedirect
+            requestRedirect:
+              path:
+                type: ReplaceFullPath
+                replaceFullPath: /login
+              statusCode: 302
       - filters:
           # The dashboard pins its CORS/origin allow-list to localhost, so the
           # WebSocket handshake (Origin: https://hermes.atoca.house) is rejected

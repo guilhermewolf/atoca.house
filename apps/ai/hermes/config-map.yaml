@@ -76,6 +76,59 @@ data:
         db_path: /opt/data/memory_store.db
         auto_extract: true
         default_trust: 0.5
-    # No external MCP servers wired. (Self-hosted mem0/openmemory was dropped: its
-    # native hermes provider is cloud-only, and the openmemory-mcp image can't pass
-    # the api-key/768-dims our authed Qdrant + nomic embedder need.)
+    # External MCP servers. In-cluster ones go through the toolhive proxies in
+    # the mcp namespace (streamable HTTP at /mcp, no auth for in-cluster
+    # traffic — the proxies hold the upstream credentials). Env vars expand
+    # the same way as LITELLM_MASTER_KEY above.
+    mcp_servers:
+      # PR flow against guilhermewolf/atoca.house — the hermes-docs-recommended
+      # stdio server with a tool whitelist ("best default for sensitive
+      # systems"). Token is a fine-grained PAT scoped to that repo only
+      # (Contents RW, Pull requests RW, Metadata R), from hermes-secret.
+      # merge_pull_request intentionally NOT whitelisted — humans merge.
+      github:
+        command: "npx"
+        args: ["-y", "@modelcontextprotocol/server-github"]
+        env:
+          GITHUB_PERSONAL_ACCESS_TOKEN: ${GITHUB_TOKEN}
+        tools:
+          include:
+            - get_file_contents
+            - search_code
+            - list_commits
+            - create_branch
+            - push_files
+            - create_or_update_file
+            - create_pull_request
+            - list_pull_requests
+            - get_pull_request
+            - get_pull_request_status
+            - list_issues
+            - create_issue
+            - add_issue_comment
+        prompts: false
+        resources: false
+      # n8n built-in instance-level MCP (N8N_MCP_ACCESS_ENABLED=true on the
+      # n8n deploy). Probed: 401 without key = endpoint live.
+      n8n:
+        url: http://n8n.n8n.svc.cluster.local/mcp-server/http
+        headers:
+          Authorization: Bearer ${N8N_API_KEY}
+      context7:
+        url: http://mcp-context7-mcp-proxy.mcp.svc.cluster.local:8080/mcp
+      memory:
+        url: http://mcp-memory-mcp-proxy.mcp.svc.cluster.local:8080/mcp
+      homeassistant:
+        url: http://mcp-ha-mcp-proxy.mcp.svc.cluster.local:8080/mcp
+    stt:
+      enabled: true
+      provider: local
+      local:
+        model: small
+        language: ""
+    tts:
+      provider: openai
+      openai:
+        base_url: http://kokoro.kokoro.svc.cluster.local:8880/v1
+        model: kokoro
+        voice: af_heart

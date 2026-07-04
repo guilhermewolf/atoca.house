@@ -35,6 +35,19 @@ controllers:
             cp /tmp/config.yaml /opt/data/config.yaml
             chown 10000:10000 /opt/data/config.yaml
 
+      copy-kubectl:
+        image:
+          repository: docker.io/alpine/k8s
+          tag: "1.33.4"
+        command:
+          - sh
+          - -c
+          - |
+            set -euo pipefail
+            mkdir -p /opt/data/bin
+            cp /usr/bin/kubectl /opt/data/bin/kubectl
+            chown -R 10000:10000 /opt/data/bin
+
     containers:
       app:
         image:
@@ -63,6 +76,10 @@ controllers:
           HERMES_DASHBOARD_PORT: &dashPort "9119"
           # Web search backend (in-cluster SearXNG)
           SEARXNG_URL: http://searxng.searxng.svc.cluster.local:8080
+          # Dummy key: the openai TTS provider requires a non-empty key or it
+          # falls back to the Nous Tool Gateway. Actual TTS goes to in-cluster
+          # Kokoro (tts.openai.base_url in config.yaml), which ignores auth.
+          VOICE_TOOLS_OPENAI_KEY: sk-kokoro-local
           # Discord gateway creds + allowlist + channel come from hermes-secret
           # (envFrom below): DISCORD_BOT_TOKEN, DISCORD_ALLOWED_USERS,
           # DISCORD_FREE_RESPONSE_CHANNELS. Kept out of git on purpose.
@@ -105,7 +122,9 @@ controllers:
               failureThreshold: 30
         resources:
           requests:
-            cpu: 100m
+            # 500m: local faster-whisper transcription of Discord voice
+            # messages runs on CPU in this pod.
+            cpu: 500m
             memory: 1Gi
           limits:
             memory: 4Gi

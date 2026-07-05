@@ -38,7 +38,7 @@ controllers:
       copy-kubectl:
         image:
           repository: docker.io/alpine/k8s
-          tag: "1.33.4"
+          tag: "1.36.2"
         command:
           - sh
           - -c

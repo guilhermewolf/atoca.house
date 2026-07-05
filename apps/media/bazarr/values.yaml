@@ -18,27 +18,29 @@ controllers:
           limits:
             memory: 1Gi
         probes:
-          liveness:
-            enabled: true
-            spec:
-              periodSeconds: 30
-              timeoutSeconds: 5
-              failureThreshold: 5
-          readiness:
+          liveness: &probes
             enabled: true
             custom: true
             spec:
               httpGet:
                 path: /api/system/ping
                 port: *port
+              initialDelaySeconds: 0
               periodSeconds: 10
               timeoutSeconds: 5
-              failureThreshold: 5
+              failureThreshold: 3
+          readiness: *probes
           startup:
             enabled: true
+            custom: true
             spec:
+              httpGet:
+                path: /api/system/ping
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 5
+              timeoutSeconds: 5
               failureThreshold: 30
-              periodSeconds: 10
 
 defaultPodOptions:
   securityContext:
@@ -78,7 +80,7 @@ persistence:
     type: persistentVolumeClaim
     storageClass: ceph-block
     accessMode: ReadWriteOnce
-    size: 1Gi
+    size: 5Gi
     globalMounts:
       - path: /config
 

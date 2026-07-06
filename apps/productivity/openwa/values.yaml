@@ -17,6 +17,7 @@ controllers:
           # Engine: whatsapp-web.js with bundled Chromium
           ENGINE_TYPE: whatsapp-web.js
           PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+          AUTO_START_SESSIONS: "true"
           # Database: Crunchy Postgres via pgBouncer
           DATABASE_TYPE: postgres
           POSTGRES_BUILTIN: "false"

@@ -25,8 +25,8 @@ controllers:
           TEMPORAL_ADDRESS: "temporal-app.temporal.svc.cluster.local:7233"
           # Local file storage on a ceph-block PVC (backed up to R2 via Volsync)
           STORAGE_PROVIDER: "local"
-          UPLOAD_DIRECTORY: "/uploads"
-          NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY: "/uploads"
+          UPLOAD_DIRECTORY: "/media"
+          NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY: "/media"
           # Redis (Dragonfly) - DB index 8 (5/6/7 already in use)
           REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/8"
           # Flip to "true" once your first user is registered
@@ -71,7 +71,7 @@ route:
     enabled: true
     kind: HTTPRoute
     parentRefs:
-      - name: atoca-house-internal
+      - name: atoca-house-external
         namespace: kube-system
     hostnames:
       - postiz.atoca.house
@@ -92,12 +92,15 @@ persistence:
       - path: /etc/ssl/postgres/ca.crt
         subPath: ca.crt
         readOnly: true
-  uploads:
-    type: nfs
-    server: nas.internal
-    path: /mnt/user/media/
+
+  media:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 50Gi
     globalMounts:
-      - path: /uploads
+      - path: /media
 
   config:
     type: emptyDir

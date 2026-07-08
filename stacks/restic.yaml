@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backup:
-    image: mazzolino/restic@sha256:f5e68f1171766dfcb8ef95de201707218b51f20db0a19ecee36f3965462ad7e7
+    image: mazzolino/restic@sha256:84a18b739c15216b07dcb9e14985437d49b7a3a68ef8ce48c1323b9f59bf794e
     restart: unless-stopped
     container_name: restic-backup
     network_mode: bridge
@@ -30,7 +30,7 @@ services:
 
 
   prune:
-    image: mazzolino/restic@sha256:f5e68f1171766dfcb8ef95de201707218b51f20db0a19ecee36f3965462ad7e7
+    image: mazzolino/restic@sha256:84a18b739c15216b07dcb9e14985437d49b7a3a68ef8ce48c1323b9f59bf794e
     container_name: restic-prune
     network_mode: bridge
     restart: unless-stopped

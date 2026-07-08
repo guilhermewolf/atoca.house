@@ -35,6 +35,7 @@ controllers:
           # OIDC login via Authelia (disables GitHub/Google login providers)
           POSTIZ_GENERIC_OAUTH: "true"
           NEXT_PUBLIC_POSTIZ_OAUTH_DISPLAY_NAME: "Authelia"
+          NEXT_PUBLIC_POSTIZ_OAUTH_LOGO_URL: "https://raw.githubusercontent.com/walkxcode/dashboard-icons/master/png/authelia.png"
           POSTIZ_OAUTH_URL: "https://auth.atoca.house"
           POSTIZ_OAUTH_AUTH_URL: "https://auth.atoca.house/api/oidc/authorization"
           POSTIZ_OAUTH_TOKEN_URL: "https://auth.atoca.house/api/oidc/token"

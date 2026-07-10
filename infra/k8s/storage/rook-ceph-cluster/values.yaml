@@ -49,7 +49,7 @@ cephClusterSpec:
       - name: pg_autoscaler
         enabled: true
       - name: rook
-        enabled: true
+        enabled: false
   network:
     provider: host
     addressRanges:

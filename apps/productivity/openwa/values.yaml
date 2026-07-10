@@ -16,15 +16,17 @@ controllers:
           LOG_LEVEL: info
           # Engine: whatsapp-web.js with bundled Chromium
           ENGINE_TYPE: whatsapp-web.js
-          PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+          PUPPETEER_EXECUTABLE_PATH: /usr/local/bin/puppeteer-chrome
           AUTO_START_SESSIONS: "true"
           # Database: Crunchy Postgres via pgBouncer
           DATABASE_TYPE: postgres
           POSTGRES_BUILTIN: "false"
-          # Storage: local on the persistent volume
-          STORAGE_TYPE: local
-          STORAGE_LOCAL_PATH: /app/data/media
+          # Storage: Garage S3 (in-cluster)
+          STORAGE_TYPE: s3
           MINIO_BUILTIN: "false"
+          S3_ENDPOINT: https://s3.atoca.house
+          S3_BUCKET: openwa
+          S3_REGION: eu-east-1
           # Redis: Dragonfly cluster (DB 4)
           REDIS_ENABLED: "true"
           REDIS_BUILTIN: "false"
@@ -50,10 +52,10 @@ controllers:
               name: openwa-db-secret
         resources:
           requests:
-            cpu: 100m
+            cpu: 500m
             memory: 256Mi
           limits:
-            cpu: 1000m
+            cpu: 2000m
             memory: 4Gi
         securityContext:
           privileged: true

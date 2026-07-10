@@ -1,0 +1,133 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hermes-kf-config
+  namespace: hermes-kf
+data:
+  config.yaml: |
+    # hermes-kf Agent configuration
+    # Docs: https://hermes-kf-agent.nousresearch.com/docs
+    # Main model: ChatGPT Plus subscription (gpt-5.4) via litellm. This is the only
+    # model the Plus plan exposes — codex-* names are rejected by the Codex backend
+    # for ChatGPT accounts, so they can't be the main model here. On rate-limit/quota
+    # litellm fails this over to local ollama (qwen3-14b) then cloud free-tier.
+    model:
+      default: chatgpt/gpt-5.4
+      provider: custom:litellm
+    providers:
+      litellm:
+        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
+        api_key: ${LITELLM_MASTER_KEY}
+    # Auxiliary tasks run on cheap local ollama models instead of burning the
+    # subscription. Titles -> small/fast gemma4-e4b; compression (conversation
+    # summarization) -> the strongest local model, qwen3-14b, for fidelity.
+    auxiliary:
+      title_generation:
+        provider: main
+        model: gemma4-e4b
+      compression:
+        provider: main
+        model: qwen3-14b
+    toolsets:
+      - hermes-kf-cli
+    terminal:
+      backend: local
+      cwd: /opt/data/workspace
+      timeout: 180
+      persistent_shell: true
+    # Memory: built-in MEMORY.md/USER.md always active; external provider is additive.
+    # Holographic = local SQLite (FTS5 + trust scoring + contradiction detection),
+    # zero extra infra, no LLM/embeddings/Qdrant, no GPU. DB lives on the /opt/data
+    # PVC (covered by Volsync backup). See plugins.hermes-kf-memory-store below.
+    memory:
+      provider: holographic
+      auto_migrate: true
+      auto_summarize:
+        threshold: 50
+    compression:
+      enabled: true
+      threshold: 0.5
+      target_ratio: 0.2
+      protect_last_n: 20
+    group_sessions_per_user: false
+    streaming:
+      enabled: false
+    security:
+      redact_secrets: true
+    privacy:
+      redact_pii: true
+    web:
+      search_backend: searxng
+    discord:
+      require_mention: false
+      auto_thread: false
+      reactions: false
+    # WhatsApp via the Baileys bridge (self-chat mode: paired to your own
+    # personal WhatsApp account). Cloud API adapter doesn't support groups,
+    # so this must be the unofficial bridge. Group-only: DMs are disabled,
+    # only the allowlisted group JID below can trigger the bot.
+    # Pairing (one-time, interactive): kubectl exec into the pod and run
+    # `hermes whatsapp` to scan the QR code; session persists on the PVC at
+    # /opt/data/platforms/whatsapp/session.
+    # To find the group JID: temporarily set WHATSAPP_DEBUG=true, send a
+    # message in the group, grep bridge.log for the chat id ending in
+    # "@g.us", then fill it in below and unset WHATSAPP_DEBUG.
+    whatsapp:
+      unauthorized_dm_behavior: ignore
+      dm_policy: disabled
+      group_policy: allowlist
+      group_allow_from:
+        - "${GROUP_ID}@g.us"
+    agent:
+      max_turns: 90
+      gateway_timeout: 1800
+      restart_drain_timeout: 60
+      api_max_retries: 2
+      reasoning_effort: medium
+      tool_use_enforcement: auto
+    # Holographic memory store (local SQLite on the /opt/data PVC).
+    plugins:
+      hermes-kf-memory-store:
+        db_path: /opt/data/memory_store.db
+        auto_extract: true
+        default_trust: 0.5
+    # External MCP servers. In-cluster ones go through the toolhive proxies in
+    # the mcp namespace (streamable HTTP at /mcp, no auth for in-cluster
+    # traffic — the proxies hold the upstream credentials). Env vars expand
+    # the same way as LITELLM_MASTER_KEY above.
+    mcp_servers:
+      # n8n built-in instance-level MCP (N8N_MCP_ACCESS_ENABLED=true on the
+      # n8n deploy). Probed: 401 without key = endpoint live.
+      n8n:
+        url: http://n8n.n8n.svc.cluster.local/mcp-server/http
+        headers:
+          Authorization: Bearer ${N8N_API_KEY}
+      # Outline has a native MCP endpoint (no toolhive proxy needed). Same
+      # endpoint the KitchenFrequencies.TV Claude Code project uses.
+      outline:
+        url: https://outline.atoca.house/mcp
+        headers:
+          Authorization: Bearer ${OUTLINE_API_KEY}
+      context7:
+        url: http://mcp-context7-mcp-proxy.mcp.svc.cluster.local:8080/mcp
+      memory:
+        url: http://mcp-memory-mcp-proxy.mcp.svc.cluster.local:8080/mcp
+    # Wiki.js (wiki.atoca.house) has no MCP endpoint — query its GraphQL API
+    # directly from the agent's terminal tool instead, the same way the
+    # KitchenFrequencies.TV wiki-sync skill does:
+    #   curl -H "Authorization: Bearer $WIKI_API_KEY" "$WIKI_URL/graphql" \
+    #     -d '{"query":"{ pages { list { id path title updatedAt } } }"}'
+    # WIKI_URL/WIKI_API_KEY/WIKI_ROOT_PATH are injected as env vars below.
+    stt:
+      enabled: true
+      provider: local
+      local:
+        model: small
+        language: ""
+    tts:
+      provider: openai
+      openai:
+        base_url: http://kokoro.kokoro.svc.cluster.local:8880/v1
+        model: kokoro
+        voice: af_heart

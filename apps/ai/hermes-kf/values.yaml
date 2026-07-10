@@ -1,0 +1,216 @@
+---
+defaultPodOptions:
+  automountServiceAccountToken: true
+  securityContext:
+    # hermes-kf-agent uses s6-overlay: the entrypoint must start as root to fix
+    # /run permissions, then drops to the image's internal hermes-kf user (uid 10000).
+    # Forcing runAsNonRoot/runAsUser breaks s6 preinit, so only set fsGroup to
+    # match the image user. This intentionally deviates from the repo-wide
+    # readOnlyRootFilesystem/runAsNonRoot 99:100 defaults — required by this image.
+    fsGroup: 10000
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
+
+controllers:
+  hermes-kf:
+    strategy: Recreate
+    annotations:
+      reloader.stakater.com/auto: "true"
+
+    initContainers:
+      # Seed the writable data volume with the read-only ConfigMap and create the
+      # agent workspace. chown to the image's hermes-kf user (10000) so the gateway
+      # can read/rewrite its own config on start.
+      copy-config:
+        image:
+          repository: docker.io/library/alpine
+          tag: "3.24"
+        envFrom:
+          - secretRef:
+              name: hermes-kf-secret
+        command:
+          - sh
+          - -c
+          - |
+            set -euo pipefail
+            mkdir -p /opt/data/workspace
+            # ${GROUP_ID} in config-map.yaml is NOT expanded by the gateway at
+            # runtime: whatsapp.group_allow_from (a list under `platforms`) is
+            # read via a gateway/config.py path that skips ${VAR} expansion,
+            # unlike providers.*.api_key / mcp_servers.*.headers (different
+            # loader). It silently held the literal string forever, so every
+            # group message failed the allowlist match with zero errors/logs.
+            # Substitute it into the file here instead, before Hermes reads it.
+            sed "s/\${GROUP_ID}/${GROUP_ID}/g" /tmp/config.yaml > /opt/data/config.yaml
+            chown 10000:10000 /opt/data/config.yaml
+    containers:
+      app:
+        image:
+          repository: docker.io/nousresearch/hermes-agent
+          tag: v2026.7.7@sha256:ce3b39adf33fffae8cb19dcae74f971975b972efe91207f7d7539f80a0aae66a
+        args:
+          - gateway
+          - run
+        env:
+          HOME: /opt/data
+          HERMES_HOME: /opt/data
+          # Gateway HTTP API (programmatic access, e.g. from Open WebUI)
+          API_SERVER_ENABLED: "true"
+          API_SERVER_HOST: 0.0.0.0
+          API_SERVER_PORT: &apiPort "8642"
+          # Web dashboard. Runs under s6 in this same container so it can manage
+          # the gateway via the local service tree. Gated by the basic-auth
+          # username/password provider (creds in secrets.yaml) since it's
+          # bound to 0.0.0.0. --insecure must stay unset: combining it with
+          # basic_auth breaks the health/startup probe (unauthenticated
+          # /health gets redirected into the OAuth-only /auth/login route,
+          # which 500s for a password-only provider).
+          HERMES_DASHBOARD: "1"
+          HERMES_DASHBOARD_HOST: 0.0.0.0
+          HERMES_DASHBOARD_PORT: &dashPort "9119"
+          # Web search backend (in-cluster SearXNG)
+          SEARXNG_URL: http://searxng.searxng.svc.cluster.local:8080
+          # Dummy key: the openai TTS provider requires a non-empty key or it
+          # falls back to the Nous Tool Gateway. Actual TTS goes to in-cluster
+          # Kokoro (tts.openai.base_url in config.yaml), which ignores auth.
+          VOICE_TOOLS_OPENAI_KEY: sk-kokoro-local
+          # Wiki.js has no MCP endpoint; the agent curls its GraphQL API
+          # directly from the terminal tool (see config-map.yaml). URL/root
+          # path aren't secret; WIKI_API_KEY comes from hermes-kf-secret below.
+          WIKI_URL: https://wiki.atoca.house
+          WIKI_ROOT_PATH: KitchenFrequencies
+          # WhatsApp Baileys bridge, bot mode (still your personal number —
+          # a second number is only a ban-risk recommendation, not required
+          # here). Self-chat mode can't be used: the bridge hard-drops any
+          # group message in that mode (isGroup && fromMe -> from_me_group),
+          # only bot mode honors group_policy/group_allow_from. Group-only
+          # access is enforced via config-map.yaml's whatsapp.dm_policy/
+          # group_policy/group_allow_from.
+          WHATSAPP_ENABLED: "true"
+          WHATSAPP_MODE: bot
+          # Temporary: logs raw inbound message events (accept/drop reason)
+          # to bridge.log for debugging the group allowlist. Remove once
+          # group messaging is confirmed working.
+          WHATSAPP_DEBUG: "true"
+          # Discord gateway creds + allowlist + channel come from hermes-kf-secret
+          # (envFrom below): DISCORD_BOT_TOKEN, DISCORD_ALLOWED_USERS,
+          # DISCORD_FREE_RESPONSE_CHANNELS. Kept out of git on purpose.
+          # Also from hermes-kf-secret: OUTLINE_API_KEY, WIKI_API_KEY (mcp_servers/
+          # terminal use, see config-map.yaml).
+        envFrom:
+          - secretRef:
+              name: hermes-kf-secret
+        securityContext:
+          # Do NOT drop capabilities or force runAsNonRoot: s6-overlay init needs
+          # CAP_CHOWN/SETUID/SETGID to fix /run and drop to uid 10000. The image
+          # also writes to its root fs, so readOnlyRootFilesystem must stay false.
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                # /health redirects through the dashboard auth gate and 500s
+                # once basic_auth creds are set (BasicAuthProvider has no
+                # OAuth start_login). /api/status is documented as always
+                # public regardless of the gate — use that instead.
+                path: /api/status
+                port: 9119
+              initialDelaySeconds: 30
+              periodSeconds: 15
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/status
+                port: 9119
+              initialDelaySeconds: 10
+              periodSeconds: 5
+              timeoutSeconds: 5
+              failureThreshold: 30
+        resources:
+          requests:
+            # 500m: local faster-whisper transcription of Discord voice
+            # messages runs on CPU in this pod.
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            memory: 4Gi
+
+service:
+  app:
+    controller: hermes-kf
+    ports:
+      http:
+        port: *dashPort
+      api:
+        port: *apiPort
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - hermes-kf.atoca.house
+    rules:
+      # Workaround for upstream bug (hermes-kf-agent v2026.7.1): with exactly one
+      # auth provider registered, _auto_sso_response 302s unauthenticated page
+      # loads to /auth/login?provider=basic — the OAuth-initiation route — but
+      # BasicAuthProvider has no start_login, so it 500s. Redirect that route
+      # back to the /login password form at the gateway. Safe here: basic is
+      # the only provider, so no real OAuth flow can ever hit /auth/login.
+      - matches:
+          - path:
+              type: Exact
+              value: /auth/login
+        filters:
+          - type: RequestRedirect
+            requestRedirect:
+              path:
+                type: ReplaceFullPath
+                replaceFullPath: /login
+              statusCode: 302
+      - filters:
+          # The dashboard pins its CORS/origin allow-list to localhost, so the
+          # WebSocket handshake (Origin: https://hermes-kf.atoca.house) is rejected
+          # with 403. Rewrite Origin to an allowed value — browsers don't enforce
+          # CORS on the WS upgrade, so this only satisfies the server-side check.
+          - type: RequestHeaderModifier
+            requestHeaderModifier:
+              set:
+                - name: Origin
+                  value: http://localhost:9119
+        backendRefs:
+          - name: hermes-kf
+            port: 9119
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    globalMounts:
+      - path: /opt/data
+  config:
+    type: configMap
+    name: hermes-kf-config
+    defaultMode: 0755
+    globalMounts:
+      - path: /tmp/config.yaml
+        subPath: config.yaml

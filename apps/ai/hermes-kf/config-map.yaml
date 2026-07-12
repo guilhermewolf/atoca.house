@@ -29,8 +29,14 @@ data:
       compression:
         provider: main
         model: qwen3-14b
+    # browser/vision let Hermes actually look at Instagram/YouTube pages
+    # (headless chromium + screenshots, already bundled in the hermes-agent
+    # image) instead of scraping/storing post data — main model (gpt-5.4) is
+    # multimodal so it doubles as the vision model, no separate key needed.
     toolsets:
-      - hermes-kf-cli
+      - hermes-cli
+      - browser
+      - vision
     terminal:
       backend: local
       cwd: /opt/data/workspace
@@ -113,6 +119,16 @@ data:
         url: http://mcp-context7-mcp-proxy.mcp.svc.cluster.local:8080/mcp
       memory:
         url: http://mcp-memory-mcp-proxy.mcp.svc.cluster.local:8080/mcp
+      # Postiz has a native MCP endpoint (no toolhive proxy needed). Self-hosted
+      # base is NEXT_PUBLIC_BACKEND_URL (postiz.atoca.house/api) + /mcp, per
+      # https://docs.postiz.com/mcp/setup — Bearer auth variant, same pattern
+      # as outline/n8n above. Exposes tools to list integrations/channels and
+      # pull per-channel analytics ("numbers": followers/impressions/etc).
+      # POSTIZ_API_KEY is generated in Postiz Settings -> API and injected below.
+      postiz:
+        url: https://postiz.atoca.house/api/mcp
+        headers:
+          Authorization: Bearer ${POSTIZ_API_KEY}
     # Wiki.js (wiki.atoca.house) has no MCP endpoint — query its GraphQL API
     # directly from the agent's terminal tool instead, the same way the
     # KitchenFrequencies.TV wiki-sync skill does:

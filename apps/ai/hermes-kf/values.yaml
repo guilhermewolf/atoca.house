@@ -44,6 +44,25 @@ controllers:
             # Substitute it into the file here instead, before Hermes reads it.
             sed "s/\${GROUP_ID}/${GROUP_ID}/g" /tmp/config.yaml > /opt/data/config.yaml
             chown 10000:10000 /opt/data/config.yaml
+      # Postiz analytics has no MCP tool (only scheduling does) and ask_postiz
+      # requires an OpenAI key we don't want to give Postiz. The `postiz` CLI
+      # hits the same REST API directly (analytics:platform/analytics:post)
+      # with just POSTIZ_API_KEY, so install it once onto the persistent /opt/data
+      # volume (survives pod restarts, no image rebuild needed since hermes-agent
+      # is a third-party image) using the main image's own node/npm.
+      install-postiz-cli:
+        image:
+          repository: docker.io/nousresearch/hermes-agent
+          tag: v2026.7.7@sha256:ce3b39adf33fffae8cb19dcae74f971975b972efe91207f7d7539f80a0aae66a
+        command:
+          - sh
+          - -c
+          - |
+            set -euo pipefail
+            if [ ! -x /opt/data/npm-global/bin/postiz ]; then
+              npm install --global --prefix /opt/data/npm-global postiz
+            fi
+            chown -R 10000:10000 /opt/data/npm-global
     containers:
       app:
         image:
@@ -80,6 +99,12 @@ controllers:
           # path aren't secret; WIKI_API_KEY comes from hermes-kf-secret below.
           WIKI_URL: https://wiki.atoca.house
           WIKI_ROOT_PATH: KitchenFrequencies
+          # postiz CLI (installed onto /opt/data by the install-postiz-cli init
+          # container) for analytics — the MCP server has no analytics tool,
+          # and ask_postiz needs an OpenAI key we're not giving Postiz.
+          # POSTIZ_API_KEY comes from hermes-kf-secret below.
+          PATH: /opt/data/npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          POSTIZ_API_URL: https://postiz.atoca.house/api
           # WhatsApp Baileys bridge, bot mode (still your personal number —
           # a second number is only a ban-risk recommendation, not required
           # here). Self-chat mode can't be used: the bridge hard-drops any

@@ -105,6 +105,12 @@ controllers:
           # POSTIZ_API_KEY comes from hermes-kf-secret below.
           PATH: /opt/data/npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
           POSTIZ_API_URL: https://postiz.atoca.house/api
+          # browser tool's sandbox-bypass auto-detection (euid==0 / docker /
+          # apparmor-restricted-userns) never fires for this non-root
+          # containerd pod, so Chromium's setuid sandbox fails to init and
+          # it exits before writing DevToolsActivePort. Force the flags the
+          # tool would've picked itself under Docker.
+          AGENT_BROWSER_ARGS: "--no-sandbox,--disable-dev-shm-usage"
           # WhatsApp Baileys bridge, bot mode (still your personal number —
           # a second number is only a ban-risk recommendation, not required
           # here). Self-chat mode can't be used: the bridge hard-drops any

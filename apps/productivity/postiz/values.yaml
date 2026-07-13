@@ -5,6 +5,25 @@ controllers:
       postgres: "true"
     annotations:
       reloader.stakater.com/auto: "true"
+    pod:
+      # Our internal split-horizon DNS (UniFi local records) resolves
+      # postiz.atoca.house to the private gateway IP for LAN clients.
+      # Postiz's own token-refresh flow re-fetches its own already-hosted
+      # avatar image on every refresh (vendor bug: gitroomhq/postiz-app
+      # local.storage.ts always re-uploads integration.picture, even when
+      # it's already a local URL). That fetch goes through an SSRF guard
+      # that rejects the whole DNS answer if ANY record is a private IP -
+      # so it throws before the refreshed OAuth token is persisted, and
+      # tokens (e.g. YouTube) go stale until manually reconnected.
+      # Pin the pod's own lookup of its hostname to a current public
+      # Cloudflare A record so the SSRF guard only ever sees a public
+      # address. Scoped to this pod only - does not affect DNS for any
+      # other app or for LAN clients. IPv4, not AAAA: this network has no
+      # IPv6 egress, so an IPv6 literal here is unreachable (ENETUNREACH).
+      hostAliases:
+        - ip: "172.67.202.239"
+          hostnames:
+            - postiz.atoca.house
     containers:
       app:
         image:
@@ -17,16 +36,21 @@ controllers:
           NEXT_PUBLIC_BACKEND_URL: "https://postiz.atoca.house/api"
           BACKEND_INTERNAL_URL: "http://localhost:3000"
           IS_GENERAL: "true"
+          RUN_CRON: "true"
           # Crunchy Postgres TLS is signed by the cert-manager postgres-ca,
           # mounted at /etc/ssl/postgres/ca.crt and added to Node's trust store
           # so the pg/Mastra client verifies it (no SELF_SIGNED_CERT_IN_CHAIN).
           NODE_EXTRA_CA_CERTS: /etc/ssl/postgres/ca.crt
           # Temporal workflow engine (required since Postiz v2.12.0)
           TEMPORAL_ADDRESS: "temporal-app.temporal.svc.cluster.local:7233"
-          # Local file storage on a ceph-block PVC (backed up to R2 via Volsync)
-          STORAGE_PROVIDER: "local"
-          UPLOAD_DIRECTORY: "/media"
-          NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY: "/media"
+          # Cloudflare R2 storage (app-native, replaces local PVC uploads)
+          STORAGE_PROVIDER: "cloudflare"
+          CLOUDFLARE_BUCKETNAME: "postiz"
+          CLOUDFLARE_REGION: "auto"
+          # SMTP email (host/port/user/pass/from via postiz-secret)
+          EMAIL_PROVIDER: "nodemailer"
+          EMAIL_SECURE: "true"
+          EMAIL_FROM_NAME: "Postiz"
           # Redis (Dragonfly) - DB index 8 (5/6/7 already in use)
           REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/8"
           # Flip to "true" once your first user is registered
@@ -76,6 +100,31 @@ route:
     hostnames:
       - postiz.atoca.house
     rules:
+      # Postiz's bundled nginx sends a CSP with a `sandbox` directive on
+      # /uploads/* (hardening against GHSA-44wg-r34q-hvfx, a stored-XSS via
+      # spoofed upload MIME types). Some browsers refuse to play video served
+      # with that directive when the URL is opened directly (blank/non-loading
+      # player), even though the byte stream itself is fine. Overwrite CSP for
+      # this path only - keep media-src/default-src lockdown, drop `sandbox` -
+      # and mark responses cacheable/embeddable, matching the fix other
+      # self-hosted Postiz users apply at their reverse proxy.
+      - backendRefs:
+          - name: postiz
+            port: 5000
+        matches:
+          - path:
+              type: PathPrefix
+              value: /uploads
+        filters:
+          - type: ResponseHeaderModifier
+            responseHeaderModifier:
+              set:
+                - name: Content-Security-Policy
+                  value: "default-src 'none'; img-src 'self'; media-src 'self'"
+                - name: Cache-Control
+                  value: "public, max-age=31536000, immutable"
+                - name: Cross-Origin-Resource-Policy
+                  value: cross-origin
       - backendRefs:
           - name: postiz
             port: 5000
@@ -93,14 +142,14 @@ persistence:
         subPath: ca.crt
         readOnly: true
 
-  media:
+  uploads:
     enabled: true
     type: persistentVolumeClaim
     storageClass: ceph-block
     accessMode: ReadWriteOnce
     size: 50Gi
     globalMounts:
-      - path: /media
+      - path: /uploads
 
   config:
     type: emptyDir

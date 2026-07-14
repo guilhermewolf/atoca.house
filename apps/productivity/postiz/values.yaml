@@ -6,20 +6,6 @@ controllers:
     annotations:
       reloader.stakater.com/auto: "true"
     pod:
-      # Our internal split-horizon DNS (UniFi local records) resolves
-      # postiz.atoca.house to the private gateway IP for LAN clients.
-      # Postiz's own token-refresh flow re-fetches its own already-hosted
-      # avatar image on every refresh (vendor bug: gitroomhq/postiz-app
-      # local.storage.ts always re-uploads integration.picture, even when
-      # it's already a local URL). That fetch goes through an SSRF guard
-      # that rejects the whole DNS answer if ANY record is a private IP -
-      # so it throws before the refreshed OAuth token is persisted, and
-      # tokens (e.g. YouTube) go stale until manually reconnected.
-      # Pin the pod's own lookup of its hostname to a current public
-      # Cloudflare A record so the SSRF guard only ever sees a public
-      # address. Scoped to this pod only - does not affect DNS for any
-      # other app or for LAN clients. IPv4, not AAAA: this network has no
-      # IPv6 egress, so an IPv6 literal here is unreachable (ENETUNREACH).
       hostAliases:
         - ip: "172.67.202.239"
           hostnames:
@@ -69,19 +55,34 @@ controllers:
               name: postiz-secret
           - secretRef:
               name: postiz-db-secret
-        # Combined image runs nginx (master as root, workers drop to the `nginx`
-        # user) + pm2; it needs the default Docker capability set (SETUID/SETGID/
-        # CHOWN/DAC_OVERRIDE). Dropping ALL caps makes nginx fail to write
-        # /var/lib/nginx. This image is not built for cap-hardening.
         securityContext:
           allowPrivilegeEscalation: false
+        probes:
+          liveness: &probe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: &port 5000
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probe
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: *port
+              periodSeconds: 10
+              failureThreshold: 30
         resources:
           requests:
             cpu: 100m
             memory: 1Gi
           limits:
-            # Combined image runs nginx + 3 Node procs (backend/frontend/
-            # orchestrator) and builds the orchestrator at startup -> memory spikes.
             memory: 4Gi
 
 service:
@@ -100,14 +101,6 @@ route:
     hostnames:
       - postiz.atoca.house
     rules:
-      # Postiz's bundled nginx sends a CSP with a `sandbox` directive on
-      # /uploads/* (hardening against GHSA-44wg-r34q-hvfx, a stored-XSS via
-      # spoofed upload MIME types). Some browsers refuse to play video served
-      # with that directive when the URL is opened directly (blank/non-loading
-      # player), even though the byte stream itself is fine. Overwrite CSP for
-      # this path only - keep media-src/default-src lockdown, drop `sandbox` -
-      # and mark responses cacheable/embeddable, matching the fix other
-      # self-hosted Postiz users apply at their reverse proxy.
       - backendRefs:
           - name: postiz
             port: 5000

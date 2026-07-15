@@ -8,7 +8,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/dgtlmoon/changedetection.io
-          tag: 0.55.7
+          tag: 0.55.8
         env:
           PORT: &port 5000
           USE_X_SETTINGS: 1

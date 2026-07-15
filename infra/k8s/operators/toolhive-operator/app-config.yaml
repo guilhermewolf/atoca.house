@@ -5,4 +5,4 @@ app:
   namespace: toolhive
   chart: toolhive-operator
   chartRepo: ghcr.io/stacklok/toolhive
-  chartVersion: 0.36.0
+  chartVersion: 0.38.0

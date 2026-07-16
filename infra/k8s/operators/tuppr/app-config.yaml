@@ -5,4 +5,4 @@ app:
   namespace: tuppr
   chart: tuppr
   chartRepo: ghcr.io/home-operations/charts
-  chartVersion: 0.3.1
+  chartVersion: 0.3.2

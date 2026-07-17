@@ -13,7 +13,6 @@ data:
           mode: responses
         litellm_params:
           model: chatgpt/gpt-5.4
-
       # --- Free-tier cloud providers (rpm/tpm = free-plan caps; router throttles
       #     and fails over to local ollama on 429/cooldown) ---
       - model_name: groq-llama-3.3-70b

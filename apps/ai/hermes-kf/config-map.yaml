@@ -8,40 +8,125 @@ data:
   config.yaml: |
     # hermes-kf Agent configuration
     # Docs: https://hermes-kf-agent.nousresearch.com/docs
-    # Main model: ChatGPT Plus subscription (gpt-5.4) via litellm. This is the only
-    # model the Plus plan exposes — codex-* names are rejected by the Codex backend
-    # for ChatGPT accounts, so they can't be the main model here. On rate-limit/quota
-    # litellm fails this over to local ollama (qwen3-14b) then cloud free-tier.
+    # Main model: Nous Portal Plus subscription (OAuth via `hermes auth`, token
+    # persisted in /opt/data/auth.json on the PVC — no k8s secret involved).
+    # The Portal proxies the full OpenRouter catalog; claude-opus-4.8 is the
+    # strongest generalist on it and multimodal, so it doubles as the vision
+    # model. Credit-metered ($22/mo on Plus), so background/auxiliary work must
+    # NOT run here — see auxiliary below.
     model:
-      default: chatgpt/gpt-5.4
-      provider: custom:litellm
+      default: anthropic/claude-opus-4.8
+      provider: nous
+      base_url: https://inference-api.nousresearch.com/v1
     providers:
       litellm:
         base_url: http://litellm.litellm.svc.cluster.local:4000/v1
         api_key: ${LITELLM_MASTER_KEY}
-    # Auxiliary tasks run on cheap local ollama models instead of burning the
-    # subscription. Titles -> small/fast gemma4-e4b; compression (conversation
-    # summarization) -> the strongest local model, qwen3-14b, for fidelity.
+    # Failover: when Nous rate-limits or the monthly credit runs out (402/429),
+    # drop to the ChatGPT Plus subscription (gpt-5.4) via litellm — litellm's own
+    # router then falls further to local ollama (qwen3-14b) and cloud free-tier,
+    # so the agent never sees a hard error. Explicit base_url/key_env so the
+    # fallback resolves even if the named provider lookup changes upstream.
+    fallback_model:
+      provider: custom:litellm
+      model: chatgpt/gpt-5.4
+      base_url: http://litellm.litellm.svc.cluster.local:4000/v1
+      key_env: LITELLM_MASTER_KEY
+    # Auxiliary task routing. Principle: the two subscriptions are for
+    # interactive/main-agent work; high-frequency background tasks go to free
+    # local ollama via litellm (custom:litellm = providers.litellm above).
+    # GPU is a single RTX 4060 Ti 16GB: qwen3-14b q4 is ~9.3GB weights and
+    # ~12-13GB with a long-context KV cache during compression, so it can NOT
+    # co-reside with a second aux model without eviction thrash (~10-20s
+    # cold-load per swap). Every local aux task therefore uses the SAME model,
+    # qwen3-14b — one resident model, zero swaps; titles/search are ~10-token
+    # outputs, so the "big" model costs nothing there.
+    #  - local aux (titles, session search, compression, web extraction,
+    #    memory curation) -> qwen3-14b (strongest local, stays resident)
+    #  - heavy reasoning (background review, kanban decomposition)
+    #    -> chatgpt/gpt-5.4 (ChatGPT Plus, already paid; litellm falls back to
+    #       qwen3-14b on rate limit per its router config)
+    #  - vision -> main (claude-opus-4.8 is multimodal; local models are not)
     auxiliary:
       title_generation:
-        provider: main
-        model: gemma4-e4b
-      compression:
-        provider: main
+        provider: custom:litellm
         model: qwen3-14b
-    # browser/vision let Hermes actually look at Instagram/YouTube pages
-    # (headless chromium + screenshots, already bundled in the hermes-agent
-    # image) instead of scraping/storing post data — main model (gpt-5.4) is
-    # multimodal so it doubles as the vision model, no separate key needed.
+      session_search:
+        provider: custom:litellm
+        model: qwen3-14b
+      compression:
+        provider: custom:litellm
+        model: qwen3-14b
+      web_extract:
+        provider: custom:litellm
+        model: qwen3-14b
+      curator:
+        provider: custom:litellm
+        model: qwen3-14b
+      background_review:
+        provider: custom:litellm
+        model: chatgpt/gpt-5.4
+      kanban_decomposer:
+        provider: custom:litellm
+        model: chatgpt/gpt-5.4
+      vision:
+        provider: main
+        model: anthropic/claude-opus-4.8
     toolsets:
       - hermes-cli
       - browser
       - vision
+    agent:
+      max_turns: 90
+      gateway_timeout: 1800
+      restart_drain_timeout: 60
+      api_max_retries: 2
+      reasoning_effort: medium
+      tool_use_enforcement: auto
+      verify_on_stop: false
     terminal:
       backend: local
       cwd: /opt/data/workspace
       timeout: 180
       persistent_shell: true
+    # Nous Tool Gateway (included with every paid Portal plan, doesn't burn the
+    # monthly credit): web fetch (firecrawl), cloud browser (browser-use),
+    # image/video gen. Search still goes to in-cluster SearXNG.
+    web:
+      backend: firecrawl
+      search_backend: searxng
+      use_gateway: true
+    browser:
+      cloud_provider: browser-use
+      use_gateway: true
+    image_gen:
+      use_gateway: true
+    video_gen:
+      provider: fal
+      use_gateway: true
+    compression:
+      enabled: true
+      threshold: 0.5
+      target_ratio: 0.2
+      protect_last_n: 20
+    display:
+      tool_progress: all
+    # TTS stays on in-cluster Kokoro (openai-compatible endpoint); STT (whisper)
+    # rides the gateway now instead of local CPU faster-whisper.
+    tts:
+      provider: openai
+      openai:
+        base_url: http://kokoro.kokoro.svc.cluster.local:8880/v1
+        model: kokoro
+        voice: af_heart
+      use_gateway: true
+    stt:
+      enabled: true
+      provider: openai
+      local:
+        model: small
+        language: ""
+      use_gateway: true
     # Memory: built-in MEMORY.md/USER.md always active; external provider is additive.
     # Holographic = local SQLite (FTS5 + trust scoring + contradiction detection),
     # zero extra infra, no LLM/embeddings/Qdrant, no GPU. DB lives on the /opt/data
@@ -51,11 +136,6 @@ data:
       auto_migrate: true
       auto_summarize:
         threshold: 50
-    compression:
-      enabled: true
-      threshold: 0.5
-      target_ratio: 0.2
-      protect_last_n: 20
     group_sessions_per_user: false
     streaming:
       enabled: false
@@ -63,12 +143,6 @@ data:
       redact_secrets: true
     privacy:
       redact_pii: true
-    web:
-      search_backend: searxng
-    discord:
-      require_mention: false
-      auto_thread: false
-      reactions: false
     # WhatsApp via the Baileys bridge (self-chat mode: paired to your own
     # personal WhatsApp account). Cloud API adapter doesn't support groups,
     # so this must be the unofficial bridge. Group-only: DMs are disabled,
@@ -76,28 +150,19 @@ data:
     # Pairing (one-time, interactive): kubectl exec into the pod and run
     # `hermes whatsapp` to scan the QR code; session persists on the PVC at
     # /opt/data/platforms/whatsapp/session.
-    # To find the group JID: temporarily set WHATSAPP_DEBUG=true, send a
-    # message in the group, grep bridge.log for the chat id ending in
-    # "@g.us", then fill it in below and unset WHATSAPP_DEBUG.
     whatsapp:
       unauthorized_dm_behavior: ignore
       dm_policy: disabled
       group_policy: allowlist
       group_allow_from:
         - "${GROUP_ID}@g.us"
-    agent:
-      max_turns: 90
-      gateway_timeout: 1800
-      restart_drain_timeout: 60
-      api_max_retries: 2
-      reasoning_effort: medium
-      tool_use_enforcement: auto
     # Holographic memory store (local SQLite on the /opt/data PVC).
     plugins:
       hermes-kf-memory-store:
         db_path: /opt/data/memory_store.db
         auto_extract: true
         default_trust: 0.5
+      enabled: []
     # External MCP servers. In-cluster ones go through the toolhive proxies in
     # the mcp namespace (streamable HTTP at /mcp, no auth for in-cluster
     # traffic — the proxies hold the upstream credentials). Env vars expand
@@ -119,31 +184,15 @@ data:
         url: http://mcp-context7-mcp-proxy.mcp.svc.cluster.local:8080/mcp
       memory:
         url: http://mcp-memory-mcp-proxy.mcp.svc.cluster.local:8080/mcp
-      # Postiz has a native MCP endpoint (no toolhive proxy needed). Self-hosted
-      # base is NEXT_PUBLIC_BACKEND_URL (postiz.atoca.house/api) + /mcp, per
-      # https://docs.postiz.com/mcp/setup — Bearer auth variant, same pattern
-      # as outline/n8n above. Exposes tools to list integrations/channels and
-      # pull per-channel analytics ("numbers": followers/impressions/etc).
-      # POSTIZ_API_KEY is generated in Postiz Settings -> API and injected below.
+      # Postiz native MCP endpoint (NEXT_PUBLIC_BACKEND_URL + /mcp, Bearer auth,
+      # per https://docs.postiz.com/mcp/setup). Exposes channel listing and
+      # per-channel analytics. POSTIZ_API_KEY from Postiz Settings -> API.
       postiz:
         url: https://postiz.atoca.house/api/mcp
         headers:
           Authorization: Bearer ${POSTIZ_API_KEY}
     # Wiki.js (wiki.atoca.house) has no MCP endpoint — query its GraphQL API
-    # directly from the agent's terminal tool instead, the same way the
-    # KitchenFrequencies.TV wiki-sync skill does:
+    # directly from the agent's terminal tool instead:
     #   curl -H "Authorization: Bearer $WIKI_API_KEY" "$WIKI_URL/graphql" \
     #     -d '{"query":"{ pages { list { id path title updatedAt } } }"}'
-    # WIKI_URL/WIKI_API_KEY/WIKI_ROOT_PATH are injected as env vars below.
-    stt:
-      enabled: true
-      provider: local
-      local:
-        model: small
-        language: ""
-    tts:
-      provider: openai
-      openai:
-        base_url: http://kokoro.kokoro.svc.cluster.local:8880/v1
-        model: kokoro
-        voice: af_heart
+    # WIKI_URL/WIKI_API_KEY/WIKI_ROOT_PATH are injected as env vars.

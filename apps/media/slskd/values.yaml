@@ -99,9 +99,11 @@ configMaps:
         directories:
           incomplete: /downloads/incomplete
           downloads: /downloads/complete
-        permissions:
-          file:
-            mode: 750
+        transfers:
+          download:
+            permissions:
+              file:
+                mode: 750
         shares:
           directories:
             - /playlists

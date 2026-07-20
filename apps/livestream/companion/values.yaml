@@ -1,0 +1,95 @@
+---
+controllers:
+  companion:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/bitfocus/companion/companion
+          repository: ghcr.io/bitfocus/companion/companion
+          tag: v5.0.1@sha256:78df55d7e97044d6dd10cdb123294ad259519d6e35d54a9e8c933eae836903fb
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: &adminPort 8000
+              initialDelaySeconds: 10
+              periodSeconds: 15
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 5
+        # Image's Dockerfile runs `useradd -ms /bin/bash companion` with no
+        # explicit uid/gid, which lands on 1000:1000 on the debian-trixie base.
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    controller: companion
+    ports:
+      http:
+        port: *adminPort
+      satellite-ws:
+        port: 16623
+  satellite:
+    controller: companion
+    type: LoadBalancer
+    annotations:
+      lbipam.cilium.io/ips: 192.168.60.131
+    ports:
+      satellite-tcp:
+        port: 16622
+        protocol: TCP
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+        sectionName: https
+    hostnames:
+      - companion.atoca.house
+    rules:
+      - backendRefs:
+          - name: companion-app
+            port: *adminPort
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 2Gi
+    globalMounts:
+      - path: /companion

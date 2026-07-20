@@ -71,6 +71,15 @@ service:
     ports:
       http:
         port: *port
+  pulse:
+    controller: ledfx
+    type: LoadBalancer
+    annotations:
+      lbipam.cilium.io/ips: 192.168.60.132
+    ports:
+      pulse:
+        port: 4713
+        protocol: TCP
 
 route:
   ledfx:
@@ -98,6 +107,7 @@ configMaps:
         load-module module-null-sink sink_name=ledfx
         set-default-sink ledfx
         load-module module-native-protocol-unix auth-anonymous=1
+        load-module module-native-protocol-tcp port=4713 listen=0.0.0.0 auth-anonymous=1 auth-ip-acl=127.0.0.1;10.0.0.0/8;172.16.0.0/12;192.168.0.0/16
 
 persistence:
   config:

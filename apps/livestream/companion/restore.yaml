@@ -1,0 +1,28 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/volsync.backube/replicationdestination_v1alpha1.json
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: companion-restore
+  namespace: companion
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    accessModes:
+      - ReadWriteOnce
+    cacheAccessModes:
+      - ReadWriteOnce
+    cacheStorageClassName: openebs-hostpath
+    cleanupCachePVC: true
+    cleanupTempPVC: true
+    enableFileDeletion: true
+    repository: companion-r2-secret
+    copyMethod: Snapshot
+    destinationPVC: companion
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool
+    moverSecurityContext:
+      runAsUser: 0
+      runAsGroup: 0
+      fsGroup: 0

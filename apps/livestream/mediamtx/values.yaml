@@ -1,0 +1,129 @@
+---
+controllers:
+  mediamtx:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=bluenviron/mediamtx
+          repository: bluenviron/mediamtx
+          tag: 1-ffmpeg@sha256:08c837deb7bac85d509e2a4c2737308e5a34f8f084a46a0d8793cdb0579a6e5d
+        env:
+          MTX_LOGLEVEL: info
+          MTX_API: "yes"
+          # Localhost is allowed to read without auth, so the runOnAvailable
+          # ffmpeg forwarder below can pull the stream to relay it to Twitch.
+          MTX_AUTHINTERNALUSERS_2_USER: any
+          MTX_AUTHINTERNALUSERS_2_IPS: 127.0.0.1
+          MTX_AUTHINTERNALUSERS_2_PERMISSIONS_0_ACTION: read
+          # Dedicated user for Companion's HTTP module to hit the control API
+          # (e.g. toggling `record` on the live path to rotate segments).
+          MTX_AUTHINTERNALUSERS_3_PERMISSIONS_0_ACTION: api
+          # OBS publishes to rtmp://<LB-IP>/live with stream key `?user=obs&pass=<password>`
+          MTX_PATHS_LIVE_RECORD: "yes"
+          MTX_PATHS_LIVE_RECORDPATH: /recordings/%path/%Y-%m-%d/%H-%M-%S-%f
+          MTX_PATHS_LIVE_RECORDFORMAT: fmp4
+          MTX_PATHS_LIVE_RECORDDELETEAFTER: 0s
+          # Relay the OBS stream to Twitch as soon as it becomes available.
+          MTX_PATHS_LIVE_RUNONAVAILABLE: >-
+            ffmpeg -i rtmp://localhost:1935/live -c copy -f flv
+            rtmp://live.twitch.tv/app/$TWITCH_STREAM_KEY
+          MTX_PATHS_LIVE_RUNONAVAILABLERESTART: "yes"
+        envFrom:
+          - secretRef:
+              name: mediamtx-secret
+        probes:
+          # API requires auth for non-localhost callers, so probe the RTMP
+          # listener instead - it's always open and up as long as the process is healthy.
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              tcpSocket:
+                port: &rtmpPort 1935
+              initialDelaySeconds: 5
+              periodSeconds: 15
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              tcpSocket:
+                port: *rtmpPort
+              failureThreshold: 30
+              periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 1Gi
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
+
+service:
+  app:
+    controller: mediamtx
+    ports:
+      hls:
+        port: &hlsPort 8888
+      api:
+        port: 9997
+      metrics:
+        port: 9998
+  rtmp:
+    controller: mediamtx
+    type: LoadBalancer
+    annotations:
+      lbipam.cilium.io/ips: 192.168.60.130
+    ports:
+      rtmp:
+        port: *rtmpPort
+        protocol: TCP
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+        sectionName: https
+    hostnames:
+      - mediamtx.atoca.house
+    rules:
+      - backendRefs:
+          - name: mediamtx-app
+            port: *hlsPort
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
+  recordings:
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/KitchenFrequencies.TV/Recording
+    globalMounts:
+      - path: /recordings
+        readOnly: false

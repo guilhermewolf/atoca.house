@@ -1,0 +1,8 @@
+---
+# Application configuration for MediaMTX
+app:
+  name: mediamtx
+  namespace: mediamtx
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.0.1

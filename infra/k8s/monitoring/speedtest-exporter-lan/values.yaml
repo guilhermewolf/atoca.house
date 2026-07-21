@@ -1,0 +1,55 @@
+---
+configMaps:
+  config:
+    data:
+      config.yaml: |
+        cache: "24h"
+
+controllers:
+  speedtest-exporter-lan:
+    containers:
+      speedtest-exporter-lan:
+        image:
+          repository: ghcr.io/heathcliff26/speedtest-exporter
+          tag: v1.6.2
+        args:
+          - -config
+          - /config/config.yaml
+        probes:
+          liveness:
+            enabled: false
+          readiness:
+            enabled: false
+          startup:
+            enabled: false
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
+    pod:
+      securityContext:
+        runAsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+
+persistence:
+  config:
+    type: configMap
+    identifier: config
+
+service:
+  speedtest-exporter-lan:
+    controller: speedtest-exporter-lan
+    ports:
+      http:
+        port: 8080
+
+serviceMonitor:
+  speedtest-exporter-lan:
+    serviceName: speedtest-exporter-lan
+    endpoints:
+      - port: http
+        scheme: http
+        path: /metrics
+        metricRelabelings:
+          - action: labeldrop
+            regex: (pod)

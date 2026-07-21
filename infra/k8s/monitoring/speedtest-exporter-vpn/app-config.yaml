@@ -1,0 +1,9 @@
+---
+# Application configuration for speedtest-exporter-vpn
+app:
+  name: speedtest-exporter-vpn
+  namespace: speedtest-exporter-vpn
+  chart: speedtest-exporter-vpn
+  chartRepo: gsoci.azurecr.io/charts/giantswarm
+  chartVersion: 0.20.1
+  useVaultPlugin: false

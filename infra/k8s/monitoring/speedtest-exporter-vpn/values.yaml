@@ -1,0 +1,66 @@
+---
+configMaps:
+  config:
+    data:
+      config.yaml: |
+        cache: "24h"
+
+controllers:
+  speedtest-exporter-vpn:
+    containers:
+      speedtest-exporter-vpn:
+        image:
+          repository: ghcr.io/heathcliff26/speedtest-exporter
+          tag: v1.6.2
+        args:
+          - -config
+          - /config/config.yaml
+        probes:
+          liveness:
+            enabled: false
+          readiness:
+            enabled: false
+          startup:
+            enabled: false
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.20/24"],
+        "mac": "32:0b:d8:1f:b6:e5"
+      }]
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
+
+persistence:
+  config:
+    type: configMap
+    identifier: config
+
+service:
+  speedtest-exporter-vpn:
+    controller: speedtest-exporter-vpn
+    ports:
+      http:
+        port: 8080
+
+serviceMonitor:
+  speedtest-exporter-vpn:
+    serviceName: speedtest-exporter-vpn
+    endpoints:
+      - port: http
+        scheme: http
+        path: /metrics
+        metricRelabelings:
+          - action: labeldrop
+            regex: (pod)

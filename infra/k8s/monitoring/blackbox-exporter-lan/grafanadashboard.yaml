@@ -6,6 +6,10 @@ metadata:
   name: blackbox-exporter-lan
 spec:
   allowCrossNamespaceImport: true
+  # Unique UID: LAN and VPN import the same upstream dashboard (13659), which
+  # carries a single uid. Without an override the second import would relocate
+  # the first instead of creating a separate dashboard.
+  uid: blackbox-exporter-lan
   instanceSelector:
     matchLabels:
       grafana.internal/instance: grafana

@@ -3,7 +3,7 @@
 app:
   name: speedtest-exporter-lan
   namespace: speedtest-exporter-lan
-  chart: speedtest-exporter-lan
-  chartRepo: gsoci.azurecr.io/charts/giantswarm
-  chartVersion: 0.20.1
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.0.1
   useVaultPlugin: false

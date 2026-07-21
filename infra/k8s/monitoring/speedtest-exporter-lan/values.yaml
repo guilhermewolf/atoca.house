@@ -3,7 +3,7 @@ configMaps:
   config:
     data:
       config.yaml: |
-        cache: "24h"
+        cache: "1h"
 
 controllers:
   speedtest-exporter-lan:
@@ -50,6 +50,15 @@ serviceMonitor:
       - port: http
         scheme: http
         path: /metrics
+        # Dashboard 20115 selects targets with label_values({job="speedtest-exporter"}, instance),
+        # so both exporters share one job and are told apart by a stable instance label.
+        relabelings:
+          - action: replace
+            targetLabel: job
+            replacement: speedtest-exporter
+          - action: replace
+            targetLabel: instance
+            replacement: lan
         metricRelabelings:
           - action: labeldrop
             regex: (pod)

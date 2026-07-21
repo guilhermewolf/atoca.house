@@ -8,6 +8,12 @@
       overrideDepName: "{{packageName}}",
     },
     {
+      description: "Pin Ceph to v20 (Tentacle) — Rook 1.20.x rejects v21 as unsupported",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["quay.io/ceph/ceph"],
+      allowedVersions: "<21",
+    },
+    {
       description: "Override Talos Installer Package Name",
       matchDatasources: ["docker"],
       matchPackageNames: ["/factory\\.talos\\.dev/"],

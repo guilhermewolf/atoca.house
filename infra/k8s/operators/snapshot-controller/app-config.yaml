@@ -5,4 +5,4 @@ app:
   namespace: snapshot-controller
   chart: snapshot-controller
   chartRepo: ghcr.io/piraeusdatastore/helm-charts
-  chartVersion: 5.1.1
+  chartVersion: 5.2.0

@@ -8,7 +8,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=ghcr.io/bitfocus/companion/companion
           repository: ghcr.io/bitfocus/companion/companion
-          tag: v5.0.1@sha256:78df55d7e97044d6dd10cdb123294ad259519d6e35d54a9e8c933eae836903fb
+          tag: v5.0.2@sha256:96cbdcb5de8385a34537ec64556516e62823a3f7fb655e77d9ecd817616c89fb
         probes:
           liveness: &probes
             enabled: true

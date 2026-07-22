@@ -71,5 +71,8 @@ serviceMonitor:
             targetLabel: instance
             replacement: vpn
         metricRelabelings:
+          # ip/isp describe the speedtest server picked for each run and change
+          # every test, so keeping them spawns a new series per run and shatters
+          # the dashboard into one gauge/line segment per test.
           - action: labeldrop
-            regex: (pod)
+            regex: (pod|ip|isp|exported_instance)

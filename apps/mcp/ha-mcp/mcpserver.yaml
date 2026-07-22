@@ -10,7 +10,7 @@ spec:
   env:
     - name: HOMEASSISTANT_URL
       value: https://hass.atoca.house
-  image: ghcr.io/homeassistant-ai/ha-mcp:7.14.1
+  image: ghcr.io/homeassistant-ai/ha-mcp:7.14.2
   podTemplateSpec:
     spec:
       containers:

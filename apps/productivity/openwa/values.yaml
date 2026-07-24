@@ -8,7 +8,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=ghcr.io/rmyndharis/openwa
           repository: ghcr.io/rmyndharis/openwa
-          tag: 0.10.6@sha256:6b15e5abc9ca558e7f265729c70e18942c7f9dbacf44c280c27db0b1ed77efba
+          tag: 0.10.8@sha256:42255fb1d650c21b23624d9e2898d7e6c6b987a1d59aee5f49d0e5daeb47fb15
           pullPolicy: IfNotPresent
         env:
           PORT: &port 2785

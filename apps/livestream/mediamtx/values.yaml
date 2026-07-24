@@ -8,7 +8,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=bluenviron/mediamtx
           repository: bluenviron/mediamtx
-          tag: 1-ffmpeg@sha256:08c837deb7bac85d509e2a4c2737308e5a34f8f084a46a0d8793cdb0579a6e5d
+          tag: 1-ffmpeg@sha256:e8eda6a884bbb2eaebf0c0454200ddc8087f428e091bae10d20e330a08558778
         env:
           MTX_LOGLEVEL: info
           MTX_API: "yes"

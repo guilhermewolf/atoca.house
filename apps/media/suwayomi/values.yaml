@@ -1,0 +1,130 @@
+---
+controllers:
+  suwayomi:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/suwayomi/suwayomi-server
+          tag: v2.3.2243@sha256:e59f212ccf91b26de8676a063a2db90256c148c6261535c7c477d47a43d9751b
+        env:
+          TZ: Europe/Amsterdam
+          BIND_IP: 0.0.0.0
+          BIND_PORT: &port 4567
+          # CBZ is the only download format Kavita can read
+          DOWNLOAD_AS_CBZ: "true"
+          AUTO_DOWNLOAD_CHAPTERS: "true"
+          AUTO_DOWNLOAD_EXCLUDE_UNREAD: "false"
+          UPDATE_INTERVAL: 12
+          UPDATE_EXCLUDE_UNREAD: "false"
+          UPDATE_EXCLUDE_STARTED: "false"
+          UPDATE_EXCLUDE_COMPLETED: "true"
+          UPDATE_MANGA_INFO: "true"
+          MAX_SOURCES_IN_PARALLEL: 6
+          WEB_UI_CHANNEL: stable
+          WEB_UI_FLAVOR: WebUI
+          # v2.3.x maps this to server.extensionStores; the older EXTENSION_REPOS
+          # name is silently ignored and leaves you with zero sources.
+          EXTENSION_STORES: '["https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json"]'
+          # Suwayomi keeps its own backups; Volsync covers the PVC
+          BACKUP_INTERVAL: 0
+          # Reuse the existing FlareSolverr deployment for Cloudflare-gated sources
+          FLARESOLVERR_ENABLED: "true"
+          FLARESOLVERR_URL: http://flaresolverr.flaresolverr.svc.cluster.local
+          FLARESOLVERR_TIMEOUT: 60
+          FLARESOLVERR_SESSION_NAME: suwayomi
+          FLARESOLVERR_SESSION_TTL: 15
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v1/settings/about
+                port: *port
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 5
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 10
+        resources:
+          requests:
+            cpu: 25m
+            memory: 768Mi
+          limits:
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          # Must stay false: the entrypoint stages server-reference.conf into
+          # /home/suwayomi/startup (which also ships tachidesk_latest.jar, so an
+          # emptyDir there would mask the JAR) and then mv's it into place.
+          readOnlyRootFilesystem: false
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    # Always, not OnRootMismatch: the entrypoint symlinks into <config>/bin, and
+    # OnRootMismatch only inspects the volume root - it skipped the recursive
+    # chown and left bin/ and logs/ root-owned and group-read-only.
+    fsGroupChangePolicy: Always
+
+service:
+  app:
+    controller: suwayomi
+    ports:
+      http:
+        port: *port
+    primary: true
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - suwayomi.atoca.house
+    rules:
+      - backendRefs:
+          - name: suwayomi
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /home/suwayomi/.local/share/Tachidesk
+
+  # Downloaded CBZ chapters land on the NAS so Kavita can serve them
+  manga:
+    enabled: true
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/data/media/manga
+    globalMounts:
+      - path: /home/suwayomi/.local/share/Tachidesk/downloads
+
+  # Keep scratch writes out of the container layer
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

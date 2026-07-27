@@ -1,0 +1,8 @@
+---
+# Application configuration for glance-ops (sysadmin dashboard)
+app:
+  name: glance-ops
+  namespace: glance-ops
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.0.1

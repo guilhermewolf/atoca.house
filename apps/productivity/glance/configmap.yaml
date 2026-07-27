@@ -1,4 +1,9 @@
 ---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/core/configmap_v1.json
+#
+# GENERATED LAYOUT — community widget templates are vendored verbatim from
+# https://github.com/glanceapp/community-widgets with only options/env patched.
+#
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,6 +16,10 @@ data:
       port: 80
       proxied: true
 
+    branding:
+      logo-text: A
+      app-name: atoca
+
     theme:
       background-color: 240 21 15
       primary-color: 224 76 65
@@ -18,10 +27,11 @@ data:
       negative-color: 0 72 51
 
     pages:
-      # -----------------------------------------------------------------------
-      # HOME — default landing page, friendly for everyone
-      # -----------------------------------------------------------------------
+      # =========================================================================
+      # HOME — the landing page. Nothing here requires knowing what a container is.
+      # =========================================================================
       - name: Home
+        show-mobile-header: true
         columns:
           - size: small
             widgets:
@@ -29,57 +39,75 @@ data:
                 hour-format: 24h
                 timezones:
                   - timezone: Europe/Amsterdam
-                    label: Home
-
-              - type: calendar
-                first-day-of-week: monday
+                    label: Amsterdam
+                  - timezone: America/Sao_Paulo
+                    label: Sao Paulo
 
               - type: weather
+                # Must be a bare place name — the open-meteo geocoder takes the
+                # whole string as one query, so "Amsterdam, Netherlands" returns
+                # zero results. First match for "Amsterdam" is the NL one.
                 location: Amsterdam
                 units: metric
                 hour-format: 24h
 
+              - $include: w-hass.yml
+
+              - type: calendar
+                first-day-of-week: monday
+
           - size: full
             widgets:
               - type: search
-                search-engine: https://www.google.com/search?q={QUERY}
+                search-engine: https://search.atoca.house/search?q={QUERY}
                 new-tab: true
                 autofocus: true
+                bangs:
+                  - title: YouTube
+                    shortcut: "!yt"
+                    url: https://www.youtube.com/results?search_query={QUERY}
+                  - title: Google
+                    shortcut: "!g"
+                    url: https://www.google.com/search?q={QUERY}
+                  - title: Jellyfin
+                    shortcut: "!jf"
+                    url: https://jellyfin.atoca.house/web/#/search.html?query={QUERY}
+                  - title: Request a movie/show
+                    shortcut: "!r"
+                    url: https://seerr.atoca.house/search?query={QUERY}
 
               - type: group
                 widgets:
                   - type: rss
-                    title: The Guardian
-                    cache: 12h
-                    limit: 18
-                    colapse-after: 8
+                    title: World
+                    cache: 3h
+                    limit: 15
+                    collapse-after: 6
                     feeds:
                       - url: https://www.theguardian.com/world/rss
-                        title: TheGuardian
+                        title: The Guardian
+                      - url: https://feeds.nos.nl/nosnieuwsalgemeen
+                        title: NOS
 
                   - type: rss
-                    title: Folha
-                    cache: 12h
-                    limit: 18
-                    colapse-after: 8
+                    title: Brasil
+                    cache: 3h
+                    limit: 15
+                    collapse-after: 6
                     feeds:
                       - url: https://feeds.folha.uol.com.br/emcimadahora/rss091.xml
-                        title: Folha de SP
+                        title: Folha de S.Paulo
 
                   - type: rss
-                    title: TheVerge
-                    cache: 12h
-                    limit: 18
-                    colapse-after: 8
+                    title: Culture
+                    cache: 6h
+                    limit: 15
+                    collapse-after: 6
                     feeds:
+                      - url: https://www.theguardian.com/uk/culture/rss
+                        title: The Guardian
                       - url: https://theverge.com/rss/index.xml
-                        title: TheVerge
-
-              - type: videos
-                channels:
-                  - UCHnyfMqiRRG1u-2MsSQLbXA # Veritasium
-                  - UCsXVk37bltHxD1rDPwtNM8Q # Kurzgesagt
-                  -
+                        title: The Verge
 
           - size: small
             widgets:
@@ -88,407 +116,229 @@ data:
                   - title: Watch
                     color: 224 90 65
                     links:
-                      - title: Jellyfin
+                      - title: Movies & TV
                         url: https://jellyfin.atoca.house
                         icon: sh:jellyfin-light
-                      - title: Request a Movie or Show
+                      - title: Ask for a movie or show
                         url: https://seerr.atoca.house
                         icon: sh:seerr-light
 
-                  - title: Get Things Done
+                  - title: Read & Listen
                     color: 262 72 65
                     links:
-                      - title: Tasks
-                        url: https://vikunja.atoca.house
-                        icon: sh:vikunja-light
-                      - title: CRM
-                        url: https://twenty.atoca.house
-                        icon: sh:twenty-light
-                      - title: Notes
-                        url: https://outline.atoca.house
-                        icon: sh:outline-light
-
-                  - title: Personal
-                    color: 160 60 45
-                    links:
-                      - title: Fitness Tracker
-                        url: https://fitness.atoca.house
-                        icon:
-                      - title: Library
-                        url: https://kativa.atoca.house
-                        icon: sh:kativa-light
-                      - title: Audio Library
+                      - title: Audiobooks & Podcasts
                         url: https://audiobookshelf.atoca.house
                         icon: sh:audiobookshelf-light
-                      - title: Get Books
+                      - title: Ebooks
+                        url: https://kavita.atoca.house
+                        icon: sh:kavita-light
+                      - title: Comics & Manga
+                        url: https://suwayomi.atoca.house
+                        icon: sh:suwayomi-light
+                      - title: Ask for a book
                         url: https://shelfmark.atoca.house
                         icon: sh:shelfmark-light
+
+                  - title: Get Things Done
+                    color: 160 60 45
+                    links:
+                      - title: Notes & Docs
+                        url: https://outline.atoca.house
+                        icon: sh:outline-light
+                      - title: Handy tools
+                        url: https://omni-tools.atoca.house
+                        icon: mdi:tools
+
+                  - title: House
+                    color: 38 85 55
+                    links:
                       - title: Home Assistant
                         url: https://hass.atoca.house
                         icon: sh:home-assistant-light
                       - title: AI Chat
                         url: https://chat.atoca.house
                         icon: sh:open-webui-light
+                      - title: Private Search
+                        url: https://search.atoca.house
+                        icon: sh:searxng-light
 
-
-      # -----------------------------------------------------------------------
-      # ENTERTAINMENT — streaming + download automation
-      # -----------------------------------------------------------------------
-      - name: Entertainment
+      # =========================================================================
+      # WATCH — everything Jellyfin / requests.
+      # =========================================================================
+      - name: Watch
+        show-mobile-header: true
         columns:
           - size: small
             widgets:
+              - $include: w-jellyfin-stats.yml
+
               - type: bookmarks
                 groups:
-                  - title: Streaming
+                  - title: Jump to
                     color: 224 90 65
                     links:
                       - title: Jellyfin
                         url: https://jellyfin.atoca.house
                         icon: sh:jellyfin-light
-                      - title: Seerr (Requests)
+                      - title: Request something
                         url: https://seerr.atoca.house
-                        icon: sh:jellyseerr-light
-                      - title: Dispatcharr
+                        icon: sh:seerr-light
+                      - title: Live TV
                         url: https://dispatcharr.atoca.house
                         icon: sh:dispatcharr-light
 
-                  - title: Downloads
-                    color: 38 85 55
-                    links:
-                      - title: qBittorrent
-                        url: https://qbittorrent.atoca.house
-                        icon: sh:qbittorrent-light
-                      - title: Autobrr
-                        url: https://autobrr.atoca.house
-                        icon: sh:autobrr-light
-                      - title: SLSKD (Music)
-                        url: https://slskd.atoca.house
-                        icon: sh:slskd-light
-                      - title: Shelfmark (Books)
-                        url: https://shelfmark.atoca.house
-                        icon: sh:shelfmark-light
-                      - title: Soulsync
-                        url: https://soulsync.atoca.house
-                        icon: sh:soulsync
-
-                  - title: Reading & Music
-                    color: 262 72 65
-                    links:
-                      - title: AudioBookShelf
-                        url: https://audiobookshelf.atoca.house
-                        icon: sh:audiobookshelf-light
-                      - title: Kativa (Ebooks)
-                        url: https://kativa.atoca.house
-                        icon: sh:kativa-light
-
-
           - size: full
+            widgets:
+              - $include: w-jellyfin-movies.yml
+
+              - $include: w-jellyfin-shows.yml
+
+              - $include: w-seerr-trending.yml
+
+          - size: small
             widgets:
               - type: monitor
-                title: Media Services
+                title: Is it working?
                 cache: 2m
                 sites:
-                  - title: Jellyfin
+                  - title: Movies & TV
                     url: https://jellyfin.atoca.house
                     icon: sh:jellyfin-light
-                  - title: Seerr
+                  - title: Requests
                     url: https://seerr.atoca.house
                     icon: sh:seerr-light
-                  - title: Radarr
-                    url: https://radarr.atoca.house
-                    icon: sh:radarr-light
-                  - title: Sonarr
-                    url: https://sonarr.atoca.house
-                    icon: sh:sonarr-light
-                  - title: Bazarr
-                    url: https://bazarr.atoca.house
-                    icon: sh:bazarr-light
-                  - title: Prowlarr
-                    url: https://prowlarr.atoca.house
-                    icon: sh:prowlarr-light
-                  - title: qBittorrent
-                    url: https://qbittorrent.atoca.house
-                    icon: sh:qbittorrent-light
-                  - title: Autobrr
-                    url: https://autobrr.atoca.house
-                    icon: sh:autobrr-light
-                  - title: SLSKD
-                    url: https://slskd.atoca.house
-                    icon: sh:slskd-light
+                  - title: Live TV
+                    url: https://dispatcharr.atoca.house
+                    icon: sh:dispatcharr-light
+                  - title: Audiobooks
+                    url: https://audiobookshelf.atoca.house
+                    icon: sh:audiobookshelf-light
+                  - title: Ebooks
+                    url: https://kavita.atoca.house
+                    icon: sh:kavita-light
 
-              - type: bookmarks
-                groups:
-                  - title: Content Managers
-                    links:
-                      - title: Radarr (Movies)
-                        url: https://radarr.atoca.house
-                        icon: sh:radarr-light
-                      - title: Sonarr (TV)
-                        url: https://sonarr.atoca.house
-                        icon: sh:sonarr-light
-                      - title: Bazarr (Subtitles)
-                        url: https://bazarr.atoca.house
-                        icon: sh:bazarr-light
-                      - title: Prowlarr (Indexers)
-                        url: https://prowlarr.atoca.house
-                        icon: sh:prowlarr-light
-                      - title: 3D Printing — Spoolman
-                        url: https://spoolman.atoca.house
-                        icon: sh:spoolman-light
-
-      # -----------------------------------------------------------------------
-      # FEED — tech news, self-hosted community, release tracking
-      # -----------------------------------------------------------------------
-      - name: Feed
-        head-widgets:
-          - type: markets
-            hide-header: true
-            markets:
-              - symbol: SPY
-                name: S&P 500
-              - symbol: BTC-USD
-                name: Bitcoin
-              - symbol: NVDA
-                name: NVIDIA
-              - symbol: EURUSD=X
-                name: EUR/USD
-
-        columns:
-          - size: full
-            widgets:
-              - type: group
-                widgets:
-                  - type: hacker-news
-                    sort-by: best
-                    limit: 18
-                    collapse-after: 8
-
-                  - type: lobsters
-                    sort-by: hot
-                    limit: 18
-                    collapse-after: 8
-
-                  - type: reddit
-                    subreddit: selfhosted
-                    show-thumbnails: true
-                    sort-by: top
-                    limit: 15
-                    collapse-after: 8
-
-                  - type: reddit
-                    subreddit: homelab
-                    show-thumbnails: true
-                    sort-by: top
-                    limit: 15
-                    collapse-after: 8
-
-                  - type: reddit
-                    subreddit: kubernetes
-                    show-thumbnails: true
-                    sort-by: top
-                    limit: 15
-                    collapse-after: 8
-
-                  - type: reddit
-                    subreddit: homeautomation
-                    show-thumbnails: true
-                    sort-by: top
-                    limit: 15
-                    collapse-after: 8
-
-          - size: small
-            widgets:
-              - type: rss
-                title: Self-Hosted News
-                cache: 12h
-                limit: 10
-                collapse-after: 5
-                feeds:
-                  - url: https://selfh.st/rss/
-                    title: selfh.st
-                  - url: https://blog.cloudflare.com/rss
-                    title: Cloudflare Blog
-
-      # -----------------------------------------------------------------------
-      # ADMIN — cluster management, monitoring, infra tools
-      # -----------------------------------------------------------------------
-      - name: Admin
+      # =========================================================================
+      # LIFE — saved links, video, personal tools.
+      # =========================================================================
+      - name: Life
+        show-mobile-header: true
         columns:
           - size: small
             widgets:
-              - type: extension
-                title: Cluster Nodes
-                url: http://glance-k8s-extension:8080/extension/nodes
-                allow-potentially-dangerous-html: true
-                cache: 10s
+              - type: calendar
+                first-day-of-week: monday
 
-          - size: full
-            widgets:
               - type: bookmarks
                 groups:
-                  - title: Observability
-                    links:
-                      - title: Grafana
-                        url: https://grafana.atoca.house
-                        icon: sh:grafana-light
-                      - title: Prometheus
-                        url: https://prometheus.atoca.house
-                        icon: sh:prometheus-light
-                      - title: AlertManager
-                        url: https://alertmanager.atoca.house
-                        icon: sh:grafana-alerts-dashboard-light
-                      - title: Gatus
-                        url: https://status.atoca.house
-                        icon: sh:gatus-light
-                      - title: VictoriaLogs
-                        url: https://victorialogs.atoca.house
-                        icon: sh:victoriametrics-light
-
-                  - title: AI & Dev
-                    links:
-                      - title: Open WebUI
-                        url: https://chat.atoca.house
-                        icon: sh:open-webui-light
-                      - title: OpenClaw
-                        url: https://claw.atoca.house
-                        icon: sh:openclaw-light
-                      - title: SearXNG
-                        url: https://search.atoca.house
-                        icon: sh:searxng-light
-                      - title: IRC — TheLounge
-                        url: https://thelounge.atoca.house
-                        icon: sh:the-lounge-light
-
-                  - title: Productivity
-                    links:
-                      - title: Twenty CRM
-                        url: https://twenty.atoca.house
-                        icon: sh:twenty-light
-                      - title: Vikunja
-                        url: https://vikunja.atoca.house
-                        icon: sh:vikunja-light
-                      - title: Outline
-                        url: https://outline.atoca.house
-                        icon: sh:outline-light
-
-              - type: repository
-                repository: guilhermewolf/atoca.house
-                pull-requests-limit: 10
-                issues-limit: 3
-                commits-limit: 3
-
-          - size: small
-            widgets:
-              - type: bookmarks
-                groups:
-                  - title: Cluster
-                    color: 224 90 65
-                    links:
-                      - title: ArgoCD
-                        url: https://argocd.atoca.house
-                        icon: sh:argo-cd-light
-                      - title: Headlamp
-                        url: https://headlamp.atoca.house
-                        icon: sh:headlamp-light
-
-                  - title: Identity & Auth
+                  - title: Read & Listen
                     color: 262 72 65
                     links:
-                      - title: Authelia
-                        url: https://auth.atoca.house
-                        icon: sh:authelia-light
-                      - title: LLDAP
-                        url: https://lldap.atoca.house
-                        icon: sh:lldap-light
+                      - title: Audiobooks & Podcasts
+                        url: https://audiobookshelf.atoca.house
+                        icon: sh:audiobookshelf-light
+                      - title: Ebooks
+                        url: https://kavita.atoca.house
+                        icon: sh:kavita-light
+                      - title: Comics & Manga
+                        url: https://suwayomi.atoca.house
+                        icon: sh:suwayomi-light
+                      - title: Ask for a book
+                        url: https://shelfmark.atoca.house
+                        icon: sh:shelfmark-light
 
-                  - title: Storage
-                    color: 38 85 55
-                    links:
-                      - title: Rook-Ceph
-                        url: https://rook.atoca.house
-                        icon: sh:ceph-light
-                      - title: pgAdmin
-                        url: https://pgadmin.atoca.house
-                        icon: sh:pgadmin-light
-
-                  - title: Network
+                  - title: Everyday
                     color: 160 60 45
                     links:
-                      - title: Cloudflare
-                        url: https://dash.cloudflare.com
-                        icon: sh:cloudflare-light
-                      - title: UniFi Toolkit
-                        url: https://ui-toolkit.atoca.house
-                        icon: sh:ubiquiti-unifi-light
+                      - title: Notes & Docs
+                        url: https://outline.atoca.house
+                        icon: sh:outline-light
+                      - title: Handy tools
+                        url: https://it-tools.atoca.house
+                        icon: sh:it-tools-light
+                      - title: Private Search
+                        url: https://search.atoca.house
+                        icon: sh:searxng-light
 
-                  - title: Files & Automation
-                    links:
-                      - title: FileBrowser
-                        url: https://filebrowser.atoca.house
-                        icon: sh:file-browser-light
-                      - title: n8n
-                        url: https://n8n.atoca.house
-                        icon: sh:n8n-light
-      # -----------------------------------------------------------------------
-      # STAUS
-      # -----------------------------------------------------------------------
+          - size: full
+            widgets:
+              - $include: w-youtube.yml
+
+              - type: videos
+                title: Subscriptions
+                limit: 12
+                collapse-after-rows: 2
+                channels:
+                  - UCHnyfMqiRRG1u-2MsSQLbXA  # Veritasium
+                  - UCsXVk37bltHxD1rDPwtNM8Q  # Kurzgesagt
+                  - UCBJycsmduvYEL83R_U4JriQ  # Marques Brownlee
+                  - UC2eYFnH61tmytImy1mTYvhA  # Luke Smith
+
+          - size: small
+            widgets:
+              - type: markets
+                title: Markets
+                markets:
+                  - symbol: EURBRL=X
+                    name: EUR / BRL
+                  - symbol: EURUSD=X
+                    name: EUR / USD
+                  - symbol: BTC-USD
+                    name: Bitcoin
+
+      # =========================================================================
+      # STATUS — only the services a non-admin would recognise.
+      # =========================================================================
       - name: Status
+        show-mobile-header: true
         columns:
           - size: full
             widgets:
               - $include: gatus.yml
   gatus.yml: |
     - type: custom-api
-      title: Gatus
+      title: Service Status
       cache: 5m
       options:
         base-url: https://status.atoca.house
 
         style: full
         duration: 24h
-        groupFilter: ""
-        compactMetric: uptime
-        showFailingOnly: false
-        showOnlyConfigured: true
+        # NOTE: option keys below MUST be kebab-case — the template reads them
+        # via .Options.StringOr "show-only-configured" etc. camelCase keys are
+        # silently ignored and fall back to their defaults.
+        group: ""
+        compact-metric: uptime
+        show-failing-only: false
+        # Only render endpoints that have BOTH an icon and a -url mapping below.
+        show-only-configured: true
 
-        gatus: sh:gatus-light
-        gatus-url: https://status.atoca.house
-
-        grafana: sh:grafana-light
-        grafana-url: https://grafana.atoca.house
-
+        # <endpoint-name>: <icon>  /  <endpoint-name>-url: <link>
+        # Names must match the Gatus endpoint `name` exactly (auto-discovered
+        # by gatus-sidecar from the Service/HTTPRoute name, so lowercase).
+        Cloudflare: sh:cloudflare-light
+        Cloudflare-url: https://dash.cloudflare.com
+        Google: sh:google-light
+        Google-url: https://www.google.com
+        audiobookshelf: sh:audiobookshelf-light
+        audiobookshelf-url: https://audiobookshelf.atoca.house
+        glance: sh:glance-light
+        glance-url: https://home.atoca.house
         jellyfin: sh:jellyfin-light
-        jellyfin-url: https://jellyfinf.atoca.house
-
-        lldap: sh:lldap-light
-        lldap-url: https://lldap.atoca.house
-
-        sonarr: sh:sonarr-light
-        sonarr-url: https://sonarr.atoca.house
-
-        radarr: sh:radarr-light
-        radarr-url: https://radarr.atoca.house
-
-        prowlarr: sh:prowlarr-light
-        prowlarr-url: https://prowlarr.atoca.house
-
-        autobrr: sh:autobrr-light
-        autobrr-url: https://autobrr.atoca.house
-
-        authelia: sh:authelia-light
-        authelia-url: https://auth.atoca.house
-
-        n8n: sh:n8n-light
-        n8n-url: https://n8n.atoca.house
-
-        qbittorrent: sh:qbittorrent-light
-        qbittorrent-url: https://qbittorrent.atoca.house
-
-        rsshub: sh:rsshub
-
-        slskd: sh:slskd-light
-        slskd-url: https://slskd.atoca.house
+        jellyfin-url: https://jellyfin.atoca.house
+        kavita: sh:kavita-light
+        kavita-url: https://kavita.atoca.house
+        open-webui: sh:open-webui-light
+        open-webui-url: https://chat.atoca.house
+        outline: sh:outline-light
+        outline-url: https://outline.atoca.house
+        searxng: sh:searxng-light
+        searxng-url: https://search.atoca.house
+        seerr: sh:seerr-light
+        seerr-url: https://seerr.atoca.house
+        shelfmark: sh:shelfmark-light
+        shelfmark-url: https://shelfmark.atoca.house
+        suwayomi: sh:suwayomi-light
+        suwayomi-url: https://suwayomi.atoca.house
       template: |
         {{/* Required config options */}}
         {{ $baseURL := .Options.StringOr "base-url" "" }}
@@ -703,3 +553,764 @@ data:
             </svg>
           </div>
         {{ end }}
+  w-hass.yml: |
+    - type: custom-api
+      title: Our Home
+      cache: 2m
+      url: ${HASS_URL}/api/states
+      headers:
+        Authorization: "Bearer ${HASS_API_KEY}"
+        Content-Type: "application/json"
+      template: |
+        {{ if eq .Response.StatusCode 200 }}
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+            {{ range .JSON.Array "" }}
+              {{ $id := .String "entity_id" }}
+              {{ $state := .String "state" }}
+              {{ if and (or
+                            (eq $id "sensor.lywsd03mmc_temperature")
+                            (eq $id "sensor.lywsd03mmc_humidity")
+                            (eq $id "sensor.office_temperature")
+                            (eq $id "sensor.office_humidity")
+                            (eq $id "sensor.balcony_temperature")
+                            (eq $id "sensor.balcony_humidity")
+                        )
+                        (ne $state "unavailable")
+                        (ne $state "unknown")
+              }}
+                <div class="background-faint radius-8" style="padding: 6px 10px; text-align: center;">
+                  <div class="color-highlight size-h3" style="line-height: 1.2;">
+                    {{ $state }}{{ .String "attributes.unit_of_measurement" }}
+                  </div>
+                  <div class="size-h6 color-subdue" style="line-height: 1.2;">
+                    {{ .String "attributes.friendly_name" }}
+                  </div>
+                </div>
+              {{ end }}
+            {{ end }}
+          </div>
+        {{ else }}
+          <div style="text-align: center;" class="color-negative size-h4">
+            Error: {{ .Response.StatusCode }} – {{ .Response.Status }}
+          </div>
+        {{ end }}
+  w-jellyfin-movies.yml: |
+    - type: custom-api
+      title: New Movies
+      frameless: true
+      cache: 5m
+      options:
+        base-url: ${JELLYFIN_URL}
+        api-key: ${JELLYFIN_KEY}
+        user-name: "${JELLYFIN_USER}"
+        library-name: "Movies"
+        mode: "latest"
+        item-count: "10"
+        small-column: false
+        show-thumbnail: false
+        thumbnail-aspect-ratio: "default"
+      template: |
+        {{/* Required config options */}}
+        {{ $baseURL := .Options.StringOr "base-url" "" }}
+        {{ $apiKey := .Options.StringOr "api-key" "" }}
+        {{ $userName := .Options.StringOr "user-name" "" }}
+
+        {{/* Required config options for "latest" mode */}}
+        {{ $libraryName := .Options.StringOr "library-name" "" }}
+
+        {{/* Optional config options */}}
+        {{ $mode := .Options.StringOr "mode" "latest" }}
+        {{ $itemCount := .Options.StringOr "item-count" "10" }}
+        {{ $mediaTypes := .Options.StringOr "media-types" "Movie,Episode,MusicAlbum" }}
+        {{ $thumbAspectRatio := .Options.StringOr "thumbnail-aspect-ratio" "" }}
+        {{ $isSmallColumn:= .Options.BoolOr "small-column" false }}
+        {{ $showThumbnail := .Options.BoolOr "show-thumbnail" false }}
+        {{ $showProgressBar := .Options.BoolOr "progress-bar" true }}
+
+        {{/* Error message template */}}
+        {{ define "errorMsg" }}
+          <div class="widget-error-header">
+            <div class="color-negative size-h3">ERROR</div>
+            <svg class="widget-error-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path>
+            </svg>
+          </div>
+          <p class="break-all">{{ . }}</p>
+        {{ end }}
+
+        {{/* Check required fields */}}
+        {{ if or (eq $baseURL "") (eq $apiKey "") (eq $userName "") (eq $mode "") (and (eq $mode "latest") (eq $libraryName "")) }}
+          {{ template "errorMsg" "Some required options are not set." }}
+        {{ else }}
+
+          {{/* Fetch user ID */}}
+          {{ $userID := "" }}
+          {{ $usersCall := newRequest (print $baseURL "/Users")
+              | withParameter "api_key" $apiKey
+              | withHeader "Accept" "application/json"
+              | getResponse }}
+
+          {{ range $i, $user := $usersCall.JSON.Array "" }}
+            {{ if eq ($user.String "Name") $userName }}
+              {{ $userID = $user.String "Id" }}
+              {{ break }}
+            {{ end }}
+          {{ end }}
+          {{ if eq $userID "" }}
+            {{ template "errorMsg" (printf "User '%s' not found." $userName) }}
+          {{ else }}
+
+            {{ $items := "" }}
+
+            {{ if eq $mode "latest" }}
+
+              {{/* Fetch library ID */}}
+              {{ $libraryID := "" }}
+              {{ $userViewsCall := newRequest (print $baseURL "/UserViews")
+                  | withParameter "api_key" $apiKey
+                  | withParameter "userId" $userID
+                  | withHeader "Accept" "application/json"
+                  | getResponse }}
+
+              {{ range $i, $item := $userViewsCall.JSON.Array "Items" }}
+                {{ if eq ($item.String "Name") $libraryName }}
+                  {{ $libraryID = $item.String "Id" }}
+                  {{ break }}
+                {{ end }}
+              {{ end }}
+
+              {{ if eq $libraryID "" }}
+                {{ template "errorMsg" (printf "Library '%s' not found." $libraryName) }}
+              {{ else }}
+                {{/* Fetch latest items */}}
+                {{ $latestCall := newRequest (print $baseURL "/Users/" $userID "/Items/Latest")
+                    | withParameter "api_key" $apiKey
+                    | withParameter "Limit" $itemCount
+                    | withParameter "ParentId" $libraryID
+                    | withParameter "IncludeItemTypes" $mediaTypes
+                    | withParameter "GroupItems" "true"
+                    | withHeader "Accept" "application/json"
+                    | getResponse }}
+                {{ $items = $latestCall.JSON.Array "" }}
+              {{ end }}
+
+            {{ else if eq $mode "nextup" }}
+
+              {{/* Fetch next up items */}}
+              {{ $nextUpCall := newRequest (print $baseURL "/Shows/NextUp")
+                | withParameter "api_key" $apiKey
+                | withParameter "UserId" $userID
+                | withParameter "Limit" $itemCount
+                | withParameter "EnableResumable" "true"
+                | withHeader "Accept" "application/json"
+                | getResponse }}
+              {{ $items = $nextUpCall.JSON.Array "Items" }}
+
+            {{ else }}
+              {{ template "errorMsg" "Unknown mode, expected 'latest' or 'nextup'" }}
+            {{ end }}
+
+            {{ if eq (len $items) 0 }}
+              <p>No items found, start streaming something!</p>
+            {{ else }}
+
+              {{/* Display the item carousel */}}
+              <div class="carousel-container show-right-cutoff">
+                <div class="cards-horizontal carousel-items-container">
+                  {{ range $n, $item := $items }}
+                    {{/* Common item variables */}}
+                    {{ $mediaType := $item.String "Type" }}
+                    {{ $title := $item.String "Name" }}
+                    {{ $itemID := $item.String "Id" }}
+
+                    {{/* Media type specific variables */}}
+                    {{ $seriesTitle := "" }}
+                    {{ $artist := "" }}
+                    {{ $seriesID := "" }}
+                    {{ $season := "" }}
+                    {{ $episode := "" }}
+                    {{ $playPercentage := "" }}
+                    {{ $unwatchedEpisodeCount := "" }}
+
+                    {{ if eq $mediaType "Movie" }}
+                    {{ else if eq $mediaType "Series" }}
+                      {{ $unwatchedEpisodeCount = $item.Int "UserData.UnplayedItemCount" }}
+                    {{ else if eq $mediaType "Episode" }}
+                      {{ $unwatchedEpisodeCount = 1 }}
+                      {{ $seriesTitle = $item.String "SeriesName" }}
+                      {{ $seriesID = $item.String "SeriesId" }}
+                      {{ $season = $item.Int "ParentIndexNumber" }}
+                      {{ $episode = $item.Int "IndexNumber" }}
+
+                      {{ if $item.Exists "UserData.PlayedPercentage" }}
+                        {{ $playPercentage = $item.String "UserData.PlayedPercentage" }}
+                      {{ end }}
+
+                      {{/* For latest always refer to the series not individual episodes */}}
+                      {{ if eq $mode "latest" }}
+                        {{ $itemID = $seriesID }}
+                        {{ $title = $seriesTitle }}
+                      {{ end }}
+                    {{ else if eq $mediaType "MusicAlbum" }}
+                      {{ $artist = $item.String "AlbumArtist" }}
+                    {{ end }}
+
+                    {{ $linkURL := print $baseURL "/web/#/details?id=" $itemID }}
+                    {{ $thumbURL := "" }}
+                    {{ if not (eq $playPercentage "") }}
+                      {{/* $thumbURL = concat $baseURL "/Items/" $itemID "/Images/Primary?api_key=" $apiKey "&percentPlayed=" $playPercentage */}}
+                      {{ $thumbURL = concat $baseURL "/Items/" $itemID "/Images/Primary?api_key=" $apiKey }}
+                    {{ else }}
+                      {{ $thumbURL = concat $baseURL "/Items/" $itemID "/Images/Primary?api_key=" $apiKey }}
+                    {{ end }}
+
+                    <a class="card widget-content-frame" href="{{ $linkURL | safeURL }}">
+                      {{ if $showThumbnail }}
+                        <div style="position: relative;">
+                          <img src="{{ $thumbURL | safeURL }}"
+                            alt="{{ $title }} thumbnail"
+                            loading="lazy"
+                            class="media-server-thumbnail shrink-0"
+                            style="
+                              object-fit: fill;
+                              border-radius: var(--border-radius) var(--border-radius) 0 0;
+                              width: 100%;
+                              display: block;
+                              {{ if eq $thumbAspectRatio "square" }}aspect-ratio: 1;
+                              {{ else if eq $thumbAspectRatio "portrait" }}aspect-ratio: 2/3;
+                              {{ else if eq $thumbAspectRatio "landscape" }}aspect-ratio: 16/9;
+                              {{ else }}aspect-ratio: initial;
+                              {{ end }}
+                            "
+                          />
+
+                          {{ if and ($showProgressBar) (not (eq $playPercentage "")) }}
+                            <div style="
+                              position: absolute;
+                              bottom: 8px;
+                              left: 8px;
+                              right: 8px;
+                              height: 6px;
+                              border-radius: var(--border-radius);
+                              overflow: hidden;
+                              background-color: rgba(255, 255, 255, 0.2);
+                            ">
+                              <div style="
+                                width: {{ print $playPercentage "%" }};
+                                height: 100%;
+                                border-radius: var(--border-radius) 0 0 var(--border-radius);
+                                background-color: var(--color-primary)
+                              "></div>
+                            </div>
+                          {{ end }}
+                        </div>
+                      {{ end }}
+
+                      <div class="grow padding-inline-widget margin-top-10 margin-bottom-10">
+                        <ul class="flex flex-column justify-evenly margin-bottom-3 {{ if $isSmallColumn }}size-h6{{ end }}" style="height: 100%;">
+                          {{ if eq $mode "latest" }}
+                            {{ if or (eq $mediaType "Series") (eq $mediaType "Episode") }}
+                              <ul class="list-horizontal-text flex-nowrap">
+                                <li class="color-primary shrink-0">{{ $unwatchedEpisodeCount }}</li>
+                                <li class="text-truncate">{{ $title }}</li>
+                              </ul>
+                            {{ else if eq $mediaType "MusicAlbum" }}
+                              <ul class="list-horizontal-text flex-nowrap">
+                                <li class="color-primary text-truncate">{{ $artist }}</li>
+                                <li class="text-truncate">{{ $title }}</li>
+                              </ul>
+                            {{ else }}
+                              <li class="text-truncate">{{ $title }}</li>
+                            {{ end }}
+                          {{ else if eq $mode "nextup" }}
+                            <ul class="list-horizontal-text flex-nowrap">
+                              <li class="color-primary shrink-0">S{{ $season }}E{{ $episode }}</li>
+                              <li class="text-truncate">{{ $seriesTitle }}</li>
+                            </ul>
+                            <li class="text-truncate">{{ $title }}</li>
+                          {{ end }}
+                        </ul>
+                      </div>
+                    </a>
+                  {{ end }}
+                </div>
+              </div>
+            {{ end }}
+
+          {{ end }}
+
+        {{ end }}
+  w-jellyfin-shows.yml: |
+    - type: custom-api
+      title: New Episodes
+      frameless: true
+      cache: 5m
+      options:
+        base-url: ${JELLYFIN_URL}
+        api-key: ${JELLYFIN_KEY}
+        user-name: "${JELLYFIN_USER}"
+        library-name: "Shows"
+        mode: "latest"
+        item-count: "10"
+        small-column: false
+        show-thumbnail: false
+        thumbnail-aspect-ratio: "default"
+      template: |
+        {{/* Required config options */}}
+        {{ $baseURL := .Options.StringOr "base-url" "" }}
+        {{ $apiKey := .Options.StringOr "api-key" "" }}
+        {{ $userName := .Options.StringOr "user-name" "" }}
+
+        {{/* Required config options for "latest" mode */}}
+        {{ $libraryName := .Options.StringOr "library-name" "" }}
+
+        {{/* Optional config options */}}
+        {{ $mode := .Options.StringOr "mode" "latest" }}
+        {{ $itemCount := .Options.StringOr "item-count" "10" }}
+        {{ $mediaTypes := .Options.StringOr "media-types" "Movie,Episode,MusicAlbum" }}
+        {{ $thumbAspectRatio := .Options.StringOr "thumbnail-aspect-ratio" "" }}
+        {{ $isSmallColumn:= .Options.BoolOr "small-column" false }}
+        {{ $showThumbnail := .Options.BoolOr "show-thumbnail" false }}
+        {{ $showProgressBar := .Options.BoolOr "progress-bar" true }}
+
+        {{/* Error message template */}}
+        {{ define "errorMsg" }}
+          <div class="widget-error-header">
+            <div class="color-negative size-h3">ERROR</div>
+            <svg class="widget-error-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path>
+            </svg>
+          </div>
+          <p class="break-all">{{ . }}</p>
+        {{ end }}
+
+        {{/* Check required fields */}}
+        {{ if or (eq $baseURL "") (eq $apiKey "") (eq $userName "") (eq $mode "") (and (eq $mode "latest") (eq $libraryName "")) }}
+          {{ template "errorMsg" "Some required options are not set." }}
+        {{ else }}
+
+          {{/* Fetch user ID */}}
+          {{ $userID := "" }}
+          {{ $usersCall := newRequest (print $baseURL "/Users")
+              | withParameter "api_key" $apiKey
+              | withHeader "Accept" "application/json"
+              | getResponse }}
+
+          {{ range $i, $user := $usersCall.JSON.Array "" }}
+            {{ if eq ($user.String "Name") $userName }}
+              {{ $userID = $user.String "Id" }}
+              {{ break }}
+            {{ end }}
+          {{ end }}
+          {{ if eq $userID "" }}
+            {{ template "errorMsg" (printf "User '%s' not found." $userName) }}
+          {{ else }}
+
+            {{ $items := "" }}
+
+            {{ if eq $mode "latest" }}
+
+              {{/* Fetch library ID */}}
+              {{ $libraryID := "" }}
+              {{ $userViewsCall := newRequest (print $baseURL "/UserViews")
+                  | withParameter "api_key" $apiKey
+                  | withParameter "userId" $userID
+                  | withHeader "Accept" "application/json"
+                  | getResponse }}
+
+              {{ range $i, $item := $userViewsCall.JSON.Array "Items" }}
+                {{ if eq ($item.String "Name") $libraryName }}
+                  {{ $libraryID = $item.String "Id" }}
+                  {{ break }}
+                {{ end }}
+              {{ end }}
+
+              {{ if eq $libraryID "" }}
+                {{ template "errorMsg" (printf "Library '%s' not found." $libraryName) }}
+              {{ else }}
+                {{/* Fetch latest items */}}
+                {{ $latestCall := newRequest (print $baseURL "/Users/" $userID "/Items/Latest")
+                    | withParameter "api_key" $apiKey
+                    | withParameter "Limit" $itemCount
+                    | withParameter "ParentId" $libraryID
+                    | withParameter "IncludeItemTypes" $mediaTypes
+                    | withParameter "GroupItems" "true"
+                    | withHeader "Accept" "application/json"
+                    | getResponse }}
+                {{ $items = $latestCall.JSON.Array "" }}
+              {{ end }}
+
+            {{ else if eq $mode "nextup" }}
+
+              {{/* Fetch next up items */}}
+              {{ $nextUpCall := newRequest (print $baseURL "/Shows/NextUp")
+                | withParameter "api_key" $apiKey
+                | withParameter "UserId" $userID
+                | withParameter "Limit" $itemCount
+                | withParameter "EnableResumable" "true"
+                | withHeader "Accept" "application/json"
+                | getResponse }}
+              {{ $items = $nextUpCall.JSON.Array "Items" }}
+
+            {{ else }}
+              {{ template "errorMsg" "Unknown mode, expected 'latest' or 'nextup'" }}
+            {{ end }}
+
+            {{ if eq (len $items) 0 }}
+              <p>No items found, start streaming something!</p>
+            {{ else }}
+
+              {{/* Display the item carousel */}}
+              <div class="carousel-container show-right-cutoff">
+                <div class="cards-horizontal carousel-items-container">
+                  {{ range $n, $item := $items }}
+                    {{/* Common item variables */}}
+                    {{ $mediaType := $item.String "Type" }}
+                    {{ $title := $item.String "Name" }}
+                    {{ $itemID := $item.String "Id" }}
+
+                    {{/* Media type specific variables */}}
+                    {{ $seriesTitle := "" }}
+                    {{ $artist := "" }}
+                    {{ $seriesID := "" }}
+                    {{ $season := "" }}
+                    {{ $episode := "" }}
+                    {{ $playPercentage := "" }}
+                    {{ $unwatchedEpisodeCount := "" }}
+
+                    {{ if eq $mediaType "Movie" }}
+                    {{ else if eq $mediaType "Series" }}
+                      {{ $unwatchedEpisodeCount = $item.Int "UserData.UnplayedItemCount" }}
+                    {{ else if eq $mediaType "Episode" }}
+                      {{ $unwatchedEpisodeCount = 1 }}
+                      {{ $seriesTitle = $item.String "SeriesName" }}
+                      {{ $seriesID = $item.String "SeriesId" }}
+                      {{ $season = $item.Int "ParentIndexNumber" }}
+                      {{ $episode = $item.Int "IndexNumber" }}
+
+                      {{ if $item.Exists "UserData.PlayedPercentage" }}
+                        {{ $playPercentage = $item.String "UserData.PlayedPercentage" }}
+                      {{ end }}
+
+                      {{/* For latest always refer to the series not individual episodes */}}
+                      {{ if eq $mode "latest" }}
+                        {{ $itemID = $seriesID }}
+                        {{ $title = $seriesTitle }}
+                      {{ end }}
+                    {{ else if eq $mediaType "MusicAlbum" }}
+                      {{ $artist = $item.String "AlbumArtist" }}
+                    {{ end }}
+
+                    {{ $linkURL := print $baseURL "/web/#/details?id=" $itemID }}
+                    {{ $thumbURL := "" }}
+                    {{ if not (eq $playPercentage "") }}
+                      {{/* $thumbURL = concat $baseURL "/Items/" $itemID "/Images/Primary?api_key=" $apiKey "&percentPlayed=" $playPercentage */}}
+                      {{ $thumbURL = concat $baseURL "/Items/" $itemID "/Images/Primary?api_key=" $apiKey }}
+                    {{ else }}
+                      {{ $thumbURL = concat $baseURL "/Items/" $itemID "/Images/Primary?api_key=" $apiKey }}
+                    {{ end }}
+
+                    <a class="card widget-content-frame" href="{{ $linkURL | safeURL }}">
+                      {{ if $showThumbnail }}
+                        <div style="position: relative;">
+                          <img src="{{ $thumbURL | safeURL }}"
+                            alt="{{ $title }} thumbnail"
+                            loading="lazy"
+                            class="media-server-thumbnail shrink-0"
+                            style="
+                              object-fit: fill;
+                              border-radius: var(--border-radius) var(--border-radius) 0 0;
+                              width: 100%;
+                              display: block;
+                              {{ if eq $thumbAspectRatio "square" }}aspect-ratio: 1;
+                              {{ else if eq $thumbAspectRatio "portrait" }}aspect-ratio: 2/3;
+                              {{ else if eq $thumbAspectRatio "landscape" }}aspect-ratio: 16/9;
+                              {{ else }}aspect-ratio: initial;
+                              {{ end }}
+                            "
+                          />
+
+                          {{ if and ($showProgressBar) (not (eq $playPercentage "")) }}
+                            <div style="
+                              position: absolute;
+                              bottom: 8px;
+                              left: 8px;
+                              right: 8px;
+                              height: 6px;
+                              border-radius: var(--border-radius);
+                              overflow: hidden;
+                              background-color: rgba(255, 255, 255, 0.2);
+                            ">
+                              <div style="
+                                width: {{ print $playPercentage "%" }};
+                                height: 100%;
+                                border-radius: var(--border-radius) 0 0 var(--border-radius);
+                                background-color: var(--color-primary)
+                              "></div>
+                            </div>
+                          {{ end }}
+                        </div>
+                      {{ end }}
+
+                      <div class="grow padding-inline-widget margin-top-10 margin-bottom-10">
+                        <ul class="flex flex-column justify-evenly margin-bottom-3 {{ if $isSmallColumn }}size-h6{{ end }}" style="height: 100%;">
+                          {{ if eq $mode "latest" }}
+                            {{ if or (eq $mediaType "Series") (eq $mediaType "Episode") }}
+                              <ul class="list-horizontal-text flex-nowrap">
+                                <li class="color-primary shrink-0">{{ $unwatchedEpisodeCount }}</li>
+                                <li class="text-truncate">{{ $title }}</li>
+                              </ul>
+                            {{ else if eq $mediaType "MusicAlbum" }}
+                              <ul class="list-horizontal-text flex-nowrap">
+                                <li class="color-primary text-truncate">{{ $artist }}</li>
+                                <li class="text-truncate">{{ $title }}</li>
+                              </ul>
+                            {{ else }}
+                              <li class="text-truncate">{{ $title }}</li>
+                            {{ end }}
+                          {{ else if eq $mode "nextup" }}
+                            <ul class="list-horizontal-text flex-nowrap">
+                              <li class="color-primary shrink-0">S{{ $season }}E{{ $episode }}</li>
+                              <li class="text-truncate">{{ $seriesTitle }}</li>
+                            </ul>
+                            <li class="text-truncate">{{ $title }}</li>
+                          {{ end }}
+                        </ul>
+                      </div>
+                    </a>
+                  {{ end }}
+                </div>
+              </div>
+            {{ end }}
+
+          {{ end }}
+
+        {{ end }}
+  w-jellyfin-stats.yml: |
+    - type: custom-api
+      title: Media Library
+      base-url: ${JELLYFIN_URL}
+      options:
+        url: ${JELLYFIN_URL}
+        key: ${JELLYFIN_API_KEY}
+
+      template: |
+        {{ $url := .Options.StringOr "url" "" }}
+        {{ $key := .Options.StringOr "key" "" }}
+
+        {{- if or (eq $url "") (eq $key "") -}}
+
+          <p>Error: The URL or API Key was not configured in the widget options.</p>
+
+        {{- else -}}
+
+          {{- $requestUrl := printf "%s/emby/Items/Counts?api_key=%s" $url $key -}}
+          {{- $jellyfinData := newRequest $requestUrl | getResponse -}}
+
+          {{- if eq $jellyfinData.Response.StatusCode 200 -}}
+            <div class="flex flex-column gap-5">
+              <div class="flex justify-between text-center">
+
+                <div>
+                  <div class="color-highlight size-h3">{{ $jellyfinData.JSON.Int "MovieCount" | formatNumber }}</div>
+                  <div class="size-h5 uppercase">Movies</div>
+                </div>
+
+                <div>
+                  <div class="color-highlight size-h3">{{ $jellyfinData.JSON.Int "SeriesCount" | formatNumber }}</div>
+                  <div class="size-h5 uppercase">TV Shows</div>
+                </div>
+
+                <div>
+                  <div class="color-highlight size-h3">{{ $jellyfinData.JSON.Int "EpisodeCount" | formatNumber }}</div>
+                  <div class="size-h5 uppercase">Episodes</div>
+                </div>
+
+                <div>
+                  <div class="color-highlight size-h3">{{ $jellyfinData.JSON.Int "SongCount" | formatNumber }}</div>
+                  <div class="size-h5 uppercase">Songs</div>
+                </div>
+
+              </div>
+            </div>
+          {{- else -}}
+            <p>Failed: {{ $jellyfinData.Response.Status }}</p>
+          {{- end -}}
+        {{- end -}}
+  w-seerr-trending.yml: |
+    - type: custom-api
+      title: Trending Right Now
+      title-url: ${OVERSEERR_URL}/discover/trending    # trending, movies, or tv
+      url: ${OVERSEERR_URL}/api/v1/discover/trending   # trending, movies, or tv
+      cache: 15m
+      headers:
+        accept: "application/json"
+        x-api-key: ${OVERSEERR_API_KEY}
+      parameters:
+        language: "en" # this can be changed to other languages if desired
+        page: "1"
+      options:
+        show-media-type: true # set to false to hide the "| TV" or "| Movie" suffix
+        show-media-desc: true # set to false to hide the media's summary
+      template: |
+        {{ $showMediaType := .Options.BoolOr "show-media-type" true }}
+        {{ $showMediaDesc := .Options.BoolOr "show-media-desc" true }}
+
+        {{ if eq .Response.StatusCode 200 }}
+          {{ $items := .JSON.Array "results" }}
+          {{ if gt (len $items) 0 }}
+            <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+            {{ range $items }}
+              <li class="flex items-start gap-10 thumbnail-container thumbnail-parent">
+                {{ $mediaType := .String "mediaType" }}
+                {{ $mediaTitle := "" }}
+                {{ $mediaTypeUpper := "" }}
+                {{ if eq $mediaType "movie" }} {{ $mediaTitle = .String "title" }} {{ $mediaTypeUpper = "Movie" }}{{ else }}{{ $mediaTitle = .String "name" }} {{ $mediaTypeUpper = "TV" }}{{ end }}
+                {{ $overseerrUrl := concat "${OVERSEERR_URL}" "/" $mediaType "/" ( .String "id" ) }}
+                {{ $tmdbUrl := concat "https://www.themoviedb.org" "/" $mediaType "/" ( .String "id" ) }}
+                <a href={{ $overseerrUrl }} target="_blank">
+                <img src={{ concat "https://image.tmdb.org/t/p/w300" (.String "posterPath") }} style="border-radius: 5px; min-width: 5rem; max-width: 5rem;" class="card">
+                </a>
+                <div class="flex-1" style="padding-right: 5px;">
+                  <p class="color-positive size-h4 text-truncate-2-lines margin-top-5" title={{ $mediaTitle }}><a href={{ $overseerrUrl }} target="_blank">{{ $mediaTitle }}</p>
+                  <p class="size-h4" title="TMDB Rating"><a href={{ $tmdbUrl }} target="_blank">TMDB: {{ mul (.Float "voteAverage") 10 | toInt }}% {{ if $showMediaType }}| {{ $mediaTypeUpper }}{{ end }}</a></p>
+                  {{ if $showMediaDesc }}<p class="color-subdue size-h4 text-truncate-2-lines" title={{ .String "overview" }}>{{ .String "overview" }}</p>{{ end }}
+                </div>
+              </li>
+            {{ end }}
+            </ul>
+          {{ else }}
+            <details style="margin-top:0.5rem">
+              <summary> Raw JSON:</summary>
+              <pre stye="font-size:10px">
+          {{ (printf "%+v" .JSON) }}
+              </pre>
+            </details>
+          {{ end }}
+        {{ end }}
+  w-youtube.yml: |
+    - type: custom-api
+      title: ${YOUTUBE_CHANNEL} on YouTube
+      url: ${RSS_BRIDGE}
+      parameters:
+        action: display
+        bridge: YoutubeBridge
+        context: By username
+        u: ${YOUTUBE_CHANNEL}
+        duration_min: 3
+        duration_max: nil
+        format: Json
+      frameless: true
+      headers:
+        content-type: application/json
+      cache: 30m
+      template: |
+        {{ $arrayList := .JSON.Array "items" }}
+        {{ $closeOutsideIframe := false }} {{/* Closes the popup anywhere around the iframe */}}
+        {{ $popupWidth := "85%" }}
+        {{ $popupHeight := "85%" }}
+        {{ $author := .JSON.String "title" | trimSuffix " - YouTube" }}
+        {{ $authorUrl := .JSON.String "home_page_url" | trimSuffix "/videos" }}
+        <div class="cards-grid collapsible-container" data-collapse-after-rows="3">
+          {{ if eq (len ($arrayList)) 0 }}
+          <div>Nothing to show</div>
+          {{ else }}
+            {{ range $arrayList }}
+
+            {{ $iframeAllow := "" }}
+
+            {{ $youtubeUrl := .String "url" }}
+            {{ $youtubeId := .String "_rssbridge.id" }}
+            {{ $youtubeEmbedInstance := "https://www.youtube-nocookie.com/embed/" }}
+            {{ $youtubeParameters := "" }}
+            {{ $youtubeEmbedUrl := concat $youtubeEmbedInstance $youtubeId $youtubeParameters }}
+
+            {{ $title := .String "title" }}
+            {{ $timestamp := .String "date_modified" | parseTime "rfc3339" }}
+            {{ $thumbnail := findSubmatch "img src=\"([^\"]+)" (.String "content_html") }}
+
+            <div class="card widget-content-frame thumbnail-parent">
+              <div onclick="
+                const classPrefix = 'popup-youtube-';
+                const embedClass = classPrefix + 'embed';
+                const dimBgClass = classPrefix + 'dim';
+                const closeBtnClass = classPrefix + 'close';
+                const popupEmbedExistingDiv = document.querySelector('.' + embedClass);
+                if (!popupEmbedExistingDiv) {
+                  const dimBackground = document.createElement('div');
+                  dimBackground.className = dimBgClass;
+                  dimBackground.style = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-widget-background-highlight); opacity: 0.7;';
+                  document.body.appendChild(dimBackground);
+
+                  const popupEmbedDiv = document.createElement('div');
+                  popupEmbedDiv.className = embedClass;
+                  popupEmbedDiv.style = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: {{ $popupWidth }}; height: {{ $popupHeight }}; z-index: 11;';
+
+                  const popupIframe = document.createElement('iframe');
+                  popupIframe.className = classPrefix + 'iframe';
+                  popupIframe.src = {{ $youtubeEmbedUrl }};
+                  popupIframe.loading = 'lazy';
+                  popupIframe.allowFullscreen = true;
+                  popupIframe.allow = {{ $iframeAllow }};
+                  popupIframe.style ='outline: 2px solid var(--color-primary); outline-offset: -0.1rem; border-radius: 20px; width: 100%; height: 100%; border: none; background-color: var(--color-popover-background);';
+
+                  popupEmbedDiv.appendChild(popupIframe);
+                  document.body.appendChild(popupEmbedDiv);
+
+                  const closeBtn = document.createElement('span');
+                  closeBtn.className = closeBtnClass;
+                  closeBtn.innerHTML = '&times';
+                  closeBtn.style = 'cursor: pointer; font-size: 3rem; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; position: absolute; top: 3rem; right: 3rem;';
+                  document.body.appendChild(closeBtn);
+                  document.body.style.overflowY = 'hidden';
+
+                  const closePopup = () => {
+                    popupEmbedDiv.remove();
+                    dimBackground.remove();
+                    closeBtn.remove();
+                    document.body.style.overflowY = 'scroll';
+                  }
+
+                  {{ if $closeOutsideIframe }} dimBackground.onclick = closePopup; {{ end }}
+                  closeBtn.onclick = closePopup;
+                } else {
+                  document.querySelector('.' + dimBgClass).remove();
+                  document.querySelector('.' + closeBtnClass).remove();
+                  document.body.style.overflowY = 'scroll';
+                  popupEmbedExistingDiv.remove();
+                }
+              " style="cursor: pointer;">
+                <span>
+                  {{ if ne $thumbnail "" }}
+                  <img class="video-thumbnail thumbnail" loading="lazy" src="{{ $thumbnail }}" alt="">
+                  {{ else }}
+                  <svg class="video-thumbnail thumbnail" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="var(--color-text-subdue)">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                  </svg>
+                  {{ end }}
+                </span>
+              </div>
+              <div class="margin-bottom-widget padding-inline-widget flex flex-column grow">
+                <div class="margin-top-10 margin-bottom-auto">
+                  <a href="{{ $youtubeUrl }}#" class="color-primary-if-not-visited text-truncate-2-lines" target="_blank" rel="noreferrer">
+                    {{ $title }}
+                  </a>
+                </div>
+                <ul class="list-horizontal-text flex-nowrap margin-top-7">
+                  {{/* The public RSS-Bridge instance omits date_modified, which
+                       parses to the zero time and renders as "56y". Only show
+                       the age when the feed actually supplied a date. */}}
+                  {{ if not $timestamp.IsZero }}
+                  <li class="shrink-0" {{ $timestamp | toRelativeTime }}></li>
+                  {{ end }}
+                  <li class="min-width-0">
+                    <a href="{{ $authorUrl }}" class="color-primary-if-not-visited text-truncate-2-lines" target="_blank" rel="noreferrer">
+                      {{ $author }}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            {{ end }}
+          {{ end }}
+        </div>

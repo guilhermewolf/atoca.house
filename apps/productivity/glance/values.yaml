@@ -1,11 +1,10 @@
 ---
+# Family-facing dashboard — home.atoca.house
+# The sysadmin dashboard is a separate release: apps/productivity/glance-ops
 controllers:
   glance:
     annotations:
       reloader.stakater.com/auto: "true"
-
-    serviceAccount:
-      identifier: &app glance
 
     containers:
       glance:
@@ -14,42 +13,31 @@ controllers:
           tag: v0.8.5@sha256:32ab73d80f2b8b5fb0735b0431deb36b93fbb6b2fb43592449b0178c8b83e350
         env:
           TZ: Europe/Amsterdam
+          # --- Home Assistant --------------------------------------------
+          HASS_URL: https://hass.atoca.house
+          # --- Jellyfin ----------------------------------------------------
+          JELLYFIN_URL: https://jellyfin.atoca.house
+          # Shared/kiosk account — the "latest" widgets need a user-name, and
+          # this keeps the family dashboard off anyone's personal account.
+          JELLYFIN_USER: kiosk
+          # --- Seerr (Overseerr-compatible API) ---------------------------
+          OVERSEERR_URL: https://seerr.atoca.house
+          # --- YouTube embed via a public RSS-Bridge instance -------------
+          RSS_BRIDGE: https://rss-bridge.org/bridge01/
+          YOUTUBE_CHANNEL: Kurzgesagt
+        envFrom:
+          - secretRef:
+              name: glance
         resources:
           requests:
             cpu: 100m
             memory: 64Mi
           limits:
-            memory: 128Mi
+            memory: 192Mi
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
           capabilities: { drop: ["ALL"] }
-
-      k8s-extension:
-        image:
-          repository: ghcr.io/lukasdietrich/glance-k8s/glance-k8s
-          tag: v0.5.5@sha256:98e567a30ffbe1929e19f6a3df3355a412020aca0479eacd36231dc531cd7562
-        env:
-          TZ: Europe/Amsterdam
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities: { drop: ["ALL"] }
-        probes:
-          liveness:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /healthz
-                port: 8080
-          readiness:
-            enabled: true
-            custom: true
-            spec:
-              httpGet:
-                path: /healthz
-                port: 8080
 
     pod:
       securityContext:
@@ -62,38 +50,8 @@ controllers:
           type: RuntimeDefault
 
 defaultPodOptions:
-  automountServiceAccountToken: true
-
-serviceAccount:
-  glance: {}
-
-rbac:
-  roles:
-    glance:
-      type: ClusterRole
-      rules:
-        - apiGroups: ["", "metrics.k8s.io"]
-          resources: ["nodes"]
-          verbs: ["list"]
-        - apiGroups: [""]
-          resources: ["services"]
-          verbs: ["list"]
-        - apiGroups: ["networking.k8s.io"]
-          resources: ["ingresses", "ingressclasses"]
-          verbs: ["list"]
-        - apiGroups: ["gateway.networking.k8s.io"]
-          resources: ["gateways", "httproutes"]
-          verbs: ["list"]
-        - apiGroups: ["apps"]
-          resources: ["deployments", "statefulsets", "daemonsets"]
-          verbs: ["list"]
-  bindings:
-    glance:
-      type: ClusterRoleBinding
-      roleRef:
-        identifier: *app
-      subjects:
-        - identifier: *app
+  # No cluster API access needed on the family dashboard.
+  automountServiceAccountToken: false
 
 service:
   glance:
@@ -101,11 +59,6 @@ service:
     ports:
       http:
         port: &port 80
-  k8s-extension:
-    controller: glance
-    ports:
-      http:
-        port: 8080
 
 route:
   glance:
@@ -119,7 +72,7 @@ route:
     rules:
       - backendRefs:
           - name: glance
-            port: 80
+            port: *port
         matches:
           - path:
               type: PathPrefix
@@ -129,10 +82,8 @@ persistence:
   config:
     type: configMap
     name: glance
+    # Mounted as a directory so glance.yml can `$include:` the sibling widget
+    # files (w-*.yml, gatus.yml) that live in the same ConfigMap.
     globalMounts:
-      - path: /app/config/glance.yml
-        subPath: glance.yml
-        readOnly: true
-      - path: /app/config/gatus.yml
-        subPath: gatus.yml
+      - path: /app/config
         readOnly: true

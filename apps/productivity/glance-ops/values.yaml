@@ -1,0 +1,157 @@
+---
+# Sysadmin dashboard — ops.atoca.house
+# The family-facing dashboard is a separate release: apps/productivity/glance
+controllers:
+  glance-ops:
+    annotations:
+      reloader.stakater.com/auto: "true"
+
+    serviceAccount:
+      identifier: &app glance-ops
+
+    containers:
+      glance:
+        image:
+          repository: glanceapp/glance
+          tag: v0.8.5@sha256:32ab73d80f2b8b5fb0735b0431deb36b93fbb6b2fb43592449b0178c8b83e350
+        env:
+          TZ: Europe/Amsterdam
+          # --- UniFi (UCG Max, local API) ---------------------------------
+          UNIFI_CONSOLE_IP: 192.168.10.1
+          # --- qBittorrent -------------------------------------------------
+          # In-cluster so the WebUI auth bypass can be scoped to the pod CIDR
+          # instead of exposing the API through the gateway.
+          QBITTORRENT_IP: qbittorrent.qbittorrent.svc.cluster.local
+          # --- Grafana ------------------------------------------------------
+          GRAFANA_URL: https://grafana.atoca.house
+          # --- Radarr / Sonarr ----------------------------------------------
+          # *_API_URL is used server-side, *_URL is used for the rendered links.
+          RADARR_API_URL: http://radarr.radarr.svc.cluster.local
+          RADARR_URL: https://radarr.atoca.house
+          SONARR_API_URL: http://sonarr.sonarr.svc.cluster.local
+          SONARR_URL: https://sonarr.atoca.house
+          # --- Jellyfin -------------------------------------------------------
+          JELLYFIN_URL: https://jellyfin.atoca.house
+        envFrom:
+          - secretRef:
+              name: glance-ops
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            memory: 192Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+      k8s-extension:
+        image:
+          repository: ghcr.io/lukasdietrich/glance-k8s/glance-k8s
+          tag: v0.5.5@sha256:98e567a30ffbe1929e19f6a3df3355a412020aca0479eacd36231dc531cd7562
+        env:
+          TZ: Europe/Amsterdam
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: 8080
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: 8080
+
+    pod:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+defaultPodOptions:
+  automountServiceAccountToken: true
+
+serviceAccount:
+  glance-ops: {}
+
+rbac:
+  roles:
+    glance-ops:
+      type: ClusterRole
+      rules:
+        - apiGroups: ["", "metrics.k8s.io"]
+          resources: ["nodes"]
+          verbs: ["list"]
+        - apiGroups: [""]
+          resources: ["services"]
+          verbs: ["list"]
+        - apiGroups: ["networking.k8s.io"]
+          resources: ["ingresses", "ingressclasses"]
+          verbs: ["list"]
+        - apiGroups: ["gateway.networking.k8s.io"]
+          resources: ["gateways", "httproutes"]
+          verbs: ["list"]
+        - apiGroups: ["apps"]
+          resources: ["deployments", "statefulsets", "daemonsets"]
+          verbs: ["list"]
+  bindings:
+    glance-ops:
+      type: ClusterRoleBinding
+      roleRef:
+        identifier: *app
+      subjects:
+        - identifier: *app
+
+service:
+  glance-ops:
+    controller: glance-ops
+    ports:
+      http:
+        port: &port 80
+  k8s-extension:
+    controller: glance-ops
+    ports:
+      http:
+        port: 8080
+
+route:
+  glance-ops:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - ops.atoca.house
+    rules:
+      - backendRefs:
+          - name: glance-ops
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    type: configMap
+    name: glance-ops
+    # Mounted as a directory so glance.yml can `$include:` the sibling widget
+    # files (w-*.yml, gatus.yml) that live in the same ConfigMap.
+    globalMounts:
+      - path: /app/config
+        readOnly: true

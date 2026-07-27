@@ -107,9 +107,6 @@ data:
                       - title: Notes
                         url: https://outline.atoca.house
                         icon: sh:outline-light
-                      - title: Wiki
-                        url: https://wiki.atoca.house
-                        icon: sh:wiki-js-light
 
                   - title: Personal
                     color: 160 60 45
@@ -374,9 +371,6 @@ data:
                       - title: Outline
                         url: https://outline.atoca.house
                         icon: sh:outline-light
-                      - title: Wiki
-                        url: https://wiki.atoca.house
-                        icon: sh:wiki-js-light
 
               - type: repository
                 repository: guilhermewolf/atoca.house

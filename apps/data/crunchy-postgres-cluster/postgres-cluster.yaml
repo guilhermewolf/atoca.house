@@ -61,12 +61,6 @@ spec:
       password:
         type: AlphaNumeric
 
-    - name: wiki
-      databases:
-        - wiki
-      password:
-        type: AlphaNumeric
-
     - name: dispatcharr
       databases:
         - dispatcharr

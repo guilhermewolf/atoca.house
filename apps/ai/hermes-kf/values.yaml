@@ -94,11 +94,6 @@ controllers:
           # falls back to the Nous Tool Gateway. Actual TTS goes to in-cluster
           # Kokoro (tts.openai.base_url in config.yaml), which ignores auth.
           VOICE_TOOLS_OPENAI_KEY: sk-kokoro-local
-          # Wiki.js has no MCP endpoint; the agent curls its GraphQL API
-          # directly from the terminal tool (see config-map.yaml). URL/root
-          # path aren't secret; WIKI_API_KEY comes from hermes-kf-secret below.
-          WIKI_URL: https://wiki.atoca.house
-          WIKI_ROOT_PATH: KitchenFrequencies
           # postiz CLI (installed onto /opt/data by the install-postiz-cli init
           # container) for analytics — the MCP server has no analytics tool,
           # and ask_postiz needs an OpenAI key we're not giving Postiz.
@@ -127,8 +122,8 @@ controllers:
           # Discord gateway creds + allowlist + channel come from hermes-kf-secret
           # (envFrom below): DISCORD_BOT_TOKEN, DISCORD_ALLOWED_USERS,
           # DISCORD_FREE_RESPONSE_CHANNELS. Kept out of git on purpose.
-          # Also from hermes-kf-secret: OUTLINE_API_KEY, WIKI_API_KEY (mcp_servers/
-          # terminal use, see config-map.yaml).
+          # Also from hermes-kf-secret: OUTLINE_API_KEY (mcp_servers, see
+          # config-map.yaml).
         envFrom:
           - secretRef:
               name: hermes-kf-secret

@@ -1,0 +1,8 @@
+---
+# Application configuration for trek
+app:
+  name: trek
+  namespace: trek
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.0.1

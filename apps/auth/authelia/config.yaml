@@ -228,6 +228,24 @@ data:
             userinfo_signed_response_alg: 'none'
             token_endpoint_auth_method: 'client_secret_basic'
 
+          - client_id: trek
+            client_name: TREK
+            client_secret: '{{ secret "/config/secret/TREK_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            authorization_policy: two_factor
+            # TREK maps admins from the 'groups' claim (OIDC_ADMIN_CLAIM/_VALUE),
+            # so groups must be in the id_token — that is what claims_policy does.
+            claims_policy: 'default'
+            require_pkce: false
+            pkce_challenge_method: ''
+            redirect_uris: ["https://trek.atoca.house/api/auth/oidc/callback"]
+            scopes: ["openid", "profile", "groups", "email"]
+            response_types: ["code"]
+            grant_types: ["authorization_code"]
+            access_token_signed_response_alg: 'none'
+            userinfo_signed_response_alg: 'none'
+            token_endpoint_auth_method: 'client_secret_basic'
+
           - client_id: 'audiobookshelf'
             client_name: 'audiobookshelf'
             client_secret: '{{ secret "/config/secret/AUDIOBOOKSHELF_OAUTH_CLIENT_SECRET" }}'

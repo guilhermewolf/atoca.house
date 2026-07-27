@@ -1,0 +1,142 @@
+---
+controllers:
+  trek:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    # SQLite single-writer on a ReadWriteOnce PVC: never run two pods on one DB.
+    strategy: Recreate
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=docker.io/mauriceboe/trek
+          repository: docker.io/mauriceboe/trek
+          tag: 3.4.1@sha256:ce7fab639b89a6f62d484d1175a7d489a536a8c77291f56c03fec20608d4a3eb
+        env:
+          NODE_ENV: production
+          PORT: &port 3000
+          TZ: Europe/Amsterdam
+          APP_URL: https://trek.atoca.house
+          ALLOWED_ORIGINS: https://trek.atoca.house
+          FORCE_HTTPS: "true"
+          TRUST_PROXY: "1"
+          # AI parsing talks to Ollama on a cluster-internal (RFC-1918) address.
+          ALLOW_INTERNAL_NETWORK: "true"
+          DEFAULT_LANGUAGE: en
+          # OIDC (Authelia)
+          OIDC_ISSUER: https://auth.atoca.house
+          OIDC_CLIENT_ID: trek
+          OIDC_DISPLAY_NAME: Authelia
+          OIDC_SCOPE: openid email profile groups
+          OIDC_ADMIN_CLAIM: groups
+          OIDC_ADMIN_VALUE: trek_admins
+          # SSO-only: disables password login and password registration.
+          # Break-glass: set to "false" and restart to get the local admin back.
+          OIDC_ONLY: "true"
+        envFrom:
+          - secretRef:
+              name: trek-secret
+        # The image's default CMD gosu-drops root -> node. With a non-root pod and
+        # capabilities dropped, gosu's setgroups() fails ("operation not permitted"),
+        # so start the server directly — the pod already runs as node (1000:1000).
+        args:
+          - sh
+          - -c
+          - cd /app/server && exec node --require tsconfig-paths/register dist/index.js
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/health
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/health
+                port: *port
+              initialDelaySeconds: 5
+              periodSeconds: 5
+              timeoutSeconds: 5
+              failureThreshold: 30
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  securityContext:
+    # Image ships a `node` user (1000:1000); the entrypoint gosu-drops to it.
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
+
+service:
+  app:
+    controller: trek
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    annotations:
+      gatus.home-operations.com/endpoint: |-
+        conditions: ["[STATUS] == 200"]
+    hostnames:
+      - trek.atoca.house
+    rules:
+      - backendRefs:
+          - name: trek
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /app/data
+
+  uploads:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    globalMounts:
+      - path: /app/uploads
+
+  tmp:
+    enabled: true
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

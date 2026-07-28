@@ -128,6 +128,13 @@ data:
                 subject:
                   - ["group:penpot_users"]
                   - ["group:penpot_admins"]
+          youtrack_policy:
+            default_policy: 'deny'
+            rules:
+              - policy: 'two_factor'
+                subject:
+                  - ["group:youtrack_users"]
+                  - ["group:youtrack_admins"]
         jwks:
           - key_id: authelia-rsa-1
             use: sig
@@ -357,3 +364,37 @@ data:
             access_token_signed_response_alg: 'none'
             userinfo_signed_response_alg: 'none'
             token_endpoint_auth_method: 'client_secret_post'
+
+          - client_id: 'youtrack'
+            client_name: 'YouTrack'
+            client_secret: '{{ secret "/config/secret/YOUTRACK_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            # Restricted to youtrack_users/youtrack_admins — see
+            # identity_providers.oidc.authorization_policies.youtrack_policy.
+            # Without this every Authelia user would be auto-provisioned in Hub
+            # and burn a seat on the 10-user license.
+            authorization_policy: 'youtrack_policy'
+            # Puts the groups claim in the id_token so Hub's Group Mapping tab
+            # can map youtrack_admins onto a Hub group.
+            claims_policy: 'default'
+            # YouTrack Hub's OAuth 2.0 auth module does not implement PKCE
+            require_pkce: false
+            pkce_challenge_method: ''
+            # YouTrack Hub mints a per-auth-module callback that embeds the
+            # module's UUID, so it is kept out of the repo. Deleting and
+            # recreating the Authelia auth module in Hub issues a new UUID —
+            # update the 1Password field when that happens.
+            redirect_uris:
+              - '{{ secret "/config/secret/YOUTRACK_OAUTH_REDIRECT_URI" }}'
+            scopes:
+              - 'openid'
+              - 'profile'
+              - 'email'
+              - 'groups'
+            response_types:
+              - 'code'
+            grant_types:
+              - 'authorization_code'
+            access_token_signed_response_alg: 'none'
+            userinfo_signed_response_alg: 'none'
+            token_endpoint_auth_method: 'client_secret_basic'

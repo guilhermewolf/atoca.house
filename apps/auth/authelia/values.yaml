@@ -1,6 +1,7 @@
 controllers:
   authelia:
     replicas: 2
+    strategy: RollingUpdate
     annotations:
       reloader.stakater.com/auto: "true"
     containers:

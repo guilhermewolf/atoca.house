@@ -1,0 +1,124 @@
+---
+controllers:
+  youtrack:
+    replicas: 1
+    # Single RWO ceph-block volume holds the Xodus database — never run two pods.
+    strategy: Recreate
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=docker.io/jetbrains/youtrack
+          repository: docker.io/jetbrains/youtrack
+          tag: 2026.2.17765@sha256:54d25c6f100330cc43cc60219846711eed5e598bad11ce3611c42756b5ba197a
+        probes:
+          # JVM + database recovery can take several minutes on a cold start.
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              tcpSocket:
+                port: &port 8080
+              initialDelaySeconds: 30
+              periodSeconds: 10
+              failureThreshold: 60
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              tcpSocket:
+                port: *port
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 5
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: *port
+              periodSeconds: 15
+              timeoutSeconds: 10
+              failureThreshold: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            # YouTrack grows its own heap up to 80% of the memory available to
+            # the container, so the limit is the real tuning knob.
+            memory: 6Gi
+    pod:
+      securityContext:
+        # YouTrack runs as the fixed non-root account 13001:13001 inside the image.
+        runAsNonRoot: true
+        runAsUser: 13001
+        runAsGroup: 13001
+        fsGroup: 13001
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
+
+service:
+  app:
+    controller: youtrack
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    annotations:
+      gatus.io/enabled: "true"
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - youtrack.atoca.house
+    rules:
+      - backendRefs:
+          - name: youtrack
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  # Single PVC (chart names it `youtrack` because it is the only one) holding
+  # the database, configuration and YouTrack's own backup dumps.
+  # Xodus does not support NFS — this must stay on ceph-block.
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 25Gi
+    globalMounts:
+      - path: /opt/youtrack/data
+        subPath: data
+      - path: /opt/youtrack/conf
+        subPath: conf
+      - path: /opt/youtrack/backups
+        subPath: backups
+  # Logs are noise — keep them out of the backed-up volume.
+  logs:
+    type: emptyDir
+    globalMounts:
+      - path: /opt/youtrack/logs
+  # readOnlyRootFilesystem blocks YouTrack's scratch dir, which it checks for
+  # writability at startup and refuses to boot without.
+  tmpfs:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
+        subPath: tmp
+      - path: /opt/youtrack/temp
+        subPath: youtrack-temp

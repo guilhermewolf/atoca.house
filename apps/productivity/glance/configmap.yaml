@@ -148,6 +148,9 @@ data:
                       - title: Handy tools
                         url: https://omni-tools.atoca.house
                         icon: mdi:tools
+                      - title: Trips
+                        url: https://trek.atoca.house
+                        icon: sh:trek-light
 
                   - title: House
                     color: 38 85 55
@@ -339,6 +342,8 @@ data:
         shelfmark-url: https://shelfmark.atoca.house
         suwayomi: sh:suwayomi-light
         suwayomi-url: https://suwayomi.atoca.house
+        trek: sh:trek-light
+        trek-url: https://trek.atoca.house
       template: |
         {{/* Required config options */}}
         {{ $baseURL := .Options.StringOr "base-url" "" }}

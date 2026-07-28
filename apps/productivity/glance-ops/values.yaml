@@ -22,8 +22,11 @@ controllers:
           # In-cluster so the WebUI auth bypass can be scoped to the pod CIDR
           # instead of exposing the API through the gateway.
           QBITTORRENT_IP: qbittorrent.qbittorrent.svc.cluster.local
-          # --- Grafana ------------------------------------------------------
+          # --- Grafana / Prometheus -----------------------------------------
+          # GRAFANA_URL is only used to build dashboard links; the Cluster
+          # Health widget reads Prometheus directly (unauthenticated in-cluster).
           GRAFANA_URL: https://grafana.atoca.house
+          PROMETHEUS_URL: http://kube-prometheus-stack-moni-prometheus.monitoring.svc.cluster.local:9090
           # --- Radarr / Sonarr ----------------------------------------------
           # *_API_URL is used server-side, *_URL is used for the rendered links.
           RADARR_API_URL: http://radarr.radarr.svc.cluster.local

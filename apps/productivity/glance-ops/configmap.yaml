@@ -78,7 +78,7 @@ data:
                     shortcut: "!ah"
                     url: https://artifacthub.io/packages/search?ts_query_web={QUERY}
 
-              - $include: w-grafana.yml
+              - $include: w-cluster-health.yml
 
               - type: monitor
                 title: Core Infrastructure
@@ -553,6 +553,8 @@ data:
         suwayomi-url: https://suwayomi.atoca.house
         thelounge: sh:the-lounge-light
         thelounge-url: https://thelounge.atoca.house
+        trek: sh:trek-light
+        trek-url: https://trek.atoca.house
         twenty: sh:twenty-crm-light
         twenty-url: https://twenty.atoca.house
         unifi-toolkit: sh:ubiquiti-unifi-light
@@ -1078,43 +1080,171 @@ data:
             <p class="size-sm">Check URL and authentication bypass settings.</p>
           </div>
         {{ end }}
-  w-grafana.yml: |
+  w-cluster-health.yml: |
     - type: custom-api
-      title: Nodes Up
-      cache: 5m
-      url: ${GRAFANA_URL}/api/ds/query
-      method: POST
-      headers:
-        Authorization: Bearer ${GRAFANA_TOKEN}
-        Accept: application/json
-      body-type: json
-      body:
-        queries:
-          - datasource:
-              type: prometheus
-              uid: prometheus
-            expr: group(up{job="node-exporter"}) by (instance)
-            legendFormat: '{{instance}}'
-            refId: A
-            range: true
-            instant: false
-            intervalMs: 60000
-            maxDataPoints: 5
-        from: now-5m
-        to: now
+      title: Cluster Health
+      cache: 1m
+      # Queried straight from Prometheus (no auth in-cluster) rather than through
+      # the Grafana datasource proxy — fewer moving parts and no token needed.
+      # Each tile links to the Grafana dashboard that explains the number.
+      url: ${PROMETHEUS_URL}/api/v1/query
+      parameters:
+        query: 100*ceph_cluster_total_used_bytes/ceph_cluster_total_bytes
+      subrequests:
+        ceph-health:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: ceph_health_status
+        alerts:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: count(ALERTS{alertstate="firing",alertname!="Watchdog"}) or vector(0)
+        cpu:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: 100*sum(1-rate(node_cpu_seconds_total{mode="idle"}[5m]))/count(node_cpu_seconds_total{mode="idle"})
+        mem:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: 100*(1-sum(node_memory_MemAvailable_bytes)/sum(node_memory_MemTotal_bytes))
+        disk:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: max(100-(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}/node_filesystem_size_bytes*100))
+        backups:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: sum(volsync_volume_out_of_sync) or vector(0)
+        wan-down:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: max(speedtest_download_megabits_per_second)
+        wan-up:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: max(speedtest_upload_megabits_per_second)
+        disk-temp:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: max(smartctl_device_temperature)
+        gpu-temp:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: max(DCGM_FI_DEV_GPU_TEMP)
+        pods:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: sum(kube_pod_status_phase{phase="Running"})
       template: |
-        <ul class="list list-gap-14 collapsible-container" data-collapse-after="5">
-        {{ range .JSON.Array "results.A.frames" }}
-          <li>
-              <a
-                href="${GRAFANA_URL}/d/rYdddlPWk/node-exporter-nodes?var-instance={{ .String "schema.fields.1.config.displayNameFromDS" }}"
-                class="size-title-dynamic color-primary-if-not-visited" target="_blank" rel="noreferrer"
-              >
-                {{ .String "schema.fields.1.config.displayNameFromDS" }}
-              </a>
-          </li>
-        {{ end }}
-        </ul>
+        {{/* Prometheus returns instant-query values as strings; gjson's Float
+             coerces them, so read them with .JSON.Float (toFloat wants an int). */}}
+        {{ $cephUsed  := .JSON.Float "data.result.0.value.1" }}
+        {{ $cephOk    := eq ((.Subrequest "ceph-health").JSON.String "data.result.0.value.1") "0" }}
+        {{ $alerts    := (.Subrequest "alerts").JSON.Float    "data.result.0.value.1" }}
+        {{ $cpu       := (.Subrequest "cpu").JSON.Float       "data.result.0.value.1" }}
+        {{ $mem       := (.Subrequest "mem").JSON.Float       "data.result.0.value.1" }}
+        {{ $disk      := (.Subrequest "disk").JSON.Float      "data.result.0.value.1" }}
+        {{ $backups   := (.Subrequest "backups").JSON.Float   "data.result.0.value.1" }}
+        {{ $wanDown   := (.Subrequest "wan-down").JSON.Float  "data.result.0.value.1" }}
+        {{ $wanUp     := (.Subrequest "wan-up").JSON.Float    "data.result.0.value.1" }}
+        {{ $diskTemp  := (.Subrequest "disk-temp").JSON.Float "data.result.0.value.1" }}
+        {{ $gpuTemp   := (.Subrequest "gpu-temp").JSON.Float  "data.result.0.value.1" }}
+        {{ $pods      := (.Subrequest "pods").JSON.Float      "data.result.0.value.1" }}
+
+        <style>
+          .ch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+            gap: 10px;
+          }
+          .ch-tile { padding: 10px 12px; text-align: center; }
+          .ch-sub { line-height: 1.3; }
+        </style>
+
+        <div class="ch-grid">
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="${GRAFANA_URL}/d/tbO9LAiZK/ceph-cluster">
+            <div class="size-h3 {{ if $cephOk }}color-positive{{ else }}color-negative{{ end }}">
+              {{ printf "%.1f%%" $cephUsed }}
+            </div>
+            <div class="size-h6 color-subdue ch-sub">CEPH USED</div>
+            <div class="size-h6 ch-sub {{ if $cephOk }}color-positive{{ else }}color-negative{{ end }}">
+              {{ if $cephOk }}healthy{{ else }}degraded{{ end }}
+            </div>
+          </a>
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="https://alertmanager.atoca.house">
+            <div class="size-h3 {{ if gt $alerts 0.0 }}color-negative{{ else }}color-positive{{ end }}">
+              {{ printf "%.0f" $alerts }}
+            </div>
+            <div class="size-h6 color-subdue ch-sub">ALERTS FIRING</div>
+            <div class="size-h6 ch-sub color-subdue">excl. watchdog</div>
+          </a>
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="${GRAFANA_URL}/d/cdp5agkgn4yrkc/volsync-dashboard">
+            <div class="size-h3 {{ if gt $backups 0.0 }}color-negative{{ else }}color-positive{{ end }}">
+              {{ if gt $backups 0.0 }}{{ printf "%.0f" $backups }}{{ else }}OK{{ end }}
+            </div>
+            <div class="size-h6 color-subdue ch-sub">BACKUPS</div>
+            <div class="size-h6 ch-sub color-subdue">
+              {{ if gt $backups 0.0 }}out of sync{{ else }}all in sync{{ end }}
+            </div>
+          </a>
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="${GRAFANA_URL}/d/k8s_views_global/kubernetes-views-global">
+            <div class="size-h3 color-highlight">{{ printf "%.0f" $pods }}</div>
+            <div class="size-h6 color-subdue ch-sub">PODS RUNNING</div>
+            <div class="size-h6 ch-sub color-subdue">cluster wide</div>
+          </a>
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="${GRAFANA_URL}/d/k8s_views_global/kubernetes-views-global">
+            <div class="size-h3 {{ if gt $cpu 85.0 }}color-negative{{ else }}color-highlight{{ end }}">
+              {{ printf "%.0f%%" $cpu }}
+            </div>
+            <div class="size-h6 color-subdue ch-sub">CPU</div>
+            <div class="size-h6 ch-sub color-subdue">5m average</div>
+          </a>
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="${GRAFANA_URL}/d/k8s_views_global/kubernetes-views-global">
+            <div class="size-h3 {{ if gt $mem 90.0 }}color-negative{{ else }}color-highlight{{ end }}">
+              {{ printf "%.0f%%" $mem }}
+            </div>
+            <div class="size-h6 color-subdue ch-sub">MEMORY</div>
+            <div class="size-h6 ch-sub color-subdue">cluster wide</div>
+          </a>
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="${GRAFANA_URL}/d/rYdddlPWk/node-exporter-full">
+            <div class="size-h3 {{ if gt $disk 90.0 }}color-negative{{ else if gt $disk 80.0 }}color-highlight{{ else }}color-positive{{ end }}">
+              {{ printf "%.0f%%" $disk }}
+            </div>
+            <div class="size-h6 color-subdue ch-sub">FULLEST DISK</div>
+            <div class="size-h6 ch-sub color-subdue">any node</div>
+          </a>
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="${GRAFANA_URL}/d/ce8j0dmrrej9cc/smartctl-exporter-dashboard">
+            <div class="size-h3 {{ if gt $diskTemp 60.0 }}color-negative{{ else }}color-highlight{{ end }}">
+              {{ printf "%.0f°C" $diskTemp }}
+            </div>
+            <div class="size-h6 color-subdue ch-sub">HOTTEST DISK</div>
+            <div class="size-h6 ch-sub color-subdue">GPU {{ printf "%.0f°C" $gpuTemp }}</div>
+          </a>
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="${GRAFANA_URL}/d/speedtest-exporter-lan/speedtest-dashboard">
+            <div class="size-h3 color-highlight">{{ printf "%.0f" $wanDown }}</div>
+            <div class="size-h6 color-subdue ch-sub">WAN DOWN Mbps</div>
+            <div class="size-h6 ch-sub color-subdue">up {{ printf "%.0f" $wanUp }}</div>
+          </a>
+
+        </div>
   w-radarr-upcoming.yml: |
     - type: custom-api
       title: Upcoming Movies

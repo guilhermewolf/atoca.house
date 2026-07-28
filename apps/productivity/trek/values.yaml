@@ -102,9 +102,6 @@ route:
     parentRefs:
       - name: atoca-house-internal
         namespace: kube-system
-    annotations:
-      gatus.home-operations.com/endpoint: |-
-        conditions: ["[STATUS] == 200"]
     hostnames:
       - trek.atoca.house
     rules:

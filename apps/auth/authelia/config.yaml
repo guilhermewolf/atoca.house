@@ -121,6 +121,13 @@ data:
                 subject:
                   - ["group:trek_users"]
                   - ["group:trek_admins"]
+          penpot_policy:
+            default_policy: 'deny'
+            rules:
+              - policy: 'two_factor'
+                subject:
+                  - ["group:penpot_users"]
+                  - ["group:penpot_admins"]
         jwks:
           - key_id: authelia-rsa-1
             use: sig
@@ -322,6 +329,31 @@ data:
             grant_types:
               - 'authorization_code'
               - 'refresh_token'
+            access_token_signed_response_alg: 'none'
+            userinfo_signed_response_alg: 'none'
+            token_endpoint_auth_method: 'client_secret_post'
+
+          - client_id: 'penpot'
+            client_name: 'Penpot'
+            client_secret: '{{ secret "/config/secret/PENPOT_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            # Restricted to penpot_users/penpot_admins — see
+            # identity_providers.oidc.authorization_policies.penpot_policy
+            authorization_policy: 'penpot_policy'
+            claims_policy: 'default'
+            # Penpot's OIDC client does not implement PKCE
+            require_pkce: false
+            pkce_challenge_method: ''
+            redirect_uris:
+              - 'https://penpot.atoca.house/api/auth/oidc/callback'
+            scopes:
+              - 'openid'
+              - 'profile'
+              - 'email'
+            response_types:
+              - 'code'
+            grant_types:
+              - 'authorization_code'
             access_token_signed_response_alg: 'none'
             userinfo_signed_response_alg: 'none'
             token_endpoint_auth_method: 'client_secret_post'

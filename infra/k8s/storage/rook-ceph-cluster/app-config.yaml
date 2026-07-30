@@ -3,6 +3,6 @@ app:
   namespace: rook-ceph
   chart: rook-ceph-cluster
   chartRepo: https://charts.rook.io/release
-  chartVersion: v1.20.2
+  chartVersion: v1.20.3
   disableAutoSync: true
   podSecurityPrivileged: true

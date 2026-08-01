@@ -11,7 +11,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=docker.io/jetbrains/youtrack
           repository: docker.io/jetbrains/youtrack
-          tag: 2026.2.17765@sha256:54d25c6f100330cc43cc60219846711eed5e598bad11ce3611c42756b5ba197a
+          tag: 2026.2.18194@sha256:6d20ac0cb1a92e00c86db70549cdeb3dc0090dc8fddaefdeeca60a89d3153fcd
         probes:
           # JVM + database recovery can take several minutes on a cold start.
           startup:

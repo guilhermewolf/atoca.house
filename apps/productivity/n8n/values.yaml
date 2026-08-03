@@ -7,7 +7,7 @@ controllers:
       n8n:
         image:
           repository: ghcr.io/n8n-io/n8n
-          tag: 2.33.1@sha256:5dcddc592d31f3a2b5e778097c161fe7d7e323dbd852a4b64a9be5931fd20fc0
+          tag: 2.33.3@sha256:769d3a624534ff8b5f3316ef71d4653f48794c47e4339436be7a308d6d6a1cc9
           pullPolicy: IfNotPresent
         env:
           N8N_PROTOCOL: https

@@ -7,7 +7,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/karakeep-app/karakeep
-          tag: 0.32.0
+          tag: 0.33.1
         env:
           BROWSER_WEB_URL: http://karakeep-chrome.karakeep.svc.cluster.local:9222
           COREPACK_INTEGRITY_KEYS: "0"

@@ -102,6 +102,16 @@ data:
         # -1 disables Authelia's min-entropy check for state/nonce so Postiz
         # login works; only affects clients that skip/shorten state.
         minimum_parameter_entropy: -1
+        # Outline re-validates the OIDC access token on request and, when it is
+        # expired, refreshes it. Authelia's default refresh_token lifespan (90m)
+        # dies while the browser tab is idle, the refresh fails, and Outline
+        # forces a full re-login ("Authentication token no longer valid").
+        # A long refresh_token keeps the session alive; access_token stays short.
+        lifespans:
+          custom:
+            outline:
+              access_token: '1h'
+              refresh_token: '30d'
         # access_control (domain/subject) rules do NOT gate OIDC authorization
         # requests - Authelia issues tokens to the client, not a domain, so
         # per-client group restriction must go through authorization_policies
@@ -221,6 +231,7 @@ data:
           - client_id: outline
             client_name: Outline
             client_secret: '{{ secret "/config/secret/OUTLINE_OAUTH_CLIENT_SECRET" }}'
+            lifespan: 'outline'
             public: false
             authorization_policy: two_factor
             require_pkce: false

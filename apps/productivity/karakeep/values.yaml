@@ -88,7 +88,7 @@ controllers:
       app:
         image:
           repository: docker.io/getmeili/meilisearch
-          tag: v1.51.0
+          tag: v1.52.0
         env:
           MEILI_NO_ANALYTICS: true
           # Migrate the on-disk DB in place when the engine version bumps

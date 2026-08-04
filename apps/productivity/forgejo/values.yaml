@@ -1,0 +1,161 @@
+---
+controllers:
+  forgejo:
+    labels:
+      postgres: "true"
+    annotations:
+      reloader.stakater.com/auto: "true"
+    strategy: Recreate
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=codeberg.org/forgejo/forgejo
+          repository: codeberg.org/forgejo/forgejo
+          tag: 16.0.2-rootless@sha256:23ccc146e6dc2cd1f5c5435909baae64db873201717f1726490dae649283e6cd
+        env:
+          # Instance
+          FORGEJO__DEFAULT__APP_NAME: atoca.house forge
+          FORGEJO__DEFAULT__RUN_MODE: prod
+          # Server
+          FORGEJO__server__PROTOCOL: http
+          FORGEJO__server__DOMAIN: &host forge.atoca.house
+          FORGEJO__server__ROOT_URL: https://forge.atoca.house/
+          FORGEJO__server__HTTP_ADDR: 0.0.0.0
+          FORGEJO__server__HTTP_PORT: &httpPort 3000
+          FORGEJO__server__LFS_START_SERVER: true
+          FORGEJO__server__OFFLINE_MODE: true
+          FORGEJO__server__START_SSH_SERVER: true
+          FORGEJO__server__SSH_DOMAIN: &sshHost forge-ssh.atoca.house
+          FORGEJO__server__SSH_LISTEN_PORT: &sshPort 2222
+          FORGEJO__server__SSH_PORT: 22
+          # Database (host/user/password/name come from forgejo-db-secret)
+          FORGEJO__database__DB_TYPE: postgres
+          FORGEJO__database__SSL_MODE: require
+          # Object storage — attachments, avatars, lfs, packages (OCI registry blobs)
+          FORGEJO__storage__STORAGE_TYPE: minio
+          FORGEJO__storage__SERVE_DIRECT: false
+          FORGEJO__storage__MINIO_ENDPOINT: garage.garage.svc.cluster.local:3900
+          FORGEJO__storage__MINIO_BUCKET: forgejo
+          FORGEJO__storage__MINIO_LOCATION: eu-east-1
+          FORGEJO__storage__MINIO_BUCKET_LOOKUP: path
+          FORGEJO__storage__MINIO_USE_SSL: false
+          FORGEJO__storage__MINIO_CHECKSUM_ALGORITHM: md5
+          # Package/container registry
+          FORGEJO__packages__ENABLED: true
+          FORGEJO__packages__CHUNKED_UPLOAD_PATH: /tmp/gitea/package-upload
+          # Actions (runner deployed separately)
+          FORGEJO__actions__ENABLED: true
+          FORGEJO__actions__DEFAULT_ACTIONS_URL: https://code.forgejo.org
+          # Cache / session / queue on Dragonfly
+          FORGEJO__cache__ADAPTER: redis
+          FORGEJO__cache__HOST: &cacheURL redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/10
+          FORGEJO__session__PROVIDER: redis
+          FORGEJO__session__PROVIDER_CONFIG: redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/11
+          FORGEJO__queue__TYPE: redis
+          FORGEJO__queue__CONN_STR: redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/12
+          # Private by default — this is a private forge
+          FORGEJO__service__DISABLE_REGISTRATION: true
+          FORGEJO__service__REQUIRE_SIGNIN_VIEW: true
+          FORGEJO__service__ENABLE_NOTIFY_MAIL: false
+          FORGEJO__repository__DEFAULT_PRIVATE: private
+          FORGEJO__repository__DEFAULT_PUSH_CREATE_PRIVATE: true
+          FORGEJO__repository__ENABLE_PUSH_CREATE_USER: true
+          FORGEJO__security__INSTALL_LOCK: true
+          # Logging
+          FORGEJO__log__MODE: console
+          FORGEJO__log__LEVEL: info
+        envFrom:
+          - secretRef:
+              name: forgejo-secret
+          - secretRef:
+              name: forgejo-db-secret
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/healthz
+                port: *httpPort
+              initialDelaySeconds: 60
+              periodSeconds: 30
+              failureThreshold: 5
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/healthz
+                port: *httpPort
+              initialDelaySeconds: 20
+              periodSeconds: 15
+              failureThreshold: 5
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile: { type: RuntimeDefault }
+
+service:
+  app:
+    controller: forgejo
+    ports:
+      http:
+        port: *httpPort
+  ssh:
+    controller: forgejo
+    type: LoadBalancer
+    annotations:
+      lbipam.cilium.io/ips: 192.168.60.133
+      external-dns.alpha.kubernetes.io/hostname: *sshHost
+    externalTrafficPolicy: Local
+    ports:
+      ssh:
+        port: 22
+        targetPort: *sshPort
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - *host
+    rules:
+      - backendRefs:
+          - name: forgejo-app
+            port: *httpPort
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  # Git repositories, app.ini, SSH host keys, indexes
+  data:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 50Gi
+    storageClass: ceph-block
+    globalMounts:
+      - path: /var/lib/gitea
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

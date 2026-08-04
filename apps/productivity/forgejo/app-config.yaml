@@ -1,0 +1,8 @@
+---
+# Application configuration for forgejo
+app:
+  name: forgejo
+  namespace: forgejo
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.0.1

@@ -1,0 +1,11 @@
+---
+# The image lives in the private Forgejo registry, so the kubelet in this
+# namespace needs the pull credential. The `forgejo-registry` label makes the
+# ClusterExternalSecret in infra/k8s/security/external-secrets project the
+# `forgejo-registry` dockerconfigjson Secret into this namespace.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: camcontrol
+  labels:
+    forgejo-registry: "true"

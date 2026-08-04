@@ -1,0 +1,33 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/volsync.backube/replicationsource_v1alpha1.json
+# Only the config PVC is backed up. /data holds the libgphoto2 PTP/IP GUID,
+# which is regenerated on start and carries no user state.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: camcontrol-backup
+  namespace: camcontrol
+spec:
+  sourcePVC: camcontrol-config
+  trigger:
+    schedule: "0 0 * * *"
+  restic:
+    accessModes:
+      - ReadWriteOnce
+    cacheAccessModes:
+      - ReadWriteOnce
+    cacheStorageClassName: openebs-hostpath
+    pruneIntervalDays: 14
+    repository: camcontrol-r2-secret
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+    retain:
+      hourly: 5
+      daily: 4
+      monthly: 1
+      yearly: 1
+    copyMethod: Snapshot
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool

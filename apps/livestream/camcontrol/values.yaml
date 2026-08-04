@@ -1,0 +1,183 @@
+---
+controllers:
+  camcontrol:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    # A camera accepts exactly one client at a time, so old and new pods must
+    # never overlap: one replica, Recreate, never RollingUpdate.
+    replicas: 1
+    strategy: Recreate
+    initContainers:
+      # config.yaml lives on a writable PVC because the settings UI saves
+      # through it (temp file + os.replace in the same directory). The seed
+      # Secret is only a seed: copied in on first start and never overwritten
+      # afterwards, so UI edits survive restarts.
+      #
+      # The seed is a Secret, not a ConfigMap: it carries the camera IPs, the
+      # satellite URL and the MQTT password, none of which belong in git.
+      seed-config:
+        image:
+          repository: forge.atoca.house/guilherme/camcontrol
+          tag: 0.4.0
+        command: ["/opt/venv/bin/python", "-c"]
+        args:
+          - |
+            import os, pathlib, shutil
+            dst = pathlib.Path("/config/config.yaml")
+            if dst.exists():
+                print("seed-config: %s already present, leaving it alone" % dst)
+                raise SystemExit(0)
+            tmp = dst.parent / "config.yaml.seed-tmp"
+            with tmp.open("w") as fh:
+                fh.write(pathlib.Path("/config-seed/config.yaml").read_text())
+                fh.flush()
+                os.fsync(fh.fileno())
+            os.replace(tmp, dst)
+            print("seed-config: wrote %s" % dst)
+        securityContext: &securityContext
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            memory: 128Mi
+    containers:
+      app:
+        image:
+          # Built by camcontrol's own Forgejo release workflow (tag v*).
+          # Not Renovate-managed: the private registry has no host rule here.
+          repository: forge.atoca.house/guilherme/camcontrol
+          tag: 0.4.0
+        args:
+          - --config
+          - /config/config.yaml
+          - --host
+          - 0.0.0.0
+          - --port
+          - "8710"
+        env:
+          TZ: Europe/Amsterdam
+          CAMCONTROL_CONFIG: /config/config.yaml
+          # libgphoto2 writes its PTP/IP GUID under $HOME — must be the PVC,
+          # the zero-GUID pin the Sony pairing depends on has to persist.
+          HOME: /data
+        probes:
+          # /api/health is in-process and never opens a camera session, so
+          # probing cannot steal the session from the service itself.
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/health
+                port: &port 8710
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/health
+                port: *port
+              periodSeconds: 3
+              timeoutSeconds: 3
+              failureThreshold: 20
+        securityContext: *securityContext
+        resources:
+          requests:
+            cpu: 100m
+            memory: 192Mi
+          limits:
+            memory: 512Mi
+
+defaultPodOptions:
+  # libgphoto2 can segfault when a camera appears or disappears mid-read;
+  # Python cannot catch that, so the kubelet is the supervisor.
+  terminationGracePeriodSeconds: 30
+  automountServiceAccountToken: false
+  imagePullSecrets:
+    - name: forgejo-registry
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    controller: camcontrol
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - camcontrol.atoca.house
+    rules:
+      - backendRefs:
+          - name: camcontrol
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    suffix: config
+    advancedMounts:
+      camcontrol:
+        seed-config:
+          - path: /config
+        app:
+          - path: /config
+
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    suffix: data
+    advancedMounts:
+      camcontrol:
+        app:
+          - path: /data
+
+  config-seed:
+    enabled: true
+    type: secret
+    name: camcontrol-config-seed
+    advancedMounts:
+      camcontrol:
+        seed-config:
+          - path: /config-seed
+            readOnly: true
+
+  tmp:
+    enabled: true
+    type: emptyDir
+    medium: Memory
+    sizeLimit: 64Mi
+    advancedMounts:
+      camcontrol:
+        app:
+          - path: /tmp

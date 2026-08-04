@@ -1,0 +1,119 @@
+---
+controllers:
+  forgejo-runner:
+    type: statefulset
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      # Docker-in-Docker daemon. Job/step/service containers are created here,
+      # not on the node — the runner talks to it over the shared pod netns.
+      dind:
+        image:
+          # renovate: datasource=docker depName=docker
+          repository: docker.io/library/docker
+          tag: 28-dind@sha256:2a232a42256f70d78e3cc5d2b5d6b3276710a0de0596c145f627ecfae90282ac
+        args:
+          - dockerd
+          - --host=tcp://0.0.0.0:2375
+          - --tls=false
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              exec:
+                command: ["docker", "-H", "tcp://127.0.0.1:2375", "info"]
+              initialDelaySeconds: 30
+              periodSeconds: 30
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              exec:
+                command: ["docker", "-H", "tcp://127.0.0.1:2375", "info"]
+              initialDelaySeconds: 10
+              periodSeconds: 15
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 4Gi
+        securityContext:
+          # dockerd needs full privileges — no way around this for DinD
+          privileged: true
+          runAsUser: 0
+          runAsGroup: 0
+
+      runner:
+        image:
+          # renovate: datasource=docker depName=code.forgejo.org/forgejo/runner
+          repository: code.forgejo.org/forgejo/runner
+          tag: 13.0.0@sha256:7fb853bfe73c229be6349398359c0a7bd01fadfd17c106607b2221150b799ed2
+        command:
+          - forgejo-runner
+        args:
+          - daemon
+          - --config
+          - /config/config.yaml
+        env:
+          DOCKER_HOST: tcp://127.0.0.1:2375
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  securityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+persistence:
+  # Runner home: cache, workspace, task state
+  data:
+    type: persistentVolumeClaim
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    storageClass: ceph-block
+    advancedMounts:
+      forgejo-runner:
+        runner:
+          - path: /data
+  # config.yaml is rendered by the ExternalSecret — it embeds the runner
+  # UUID and token from the offline registration
+  config:
+    type: secret
+    name: forgejo-runner-config
+    advancedMounts:
+      forgejo-runner:
+        runner:
+          - path: /config
+            readOnly: true
+  # dockerd's image/layer store — ephemeral, rebuilt on restart
+  docker-graph:
+    type: emptyDir
+    advancedMounts:
+      forgejo-runner:
+        dind:
+          - path: /var/lib/docker
+  docker-run:
+    type: emptyDir
+    advancedMounts:
+      forgejo-runner:
+        dind:
+          - path: /run
+  tmp:
+    type: emptyDir
+    advancedMounts:
+      forgejo-runner:
+        runner:
+          - path: /tmp

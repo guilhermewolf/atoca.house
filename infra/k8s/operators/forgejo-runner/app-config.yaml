@@ -1,0 +1,8 @@
+---
+# Application configuration for forgejo-runner
+app:
+  name: forgejo-runner
+  namespace: forgejo-runner
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.0.1

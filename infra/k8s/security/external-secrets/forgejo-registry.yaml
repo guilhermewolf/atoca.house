@@ -1,0 +1,49 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/external-secrets.io/clusterexternalsecret_v1.json
+# Distributes the Forgejo container-registry pull secret to every namespace
+# labelled `forgejo-registry: "true"`. ArgoCD does not pull images — the
+# kubelet does — so the credential has to live next to the workload.
+#
+# Label a namespace to opt in:
+#   kubectl label namespace <ns> forgejo-registry=true
+# Then reference it in the app's values.yaml:
+#   defaultPodOptions:
+#     imagePullSecrets:
+#       - name: forgejo-registry
+apiVersion: external-secrets.io/v1
+kind: ClusterExternalSecret
+metadata:
+  name: forgejo-registry
+spec:
+  externalSecretName: forgejo-registry
+  namespaceSelectors:
+    - matchLabels:
+        forgejo-registry: "true"
+  refreshTime: 1h
+  externalSecretSpec:
+    secretStoreRef:
+      kind: ClusterSecretStore
+      name: onepassword-connect
+    target:
+      name: forgejo-registry
+      creationPolicy: Owner
+      deletionPolicy: Retain
+      template:
+        type: kubernetes.io/dockerconfigjson
+        engineVersion: v2
+        data:
+          .dockerconfigjson: |
+            {
+              "auths": {
+                "forge.atoca.house": {
+                  "auth": "{{ printf "%s:%s" .FORGEJO_REGISTRY_USER .FORGEJO_REGISTRY_TOKEN | b64enc }}"
+                }
+              }
+            }
+    dataFrom:
+      - extract:
+          key: forgejo-registry
+          conversionStrategy: Default
+          decodingStrategy: None
+          metadataPolicy: None
+          nullBytePolicy: Ignore

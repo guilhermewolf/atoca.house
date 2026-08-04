@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/gateway.envoyproxy.io/backendtrafficpolicy_v1alpha1.json
+# Container image layers and git pushes over HTTP can take longer than the
+# Envoy default route timeout — disable it for this route.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: forgejo
+  namespace: forgejo
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: forgejo
+  timeout:
+    http:
+      requestTimeout: 0s

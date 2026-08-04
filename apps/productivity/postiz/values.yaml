@@ -14,7 +14,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/gitroomhq/postiz-app
-          tag: v2.22.1@sha256:edcc9a8e3bfaafac72ccae30b630e5eed873b9538f726fcb97c5a7529e6ed10a
+          tag: v2.23.0@sha256:785f97312f66a347fb96cdccc4ded5a33ced69a672c89a9adc8054e7d6a21dc5
         env:
           # Combined image: Caddy on 5000 proxies / -> frontend(4200), /api -> backend(3000)
           MAIN_URL: "https://postiz.atoca.house"

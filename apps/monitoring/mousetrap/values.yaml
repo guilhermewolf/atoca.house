@@ -7,7 +7,7 @@ controllers:
       app:
         image:
           repository: docker.io/sirjmann92/mousetrap
-          tag: 2.3.48@sha256:c1cff246badf73e1fcbcd8b9be467488b9b31de762eb3aa796e6acd04d28c6cf
+          tag: 2.3.52@sha256:99d5bb9862cc0a0499a788a233a3eb2ef99c5d05e8132433fac38c52266a6d6e
         env:
           LOGLEVEL: INFO
         envFrom:

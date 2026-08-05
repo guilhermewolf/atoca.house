@@ -23,6 +23,17 @@ controllers:
             cpu: 10m
           limits:
             memory: 1Gi
+    pod:
+      annotations:
+        k8s.ksgate.org/garage-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "garage",
+            "namespace": "garage"
+          }
+      schedulingGates:
+        - name: k8s.ksgate.org/garage-service
 service:
   app:
     ports:

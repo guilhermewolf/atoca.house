@@ -5,6 +5,26 @@ controllers:
       reloader.stakater.com/auto: "true"
     replicas: 2
     strategy: RollingUpdate
+    pod:
+      annotations:
+        k8s.ksgate.org/dragonfly-ready: |
+          {
+            "apiVersion": "dragonflydb.io/v1alpha1",
+            "kind": "Dragonfly",
+            "name": "dragonfly",
+            "namespace": "dragonfly-cluster",
+            "expression": "has(resource.status) && has(resource.status.phase) && resource.status.phase == 'Ready'"
+          }
+        k8s.ksgate.org/dragonfly-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "dragonfly",
+            "namespace": "dragonfly-cluster"
+          }
+      schedulingGates:
+        - name: k8s.ksgate.org/dragonfly-ready
+        - name: k8s.ksgate.org/dragonfly-service
     containers:
       main:
         image:

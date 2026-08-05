@@ -4,6 +4,25 @@ controllers:
     annotations:
       reloader.stakater.com/auto: "true"
     pod:
+      annotations:
+        k8s.ksgate.org/postgres-ready: |
+          {
+            "apiVersion": "postgres-operator.crunchydata.com/v1beta1",
+            "kind": "PostgresCluster",
+            "name": "postgres",
+            "namespace": "crunchy-postgres-cluster",
+            "expression": "has(resource.status.instances) && resource.status.instances.exists(i, i.readyReplicas >= 1)"
+          }
+        k8s.ksgate.org/postgres-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "postgres-primary",
+            "namespace": "crunchy-postgres-cluster"
+          }
+      schedulingGates:
+        - name: k8s.ksgate.org/postgres-ready
+        - name: k8s.ksgate.org/postgres-service
       securityContext:
         runAsUser: 5050
         runAsGroup: 5050

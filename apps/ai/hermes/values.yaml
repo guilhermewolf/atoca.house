@@ -18,6 +18,135 @@ controllers:
     annotations:
       reloader.stakater.com/auto: "true"
 
+    pod:
+      annotations:
+        k8s.ksgate.org/litellm-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "litellm",
+            "namespace": "litellm",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/litellm-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "litellm",
+            "namespace": "litellm"
+          }
+
+        k8s.ksgate.org/kokoro-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "kokoro",
+            "namespace": "kokoro",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/kokoro-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "kokoro",
+            "namespace": "kokoro"
+          }
+
+        k8s.ksgate.org/searxng-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "searxng",
+            "namespace": "searxng",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/searxng-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "searxng",
+            "namespace": "searxng"
+          }
+
+        k8s.ksgate.org/n8n-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "n8n",
+            "namespace": "n8n",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/n8n-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "n8n",
+            "namespace": "n8n"
+          }
+
+        k8s.ksgate.org/context7-mcp-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "context7-mcp",
+            "namespace": "mcp",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/context7-mcp-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "mcp-context7-mcp-proxy",
+            "namespace": "mcp"
+          }
+
+        k8s.ksgate.org/memory-mcp-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "memory-mcp",
+            "namespace": "mcp",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/memory-mcp-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "mcp-memory-mcp-proxy",
+            "namespace": "mcp"
+          }
+
+        k8s.ksgate.org/ha-mcp-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "ha-mcp",
+            "namespace": "mcp",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/ha-mcp-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "mcp-ha-mcp-proxy",
+            "namespace": "mcp"
+          }
+      schedulingGates:
+        - name: k8s.ksgate.org/litellm-deployment
+        - name: k8s.ksgate.org/litellm-service
+        - name: k8s.ksgate.org/kokoro-deployment
+        - name: k8s.ksgate.org/kokoro-service
+        - name: k8s.ksgate.org/searxng-deployment
+        - name: k8s.ksgate.org/searxng-service
+        - name: k8s.ksgate.org/n8n-deployment
+        - name: k8s.ksgate.org/n8n-service
+        - name: k8s.ksgate.org/context7-mcp-deployment
+        - name: k8s.ksgate.org/context7-mcp-service
+        - name: k8s.ksgate.org/memory-mcp-deployment
+        - name: k8s.ksgate.org/memory-mcp-service
+        - name: k8s.ksgate.org/ha-mcp-deployment
+        - name: k8s.ksgate.org/ha-mcp-service
+
     initContainers:
       # Seed the writable data volume with the read-only ConfigMap and create the
       # agent workspace. chown to the image's hermes user (10000) so the gateway

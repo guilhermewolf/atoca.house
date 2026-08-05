@@ -78,6 +78,16 @@ controllers:
           capabilities: { drop: ["ALL"] }
 
 defaultPodOptions:
+  annotations:
+    k8s.ksgate.org/garage-service: |
+      {
+        "apiVersion": "v1",
+        "kind": "Service",
+        "name": "garage",
+        "namespace": "garage"
+      }
+  schedulingGates:
+    - name: k8s.ksgate.org/garage-service
   securityContext:
     # Image ships a `node` user (1000:1000); the entrypoint gosu-drops to it.
     runAsUser: 1000

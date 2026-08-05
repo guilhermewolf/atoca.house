@@ -4,6 +4,114 @@ controllers:
     pod:
       annotations:
         reloader.stakater.com/auto: "true"
+        k8s.ksgate.org/postgres-ready: |
+          {
+            "apiVersion": "postgres-operator.crunchydata.com/v1beta1",
+            "kind": "PostgresCluster",
+            "name": "postgres",
+            "namespace": "crunchy-postgres-cluster",
+            "expression": "has(resource.status.instances) && resource.status.instances.exists(i, i.readyReplicas >= 1)"
+          }
+        k8s.ksgate.org/postgres-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "postgres-pgbouncer",
+            "namespace": "crunchy-postgres-cluster"
+          }
+
+        k8s.ksgate.org/dragonfly-ready: |
+          {
+            "apiVersion": "dragonflydb.io/v1alpha1",
+            "kind": "Dragonfly",
+            "name": "dragonfly",
+            "namespace": "dragonfly-cluster",
+            "expression": "has(resource.status) && has(resource.status.phase) && resource.status.phase == 'Ready'"
+          }
+        k8s.ksgate.org/dragonfly-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "dragonfly",
+            "namespace": "dragonfly-cluster"
+          }
+
+        k8s.ksgate.org/ollama-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "ollama",
+            "namespace": "ollama",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/ollama-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "ollama",
+            "namespace": "ollama"
+          }
+
+        k8s.ksgate.org/searxng-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "searxng",
+            "namespace": "searxng",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/searxng-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "searxng",
+            "namespace": "searxng"
+          }
+
+        k8s.ksgate.org/qdrant-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "qdrant",
+            "namespace": "qdrant",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/qdrant-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "qdrant",
+            "namespace": "qdrant"
+          }
+
+        k8s.ksgate.org/kokoro-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "kokoro",
+            "namespace": "kokoro",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/kokoro-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "kokoro",
+            "namespace": "kokoro"
+          }
+      schedulingGates:
+        - name: k8s.ksgate.org/postgres-ready
+        - name: k8s.ksgate.org/postgres-service
+        - name: k8s.ksgate.org/dragonfly-ready
+        - name: k8s.ksgate.org/dragonfly-service
+        - name: k8s.ksgate.org/ollama-deployment
+        - name: k8s.ksgate.org/ollama-service
+        - name: k8s.ksgate.org/searxng-deployment
+        - name: k8s.ksgate.org/searxng-service
+        - name: k8s.ksgate.org/qdrant-deployment
+        - name: k8s.ksgate.org/qdrant-service
+        - name: k8s.ksgate.org/kokoro-deployment
+        - name: k8s.ksgate.org/kokoro-service
     containers:
       app:
         image:

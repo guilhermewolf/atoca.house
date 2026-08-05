@@ -49,6 +49,60 @@ controllers:
             cpu: 10m
           limits:
             memory: 3Gi
+    pod:
+      annotations:
+        k8s.ksgate.org/karakeep-chrome-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "karakeep-chrome",
+            "namespace": "karakeep",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/karakeep-chrome-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "karakeep-chrome",
+            "namespace": "karakeep"
+          }
+        k8s.ksgate.org/karakeep-meilisearch-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "karakeep-meilisearch",
+            "namespace": "karakeep",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/karakeep-meilisearch-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "karakeep-meilisearch",
+            "namespace": "karakeep"
+          }
+        k8s.ksgate.org/ollama-deployment: |
+          {
+            "apiVersion": "apps/v1",
+            "kind": "Deployment",
+            "name": "ollama",
+            "namespace": "ollama",
+            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
+          }
+        k8s.ksgate.org/ollama-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "ollama",
+            "namespace": "ollama"
+          }
+      schedulingGates:
+        - name: k8s.ksgate.org/karakeep-chrome-deployment
+        - name: k8s.ksgate.org/karakeep-chrome-service
+        - name: k8s.ksgate.org/karakeep-meilisearch-deployment
+        - name: k8s.ksgate.org/karakeep-meilisearch-service
+        - name: k8s.ksgate.org/ollama-deployment
+        - name: k8s.ksgate.org/ollama-service
 
   chrome:
     annotations:

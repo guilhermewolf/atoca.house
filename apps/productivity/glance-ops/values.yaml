@@ -40,8 +40,8 @@ controllers:
               name: glance-ops
         resources:
           requests:
-            cpu: 100m
-            memory: 64Mi
+            cpu: 10m
+            memory: 32Mi
           limits:
             memory: 192Mi
         securityContext:
@@ -74,6 +74,10 @@ controllers:
               httpGet:
                 path: /healthz
                 port: 8080
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
 
     pod:
       securityContext:

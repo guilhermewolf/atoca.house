@@ -55,7 +55,7 @@ controllers:
               name: openwa-db-secret
         resources:
           requests:
-            cpu: 100m
+            cpu: 15m
             memory: 256Mi
           limits:
             cpu: 1000m

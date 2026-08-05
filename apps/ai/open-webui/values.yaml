@@ -170,8 +170,8 @@ controllers:
               name: open-webui-db-secret
         resources:
           requests:
-            cpu: 500m
-            memory: 256Mi
+            cpu: 10m
+            memory: 1Gi
           limits:
             memory: 1Gi
 
@@ -182,6 +182,10 @@ controllers:
           pullPolicy: IfNotPresent
         ports:
           - containerPort: 9998
+        resources:
+          requests:
+            cpu: 10m
+            memory: 384Mi
 service:
   app:
     ports:

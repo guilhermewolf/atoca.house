@@ -35,8 +35,8 @@ controllers:
               periodSeconds: 15
         resources:
           requests:
-            cpu: 100m
-            memory: 256Mi
+            cpu: 15m
+            memory: 320Mi
           limits:
             memory: 4Gi
         securityContext:
@@ -60,8 +60,8 @@ controllers:
           DOCKER_HOST: tcp://127.0.0.1:2375
         resources:
           requests:
-            cpu: 50m
-            memory: 128Mi
+            cpu: 10m
+            memory: 192Mi
           limits:
             memory: 1Gi
         securityContext:

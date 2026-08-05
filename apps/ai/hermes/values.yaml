@@ -253,7 +253,7 @@ controllers:
           requests:
             # 500m: local faster-whisper transcription of Discord voice
             # messages runs on CPU in this pod.
-            cpu: 500m
+            cpu: 75m
             memory: 1Gi
           limits:
             memory: 4Gi

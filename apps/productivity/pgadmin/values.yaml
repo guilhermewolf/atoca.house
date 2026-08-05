@@ -49,8 +49,8 @@ controllers:
           readiness: *probes
         resources:
           requests:
-            cpu: 50m
-            memory: 100Mi
+            cpu: 10m
+            memory: 320Mi
           limits:
             memory: 500Mi
 

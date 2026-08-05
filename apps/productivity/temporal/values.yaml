@@ -51,8 +51,8 @@ controllers:
             enabled: false
         resources:
           requests:
-            cpu: 25m
-            memory: 256Mi
+            cpu: 100m
+            memory: 384Mi
           limits:
             memory: 1Gi
 
@@ -86,8 +86,8 @@ controllers:
             enabled: false
         resources:
           requests:
-            cpu: 50m
-            memory: 512Mi
+            cpu: 15m
+            memory: 1Gi
           limits:
             memory: 1Gi
 

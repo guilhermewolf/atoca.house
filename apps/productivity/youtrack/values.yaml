@@ -48,8 +48,8 @@ controllers:
           capabilities: { drop: ["ALL"] }
         resources:
           requests:
-            cpu: 500m
-            memory: 2Gi
+            cpu: 15m
+            memory: 2560Mi
           limits:
             # YouTrack grows its own heap up to 80% of the memory available to
             # the container, so the limit is the real tuning knob.

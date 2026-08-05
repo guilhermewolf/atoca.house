@@ -33,6 +33,58 @@ drivers:
     controllerPlugin:
       hostNetwork: true
       replicas: 2
+      # ceph-csi-operator injects 512Mi/250m for plugins and 128Mi/100m for
+      # sidecars when unset. 7d p99: plugin 70Mi, provisioner 63Mi, attacher
+      # 57Mi, resizer 53Mi, snapshotter 51Mi; p95 cpu <=5m for all.
+      # Limits are pinned to the operator's current defaults so behaviour is
+      # unchanged; only requests are reduced.
+      resources:
+        plugin:
+          requests:
+            cpu: 25m
+            memory: 128Mi
+          limits:
+            memory: 1Gi
+        provisioner:
+          requests:
+            cpu: 10m
+            memory: 96Mi
+          limits:
+            memory: 256Mi
+        attacher:
+          requests:
+            cpu: 10m
+            memory: 96Mi
+          limits:
+            memory: 256Mi
+        resizer:
+          requests:
+            cpu: 10m
+            memory: 96Mi
+          limits:
+            memory: 256Mi
+        snapshotter:
+          requests:
+            cpu: 10m
+            memory: 96Mi
+          limits:
+            memory: 256Mi
+    nodePlugin:
+      # DaemonSet: these requests are charged on every node.
+      # 7d p99: plugin 70Mi, driver-registrar 7Mi; p95 cpu <=2m.
+      resources:
+        plugin:
+          requests:
+            cpu: 25m
+            memory: 128Mi
+          limits:
+            memory: 1Gi
+        registrar:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
 
   cephfs:
     enabled: true
@@ -46,6 +98,54 @@ drivers:
     controllerPlugin:
       hostNetwork: true
       replicas: 2
+      # 7d p99: plugin 18Mi, provisioner 19Mi, resizer 16Mi, attacher 15Mi,
+      # snapshotter 15Mi; p95 cpu <=3m. Limits pinned to current defaults.
+      resources:
+        plugin:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 1Gi
+        provisioner:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
+        attacher:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
+        resizer:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
+        snapshotter:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
+    nodePlugin:
+      # DaemonSet: charged on every node. 7d p99: plugin 20Mi, registrar 7Mi.
+      resources:
+        plugin:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 1Gi
+        registrar:
+          requests:
+            cpu: 10m
+            memory: 64Mi
+          limits:
+            memory: 256Mi
 
   nfs:
     enabled: false

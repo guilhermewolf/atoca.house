@@ -1,4 +1,10 @@
 kind: Deployment
+# Requests sized from 7d Prometheus data (p99 mem 47Mi, p95 cpu 3m). Chart
+# defaults request 500m/256Mi. Limits left at chart defaults.
+resources:
+  requests:
+    cpu: 10m
+    memory: 96Mi
 deschedulerPolicyAPIVersion: descheduler/v1alpha2
 deschedulerPolicy:
   metricsProviders:

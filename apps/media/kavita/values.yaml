@@ -13,10 +13,10 @@ controllers:
           TMPDIR: /tmp
         resources:
           requests:
-            cpu: 15m
-            memory: 128Mi
+            cpu: 10m
+            memory: 1280Mi
           limits:
-            memory: 1Gi
+            memory: 1536Mi
         probes:
           liveness:
             enabled: true

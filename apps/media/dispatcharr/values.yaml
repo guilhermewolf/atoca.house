@@ -20,8 +20,8 @@ controllers:
               name: dispatcharr-db-secret
         resources:
           requests:
-            cpu: 50m
-            memory: 1Gi
+            cpu: 10m
+            memory: 768Mi
             nvidia.com/gpu: 1
           limits:
             memory: 3Gi
@@ -77,7 +77,7 @@ controllers:
               name: dispatcharr-db-secret
         resources:
           requests:
-            cpu: 10m
+            cpu: 50m
             memory: 1Gi
           limits:
             memory: 6Gi

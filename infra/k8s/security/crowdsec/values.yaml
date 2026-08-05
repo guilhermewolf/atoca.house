@@ -109,6 +109,12 @@ secrets:
   externalSecret:
     name: crowdsec-lapi-secrets
 lapi:
+  # Requests sized from 7d Prometheus data (p99 mem 43Mi, p95 cpu 6m). Chart
+  # defaults request 500m/500Mi. Limits left at chart defaults.
+  resources:
+    requests:
+      cpu: 25m
+      memory: 128Mi
   podAnnotations:
     reloader.stakater.com/auto: "true"
   strategy:
@@ -134,6 +140,12 @@ lapi:
     serviceMonitor:
       enabled: true
 agent:
+  # DaemonSet: requests count on every node. 7d p99 mem 107Mi, p95 cpu 15m.
+  # Chart defaults request 500m/250Mi. Limits left at chart defaults.
+  resources:
+    requests:
+      cpu: 25m
+      memory: 192Mi
   podAnnotations:
     reloader.stakater.com/auto: "true"
   acquisition:
@@ -178,6 +190,12 @@ agent:
       enabled: true
 appsec:
   enabled: true
+  # 7d p99 mem 44Mi, p95 cpu 11m. Chart defaults request 500m/250Mi.
+  # Limits left at chart defaults.
+  resources:
+    requests:
+      cpu: 25m
+      memory: 96Mi
   podAnnotations:
     reloader.stakater.com/auto: "true"
   strategy:

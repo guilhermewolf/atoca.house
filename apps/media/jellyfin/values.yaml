@@ -36,7 +36,7 @@ controllers:
           capabilities: { drop: ["ALL"] }
         resources:
           requests:
-            cpu: 100m
+            cpu: 75m
             memory: 1Gi
             nvidia.com/gpu: 1
           limits:

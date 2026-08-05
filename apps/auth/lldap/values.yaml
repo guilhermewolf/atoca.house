@@ -24,8 +24,8 @@ controllers:
             enabled: true
         resources:
           requests:
-            cpu: 5m
-            memory: 36M
+            cpu: 10m
+            memory: 32Mi
           limits:
             memory: 128M
     pod:

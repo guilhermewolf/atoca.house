@@ -21,7 +21,11 @@ spec:
     - --default_lua_flags=allow-undeclared-keys
   resources:
     requests:
-      cpu: 100m
+      cpu: 25m
+      # 7d p99 working set is 55Mi across all 3 replicas; without an explicit
+      # request the operator mirrors limits.memory (512Mi) into requests.
+      # Limit stays 512Mi -- it feeds MAX_MEMORY via resourceFieldRef.
+      memory: 128Mi
     limits:
       memory: 512Mi
   topologySpreadConstraints:

@@ -35,8 +35,8 @@ controllers:
           capabilities: { drop: ["ALL"] }
         resources:
           requests:
-            cpu: 25m
-            memory: 64Mi
+            cpu: 15m
+            memory: 96Mi
           limits:
             # CPU limit intentionally unset — the bouncer sits on the request
             # path (ext_authz for every external call) and CFS throttling here

@@ -30,8 +30,8 @@ controllers:
           readiness: *probes
         resources:
           requests:
-            cpu: 10m
-            memory: 256Mi
+            cpu: 15m
+            memory: 320Mi
           limits:
             memory: 1Gi
       browser:
@@ -51,8 +51,8 @@ controllers:
           - { name: DEFAULT_STEALTH, value: "true" }
         resources:
           requests:
-            cpu: 50m
-            memory: 512Mi
+            cpu: 25m
+            memory: 1536Mi
           limits:
             memory: 2Gi
 

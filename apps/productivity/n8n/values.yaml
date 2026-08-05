@@ -23,8 +23,8 @@ controllers:
           N8N_MCP_ACCESS_ENABLED: "true"
         resources:
           requests:
-            cpu: 500m
-            memory: 256Mi
+            cpu: 10m
+            memory: 768Mi
           limits:
             cpu: 1500m
             memory: 2Gi

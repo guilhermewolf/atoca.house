@@ -49,8 +49,8 @@ controllers:
           readiness: *probes
         resources:
           requests:
-            cpu: 250m
-            memory: 256Mi
+            cpu: 200m
+            memory: 768Mi
           limits:
             cpu: 1000m
             memory: 1Gi
@@ -88,7 +88,7 @@ controllers:
               name: twenty-secret
         resources:
           requests:
-            cpu: 250m
+            cpu: 25m
             memory: 1Gi
           limits:
             cpu: 1000m

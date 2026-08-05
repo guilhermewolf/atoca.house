@@ -1,6 +1,14 @@
 # Envoy Gateway configuration for atoca.house cluster
 global:
   imageRegistry: mirror.gcr.io
+deployment:
+  envoyGateway:
+    # Requests sized from 7d Prometheus data (p99 mem 93Mi, p95 cpu 4m).
+    # Chart defaults request 100m/256Mi. Limits left at chart defaults.
+    resources:
+      requests:
+        cpu: 10m
+        memory: 128Mi
 config:
   envoyGateway:
     provider:

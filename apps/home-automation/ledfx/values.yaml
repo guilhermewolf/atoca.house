@@ -55,7 +55,7 @@ controllers:
             add: ["SYS_NICE"]
         resources:
           requests:
-            cpu: 100m
+            cpu: 10m
             memory: 128Mi
           limits:
             memory: 512Mi

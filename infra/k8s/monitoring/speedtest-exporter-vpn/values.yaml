@@ -25,6 +25,10 @@ controllers:
         securityContext:
           allowPrivilegeEscalation: false
           capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 15m
+            memory: 32Mi
 
 defaultPodOptions:
   annotations:

@@ -13,8 +13,8 @@ controllers:
           FILEBROWSER_CONFIG: /config/config.yaml
         resources:
           requests:
-            cpu: 100m
-            memory: 256Mi
+            cpu: 10m
+            memory: 64Mi
           limits:
             memory: 512Mi
             cpu: 1000m

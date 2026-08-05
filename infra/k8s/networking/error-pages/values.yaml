@@ -24,10 +24,10 @@ controllers:
               periodSeconds: 5
         resources:
           requests:
-            cpu: 5m
-            memory: 16M
+            cpu: 10m
+            memory: 32Mi
           limits:
-            memory: 32M
+            memory: 64Mi
         securityContext:
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false

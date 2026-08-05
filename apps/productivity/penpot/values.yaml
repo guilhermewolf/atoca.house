@@ -76,8 +76,8 @@ controllers:
           capabilities: { drop: ["ALL"] }
         resources:
           requests:
-            cpu: 100m
-            memory: 1Gi
+            cpu: 10m
+            memory: 1536Mi
           limits:
             memory: 3Gi
 
@@ -111,8 +111,8 @@ controllers:
           capabilities: { drop: ["ALL"] }
         resources:
           requests:
-            cpu: 50m
-            memory: 256Mi
+            cpu: 10m
+            memory: 192Mi
           limits:
             memory: 1Gi
 
@@ -149,7 +149,7 @@ controllers:
         resources:
           requests:
             cpu: 10m
-            memory: 64Mi
+            memory: 512Mi
           limits:
             memory: 512Mi
 

@@ -55,8 +55,8 @@ controllers:
               periodSeconds: 10
         resources:
           requests:
-            cpu: 25m
-            memory: 768Mi
+            cpu: 10m
+            memory: 1280Mi
           limits:
             memory: 2Gi
         securityContext:

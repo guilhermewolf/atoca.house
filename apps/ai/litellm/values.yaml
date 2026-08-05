@@ -54,8 +54,8 @@ controllers:
               failureThreshold: 60
         resources:
           requests:
-            cpu: 10m
-            memory: 256Mi
+            cpu: 25m
+            memory: 1536Mi
           limits:
             memory: 2Gi
 defaultPodOptions:

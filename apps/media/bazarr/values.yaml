@@ -13,8 +13,8 @@ controllers:
           BAZARR__PORT: &port 6767
         resources:
           requests:
-            cpu: 10m
-            memory: 384Mi
+            cpu: 75m
+            memory: 320Mi
           limits:
             memory: 1Gi
         probes:

@@ -42,8 +42,8 @@ controllers:
             add: ["CHOWN", "SETUID", "SETGID"]
         resources:
           requests:
-            cpu: 10m
-            memory: 128Mi
+            cpu: 750m
+            memory: 768Mi
           limits:
             memory: 3Gi
     statefulset:

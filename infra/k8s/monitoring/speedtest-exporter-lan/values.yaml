@@ -25,6 +25,10 @@ controllers:
         securityContext:
           allowPrivilegeEscalation: false
           capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 50m
+            memory: 32Mi
     pod:
       securityContext:
         runAsGroup: 1000

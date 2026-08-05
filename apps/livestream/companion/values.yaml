@@ -34,8 +34,8 @@ controllers:
           capabilities: { drop: ["ALL"] }
         resources:
           requests:
-            cpu: 50m
-            memory: 256Mi
+            cpu: 75m
+            memory: 1536Mi
           limits:
             memory: 2Gi
 

@@ -71,14 +71,10 @@ data:
       protect_last_n: 20
     display:
       tool_progress: all
-    # TTS stays on in-cluster Kokoro (openai-compatible endpoint); STT (whisper)
-    # rides the gateway now instead of local CPU faster-whisper.
+    # TTS and STT (whisper) both ride the Nous Tool Gateway instead of local
+    # CPU faster-whisper / an in-cluster TTS endpoint.
     tts:
       provider: openai
-      openai:
-        base_url: http://kokoro.kokoro.svc.cluster.local:8880/v1
-        model: kokoro
-        voice: af_heart
       use_gateway: true
     stt:
       enabled: true

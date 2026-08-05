@@ -119,9 +119,3 @@ data:
       local:
         model: small
         language: ""
-    tts:
-      provider: openai
-      openai:
-        base_url: http://kokoro.kokoro.svc.cluster.local:8880/v1
-        model: kokoro
-        voice: af_heart

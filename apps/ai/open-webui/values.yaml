@@ -83,22 +83,6 @@ controllers:
             "name": "qdrant",
             "namespace": "qdrant"
           }
-
-        k8s.ksgate.org/kokoro-deployment: |
-          {
-            "apiVersion": "apps/v1",
-            "kind": "Deployment",
-            "name": "kokoro",
-            "namespace": "kokoro",
-            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
-          }
-        k8s.ksgate.org/kokoro-service: |
-          {
-            "apiVersion": "v1",
-            "kind": "Service",
-            "name": "kokoro",
-            "namespace": "kokoro"
-          }
       schedulingGates:
         - name: k8s.ksgate.org/postgres-ready
         - name: k8s.ksgate.org/postgres-service
@@ -110,8 +94,6 @@ controllers:
         - name: k8s.ksgate.org/searxng-service
         - name: k8s.ksgate.org/qdrant-deployment
         - name: k8s.ksgate.org/qdrant-service
-        - name: k8s.ksgate.org/kokoro-deployment
-        - name: k8s.ksgate.org/kokoro-service
     containers:
       app:
         image:
@@ -153,12 +135,9 @@ controllers:
           OAUTH_ROLES_CLAIM: "groups"
           OAUTH_CODE_CHALLENGE_METHOD: "S256"
 
-          # Text-to-Speech Configuration
-          TTS_ENGINE: "openai"
-          TTS_OPENAI_API_BASE_URL: "http://kokoro.kokoro.svc.cluster.local:8880/v1"
-          TTS_API_KEY: "not-needed"
-          TTS_OPENAI_API_MODEL: "kokoro"
-          TTS_OPENAI_API_VOICE: "af_bella"
+          # Text-to-Speech: browser-native Web Speech API (no in-cluster TTS
+          # backend anymore).
+          TTS_ENGINE: ""
 
           # Document extraction
           CONTENT_EXTRACTION_ENGINE: tika

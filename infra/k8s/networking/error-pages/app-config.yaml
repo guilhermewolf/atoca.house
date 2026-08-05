@@ -1,5 +1,5 @@
 ---
-# Application configuration for kokoro
+# Application configuration for error-pages
 app:
   name: error-pages
   namespace: error-pages

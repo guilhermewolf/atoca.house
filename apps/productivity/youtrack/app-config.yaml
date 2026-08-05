@@ -1,8 +1,0 @@
----
-# Application configuration for youtrack
-app:
-  name: youtrack
-  namespace: youtrack
-  chart: app-template
-  chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 5.0.1

@@ -491,8 +491,6 @@ data:
         karakeep-url: https://karakeep.atoca.house
         kavita: sh:kavita-light
         kavita-url: https://kavita.atoca.house
-        kokoro: mdi:waveform
-        kokoro-url: https://kokoro.atoca.house
         kopia: sh:kopia-light
         kopia-url: https://kopia.atoca.house
         kube-prometheus-stack-moni-alertmanager: mdi:bell-alert
@@ -505,8 +503,6 @@ data:
         litellm-url: https://litellm.atoca.house
         lldap: sh:lldap-light
         lldap-url: https://lldap.atoca.house
-        mediamtx: sh:mediamtx-light
-        mediamtx-url: https://mediamtx.atoca.house
         memory-mcp: mdi:brain
         memory-mcp-url: https://memory-mcp.atoca.house
         mousetrap: mdi:mouse

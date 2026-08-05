@@ -32,46 +32,6 @@ data:
       model: chatgpt/gpt-5.4
       base_url: http://litellm.litellm.svc.cluster.local:4000/v1
       key_env: LITELLM_MASTER_KEY
-    # Auxiliary task routing. Principle: the two subscriptions are for
-    # interactive/main-agent work; high-frequency background tasks go to free
-    # local ollama via litellm (custom:litellm = providers.litellm above).
-    # GPU is a single RTX 4060 Ti 16GB: qwen3-14b q4 is ~9.3GB weights and
-    # ~12-13GB with a long-context KV cache during compression, so it can NOT
-    # co-reside with a second aux model without eviction thrash (~10-20s
-    # cold-load per swap). Every local aux task therefore uses the SAME model,
-    # qwen3-14b — one resident model, zero swaps; titles/search are ~10-token
-    # outputs, so the "big" model costs nothing there.
-    #  - local aux (titles, session search, compression, web extraction,
-    #    memory curation) -> qwen3-14b (strongest local, stays resident)
-    #  - heavy reasoning (background review, kanban decomposition)
-    #    -> chatgpt/gpt-5.4 (ChatGPT Plus, already paid; litellm falls back to
-    #       qwen3-14b on rate limit per its router config)
-    #  - vision -> main (claude-opus-4.8 is multimodal; local models are not)
-    auxiliary:
-      title_generation:
-        provider: custom:litellm
-        model: qwen3-14b
-      session_search:
-        provider: custom:litellm
-        model: qwen3-14b
-      compression:
-        provider: custom:litellm
-        model: qwen3-14b
-      web_extract:
-        provider: custom:litellm
-        model: qwen3-14b
-      curator:
-        provider: custom:litellm
-        model: qwen3-14b
-      background_review:
-        provider: custom:litellm
-        model: chatgpt/gpt-5.4
-      kanban_decomposer:
-        provider: custom:litellm
-        model: chatgpt/gpt-5.4
-      vision:
-        provider: main
-        model: anthropic/claude-opus-4.8
     toolsets:
       - hermes-cli
       - browser

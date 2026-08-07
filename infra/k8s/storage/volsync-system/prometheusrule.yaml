@@ -1,0 +1,111 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: volsync-rules
+spec:
+  groups:
+    - name: volsync.rules
+      rules:
+        - alert: VolsyncControllerAbsent
+          expr: |-
+            absent(up{job="volsync-system-metrics"})
+          for: 10m
+          annotations:
+            summary: >-
+              Volsync controller has disappeared from Prometheus service discovery
+            description: >-
+              No metrics from job volsync-system-metrics for 10 minutes.
+              While the controller is down no backups run at all.
+          labels:
+            severity: critical
+
+    # Volsync keeps exporting metrics for ReplicationSources that no longer exist — the series
+    # are only cleared when the controller restarts. Every rule below is therefore joined
+    # against an Active namespace so a decommissioned app cannot alert forever.
+    - name: volsync.sync
+      rules:
+        - alert: VolsyncVolumeOutOfSync
+          expr: |-
+            volsync_volume_out_of_sync{role="source"} == 1
+            and on (obj_namespace)
+            label_replace(kube_namespace_status_phase{phase="Active"} == 1, "obj_namespace", "$1", "namespace", "(.+)")
+          for: 1h
+          annotations:
+            summary: >-
+              Volsync backup {{ $labels.obj_namespace }}/{{ $labels.obj_name }} is out of sync
+            description: >-
+              ReplicationSource {{ $labels.obj_namespace }}/{{ $labels.obj_name }} has missed its
+              scheduled synchronization for over an hour. Check the mover job with
+              `kubectl -n {{ $labels.obj_namespace }} get jobs,pods | grep volsync`.
+          labels:
+            severity: warning
+
+        - alert: VolsyncVolumeOutOfSyncCritical
+          expr: |-
+            volsync_volume_out_of_sync{role="source"} == 1
+            and on (obj_namespace)
+            label_replace(kube_namespace_status_phase{phase="Active"} == 1, "obj_namespace", "$1", "namespace", "(.+)")
+          for: 6h
+          annotations:
+            summary: >-
+              Volsync backup {{ $labels.obj_namespace }}/{{ $labels.obj_name }} has been out of sync for 6h
+            description: >-
+              ReplicationSource {{ $labels.obj_namespace }}/{{ $labels.obj_name }} has not completed a
+              scheduled sync in 6 hours. Inspect the mover pod; a common cause is a cache PVC on
+              openebs-hostpath whose node-local directory vanished after a node rebuild
+              (`MountVolume.NewMounter initialization failed ... path does not exist`).
+              Remedy: pause the ReplicationSource, delete the mover job and the stale
+              `volsync-src-<app>-backup-cache` PVC, then unpause so volsync reprovisions the cache.
+          labels:
+            severity: critical
+
+        # Catches failure modes that volsync_volume_out_of_sync does NOT report — most
+        # importantly a leftover `spec.trigger.manual` field, which silently overrides the
+        # schedule and parks the source on "Waiting for manual trigger" indefinitely while
+        # the out-of-sync gauge stays 0. All ReplicationSources here run daily, so a 26h
+        # window without a completed sync is unambiguous.
+        #
+        # The uptime guard suppresses false positives after a controller restart, which resets
+        # the sync counters and would otherwise make every source look stale for 26h.
+        - alert: VolsyncBackupStale
+          expr: |-
+            (
+              increase(volsync_sync_duration_seconds_count{role="source"}[26h]) == 0
+              and on (obj_namespace)
+              label_replace(kube_namespace_status_phase{phase="Active"} == 1, "obj_namespace", "$1", "namespace", "(.+)")
+            )
+            and on () (time() - min(process_start_time_seconds{job="volsync-system-metrics"})) > 93600
+          for: 30m
+          annotations:
+            summary: >-
+              Volsync backup {{ $labels.obj_namespace }}/{{ $labels.obj_name }} has not run in 26h
+            description: >-
+              ReplicationSource {{ $labels.obj_namespace }}/{{ $labels.obj_name }} has completed no
+              synchronization in the last 26 hours despite a daily schedule.
+              Check for a stale manual trigger with
+              `kubectl -n {{ $labels.obj_namespace }} get replicationsource {{ $labels.obj_name }} -o jsonpath='{.spec.trigger}'`
+              — if `manual` is present, remove it with
+              `kubectl -n {{ $labels.obj_namespace }} patch replicationsource {{ $labels.obj_name }} --type=json -p '[{"op":"remove","path":"/spec/trigger/manual"}]'`.
+          labels:
+            severity: critical
+
+    - name: volsync.movers
+      rules:
+        # Surfaces a wedged mover within 30 minutes rather than waiting a full schedule
+        # interval for the sync alerts to fire.
+        - alert: VolsyncMoverPodStuck
+          expr: |-
+            kube_pod_status_phase{phase="Pending", pod=~"volsync-(src|dst)-.+"} == 1
+          for: 30m
+          annotations:
+            summary: >-
+              Volsync mover pod {{ $labels.namespace }}/{{ $labels.pod }} is stuck Pending
+            description: >-
+              Mover pod {{ $labels.namespace }}/{{ $labels.pod }} has been Pending for 30 minutes,
+              so its backup cannot make progress. Check the mount error with
+              `kubectl -n {{ $labels.namespace }} describe pod {{ $labels.pod }}`.
+              A cache PVC pinned by nodeAffinity to a rebuilt node is the usual cause.
+          labels:
+            severity: warning

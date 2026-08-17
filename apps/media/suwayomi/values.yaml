@@ -7,7 +7,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/suwayomi/suwayomi-server
-          tag: v2.3.2298@sha256:1310a51391418d77614aabe990f43213bda818275fcc408b3a21bfe419813ec4
+          tag: v2.3.2333@sha256:d5a2da7f1579fd016b3e2a69155ca147a6ee79d39dcabf1038ef9b2da2c911b2
         env:
           TZ: Europe/Amsterdam
           BIND_IP: 0.0.0.0

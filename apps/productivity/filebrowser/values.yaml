@@ -7,7 +7,7 @@ controllers:
       filebrowser:
         image:
           repository: ghcr.io/gtsteffaniak/filebrowser
-          tag: 1.5.0-stable@sha256:fc213590ebc090cb8205125cd3ecdfa9066b9ed4a0b53fe2570972d6a3379e73
+          tag: 1.5.2-stable@sha256:adc48bbc85a7f3ab3994cf2cc721159ad82046ea9edcaf22fdc41ef4be6466f7
           pullPolicy: IfNotPresent
         env:
           FILEBROWSER_CONFIG: /config/config.yaml

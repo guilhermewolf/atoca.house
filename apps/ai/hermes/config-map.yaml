@@ -69,9 +69,60 @@ data:
       - hermes-cli
     terminal:
       backend: local
-      cwd: /opt/data/workspace
-      timeout: 180
+      # Default cwd is the atoca.house checkout maintained by the clone-repo
+      # init container. Being inside the git root is what makes hermes load the
+      # repo's `.hermes.md` context file and the project skills under
+      # `.hermes/skills/` — that is where the GitOps/PR workflow lives.
+      cwd: /opt/data/workspace/atoca.house
+      timeout: 300
       persistent_shell: true
+      # GITHUB_TOKEN must reach the shell: /opt/data/.gitconfig sets a
+      # credential helper that echoes it for github.com pushes. Without the
+      # passthrough the sandbox filter strips it and every push 403s.
+      env_passthrough:
+        - GITHUB_TOKEN
+    # Project skills are not auto-trusted from a clone — the checkout has to be
+    # listed here for `.hermes/skills/*` in the repo to load.
+    skills:
+      project_discovery: true
+      trusted_project_dirs:
+        - /opt/data/workspace/atoca.house
+    # Git work is routine here, so the everyday commands are pre-approved and
+    # the genuinely irreversible ones are denied outright (deny beats yolo).
+    approvals:
+      mode: smart
+      deny:
+        # Blind force-push is out; `--force-with-lease` stays allowed because
+        # re-pushing a rebased feature branch needs it (the glob below does not
+        # match it — it requires a space right after `--force`).
+        - "git push --force *"
+        - "git push -f *"
+        - "git push origin main*"
+        - "git push*HEAD:main*"
+        - "git branch -D main*"
+      smart_policy: |
+        Context: this shell owns a checkout of guilhermewolf/atoca.house at
+        /opt/data/workspace/atoca.house. That repo is GitOps — anything merged
+        to main deploys to the live Kubernetes cluster.
+        APPROVE routine repo work: git status/diff/log/fetch/pull/checkout/
+        switch/branch/add/commit/stash/rebase onto origin/main, git push of a
+        feature branch, kubectl get/describe/logs (read-only), yq/jq/grep/sed
+        over files inside the checkout.
+        ESCALATE anything that rewrites shared history, touches files outside
+        /opt/data/workspace/atoca.house, or writes to the cluster
+        (kubectl apply/delete/patch/scale, argocd sync).
+        Never approve a direct push to main — changes reach main through a pull
+        request that a human merges.
+    command_allowlist:
+      - git fetch *
+      - git pull --rebase*
+      - git rebase *
+      - git push *
+      - git push --force-with-lease*
+      - git checkout *
+      - git switch *
+      - git restore *
+      - git stash *
     # Memory: built-in MEMORY.md/USER.md always active; external provider is additive.
     # Holographic = local SQLite (FTS5 + trust scoring + contradiction detection),
     # zero extra infra, no LLM/embeddings/Qdrant, no GPU. DB lives on the /opt/data
@@ -122,6 +173,14 @@ data:
       # systems"). Token is a fine-grained PAT scoped to that repo only
       # (Contents RW, Pull requests RW, Metadata R), from hermes-secret.
       # merge_pull_request intentionally NOT whitelisted — humans merge.
+      #
+      # Division of labour: all *content* changes go through the local git
+      # checkout at /opt/data/workspace/atoca.house (branch, commit, rebase,
+      # push — the only way to rebase and to see a real diff). This server is
+      # for the GitHub-side operations git cannot do: opening/reading PRs,
+      # CI status, issues. The file-writing tools (push_files,
+      # create_or_update_file, create_branch) are deliberately left out so
+      # there is exactly one write path and no divergence between them.
       github:
         command: "npx"
         args: ["-y", "@modelcontextprotocol/server-github"]
@@ -132,15 +191,18 @@ data:
             - get_file_contents
             - search_code
             - list_commits
-            - create_branch
-            - push_files
-            - create_or_update_file
             - create_pull_request
             - list_pull_requests
             - get_pull_request
             - get_pull_request_status
+            - get_pull_request_files
+            - get_pull_request_comments
+            - get_pull_request_reviews
+            - update_pull_request_branch
             - list_issues
+            - get_issue
             - create_issue
+            - update_issue
             - add_issue_comment
         prompts: false
         resources: false

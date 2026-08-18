@@ -159,6 +159,72 @@ controllers:
             cp /usr/bin/kubectl /opt/data/bin/kubectl
             chown -R 10000:10000 /opt/data/bin
 
+      # Keep a real git checkout of this repo on the PVC. hermes works in it
+      # directly (branch/commit/rebase/push) — the GitHub MCP server only opens
+      # and reads PRs. Every pod start re-syncs main from origin so the agent
+      # never starts from a stale tree; in-flight feature branches are left
+      # alone (fetch only) so nothing uncommitted is destroyed.
+      #
+      # Clone is anonymous (public repo). Pushes authenticate at runtime via the
+      # credential helper written below, which reads $GITHUB_TOKEN from the
+      # container env — the PAT is never written to the volume.
+      clone-repo:
+        image:
+          repository: docker.io/alpine/git
+          tag: "2.54.0"
+        command:
+          - sh
+          - -c
+          - |
+            set -eu
+            REPO=https://github.com/guilhermewolf/atoca.house.git
+            DIR=/opt/data/workspace/atoca.house
+            mkdir -p /opt/data/workspace
+
+            cat > /opt/data/.gitconfig <<'EOF'
+            [user]
+            	name = Hermes
+            	email = hermes@atoca.house
+            [init]
+            	defaultBranch = main
+            [safe]
+            	directory = /opt/data/workspace/atoca.house
+            [pull]
+            	rebase = true
+            [rebase]
+            	autoStash = true
+            [fetch]
+            	prune = true
+            [push]
+            	default = current
+            [credential "https://github.com"]
+            	helper = "!f() { echo username=x-access-token; echo password=$GITHUB_TOKEN; }; f"
+            EOF
+            chown 10000:10000 /opt/data/.gitconfig
+
+            if [ ! -d "$DIR/.git" ]; then
+              git clone "$REPO" "$DIR"
+            fi
+
+            cd "$DIR"
+            git remote set-url origin "$REPO"
+            git fetch origin --prune --tags || echo "WARN: fetch failed, using local state"
+            # Only fast-forward the checkout when it is on a clean main. A dirty
+            # tree or a feature branch is the agent's in-flight work — leave it.
+            BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+            if [ "$BRANCH" = "main" ] && [ -z "$(git status --porcelain)" ]; then
+              git reset --hard origin/main
+            else
+              echo "INFO: on '$BRANCH' (dirty=$([ -n "$(git status --porcelain)" ] && echo yes || echo no)) — fetched only"
+            fi
+            # Prune local branches whose upstream is gone (merged PRs).
+            git for-each-ref --format='%(refname:short) %(upstream:track)' refs/heads \
+              | awk '$2 == "[gone]" {print $1}' \
+              | while read -r b; do
+                  [ "$b" = "$BRANCH" ] || git branch -D "$b" || true
+                done
+            chown -R 10000:10000 /opt/data/workspace
+
     containers:
       app:
         image:

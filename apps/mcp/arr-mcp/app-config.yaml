@@ -1,0 +1,5 @@
+---
+# Application configuration for arr-mcp
+app:
+  name: arr-mcp
+  namespace: mcp

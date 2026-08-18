@@ -15,14 +15,18 @@ data:
           model: chatgpt/gpt-5.4
       # --- Free-tier cloud providers (rpm/tpm = free-plan caps; router throttles
       #     and fails over to local ollama on 429/cooldown) ---
+      # drop_params per-deployment: llama-3.3-70b has no reasoning_effort, and a
+      # fallback from a reasoning model would otherwise 400 instead of answering.
       - model_name: groq-llama-3.3-70b
         litellm_params:
           model: groq/llama-3.3-70b-versatile
+          drop_params: true
           rpm: 30
           tpm: 6000
       - model_name: cerebras-llama-3.3-70b
         litellm_params:
           model: cerebras/llama-3.3-70b
+          drop_params: true
           rpm: 30
           tpm: 60000
       - model_name: openrouter-deepseek-r1
@@ -83,7 +87,7 @@ data:
         - gemma4-e4b: ["qwen3.5-9b", "groq-llama-3.3-70b"]
         # ChatGPT subscription is the main model: on rate-limit/quota, drop to the
         # strongest local model, then cloud free-tier.
-        - chatgpt/gpt-5.4: ["groq-llama-3.3-70b"]
+        - chatgpt/gpt-5.4: ["groq-llama-3.3-70b", "cerebras-llama-3.3-70b", "qwen3.5-9b"]
 
     litellm_settings:
       success_callback: ["prometheus"]

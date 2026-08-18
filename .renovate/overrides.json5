@@ -14,6 +14,17 @@
       allowedVersions: "<21",
     },
     {
+      description: "Pin Jellyfin to 10.x — 12.0 disables legacy authorization by default, which breaks InfuseSync/Infuse",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["ghcr.io/jellyfin/jellyfin"],
+      allowedVersions: "<12",
+      // Patch releases change the plugin ABI: 10.11.7 -> 10.11.11 broke LDAP-Auth 22
+      // (MissingMethodException on IUserManager.RenameUser) and locked every user out.
+      // Never merge unattended, and let each release soak before the PR appears.
+      automerge: false,
+      minimumReleaseAge: "7 days",
+    },
+    {
       description: "Override Talos Installer Package Name",
       matchDatasources: ["docker"],
       matchPackageNames: ["/factory\\.talos\\.dev/"],

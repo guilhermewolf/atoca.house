@@ -15,23 +15,28 @@ data:
           model: chatgpt/gpt-5.4
       # --- Free-tier cloud providers (rpm/tpm = free-plan caps; router throttles
       #     and fails over to local ollama on 429/cooldown) ---
-      # drop_params per-deployment: llama-3.3-70b has no reasoning_effort, and a
-      # fallback from a reasoning model would otherwise 400 instead of answering.
-      - model_name: groq-llama-3.3-70b
+      # drop_params per-deployment: keeps a fallback from a reasoning model from
+      # 400ing when the target rejects params like reasoning_effort.
+      # llama-3.3-70b was retired by both groq and cerebras (2026-08) — the API
+      # returns model_not_found. gpt-oss-120b is the replacement on both.
+      - model_name: groq-gpt-oss-120b
         litellm_params:
-          model: groq/llama-3.3-70b-versatile
+          model: groq/openai/gpt-oss-120b
           drop_params: true
           rpm: 30
           tpm: 6000
-      - model_name: cerebras-llama-3.3-70b
+      - model_name: cerebras-gpt-oss-120b
         litellm_params:
-          model: cerebras/llama-3.3-70b
+          model: cerebras/gpt-oss-120b
           drop_params: true
           rpm: 30
           tpm: 60000
-      - model_name: openrouter-deepseek-r1
+      # deepseek-r1:free was withdrawn from openrouter's free tier; gpt-oss-20b
+      # is the only free chat model left that is worth routing to.
+      - model_name: openrouter-gpt-oss-20b
         litellm_params:
-          model: openrouter/deepseek/deepseek-r1:free
+          model: openrouter/openai/gpt-oss-20b:free
+          drop_params: true
           rpm: 20
       - model_name: mistral-small
         litellm_params:
@@ -78,16 +83,16 @@ data:
       allowed_fails: 2
       cooldown_time: 60
       fallbacks:
-        - groq-llama-3.3-70b: ["cerebras-llama-3.3-70b"]
-        - cerebras-llama-3.3-70b: ["groq-llama-3.3-70b"]
-        - openrouter-deepseek-r1: ["groq-llama-3.3-70b"]
-        - mistral-small: ["qwen3.5-9b", "groq-llama-3.3-70b"]
-        - qwen3.5-9b: ["groq-llama-3.3-70b"]
-        - gemma4-12b: ["groq-llama-3.3-70b"]
-        - gemma4-e4b: ["qwen3.5-9b", "groq-llama-3.3-70b"]
+        - groq-gpt-oss-120b: ["cerebras-gpt-oss-120b"]
+        - cerebras-gpt-oss-120b: ["groq-gpt-oss-120b"]
+        - openrouter-gpt-oss-20b: ["groq-gpt-oss-120b"]
+        - mistral-small: ["qwen3.5-9b", "groq-gpt-oss-120b"]
+        - qwen3.5-9b: ["groq-gpt-oss-120b"]
+        - gemma4-12b: ["groq-gpt-oss-120b"]
+        - gemma4-e4b: ["qwen3.5-9b", "groq-gpt-oss-120b"]
         # ChatGPT subscription is the main model: on rate-limit/quota, drop to the
         # strongest local model, then cloud free-tier.
-        - chatgpt/gpt-5.4: ["groq-llama-3.3-70b", "cerebras-llama-3.3-70b", "qwen3.5-9b"]
+        - chatgpt/gpt-5.4: ["groq-gpt-oss-120b", "cerebras-gpt-oss-120b", "qwen3.5-9b"]
 
     litellm_settings:
       success_callback: ["prometheus"]

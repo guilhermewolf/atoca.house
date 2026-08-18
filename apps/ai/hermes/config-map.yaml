@@ -8,20 +8,63 @@ data:
   config.yaml: |
     # Hermes Agent configuration
     # Docs: https://hermes-agent.nousresearch.com/docs
-    # Main model: ChatGPT Plus subscription (gpt-5.4) via litellm. This is the only
-    # model the Plus plan exposes — codex-* names are rejected by the Codex backend
-    # for ChatGPT accounts, so they can't be the main model here. On rate-limit/quota
+    # Main model: ChatGPT Plus subscription, reached DIRECTLY through the
+    # `openai-codex` provider (OAuth device-flow, `hermes auth add openai-codex`,
+    # token in /opt/data/auth.json). It used to go through litellm's `chatgpt/*`
+    # shim, which cannot refresh an OAuth subscription and fails every call with
+    # "Unknown items in responses API response: []". hermes owns the credential
+    # pool — refresh, rotation and exhaustion tracking — so it talks to the
+    # subscription itself. The picker also offers gpt-5.5 / gpt-5.4-mini.
     model:
-      default: chatgpt/gpt-5.4
-      provider: custom:litellm
+      default: gpt-5.4
+      provider: openai-codex
     providers:
       litellm:
         base_url: http://litellm.litellm.svc.cluster.local:4000/v1
         api_key: ${LITELLM_MASTER_KEY}
+    # Fallback chain, tried in order on rate-limit / overload / connection error.
+    # Subscription first (the other paid account), then litellm's keyed cloud
+    # tiers, and only then local ollama — the GPU is the last resort, never the
+    # default. Free-tier caps are small (groq 8k TPM, cerebras 30k TPM), so a
+    # long conversation skips them via litellm's pre-call context checks and
+    # lands wherever it fits.
+    fallback_model:
+      - provider: nous
+        model: anthropic/claude-opus-4.8
+        base_url: https://inference-api.nousresearch.com/v1
+      - provider: custom:litellm
+        model: cerebras-gpt-oss-120b
+        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
+        key_env: LITELLM_MASTER_KEY
+      - provider: custom:litellm
+        model: groq-gpt-oss-120b
+        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
+        key_env: LITELLM_MASTER_KEY
+      - provider: custom:litellm
+        model: qwen3.5-9b
+        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
+        key_env: LITELLM_MASTER_KEY
+    # Side tasks never touch the metered subscriptions: they go to litellm's
+    # free cloud tiers, which is exactly what those keys are for. Vision is the
+    # exception — gpt-oss is text-only, so it uses the Nous default (gemini
+    # flash class), the cheapest multimodal route available.
     auxiliary:
       title_generation:
-        provider: main
-        model: gemma4-e4b
+        provider: custom:litellm
+        model: groq-gpt-oss-120b
+      compression:
+        provider: custom:litellm
+        model: cerebras-gpt-oss-120b
+      web_extract:
+        provider: custom:litellm
+        model: groq-gpt-oss-120b
+        reasoning_effort: low
+      session_search:
+        provider: custom:litellm
+        model: groq-gpt-oss-120b
+      vision:
+        provider: nous
+        model: ""
     toolsets:
       - hermes-cli
     terminal:

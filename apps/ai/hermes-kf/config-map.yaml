@@ -23,15 +23,47 @@ data:
         base_url: http://litellm.litellm.svc.cluster.local:4000/v1
         api_key: ${LITELLM_MASTER_KEY}
     # Failover: when Nous rate-limits or the monthly credit runs out (402/429),
-    # drop to the ChatGPT Plus subscription (gpt-5.4) via litellm — litellm's own
-    # router then falls further to local ollama (qwen3-14b) and cloud free-tier,
-    # so the agent never sees a hard error. Explicit base_url/key_env so the
-    # fallback resolves even if the named provider lookup changes upstream.
+    # drop to the ChatGPT Plus subscription — reached DIRECTLY via the
+    # `openai-codex` OAuth provider, not litellm's `chatgpt/*` shim, which cannot
+    # refresh a subscription's OAuth token and fails every call with "Unknown
+    # items in responses API response: []". After both subscriptions, litellm's
+    # keyed free tiers, and local ollama dead last: the GPU is the floor of the
+    # chain, never a default.
     fallback_model:
-      provider: custom:litellm
-      model: chatgpt/gpt-5.4
-      base_url: http://litellm.litellm.svc.cluster.local:4000/v1
-      key_env: LITELLM_MASTER_KEY
+      - provider: openai-codex
+        model: gpt-5.4
+      - provider: custom:litellm
+        model: cerebras-gpt-oss-120b
+        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
+        key_env: LITELLM_MASTER_KEY
+      - provider: custom:litellm
+        model: groq-gpt-oss-120b
+        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
+        key_env: LITELLM_MASTER_KEY
+      - provider: custom:litellm
+        model: qwen3.5-9b
+        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
+        key_env: LITELLM_MASTER_KEY
+    # Side tasks stay off the metered Portal credit — they run on litellm's free
+    # cloud tiers. Vision keeps the Nous default (gemini flash class): gpt-oss is
+    # text-only and claude-opus on every screenshot would burn credit fast.
+    auxiliary:
+      title_generation:
+        provider: custom:litellm
+        model: groq-gpt-oss-120b
+      compression:
+        provider: custom:litellm
+        model: cerebras-gpt-oss-120b
+      web_extract:
+        provider: custom:litellm
+        model: groq-gpt-oss-120b
+        reasoning_effort: low
+      session_search:
+        provider: custom:litellm
+        model: groq-gpt-oss-120b
+      vision:
+        provider: nous
+        model: ""
     toolsets:
       - hermes-cli
       - browser

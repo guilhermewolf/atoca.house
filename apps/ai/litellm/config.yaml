@@ -13,24 +13,37 @@ data:
           mode: responses
         litellm_params:
           model: chatgpt/gpt-5.4
+      # The paid subscriptions (Nous Portal, ChatGPT) are deliberately NOT here.
+      # Both authenticate by OAuth device flow with a refreshing token, which
+      # this proxy cannot maintain — the `chatgpt/*` group below is the proof.
+      # The hermes agents hold those credentials natively and call the providers
+      # direct; litellm owns the API-key providers and local ollama.
       # --- Free-tier cloud providers (rpm/tpm = free-plan caps; router throttles
       #     and fails over to local ollama on 429/cooldown) ---
       # drop_params per-deployment: keeps a fallback from a reasoning model from
       # 400ing when the target rejects params like reasoning_effort.
       # llama-3.3-70b was retired by both groq and cerebras (2026-08) — the API
       # returns model_not_found. gpt-oss-120b is the replacement on both.
+      # rpm/tpm/max_input_tokens below are the live free-plan caps, read from the
+      # providers' x-ratelimit-* response headers (2026-08-18). max_input_tokens
+      # is what makes enable_pre_call_checks skip a deployment whose per-minute
+      # token budget cannot hold the request, instead of burning a 429 on it.
       - model_name: groq-gpt-oss-120b
+        model_info:
+          max_input_tokens: 8000
         litellm_params:
           model: groq/openai/gpt-oss-120b
           drop_params: true
           rpm: 30
-          tpm: 6000
+          tpm: 8000
       - model_name: cerebras-gpt-oss-120b
+        model_info:
+          max_input_tokens: 30000
         litellm_params:
           model: cerebras/gpt-oss-120b
           drop_params: true
-          rpm: 30
-          tpm: 60000
+          rpm: 5
+          tpm: 30000
       # deepseek-r1:free was withdrawn from openrouter's free tier; gpt-oss-20b
       # is the only free chat model left that is worth routing to.
       - model_name: openrouter-gpt-oss-20b
@@ -46,15 +59,23 @@ data:
       # --- Local ollama (RTX 4060 Ti 16GB, no rate limits) ---
       # Model names below mirror exactly what `ollama list` has pulled. Only one
       # ~9GB model fits in VRAM at a time, so cross-model fallbacks pay a cold-load.
+      # max_input_tokens mirrors OLLAMA_CONTEXT_LENGTH (15000) on the ollama
+      # deployment — the weights allow far more, the server is what caps it.
       - model_name: qwen3.5-9b
+        model_info:
+          max_input_tokens: 15000
         litellm_params:
           model: ollama_chat/qwen3.5:9b
           api_base: http://ollama.ollama.svc.cluster.local
       - model_name: gemma4-12b
+        model_info:
+          max_input_tokens: 15000
         litellm_params:
           model: ollama_chat/gemma4:12b
           api_base: http://ollama.ollama.svc.cluster.local
       - model_name: gemma4-e4b
+        model_info:
+          max_input_tokens: 15000
         litellm_params:
           model: ollama_chat/gemma4:e4b
           api_base: http://ollama.ollama.svc.cluster.local
@@ -82,17 +103,23 @@ data:
       # On free-tier 429/limit, cool the deployment down and fail over to local ollama
       allowed_fails: 2
       cooldown_time: 60
+      # Filter deployments by max_input_tokens before dispatch, so an oversized
+      # request skips the small free tiers rather than 429ing through all of them.
+      enable_pre_call_checks: true
+      # Cloud free tiers first, local ollama always last: the GPU is the floor of
+      # every chain, not a mid-chain hop. Cerebras leads groq — 30k TPM vs 8k.
       fallbacks:
-        - groq-gpt-oss-120b: ["cerebras-gpt-oss-120b"]
-        - cerebras-gpt-oss-120b: ["groq-gpt-oss-120b"]
-        - openrouter-gpt-oss-20b: ["groq-gpt-oss-120b"]
-        - mistral-small: ["qwen3.5-9b", "groq-gpt-oss-120b"]
-        - qwen3.5-9b: ["groq-gpt-oss-120b"]
-        - gemma4-12b: ["groq-gpt-oss-120b"]
-        - gemma4-e4b: ["qwen3.5-9b", "groq-gpt-oss-120b"]
-        # ChatGPT subscription is the main model: on rate-limit/quota, drop to the
-        # strongest local model, then cloud free-tier.
-        - chatgpt/gpt-5.4: ["groq-gpt-oss-120b", "cerebras-gpt-oss-120b", "qwen3.5-9b"]
+        - groq-gpt-oss-120b: ["cerebras-gpt-oss-120b", "qwen3.5-9b"]
+        - cerebras-gpt-oss-120b: ["groq-gpt-oss-120b", "qwen3.5-9b"]
+        - openrouter-gpt-oss-20b: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
+        - mistral-small: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
+        - qwen3.5-9b: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b"]
+        - gemma4-12b: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b"]
+        - gemma4-e4b: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b"]
+        # Kept only for non-hermes callers still asking for this group by name.
+        # The upstream shim is broken (see the model_list note), so every request
+        # here degrades straight to the keyed tiers.
+        - chatgpt/gpt-5.4: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
 
     litellm_settings:
       success_callback: ["prometheus"]

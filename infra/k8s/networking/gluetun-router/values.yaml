@@ -1,0 +1,148 @@
+---
+controllers:
+  gluetun-router:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    # Pod pins a static macvlan IP/MAC, so two pods can never coexist.
+    # RollingUpdate would start the new pod before killing the old one and the
+    # new one fails with "address already in use". Recreate forces the old down.
+    strategy: Recreate
+    initContainers:
+      # net.ipv4.ip_forward and rp_filter are network-namespace scoped, so
+      # flipping them here applies to the whole pod. Both are "unsafe" sysctls
+      # that kubelet will not accept via securityContext.sysctls, hence the
+      # privileged init container writing /proc/sys directly.
+      sysctl:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/qdm12/gluetun
+          repository: ghcr.io/qdm12/gluetun
+          tag: v3.41.3@sha256:fa19cc76b2af13d57a8d3dc3066f2ada061b1c761b8aecf989b3877c0486e027
+        command:
+          - /bin/sh
+          - -c
+          - |
+            set -e
+            echo 1 > /proc/sys/net/ipv4/ip_forward
+            echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter
+        securityContext:
+          privileged: true
+          runAsUser: 0
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            memory: 32Mi
+    containers:
+      gluetun:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/qdm12/gluetun
+          repository: ghcr.io/qdm12/gluetun
+          tag: v3.41.3@sha256:fa19cc76b2af13d57a8d3dc3066f2ada061b1c761b8aecf989b3877c0486e027
+        env:
+          VPN_SERVICE_PROVIDER: airvpn
+          VPN_TYPE: wireguard
+          WIREGUARD_MTU: 1320
+          SERVER_NAMES: Dalim,Piautos,Taiyangshou,Dedalus
+          # Subnets gluetun may reach outside the tunnel. 192.168.90.0/24 is the
+          # VPN VLAN whose clients we forward for; the rest is cluster + LAN.
+          FIREWALL_OUTBOUND_SUBNETS: 10.244.0.0/16,10.96.0.0/12,192.168.40.0/24,192.168.90.0/24
+          DOT: "off"
+          DNS_ADDRESS: 10.96.0.10
+          HEALTH_TARGET_ADDRESS: 1.1.1.1:443
+          # Control server (port-forward status, public IP) on the pod network.
+          HTTP_CONTROL_SERVER_ADDRESS: ":8000"
+          # AirVPN hands out a static forwarded port from the web panel. Set it
+          # here and in the DNAT rule in the gluetun-router ConfigMap
+          # so qbittorrent (192.168.90.10) can accept inbound peers.
+          FIREWALL_VPN_INPUT_PORTS: "36300"
+        envFrom:
+          - secretRef:
+              name: gluetun-router-vpn-secret
+        probes:
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              exec:
+                command: ["/gluetun-entrypoint", "healthcheck"]
+              initialDelaySeconds: 10
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 30
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              exec:
+                command: ["/gluetun-entrypoint", "healthcheck"]
+              periodSeconds: 30
+              timeoutSeconds: 10
+              failureThreshold: 10
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            add: ["NET_ADMIN"]
+        resources:
+          requests:
+            cpu: 200m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+
+defaultPodOptions:
+  annotations:
+    # macvlan leg on VLAN 6 that the client pods use as their next hop.
+    # NOTE: this NAD carries NO routes - the gateway must not send its own
+    # WireGuard handshake back into itself. Its default route stays on eth0
+    # (Cilium pod network), so the tunnel is established over normal cluster
+    # egress and only forwarded client traffic uses tun0.
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn-gateway",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.2/24"],
+        "mac": "4a:1f:6c:22:0d:07"
+      }]
+
+service:
+  gluetun-router:
+    controller: gluetun-router
+    ports:
+      control:
+        port: 8000
+
+configMaps:
+  iptables:
+    data:
+      # Executed verbatim after gluetun's own rules. gluetun sets the FORWARD
+      # policy to DROP, so every forwarded flow needs an explicit accept.
+      post-rules.txt: |
+        iptables -A FORWARD -i net1 -o tun0 -j ACCEPT
+        iptables -A FORWARD -i tun0 -o net1 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+        iptables -t nat -A POSTROUTING -s 192.168.90.0/24 -o tun0 -j MASQUERADE
+        iptables -t mangle -A FORWARD -o tun0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+        iptables -t nat -A PREROUTING -i tun0 -p tcp --dport 36300 -j DNAT --to-destination 192.168.90.10:36300
+        iptables -t nat -A PREROUTING -i tun0 -p udp --dport 36300 -j DNAT --to-destination 192.168.90.10:36300
+        iptables -A FORWARD -i tun0 -o net1 -p tcp --dport 36300 -d 192.168.90.10 -j ACCEPT
+        iptables -A FORWARD -i tun0 -o net1 -p udp --dport 36300 -d 192.168.90.10 -j ACCEPT
+
+persistence:
+  iptables:
+    enabled: true
+    type: configMap
+    name: gluetun-router
+    globalMounts:
+      - path: /iptables/post-rules.txt
+        subPath: post-rules.txt
+        readOnly: true
+
+  gluetun:
+    type: emptyDir
+    advancedMounts:
+      gluetun-router:
+        gluetun:
+          - path: /gluetun
+            subPath: gluetun
+          - path: /tmp
+            subPath: tmp

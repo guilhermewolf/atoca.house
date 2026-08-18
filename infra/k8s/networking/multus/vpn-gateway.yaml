@@ -1,0 +1,26 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/k8s.cni.cncf.io/networkattachmentdefinition_v1.json
+# Same VLAN 6 L2 as the "vpn" NAD, but deliberately WITHOUT the public-space
+# routes. Used only by gluetun-router (192.168.90.2), which must keep its own
+# default route on the cluster pod network - otherwise its WireGuard handshake
+# would be routed back into its own tunnel.
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: vpn-gateway
+spec:
+  config: |-
+    {
+      "cniVersion": "1.1.0",
+      "name": "vpn-gateway",
+      "plugins": [
+        {
+          "type": "macvlan",
+          "master": "bond0.6",
+          "mode": "bridge",
+          "ipam": {
+            "type": "static"
+          }
+        }
+      ]
+    }

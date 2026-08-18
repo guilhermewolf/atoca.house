@@ -1,0 +1,9 @@
+---
+# Application configuration for gluetun-router
+# Shared AirVPN egress gateway for every workload on the "vpn" macvlan (VLAN 6).
+app:
+  name: gluetun-router
+  namespace: gluetun-router
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.1.0

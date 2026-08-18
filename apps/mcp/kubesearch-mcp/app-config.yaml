@@ -1,0 +1,5 @@
+---
+# Application configuration for kubesearch-mcp
+app:
+  name: kubesearch-mcp
+  namespace: mcp

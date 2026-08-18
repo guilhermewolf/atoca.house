@@ -1,0 +1,70 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/toolhive.stacklok.dev/mcpserver_v1beta1.json
+apiVersion: toolhive.stacklok.dev/v1beta1
+kind: MCPServer
+metadata:
+  name: kubesearch-mcp
+spec:
+  groupRef:
+    name: mcp-tools
+  image: ghcr.io/rust84/kubesearch-mcp-server:0.1.5@sha256:e28899d3e962e19570ecbb3a926e21eb525b9953d93b5ff72dc4dfa2fe2eecbb
+  podTemplateSpec:
+    spec:
+      volumes:
+        - name: data
+          emptyDir:
+            sizeLimit: 256Mi
+        # readOnlyRootFilesystem leaves /tmp unwritable, and SQLite spills
+        # sort/materialise scratch there — without this every non-trivial
+        # query fails with SQLITE_IOERR.
+        - name: tmp
+          emptyDir:
+            sizeLimit: 256Mi
+      initContainers:
+        # Databases are not shipped in the image; fetch the latest
+        # k8s-at-home-search release on every pod start.
+        - name: fetch-databases
+          image: docker.io/curlimages/curl:8.18.0@sha256:d94d07ba9e7d6de898b6d96c1a072f6f8266c687af78a74f380087a0addf5d17
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              TAG=$(curl -fsSL "https://api.github.com/repos/whazor/k8s-at-home-search/releases?per_page=1" \
+                | grep -m1 '"tag_name"' \
+                | sed -E 's/.*"tag_name": *"([^"]+)".*/\1/')
+              [ -n "$TAG" ] || { echo "failed to resolve release tag"; exit 1; }
+              echo "downloading k8s-at-home-search databases from release $TAG"
+              BASE="https://github.com/whazor/k8s-at-home-search/releases/download/$TAG"
+              curl -fsSL -o /data/repos.db "$BASE/repos.db"
+              curl -fsSL -o /data/repos-extended.db "$BASE/repos-extended.db"
+              ls -lh /data
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+            limits:
+              memory: 128Mi
+      containers:
+        - name: mcp
+          env:
+            - name: KUBESEARCH_DB_PATH
+              value: /data/repos.db
+            - name: KUBESEARCH_DB_EXTENDED_PATH
+              value: /data/repos-extended.db
+          volumeMounts:
+            # Not readOnly: SQLite needs to create its journal/temp files
+            # alongside the database, even for pure read queries. A read-only
+            # mount makes every query fail with SQLITE_IOERR.
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+  transport: stdio

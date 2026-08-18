@@ -70,9 +70,9 @@ data:
     terminal:
       backend: local
       # Default cwd is the atoca.house checkout maintained by the clone-repo
-      # init container. Being inside the git root is what makes hermes load the
-      # repo's `.hermes.md` context file and the project skills under
-      # `.hermes/skills/` — that is where the GitOps/PR workflow lives.
+      # init container. Being inside the git root is what makes hermes pick up
+      # the repo's CLAUDE.md as project context; the GitOps/PR procedure itself
+      # is the `atoca-gitops` skill on the PVC (/opt/data/skills/devops/).
       cwd: /opt/data/workspace/atoca.house
       timeout: 300
       persistent_shell: true
@@ -81,12 +81,13 @@ data:
       # passthrough the sandbox filter strips it and every push 403s.
       env_passthrough:
         - GITHUB_TOKEN
-    # Project skills are not auto-trusted from a clone — the checkout has to be
-    # listed here for `.hermes/skills/*` in the repo to load.
+    # Hermes' own markdown (SOUL.md, MEMORY.md, skills/) lives on the PVC and
+    # nowhere else — not in this ConfigMap and not in the atoca.house tree. The
+    # GitOps procedure is the `atoca-gitops` skill under
+    # /opt/data/skills/devops/atoca-gitops/. Nothing to discover inside the
+    # checkout, so project scanning stays off.
     skills:
-      project_discovery: true
-      trusted_project_dirs:
-        - /opt/data/workspace/atoca.house
+      project_discovery: false
     # Git work is routine here, so the everyday commands are pre-approved and
     # the genuinely irreversible ones are denied outright (deny beats yolo).
     approvals:

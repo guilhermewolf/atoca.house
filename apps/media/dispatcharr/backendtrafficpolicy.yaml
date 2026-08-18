@@ -1,0 +1,25 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/gateway.envoyproxy.io/backendtrafficpolicy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: dispatcharr
+  namespace: dispatcharr
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: dispatcharr
+  # Live TS is an unbounded response body. Never let Envoy time it out,
+  # never compress it, and never swap a mid-stream error for an HTML
+  # error page (the gateway-wide policy does both; a route-level policy
+  # replaces it wholesale for this route).
+  timeout:
+    http:
+      requestTimeout: 0s
+      connectionIdleTimeout: 1h
+  connection:
+    # MPEG-TS bursts hard on channel start; the 32Ki default makes Envoy
+    # apply backpressure to Dispatcharr's buffer drain.
+    bufferLimit: 4Mi
+  tcpKeepalive: {}

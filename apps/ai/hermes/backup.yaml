@@ -1,0 +1,33 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/volsync.backube/replicationsource_v1alpha1.json
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: hermes-backup
+  namespace: hermes
+spec:
+  sourcePVC: hermes
+  trigger:
+    schedule: "0 0 * * *"
+  restic:
+    accessModes:
+      - ReadWriteOnce
+    cacheAccessModes:
+      - ReadWriteOnce
+    cacheStorageClassName: openebs-hostpath
+    pruneIntervalDays: 14
+    repository: hermes-r2-secret
+    # The hermes-agent image runs as its own uid 10000, so /opt/data is owned by
+    # 10000:10000 rather than the repo-wide 99:100.
+    moverSecurityContext:
+      runAsUser: 10000
+      runAsGroup: 10000
+      fsGroup: 10000
+    retain:
+      hourly: 5
+      daily: 4
+      monthly: 1
+      yearly: 1
+    copyMethod: Snapshot
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool

@@ -133,6 +133,9 @@ controllers:
       # Seed the writable data volume with the read-only ConfigMap and create the
       # agent workspace. chown to the image's hermes user (10000) so the gateway
       # can read/rewrite its own config on start.
+      #
+      # Hermes' own markdown (SOUL.md, MEMORY.md, skills/) is NOT managed here:
+      # it lives on the PVC only, and is preserved by the volume's backup.
       copy-config:
         image:
           repository: docker.io/library/alpine

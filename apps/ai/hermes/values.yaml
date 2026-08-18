@@ -180,6 +180,11 @@ controllers:
             REPO=https://github.com/guilhermewolf/atoca.house.git
             DIR=/opt/data/workspace/atoca.house
             mkdir -p /opt/data/workspace
+            # This init container runs as root while the checkout is owned by
+            # uid 10000, so git refuses it as "dubious ownership" unless it
+            # reads the same global config the app container uses.
+            export HOME=/opt/data
+            export GIT_CONFIG_GLOBAL=/opt/data/.gitconfig
 
             cat > /opt/data/.gitconfig <<'EOF'
             [user]

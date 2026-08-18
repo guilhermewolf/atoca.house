@@ -190,7 +190,7 @@ controllers:
           # container) for analytics — the MCP server has no analytics tool,
           # and ask_postiz needs an OpenAI key we're not giving Postiz.
           # POSTIZ_API_KEY comes from hermes-kf-secret below.
-          PATH: /opt/data/npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          PATH: /opt/data/npm-global/bin:/opt/hermes/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
           POSTIZ_API_URL: https://postiz.atoca.house/api
           # browser tool's sandbox-bypass auto-detection (euid==0 / docker /
           # apparmor-restricted-userns) never fires for this non-root

@@ -24,7 +24,7 @@ spec:
         # Databases are not shipped in the image; fetch the latest
         # k8s-at-home-search release on every pod start.
         - name: fetch-databases
-          image: docker.io/curlimages/curl:8.18.0@sha256:d94d07ba9e7d6de898b6d96c1a072f6f8266c687af78a74f380087a0addf5d17
+          image: docker.io/curlimages/curl:8.21.0@sha256:7c12af72ceb38b7432ab85e1a265cff6ae58e06f95539d539b654f2cfa64bb13
           command:
             - sh
             - -c

@@ -7,30 +7,86 @@ resources:
     memory: 96Mi
 deschedulerPolicyAPIVersion: descheduler/v1alpha2
 deschedulerPolicy:
-  metricsProviders:
-    - source: KubernetesMetrics
+  # Two profiles with deliberately different eviction appetites:
+  #   balance - evens out request pressure, but refuses to disturb stateful pods
+  #   cleanup - acts on genuinely broken/misplaced pods, stateful included
+  # Rebalancing is request-based, not metrics-based. The recurring problem here
+  # is rolling Talos reboots piling pods onto whichever nodes stayed up, which
+  # skews *requests* (node-01 hit 99% memory requests on 2026-08-19) while real
+  # usage stays flat around 50-57%. Requests are also what kube-scheduler sees,
+  # and metricsUtilization caps eviction at one pod per node per cycle, far too
+  # slow to unwind a four-node reboot sweep.
   profiles:
-    - name: Default
+    - name: balance
       pluginConfig:
         - name: DefaultEvictor
           args:
+            # Never evict a pod that has nowhere to land. Essential here: the
+            # GPU lives only on node-04, openebs-hostpath volumes pin pods to a
+            # node, and KEDA scales apps to zero when the NAS is offline.
+            nodeFit: true
             podProtections:
               defaultDisabled:
-                - FailedBarePods
+                # emptyDir-backed pods must be movable or almost nothing is.
                 - PodsWithLocalStorage
-                - SystemCriticalPods
+                - FailedBarePods
+              extraEnabled:
+                # Rebalancing must never bounce a ceph-block RWO volume. Moving
+                # one unmaps/remaps the RBD image and takes the app down for the
+                # duration - not an acceptable price for evening out a counter.
+                # 54 of 257 pods are ceph-block backed, so ~200 stay movable.
+                - PodsWithPVC
+              config:
+                PodsWithPVC:
+                  protectedStorageClasses:
+                    - name: ceph-block
         - name: LowNodeUtilization
           args:
-            metricsUtilization:
-              source: KubernetesMetrics
+            # Tuned to the 2026-08-19 distribution:
+            #   memory requests  75 / 60 / 71 / 58 %
+            #   pods             67 / 71 / 69 / 25  (of 110)
+            # node-04 is the only genuine target: under both thresholds. A node
+            # is underutilized only when ALL listed resources are below
+            # thresholds, and overutilized when ANY exceeds targetThresholds.
+            # cpu is deliberately omitted - unlisted resources default to 100%,
+            # so cpu neither triggers eviction nor blocks node-04 from being a
+            # target (its GPU workloads push it to 49% cpu requests).
             thresholds:
-              cpu: 20
-              memory: 20
-              pods: 20
+              memory: 60
+              pods: 40
             targetThresholds:
-              cpu: 50
-              memory: 50
-              pods: 50
+              memory: 72
+              pods: 60
+            # Drip-feed instead of a stampede: 3 per node per 5m cycle unwinds a
+            # full reboot sweep in well under an hour without a churn storm.
+            evictionLimits:
+              node: 3
+        - name: RemoveDuplicates
+          args:
+            excludeOwnerKinds:
+              - StatefulSet
+        - name: RemovePodsViolatingTopologySpreadConstraint
+      plugins:
+        balance:
+          enabled:
+            - LowNodeUtilization
+            - RemoveDuplicates
+            - RemovePodsViolatingTopologySpreadConstraint
+    - name: cleanup
+      pluginConfig:
+        - name: DefaultEvictor
+          args:
+            nodeFit: true
+            podProtections:
+              defaultDisabled:
+                - PodsWithLocalStorage
+                - FailedBarePods
+                # A system-critical pod that is crashlooping or sitting on a
+                # tainted node should still be moved.
+                - SystemCriticalPods
+              # No PodsWithPVC here on purpose: a stateful pod that is actually
+              # broken or stranded needs to move, unlike one that is merely
+              # inconvenient for balance.
         - name: RemoveFailedPods
           args:
             reasons:
@@ -43,21 +99,23 @@ deschedulerPolicy:
             excludeOwnerKinds:
               - Job
             minPodLifetimeSeconds: 1800
+        - name: RemovePodsHavingTooManyRestarts
+          args:
+            # Catches a pod wedged against something node-local (a bad mount, a
+            # flaky NIC) that a restart in place will never fix.
+            podRestartThreshold: 50
+            includingInitContainers: true
         - name: RemovePodsViolatingInterPodAntiAffinity
         - name: RemovePodsViolatingNodeAffinity
           args:
             nodeAffinityType:
               - requiredDuringSchedulingIgnoredDuringExecution
         - name: RemovePodsViolatingNodeTaints
-        - name: RemovePodsViolatingTopologySpreadConstraint
       plugins:
-        balance:
-          enabled:
-            - LowNodeUtilization
-            - RemovePodsViolatingTopologySpreadConstraint
         deschedule:
           enabled:
             - RemoveFailedPods
+            - RemovePodsHavingTooManyRestarts
             - RemovePodsViolatingInterPodAntiAffinity
             - RemovePodsViolatingNodeAffinity
             - RemovePodsViolatingNodeTaints

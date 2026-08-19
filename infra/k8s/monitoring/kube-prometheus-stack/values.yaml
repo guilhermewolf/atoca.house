@@ -44,12 +44,18 @@ prometheus:
           namespace: kube-system
   prometheusSpec:
     externalUrl: https://prometheus.atoca.house
+    # RSS sits at ~2.6Gi, so a 3000Mi limit left only ~550Mi of page cache for a
+    # 19.5GB TSDB on ceph-block. Every rule evaluation round therefore re-read
+    # chunks from Ceph over the network (~176MB/s sustained, 2M samples/s), which
+    # is what starved etcd raft on the shared bond0. 6Gi leaves ~3.4Gi of cache,
+    # enough to hold the recent blocks the ruleset actually touches.
+    # Keep requests == limits so the pod stays Guaranteed QoS.
     resources:
       requests:
         cpu: 500m
-        memory: 3000Mi
+        memory: 6Gi
       limits:
-        memory: 3000Mi
+        memory: 6Gi
     podMonitorSelectorNilUsesHelmValues: false
     probeSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false

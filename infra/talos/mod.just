@@ -56,12 +56,20 @@ upgrade-k8s version:
 
 [doc('Upgrade Talos version on a node')]
 upgrade-node node *args:
-    talosctl -n "{{ node }}" upgrade -i "$(just talos machine-image)" -m powercycle --timeout=10m {{ args }}
+    talosctl -n "{{ node }}" upgrade -i "$(just talos machine-image {{ node }})" -m powercycle --timeout=10m {{ args }}
 
 [private]
 machine-controller node:
     just template "{{ talos_dir }}/nodes/{{ node }}.yaml.j2" | yq -e 'select(.machine) | (.machine.type == "controlplane") // ""'
 
+# Prefer the node's own install.image (e.g. node-04's NVIDIA schematic) and only
+# fall back to the shared one. Without the node argument this returned the shared
+# image for every node, which silently downgraded node-04 off its GPU schematic.
 [private]
-machine-image:
-    just template "{{ talos_dir }}/machineconfig.yaml.j2" | yq -e 'select(.machine) | .machine.install.image'
+machine-image node:
+    node_image="$(just template "{{ talos_dir }}/nodes/{{ node }}.yaml.j2" | yq 'select(.machine) | .machine.install.image // ""')"; \
+    if [ -n "${node_image}" ] && [ "${node_image}" != "null" ]; then \
+        echo "${node_image}"; \
+    else \
+        just template "{{ talos_dir }}/machineconfig.yaml.j2" | yq -e 'select(.machine) | .machine.install.image'; \
+    fi

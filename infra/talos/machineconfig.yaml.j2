@@ -173,6 +173,12 @@ cluster:
       key: op://K8s/talos/CLUSTER_ETCD_CA_KEY
     extraArgs:
       listen-metrics-urls: http://0.0.0.0:2381
+      # Peer traffic shares bond0 with Ceph public/cluster traffic, so raft RTT
+      # spikes to 100-200ms whenever a node pulls large reads from the OSDs.
+      # Defaults (100ms/1000ms) trigger an election on every such spike; these
+      # widen the window without meaningfully slowing leader failover.
+      heartbeat-interval: "250"
+      election-timeout: "2500"
   proxy:
     disabled: true
     image: registry.k8s.io/kube-proxy:v1.36.3

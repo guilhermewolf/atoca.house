@@ -62,8 +62,13 @@ prometheus:
           resources:
             requests:
               storage: 100Gi
-    retention: 14d
-    retentionSize: "90GB"
+    # TSDB lives on ceph-block, so every compaction pass reads blocks back over
+    # the network from all 4 OSDs and converges on whichever node runs this pod.
+    # 14d/727k series was ~34GB on disk and drove ~113MB/s of cluster-wide reads,
+    # which starved etcd raft on the shared bond0. 7d halves block size and read
+    # volume. retentionSize is a safety net below the PVC, not the binding limit.
+    retention: 7d
+    retentionSize: "20GB"
     walCompression: true
   ingress:
     enabled: false

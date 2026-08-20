@@ -14,6 +14,30 @@ data:
         delete_old_custom_formats: true
         quality_definition:
           type: series
+          # TRaSH's `series` definition ships max/preferred at ~1000 MB/min, i.e.
+          # "always take the biggest release". Cap the 1080p tiers so episode
+          # sizes stay sane (45min ep: ~2.2 GB max, ~1.7 GB preferred).
+          qualities:
+            - name: WEBDL-1080p
+              min: 15
+              preferred: 38
+              max: 50
+            - name: WEBRip-1080p
+              min: 15
+              preferred: 38
+              max: 50
+            - name: HDTV-1080p
+              min: 15
+              preferred: 30
+              max: 45
+            - name: Bluray-1080p
+              min: 50.4
+              preferred: 55
+              max: 70
+            - name: Bluray-1080p Remux
+              min: 69.1
+              preferred: 75
+              max: 90
         quality_profiles:
           - trash_id: 72dae194fc92bf828f32cde7744e51a1 # WEB-1080p
             reset_unmatched_scores:

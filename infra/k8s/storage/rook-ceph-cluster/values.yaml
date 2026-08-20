@@ -84,6 +84,49 @@ cephClusterSpec:
         memory: 128Mi
       limits:
         memory: 256Mi
+  # CVE-2025-30156: Ceph v20.2.4 (Tentacle) introduces the `aes256k` cephx key
+  # type and flags the legacy `aes` cipher as insecure. Core daemons (mon, mgr,
+  # osd, mds) must migrate; other clients may stay on `aes` indefinitely.
+  # https://rook.io/docs/rook/latest-release/Storage-Configuration/Advanced/cephx-key-rotation/
+  security:
+    cephx:
+      # Leave allowedCiphers unset (Rook then permits both ciphers). Restricting
+      # it to ["aes256k"] while ANY key is still `aes` makes the cluster
+      # unavailable — and the CSI keys below must stay `aes`.
+      daemon:
+        # keyType intentionally unset: Rook autodetects the best type for daemon
+        # keys and the docs say not to pin it. Gen 2 already rotated these to
+        # aes256k, which resolved the AUTH_INSECURE_SERVICE_KEY_TYPE error.
+        keyRotationPolicy: KeyGeneration
+        keyGeneration: 2
+      csi:
+        keyRotationPolicy: KeyGeneration
+        keyGeneration: 3
+        # MUST stay "aes" until every node runs Linux kernel 7.0+ (Talos v1.13.8
+        # ships 6.18). krbd cannot use aes256k keys on older kernels: volume
+        # attach fails with `rados: ret=-22, Invalid argument` and every pod
+        # with a ceph-block PVC hangs in Init.
+        keyType: aes
+        keepPriorKeyCountMax: 1 # keep prior key valid so live PV mounts survive
+      rbdMirrorPeer:
+        keyRotationPolicy: KeyGeneration
+        keyGeneration: 2
+        keyType: aes256k
+  # Expected during the aes -> aes256k transition while CSI keys remain `aes`.
+  # Flip each policy to `unmute` once the CSI keys are migrated so that any
+  # accidental `aes` key raises a visible warning again.
+  healthCheck:
+    muteHealthWarning:
+      AUTH_EMERGENCY_CIPHERS_SET:
+        policy: mute
+      AUTH_INSECURE_CLIENT_KEY_TYPE:
+        policy: mute
+      AUTH_INSECURE_KEYS_ALLOWED:
+        policy: mute
+      AUTH_INSECURE_KEYS_CREATABLE:
+        policy: mute
+      AUTH_INSECURE_ROTATING_SERVICE_KEY_TYPE:
+        policy: mute
   storage:
     useAllNodes: false
     useAllDevices: false

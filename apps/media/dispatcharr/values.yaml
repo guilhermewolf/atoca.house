@@ -72,10 +72,8 @@ controllers:
           requests:
             cpu: 10m
             memory: 768Mi
-            nvidia.com/gpu: 1
           limits:
             memory: 3Gi
-            nvidia.com/gpu: 1
         probes:
           startup:
             enabled: true
@@ -169,7 +167,6 @@ defaultPodOptions:
     - name: k8s.ksgate.org/postgres-service
     - name: k8s.ksgate.org/dragonfly-ready
     - name: k8s.ksgate.org/dragonfly-service
-  runtimeClassName: nvidia
   nodeSelector:
     node.kubernetes.io/gpu: "true"
   securityContext:

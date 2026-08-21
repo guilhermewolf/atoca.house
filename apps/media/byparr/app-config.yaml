@@ -1,0 +1,9 @@
+---
+# Application configuration for Byparr
+app:
+  name: byparr
+  namespace: byparr
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.1.0
+  volsyncPrivileged: false

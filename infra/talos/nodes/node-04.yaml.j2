@@ -43,7 +43,10 @@ links:
   - enp7s0
   - enp2s0f0u2
 bondMode: active-backup
-mtu: 1500
+# Jumbo frames for NFS to nas.internal (192.168.40.160). VLAN 2 peers all
+# support >= 9216. bond0.5 / bond0.6 stay at 1500 - IoT and VPN peers do not.
+# Cilium pod MTU is pinned to 1500 in infra/k8s/networking/cilium/values.yaml.
+mtu: 9000
 ---
 apiVersion: v1alpha1
 kind: DHCPv4Config

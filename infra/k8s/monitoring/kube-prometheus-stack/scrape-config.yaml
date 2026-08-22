@@ -13,6 +13,13 @@ spec:
     - action: replace
       targetLabel: job
       replacement: *name
+  metricRelabelings:
+    # Virtual bridges (docker0, veth, hassio) keep MTU 1500 and never follow the
+    # host NIC jumbo-frame setting. Drop their MTU so CephNodeInconsistentMTU
+    # does not flag them as outliers against the 9000 median.
+    - action: drop
+      sourceLabels: [__name__, device]
+      regex: node_network_mtu_bytes;(docker0|docker_gwbridge|hassio|br-.*|veth.*|virbr.*)
 ---
 apiVersion: monitoring.coreos.com/v1alpha1
 kind: ScrapeConfig
@@ -41,3 +48,10 @@ spec:
     - action: replace
       targetLabel: job
       replacement: *name
+  metricRelabelings:
+    # Virtual bridges (docker0, veth, hassio) keep MTU 1500 and never follow the
+    # host NIC jumbo-frame setting. Drop their MTU so CephNodeInconsistentMTU
+    # does not flag them as outliers against the 9000 median.
+    - action: drop
+      sourceLabels: [__name__, device]
+      regex: node_network_mtu_bytes;(docker0|docker_gwbridge|hassio|br-.*|veth.*|virbr.*)

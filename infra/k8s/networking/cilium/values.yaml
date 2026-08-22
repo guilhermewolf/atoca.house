@@ -106,6 +106,13 @@ autoDirectNodeRoutes: true
 
 rollOutCiliumPods: true
 routingMode: native
+# Pin the pod-network MTU instead of auto-detecting it from the host device.
+# Hosts run bond0 at MTU 9000 for NFS to nas.internal, but NFS volumes are
+# mounted by the kubelet in the host netns, so pods gain nothing from jumbo.
+# Pinning also keeps pod-to-pod traffic consistent during a rolling MTU
+# rollout, when some nodes are still at 1500. Only raise this once every
+# node is at 9000 and you have a reason to.
+MTU: 1500
 ipv4NativeRoutingCIDR: 10.244.0.0/16
 dashboards:
   enabled: true

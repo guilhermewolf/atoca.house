@@ -11,7 +11,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/guilhermewolf/python-app
-          tag: latest@sha256:6d353d91081de3290031e74969797f6a849dd21c7af2de1bfdcf9371a3e0abbb
+          tag: latest@sha256:f5ecd1c8a3693596bb00b4cdb2f63a8d535e98fa4e0f3ab36db2f8760c845841
         env:
           PORT: &port 8000
         envFrom:

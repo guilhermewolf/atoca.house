@@ -1,0 +1,8 @@
+---
+# Application configuration for python-app
+app:
+  name: python-app
+  namespace: python-app
+  chart: python-app
+  chartRepo: ghcr.io/guilhermewolf/charts
+  chartVersion: 0.1.1

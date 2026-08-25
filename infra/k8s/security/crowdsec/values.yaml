@@ -47,6 +47,35 @@ config:
             expression: evt.Parsed.http_user_agent
           - meta: target_fqdn
             expression: evt.Parsed.target_fqdn
+      seerr-logs.yaml: |-
+        onsuccess: next_stage
+        filter: "evt.Parsed.program == 'jellyseerr'"
+        name: hydaz/seerr-logs
+        description: "Parse seerr (jellyseerr) failed sign-in attempts"
+        pattern_syntax:
+          SEERR_USER: "(%{EMAILADDRESS}|%{USERNAME})"
+        nodes:
+          - grok:
+              pattern: '%{RFC3339:timestamp}.*Failed (sign-in|login) attempt from user with incorrect.*credentials \{"account":\{"ip":"(::ffff:)?%{IP:source_ip}","email":"%{SEERR_USER:username}"'
+              apply_on: message
+              statics:
+                - meta: log_type
+                  value: jellyseerr_failed_auth
+          - grok:
+              pattern: '%{RFC3339:timestamp}.*Failed (sign-in|login) attempt using invalid .* password.*\{"ip":"(::ffff:)?%{IP:source_ip}","email":"%{SEERR_USER:username}"'
+              apply_on: message
+              statics:
+                - meta: log_type
+                  value: jellyseerr_failed_auth
+        statics:
+          - meta: service
+            value: jellyseerr
+          - meta: source_ip
+            expression: "evt.Parsed.source_ip"
+          - meta: user
+            expression: "evt.Parsed.username"
+          - target: evt.StrTime
+            expression: evt.Parsed.timestamp
     s02-enrich:
       envoy-418-whitelist.yaml: |-
         name: hydaz/envoy-418-whitelist
@@ -175,12 +204,36 @@ agent:
       podName: authelia-*
       program: authelia
       poll_without_inotify: true
+    # Jellyfin auth logs. jellyfin.atoca.house is on the external Gateway
+    # and Jellyfin has no 2FA, so the login endpoint is the exposed surface.
+    # Authentication is delegated to LLDAP, but that is transparent here:
+    # the LDAP plugin rejects the bind and Jellyfin's own UserManager still
+    # emits `Authentication request for <user> has been denied (IP: <ip>)`,
+    # which is the line `LePresidente/jellyfin-logs` greps for. Verified
+    # against 10.11.11. The IP in that line is the real client (Jellyfin
+    # `KnownProxies: 10.244.0.0/16` + the Gateway's xForwardedFor
+    # trustedCIDRs), so bans land on the attacker, not on Envoy.
+    - namespace: jellyfin
+      podName: jellyfin-*
+      program: jellyfin
+      poll_without_inotify: true
+    # Seerr auth logs. seerr.atoca.house is on the external Gateway and its
+    # /api/v1/auth/jellyfin endpoint proxies straight through to Jellyfin,
+    # so it is a second front door onto the same LLDAP directory. `program`
+    # is `jellyseerr`, not `seerr`, because that is what the hub parser and
+    # scenarios filter on.
+    - namespace: seerr
+      podName: seerr-*
+      program: jellyseerr
+      poll_without_inotify: true
   env:
     - name: COLLECTIONS
       value: >-
         crowdsecurity/base-http-scenarios
         crowdsecurity/http-cve
         LePresidente/authelia
+        LePresidente/jellyfin
+        LePresidente/jellyseerr
         MrShippeR/filebrowser
     - name: PARSERS
       value: crowdsecurity/cri-logs

@@ -69,9 +69,9 @@ route:
     enabled: true
     kind: HTTPRoute
     parentRefs:
-      - name: atoca-house-internal
+      - name: atoca-house-external
         namespace: kube-system
-    hostnames:
+    hostnames: &hostname
       - jellyfin.atoca.house
     rules:
       - backendRefs:
@@ -81,6 +81,35 @@ route:
           - path:
               type: PathPrefix
               value: /
+
+  auth:
+    enabled: true
+    kind: HTTPRoute
+    annotations:
+      gatus.home-operations.com/enabled: "false"
+    parentRefs:
+      - name: atoca-house-external
+        namespace: kube-system
+    hostnames: *hostname
+    rules:
+      - backendRefs: &authBackend
+          - name: jellyfin
+            port: *port
+        matches:
+          - path:
+              type: Exact
+              value: /Users/AuthenticateByName
+      - backendRefs: *authBackend
+        matches:
+          - path:
+              type: Exact
+              value: /QuickConnect/Initiate
+          - path:
+              type: Exact
+              value: /QuickConnect/Connect
+          - path:
+              type: Exact
+              value: /QuickConnect/Authorize
 
 persistence:
   config:

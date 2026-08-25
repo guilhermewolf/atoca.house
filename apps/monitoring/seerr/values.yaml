@@ -10,9 +10,6 @@ controllers:
         env:
           LOG_LEVEL: "info"
           PORT: &port 80
-        # envFrom:
-        #   - secretRef:
-        #       name: "seerr-secret"
         probes:
           liveness:
             enabled: true
@@ -73,18 +70,41 @@ route:
     enabled: true
     kind: HTTPRoute
     parentRefs:
-      - name: atoca-house-internal
+      - name: atoca-house-external
         namespace: kube-system
-    hostnames:
+    hostnames: &hostname
       - seerr.atoca.house
     rules:
       - backendRefs:
           - name: seerr
-            port: 80
+            port: &port80 80
         matches:
           - path:
               type: PathPrefix
               value: /
+  auth:
+    enabled: true
+    kind: HTTPRoute
+    annotations:
+      gatus.home-operations.com/enabled: "false"
+    parentRefs:
+      - name: atoca-house-external
+        namespace: kube-system
+    hostnames: *hostname
+    rules:
+      - backendRefs:
+          - name: seerr
+            port: *port80
+        matches:
+          - path:
+              type: Exact
+              value: /api/v1/auth/jellyfin
+          - path:
+              type: Exact
+              value: /api/v1/auth/local
+          - path:
+              type: Exact
+              value: /api/v1/auth/plex
 
 persistence:
   seerr:

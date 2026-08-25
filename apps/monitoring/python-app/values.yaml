@@ -1,0 +1,117 @@
+---
+controllers:
+  python-app:
+    replicas: 2
+    strategy: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/guilhermewolf/python-app
+          tag: latest@sha256:6d353d91081de3290031e74969797f6a849dd21c7af2de1bfdcf9371a3e0abbb
+        env:
+          PORT: &port 8000
+        envFrom:
+          - configMapRef:
+              name: python-app
+          - secretRef:
+              name: python-app-secret
+          - secretRef:
+              name: python-app-db-secret
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /livez
+                port: *port
+              periodSeconds: 30
+              timeoutSeconds: 3
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /readyz
+                port: *port
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /livez
+                port: *port
+              periodSeconds: 3
+              timeoutSeconds: 3
+              failureThreshold: 10
+        resources:
+          requests:
+            cpu: 10m
+            memory: 96Mi
+          limits:
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile: { type: RuntimeDefault }
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: python-app
+
+configMaps:
+  config:
+    enabled: true
+    data:
+      API_BASE_URL: https://python-app.atoca.house
+      LOG_LEVEL: INFO
+      MAX_CONNECTIONS: "25"
+
+service:
+  app:
+    controller: python-app
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-external
+        namespace: kube-system
+    annotations:
+      gatus.home-operations.com/endpoint: |-
+        path: /livez
+        conditions: ["[STATUS] == 200"]
+    hostnames:
+      - python-app.atoca.house
+    rules:
+      - backendRefs:
+          - name: python-app
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /

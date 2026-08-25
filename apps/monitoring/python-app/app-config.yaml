@@ -1,0 +1,8 @@
+---
+# Application configuration for python-app
+app:
+  name: python-app
+  namespace: python-app
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.1.0

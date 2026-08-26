@@ -1,5 +1,6 @@
 ---
 connect:
+  replicas: 2
   api:
     httpPort: 80
     imageRepository: ghcr.io/1password/connect-api
@@ -8,3 +9,14 @@ connect:
   credentialsName: onepassword-connect-credentials-secret
   sync:
     imageRepository: ghcr.io/1password/connect-sync
+  # Hard anti-affinity: never schedule both replicas on the same node
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app: onepassword-connect
+  pdb:
+    enabled: true
+    maxUnavailable: 1

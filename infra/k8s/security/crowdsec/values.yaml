@@ -85,6 +85,14 @@ config:
           reason: "envoy bouncer response to already banned ips"
           expression:
             - "evt.Meta.http_status == '418'"
+      gatus-prober-whitelist.yaml: |-
+        name: hydaz/gatus-prober-whitelist
+        description: "Whitelist the in-cluster Gatus prober; it hairpins out through the tunnel so it shares the home WAN IP and trips http-crawl-non_statics"
+        filter: "evt.Meta.service == 'http' && evt.Meta.log_type == 'http_access-log'"
+        whitelist:
+          reason: "gatus uptime prober"
+          expression:
+            - "evt.Meta.http_user_agent startsWith 'Gatus/'"
   config.yaml.local: |-
     api:
       server:

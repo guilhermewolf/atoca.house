@@ -7,8 +7,97 @@ metadata:
   namespace: monitoring
 spec:
   groups:
+    - name: nfs.stale.rules
+      rules:
+        # Primary stale-handle detector.
+        #
+        # node-exporter's filesystem collector runs statfs(2) against every
+        # mount in a goroutine with a timeout. If the call returns an error
+        # (ESTALE) or never returns (dead server), it sets device_error=1
+        # instead of emitting size/avail. This is the only signal that catches
+        # the failure mode seen on 2026-08-27: pods stay Running 1/1 with zero
+        # restarts for 24h while every read against the mount returns ESTALE,
+        # so nothing at the Kubernetes API level ever goes unhealthy.
+        #
+        # Requires the narrowed mount-points-exclude in the node-exporter
+        # extraArgs (see kube-prometheus-stack values.yaml) — the chart default
+        # excludes all of /var/lib/kubelet/ and hides these mounts entirely.
+        # NOTE: `nodename` is only set on in-cluster targets (applied by the
+        # ServiceMonitor relabeling). External node-exporters scraped via
+        # scrape-config.yaml — nas.internal, hass.internal — have no nodename,
+        # so `instance` is the label to key on in annotations.
+        - alert: NFSMountStale
+          expr: |-
+            node_filesystem_device_error{fstype=~"nfs.*"} == 1
+          for: 5m
+          annotations:
+            summary: >-
+              NFS mount unreadable on {{ $labels.instance }} ({{ $labels.mountpoint }})
+            description: >-
+              statfs() against {{ $labels.device }} mounted at {{ $labels.mountpoint }}
+              on {{ $labels.instance }} has been failing for 5m — typically a stale
+              NFS file handle. Consumers keep running but every file operation
+              returns ESTALE.
+              On a Talos node: `talosctl -n {{ $labels.instance }} list {{ $labels.mountpoint }}`
+              and `talosctl -n {{ $labels.instance }} dmesg | grep -i "nfs.*error"`.
+              Fix: delete the owning pod so kubelet remounts. Only if the pod hangs
+              Terminating, force-unmount on the node via `just kube node-shell`.
+          labels:
+            severity: warning
+
+        - alert: NFSMountStaleCritical
+          expr: |-
+            node_filesystem_device_error{fstype=~"nfs.*"} == 1
+          for: 30m
+          annotations:
+            summary: >-
+              NFS mount stale for 30m on {{ $labels.instance }} ({{ $labels.mountpoint }})
+            description: >-
+              {{ $labels.mountpoint }} on {{ $labels.instance }} has been unreadable
+              for 30 minutes. Data is unreachable for everything bound to this mount.
+          labels:
+            severity: critical
+
+        # Catches the shfs inode churn that produces the stale handles in the
+        # first place, before the mount actually dies. Every observed ESTALE on
+        # this cluster was preceded by "NFS: server nas.internal error: fileid
+        # changed" in the node kernel log, because subdirectory mounts of an
+        # Unraid share have no stable fsid (only share roots in /etc/exports do).
+        #
+        # Depends on the kernel log being scraped into VictoriaLogs/Loki and a
+        # recording rule exporting the count. Left commented until that source
+        # is wired up — see notes in the runbook.
+        #
+        # - alert: NFSFileIDChanged
+        #   expr: increase(node_kernel_nfs_fileid_changed_total[1h]) > 0
+        #   for: 5m
+        #   labels:
+        #     severity: warning
+
+        # Fallback for mounts node-exporter cannot see at all. If a mount that
+        # was being scraped stops reporting entirely, the collector is stuck or
+        # the mount vanished — both worth knowing about.
+        - alert: NFSMountDisappeared
+          expr: |-
+            count by (instance, mountpoint) (node_filesystem_size_bytes{fstype=~"nfs.*"} offset 1h)
+            unless
+            count by (instance, mountpoint) (node_filesystem_size_bytes{fstype=~"nfs.*"})
+          for: 15m
+          annotations:
+            summary: >-
+              NFS mount {{ $labels.mountpoint }} vanished from {{ $labels.instance }}
+            description: >-
+              {{ $labels.mountpoint }} on {{ $labels.instance }} was reporting an hour
+              ago and is no longer scraped. Either the mount was removed or the
+              node-exporter filesystem collector is blocked on it.
+          labels:
+            severity: warning
+
     - name: nfs.rules
       rules:
+        # Retained from the original rule set. Note these only catch failures at
+        # container *creation* time — they cannot detect a stale handle on an
+        # already-running pod, which is what NFSMountStale above is for.
         - alert: NFSVolumeMountFailure
           expr: |-
             kube_pod_container_status_waiting_reason{reason=~"CreateContainerError|CreateContainerConfigError"} > 0

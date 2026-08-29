@@ -81,29 +81,49 @@ prometheus:
 
 prometheus-node-exporter:
   fullnameOverride: node-exporter
+  # Chart default extraArgs exclude ALL of /var/lib/kubelet/, which hides every
+  # in-tree NFS volume mount (kubernetes.io~nfs) from the filesystem collector.
+  # Without these series there is no way to detect a stale NFS handle: the pod
+  # stays Running 1/1 and only fails at syscall time. Narrow the exclusion so
+  # ~nfs mounts are scraped while the noisy per-pod tmpfs/csi mounts stay out.
+  extraArgs:
+    - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|run/containerd/.+|var/lib/docker/.+|var/lib/kubelet/(plugins|pods/[^/]+/(volume-subpaths|volumes/kubernetes\.io~(configmap|secret|projected|empty-dir|csi)))/.+)($|/)
+    - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs|erofs)$
+  # Deliberate exception to the repo-wide runAsNonRoot default.
+  #
+  # /var/lib/kubelet/pods/* is root-owned 0750. As UID 65534 the filesystem
+  # collector cannot traverse it, so statfs() returns EACCES and node-exporter
+  # reports device_error=1 for EVERY NFS mount — indistinguishable from a real
+  # stale handle, which makes NFSMountStale fire on all ~19 mounts at once.
+  # Root is required for device_error to mean what the alert assumes it means.
+  # The container stays readOnlyRootFilesystem with a read-only host mount.
+  securityContext:
+    fsGroup: 0
+    runAsGroup: 0
+    runAsNonRoot: false
+    runAsUser: 0
   prometheus:
     monitor:
       enabled: true
       relabelings:
-    relabelings:
-      - action: replace
-        regex: (.*)
-        replacement: $1
-        sourceLabels:
-          - __meta_kubernetes_pod_node_name
-        targetLabel: kubernetes_node
-      - action: replace
-        regex: (.*)
-        replacement: $1
-        sourceLabels:
-          - __meta_kubernetes_pod_node_name
-        targetLabel: nodename
-      - action: replace
-        regex: (.*)
-        replacement: $1.atoca.house:9100
-        sourceLabels:
-          - kubernetes_node
-        targetLabel: instance
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: kubernetes_node
+        - action: replace
+          regex: (.*)
+          replacement: $1
+          sourceLabels:
+            - __meta_kubernetes_pod_node_name
+          targetLabel: nodename
+        - action: replace
+          regex: (.*)
+          replacement: $1.atoca.house:9100
+          sourceLabels:
+            - kubernetes_node
+          targetLabel: instance
 
 kube-state-metrics:
   fullnameOverride: kube-state-metrics

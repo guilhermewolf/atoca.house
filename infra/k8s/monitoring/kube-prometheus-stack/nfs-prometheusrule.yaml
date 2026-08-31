@@ -26,9 +26,17 @@ spec:
         # ServiceMonitor relabeling). External node-exporters scraped via
         # scrape-config.yaml — nas.internal, hass.internal — have no nodename,
         # so `instance` is the label to key on in annotations.
+        # ENOENT is excluded: the hass.internal node-exporter runs as a
+        # Supervisor add-on. It parses the HOST /proc/mounts but statfs()s
+        # inside its own container namespace, so every host path it cannot
+        # reach (/mnt/data, /mnt/boot, /var/lib/docker, and the Supervisor
+        # NFS mount under /mnt/data/supervisor/mounts/) reports
+        # device_error="no such file or directory" permanently. That is a
+        # namespace artifact, not a stale handle — a real ESTALE reports
+        # "stale file handle" or a timeout.
         - alert: NFSMountStale
           expr: |-
-            node_filesystem_device_error{fstype=~"nfs.*"} == 1
+            node_filesystem_device_error{fstype=~"nfs.*", device_error!="no such file or directory"} == 1
           for: 5m
           annotations:
             summary: >-
@@ -47,7 +55,7 @@ spec:
 
         - alert: NFSMountStaleCritical
           expr: |-
-            node_filesystem_device_error{fstype=~"nfs.*"} == 1
+            node_filesystem_device_error{fstype=~"nfs.*", device_error!="no such file or directory"} == 1
           for: 30m
           annotations:
             summary: >-
@@ -73,25 +81,6 @@ spec:
         #   for: 5m
         #   labels:
         #     severity: warning
-
-        # Fallback for mounts node-exporter cannot see at all. If a mount that
-        # was being scraped stops reporting entirely, the collector is stuck or
-        # the mount vanished — both worth knowing about.
-        - alert: NFSMountDisappeared
-          expr: |-
-            count by (instance, mountpoint) (node_filesystem_size_bytes{fstype=~"nfs.*"} offset 1h)
-            unless
-            count by (instance, mountpoint) (node_filesystem_size_bytes{fstype=~"nfs.*"})
-          for: 15m
-          annotations:
-            summary: >-
-              NFS mount {{ $labels.mountpoint }} vanished from {{ $labels.instance }}
-            description: >-
-              {{ $labels.mountpoint }} on {{ $labels.instance }} was reporting an hour
-              ago and is no longer scraped. Either the mount was removed or the
-              node-exporter filesystem collector is blocked on it.
-          labels:
-            severity: warning
 
     - name: nfs.rules
       rules:

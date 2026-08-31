@@ -1,9 +1,0 @@
----
-# Application configuration for Garage
-app:
-  name: kopia
-  namespace: kopia
-  chart: app-template
-  chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 5.1.0
-  volsyncPrivileged: true

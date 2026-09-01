@@ -13,14 +13,24 @@ controllers:
           N8N_PROTOCOL: https
           N8N_PORT: &port 80
           N8N_HOST: &hostName n8n.atoca.house
-          WEBHOOK_URL: https://n8n.atoca.house
+          N8N_WEBHOOK_URL: https://hooks.atoca.house
+          N8N_EDITOR_BASE_URL: https://n8n.atoca.house
           GENERIC_TIMEZONE: Europe/Amsterdam
           N8N_DIAGNOSTICS_ENABLED: "false"
           N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
           N8N_COMMUNITY_PACKAGES_ENABLED: "true"
+          N8N_UNVERIFIED_PACKAGES_ENABLED: "true"
+          N8N_RUNNERS_TASK_TIMEOUT: "300"
+          N8N_COMPRESSION_NODE_MAX_DECOMPRESSED_SIZE_BYTES: "2147483648"
+          N8N_COMPRESSION_NODE_MAX_ZIP_ENTRIES: "5000"
           N8N_PROXY_HOPS: "1"
           N8N_MCP_MANAGED_BY_ENV: "true"
           N8N_MCP_ACCESS_ENABLED: "true"
+          NODE_FUNCTION_ALLOW_BUILTIN: crypto
+          N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+        envFrom:
+          - secretRef:
+              name: n8n-app-secret
         resources:
           requests:
             cpu: 10m
@@ -91,6 +101,23 @@ route:
           - path:
               type: PathPrefix
               value: /
+
+  webhooks:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-external
+        namespace: kube-system
+    hostnames:
+      - hooks.atoca.house
+    rules:
+      - backendRefs:
+          - name: n8n
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /webhook/
 
 persistence:
   data:

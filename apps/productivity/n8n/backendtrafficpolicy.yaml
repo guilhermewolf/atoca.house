@@ -1,0 +1,31 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/gateway.envoyproxy.io/backendtrafficpolicy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: n8n-webhooks
+  namespace: n8n
+spec:
+  # The cluster-wide BackendTrafficPolicy/envoy (kube-system) rewrites 403,
+  # 404, 500, 502, 503 and 504 into a 302 redirect to error-pages.atoca.house.
+  # That is right for browsers and wrong for an API: n8n answers an
+  # unregistered webhook with a clean 404 application/json (352 bytes), but the
+  # caller would receive a 302 with ~73 KB of HTML and no usable status code,
+  # breaking retry and error handling in the calling Worker.
+  #
+  # A BackendTrafficPolicy attached to an HTTPRoute replaces — not merges with
+  # — the one attached to the Gateway, so this policy restores the parts worth
+  # keeping and simply omits responseOverride. Real status codes pass through.
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: n8n-webhooks
+  retry:
+    numRetries: 2
+    retryOn:
+      triggers:
+        - reset
+  tcpKeepalive: {}
+  timeout:
+    http:
+      requestTimeout: 0s

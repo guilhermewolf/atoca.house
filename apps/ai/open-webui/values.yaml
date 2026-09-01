@@ -98,7 +98,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/open-webui/open-webui
-          tag: v0.11.2
+          tag: v0.11.3
         env:
           # Open-webui settings
           ENABLE_OPENAI_API: "False"

@@ -50,7 +50,7 @@ controllers:
           # Built by camcontrol's own Forgejo release workflow (tag v*).
           # Not Renovate-managed: the private registry has no host rule here.
           repository: forge.atoca.house/guilherme/camcontrol
-          tag: 0.4.0
+          tag: 0.5.1
         args:
           - --config
           - /config/config.yaml

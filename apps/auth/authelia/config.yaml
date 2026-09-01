@@ -131,6 +131,13 @@ data:
                 subject:
                   - ["group:trek_users"]
                   - ["group:trek_admins"]
+          kf_events_policy:
+            default_policy: 'deny'
+            rules:
+              - policy: 'two_factor'
+                subject:
+                  - ["group:kf-admins"]
+                  - ["group:kf-door"]
         jwks:
           - key_id: authelia-rsa-1
             use: sig
@@ -336,3 +343,31 @@ data:
             access_token_signed_response_alg: 'none'
             userinfo_signed_response_alg: 'none'
             token_endpoint_auth_method: 'client_secret_post'
+
+          - client_id: kf-events
+            client_name: Kitchen Frequencies — sessions admin
+            client_secret: '{{ secret "/config/secret/KF_EVENTS_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            # Deny by default; only kf-admins and kf-door may obtain a token at
+            # all. The app then maps kf-admins -> full access, kf-door -> the
+            # read-only door list.
+            authorization_policy: 'kf_events_policy'
+            require_pkce: true
+            pkce_challenge_method: S256
+            redirect_uris:
+              - https://events.kitchenfrequencies.tv/admin/callback
+              - http://localhost:4321/admin/callback
+            scopes:
+              - openid
+              - profile
+              - email
+              - groups
+            grant_types:
+              - authorization_code
+            response_types:
+              - code
+            # The app reads groups and preferred_username from the id_token,
+            # so it needs the same claims policy the other clients use.
+            claims_policy: 'default'
+            userinfo_signed_response_alg: none
+            token_endpoint_auth_method: client_secret_post

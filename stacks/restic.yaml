@@ -8,7 +8,10 @@ services:
     network_mode: bridge
     environment:
       RUN_ON_STARTUP: "true"
-      BACKUP_CRON: "0 30 8 * * *"
+      # 10:30 Europe/Amsterdam = 08:30 UTC. The Unraid Appdata.Backup plugin runs on a UTC
+      # host at 07:00 UTC and finishes ~07:01, so this leaves ~90min of headroom. Do not move
+      # this earlier than 09:30 local or restic uploads yesterday's dump.
+      BACKUP_CRON: "0 30 10 * * *"
       RESTIC_REPOSITORY: $RESTIC_REPOSITORY #s3:s3.amazonaws.com/bucketname
       RESTIC_PASSWORD: $RESTIC_PASSWORD #insert-here
       RESTIC_BACKUP_SOURCES: /appdata
@@ -17,9 +20,9 @@ services:
       RESTIC_BACKUP_ARGS: >-
         --cleanup-cache
       RESTIC_FORGET_ARGS: >-
-        --keep-last 3
-        --keep-daily 3
-        --keep-weekly 1
+        --keep-daily 14
+        --keep-weekly 8
+        --keep-monthly 12
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
       TZ: Europe/Amsterdam

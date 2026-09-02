@@ -1,0 +1,41 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/toolhive.stacklok.dev/mcpserver_v1beta1.json
+apiVersion: toolhive.stacklok.dev/v1beta1
+kind: MCPServer
+metadata:
+  name: vikunja-mcp
+spec:
+  groupRef:
+    name: mcp-tools
+  # renovate: datasource=docker depName=docker.io/library/node
+  image: docker.io/library/node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32
+  env:
+    - name: VIKUNJA_URL
+      value: https://vikunja.atoca.house/api/v1
+    - name: NODE_ENV
+      value: production
+    - name: LOG_LEVEL
+      value: info
+    - name: HOME
+      value: /tmp
+    - name: NPM_CONFIG_CACHE
+      value: /tmp/.npm
+  secrets:
+    - name: vikunja-mcp-secret
+      key: VIKUNJA_API_TOKEN
+  podTemplateSpec:
+    spec:
+      containers:
+        - name: mcp
+          command:
+            - npx
+          args:
+            # renovate: datasource=npm depName=@democratize-technology/vikunja-mcp
+            - "@democratize-technology/vikunja-mcp@0.2.0"
+          volumeMounts:
+            - name: tmpfs
+              mountPath: /tmp
+      volumes:
+        - name: tmpfs
+          emptyDir: {}
+  transport: stdio

@@ -1,0 +1,5 @@
+---
+# Application configuration for vikunja-mcp
+app:
+  name: vikunja-mcp
+  namespace: mcp

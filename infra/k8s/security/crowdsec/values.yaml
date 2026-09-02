@@ -93,6 +93,16 @@ config:
           reason: "gatus uptime prober"
           expression:
             - "evt.Meta.http_user_agent startsWith 'Gatus/'"
+  postoverflows:
+    s01-whitelist:
+      spa-crawl-whitelist.yaml: |-
+        name: hydaz/spa-crawl-whitelist
+        description: "Whitelist http-crawl-non_statics on the SPA frontends"
+        filter: "evt.Overflow.Alert.Scenario == 'crowdsecurity/http-crawl-non_statics'"
+        whitelist:
+          reason: "jellyfin/seerr web client legitimate API burst"
+          expression:
+            - "evt.Overflow.Alert.Events[0].GetMeta('target_fqdn') in ['jellyfin.atoca.house', 'seerr.atoca.house']"
   config.yaml.local: |-
     api:
       server:

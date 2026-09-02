@@ -348,15 +348,11 @@ data:
             client_name: Kitchen Frequencies — sessions admin
             client_secret: '{{ secret "/config/secret/KF_EVENTS_OAUTH_CLIENT_SECRET" }}'
             public: false
-            # Deny by default; only kf-admins and kf-door may obtain a token at
-            # all. The app then maps kf-admins -> full access, kf-door -> the
-            # read-only door list.
             authorization_policy: 'kf_events_policy'
             require_pkce: true
             pkce_challenge_method: S256
             redirect_uris:
               - https://events.kitchenfrequencies.tv/admin/callback
-              - http://localhost:4321/admin/callback
             scopes:
               - openid
               - profile

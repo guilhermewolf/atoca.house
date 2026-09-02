@@ -105,6 +105,10 @@ route:
   webhooks:
     enabled: true
     kind: HTTPRoute
+    annotations:
+      gatus.home-operations.com/endpoint: |-
+        url: https://hooks.atoca.house/webhook/gatus-probe
+        conditions: ["[STATUS] == 403"]
     parentRefs:
       - name: atoca-house-external
         namespace: kube-system

@@ -3,5 +3,5 @@ app:
   namespace: crowdsec
   chart: crowdsec
   chartRepo: https://crowdsecurity.github.io/helm-charts
-  chartVersion: 0.24.0
+  chartVersion: 0.24.2
   disableAutoSync: true

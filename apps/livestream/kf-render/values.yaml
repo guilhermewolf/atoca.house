@@ -46,7 +46,13 @@ controllers:
           # hosts. Anything else is refused before a socket is opened; combined
           # with the in-code SSRF screen this keeps a service that sits next to
           # the Kubernetes API from being turned into a fetch proxy.
-          KF_ALLOWED_MEDIA_HOSTS: "opus.pro,atoca.house"
+          #
+          # events.kitchenfrequencies.tv serves the DJ portraits that open the
+          # third post of the week, at /d/<key>/portrait. Named exactly rather
+          # than as the apex: matching is by suffix, so "kitchenfrequencies.tv"
+          # would also admit the marketing site and every future subdomain, and
+          # this service has no reason to fetch from any of them.
+          KF_ALLOWED_MEDIA_HOSTS: "opus.pro,atoca.house,events.kitchenfrequencies.tv"
           # MUST stay unset in the cluster. Setting it disables the private-IP
           # SSRF screen; it exists only so the local test suite can serve
           # fixtures from 127.0.0.1.

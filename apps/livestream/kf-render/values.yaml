@@ -1,0 +1,145 @@
+---
+# kf-render — the media worker for the Kitchen Frequencies shorts pipeline.
+#
+# n8n orchestrates the pipeline but cannot run FFmpeg: that n8n instance has no
+# Execute Command node, and its Code node sandbox has neither a shell nor
+# network access. This service is the one piece that has to live outside n8n.
+#
+# Two operations, no state, no database, no queue:
+#   POST /inspect      -> ffprobe + EBU R128 loudness + evenly spaced stills
+#   POST /render/card  -> the black-and-white DJ card on the front of clip 3
+#
+# Reached only from inside the cluster, over
+# http://kf-render.kf-render.svc.cluster.local:8080 — deliberately no HTTPRoute,
+# see the note at the bottom.
+
+controllers:
+  kf-render:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    # Stateless: every request downloads what it needs and writes to its own
+    # scratch dir, so replicas do not interact. Two gives headroom for a slow
+    # render without blocking the next inspect call.
+    replicas: 2
+    strategy: RollingUpdate
+    containers:
+      app:
+        image:
+          # Built and pushed by hand from KitchenFrequencies.TV/shorts-pipeline:
+          #   docker build -f render-service/Dockerfile \
+          #     -t forge.atoca.house/guilherme/kf-render:0.1.0 .
+          # Not Renovate-managed: the private registry has no host rule here.
+          repository: forge.atoca.house/guilherme/kf-render
+          tag: 0.1.0
+        env:
+          TZ: Europe/Amsterdam
+          KF_ASSET_ROOT: /tmp/kf-render
+          # Rendered artefacts are handed straight to Postiz and are worthless
+          # afterwards. A day is long enough to re-fetch one while debugging a
+          # failed run, short enough that the scratch mount cannot fill up.
+          KF_ASSET_TTL_SECONDS: "86400"
+          # A DJ set clip is tens of MB; 512Mi is generous and still bounded, so
+          # a wrong URL cannot fill the disk.
+          KF_MAX_DOWNLOAD_BYTES: "536870912"
+          KF_RENDER_TIMEOUT_SECONDS: "600"
+          # Media is only ever fetched from OpusClip's signed CDN or our own
+          # hosts. Anything else is refused before a socket is opened; combined
+          # with the in-code SSRF screen this keeps a service that sits next to
+          # the Kubernetes API from being turned into a fetch proxy.
+          KF_ALLOWED_MEDIA_HOSTS: "opus.pro,atoca.house"
+          # MUST stay unset in the cluster. Setting it disables the private-IP
+          # SSRF screen; it exists only so the local test suite can serve
+          # fixtures from 127.0.0.1.
+          # KF_ALLOW_PRIVATE_MEDIA: "false"
+        probes:
+          # /healthz is a bare liveness signal: the process is up.
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: &port 8080
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+          # /readyz is the real gate: it verifies ffmpeg and ffprobe are on
+          # PATH, Pillow imports, the render scripts exist, the brand font is
+          # present, and the scratch mount is actually writable by uid 1000.
+          # A pod that is up but cannot write is worse than one that is down,
+          # because it accepts traffic and fails every request.
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /readyz
+                port: *port
+              periodSeconds: 15
+              timeoutSeconds: 5
+              failureThreshold: 3
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: *port
+              periodSeconds: 3
+              timeoutSeconds: 3
+              failureThreshold: 20
+        securityContext: &securityContext
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            # ffmpeg plus a 1080x1920 Pillow RGBA layer. Measured renders finish
+            # in ~1.5s well inside this; the limit is a guard, not a target.
+            memory: 1Gi
+
+defaultPodOptions:
+  # A render that is mid-ffmpeg should be allowed to finish rather than leave a
+  # truncated MP4 that Postiz would happily accept.
+  terminationGracePeriodSeconds: 60
+  automountServiceAccountToken: false
+  imagePullSecrets:
+    - name: forgejo-registry
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    controller: kf-render
+    ports:
+      http:
+        port: *port
+
+persistence:
+  # The root filesystem is read-only, so all scratch I/O lands here. Disk-backed
+  # rather than medium: Memory — a carded render plus its source can be a few
+  # hundred MB, which would otherwise come straight out of the pod's memory
+  # limit and get it OOM-killed mid-encode.
+  tmp:
+    enabled: true
+    type: emptyDir
+    sizeLimit: 4Gi
+    advancedMounts:
+      kf-render:
+        app:
+          - path: /tmp
+
+# No `route:` block on purpose.
+#
+# The only caller is n8n, which runs in this same cluster and reaches the
+# service over in-cluster DNS. Publishing kf-render on *.atoca.house would give
+# a media-fetching, ffmpeg-executing endpoint a public hostname for no benefit.
+# To reach it from a laptop for debugging, port-forward instead:
+#   kubectl -n kf-render port-forward svc/kf-render 8080:8080

@@ -1,0 +1,8 @@
+---
+# Application configuration for kf-render
+app:
+  name: kf-render
+  namespace: kf-render
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.1.0

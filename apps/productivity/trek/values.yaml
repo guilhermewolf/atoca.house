@@ -10,7 +10,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=docker.io/mauriceboe/trek
           repository: docker.io/mauriceboe/trek
-          tag: 4.2.0@sha256:281a44079910053089a77be73ca2148a0e131c80ca728ca1f71a28133b2eaef4
+          tag: 4.2.1@sha256:777f4d647e973fe7d87fecd957e854b86d57e8d977fd041763e0ca19b3c2e2c0
         env:
           NODE_ENV: production
           PORT: &port 3000

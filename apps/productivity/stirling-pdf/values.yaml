@@ -1,0 +1,88 @@
+---
+controllers:
+  stirling-pdf:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/stirling-tools/stirling-pdf
+          repository: ghcr.io/stirling-tools/stirling-pdf
+          tag: 0.42.0@sha256:f872542c1887bace8810b4f69352a72682908ecc8a8dcad5684523897bf77408
+        env:
+          TZ: Europe/Amsterdam
+          SERVER_PORT: &port 8080
+          HOME: /tmp
+          DOCKER_ENABLE_SECURITY: "false"
+          INSTALL_BOOK_AND_ADVANCED_HTML_OPS: "false"
+          LANGS: en_GB
+          SYSTEM_ENABLEANALYTICS: "false"
+          SYSTEM_DEFAULTLOCALE: en-GB
+        probes:
+          liveness: &probe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v1/info/status
+                port: *port
+              initialDelaySeconds: 60
+              periodSeconds: 30
+              timeoutSeconds: 10
+              failureThreshold: 6
+          readiness: *probe
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 50m
+            memory: 1Gi
+          limits:
+            memory: 4Gi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+service:
+  app:
+    ports:
+      http:
+        port: *port
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - pdf.atoca.house
+    rules:
+      - backendRefs:
+          - name: stirling-pdf
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+persistence:
+  tmpfs:
+    type: emptyDir
+    advancedMounts:
+      stirling-pdf:
+        app:
+          - path: /tmp
+            subPath: tmp
+          - path: /configs
+            subPath: configs
+          - path: /logs
+            subPath: logs
+          - path: /customFiles
+            subPath: customFiles
+          - path: /pipeline
+            subPath: pipeline

@@ -8,7 +8,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=ghcr.io/stirling-tools/stirling-pdf
           repository: ghcr.io/stirling-tools/stirling-pdf
-          tag: 0.42.0@sha256:f872542c1887bace8810b4f69352a72682908ecc8a8dcad5684523897bf77408
+          tag: 0.46.2@sha256:396ca949b81198a65b9abfec38518fa44e871b1970dad9f9718ffd030eef9b92
         env:
           TZ: Europe/Amsterdam
           SERVER_PORT: &port 8080

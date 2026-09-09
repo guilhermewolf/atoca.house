@@ -12,7 +12,8 @@ controllers:
         env:
           TZ: Europe/Amsterdam
           SERVER_PORT: &port 8080
-          HOME: /tmp
+          PUID: 1000
+          PGID: 1000
           DOCKER_ENABLE_SECURITY: "false"
           INSTALL_BOOK_AND_ADVANCED_HTML_OPS: "false"
           LANGS: en_GB
@@ -33,8 +34,14 @@ controllers:
           readiness: *probe
         securityContext:
           allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities: { drop: ["ALL"] }
+          # 2.x init.sh needs a writable rootfs: it symlinks the diagnostics
+          # helper into /usr/local/bin under `set -e` before dropping privileges.
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop: ["ALL"]
+            # init.sh runs as root: chowns the mounts, then setpriv's the app
+            # down to PUID/PGID. Without these it dies on "setresuid failed".
+            add: ["CHOWN", "FOWNER", "DAC_OVERRIDE", "SETUID", "SETGID"]
         resources:
           requests:
             cpu: 50m
@@ -43,9 +50,10 @@ controllers:
             memory: 4Gi
 defaultPodOptions:
   securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
+    # Container entrypoint must be root; it setpriv's the app down to PUID/PGID.
+    runAsNonRoot: false
+    runAsUser: 0
+    runAsGroup: 0
     fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
 service:
@@ -86,3 +94,5 @@ persistence:
             subPath: customFiles
           - path: /pipeline
             subPath: pipeline
+          - path: /storage
+            subPath: storage

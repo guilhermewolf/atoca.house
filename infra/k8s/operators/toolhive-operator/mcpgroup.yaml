@@ -4,5 +4,6 @@ apiVersion: toolhive.stacklok.dev/v1beta1
 kind: MCPGroup
 metadata:
   name: mcp-tools
+  namespace: mcp
 spec:
   description: MCP tools for AI assistants

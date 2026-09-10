@@ -158,7 +158,7 @@ cluster:
       enable-aggregator-routing: "true"
       feature-gates: MutatingAdmissionPolicy=true
       runtime-config: admissionregistration.k8s.io/v1beta1=true
-    image: registry.k8s.io/kube-apiserver:v1.36.4
+    image: registry.k8s.io/kube-apiserver:v1.37.0
   controllerManager:
     extraArgs:
       bind-address: 0.0.0.0
@@ -181,7 +181,7 @@ cluster:
       election-timeout: "2500"
   proxy:
     disabled: true
-    image: registry.k8s.io/kube-proxy:v1.36.4
+    image: registry.k8s.io/kube-proxy:v1.37.0
   scheduler:
     config:
       apiVersion: kubescheduler.config.k8s.io/v1

@@ -1,0 +1,159 @@
+---
+controllers:
+  snapotter:
+    labels:
+      postgres: "true"
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/snapotter-hq/snapotter
+          repository: ghcr.io/snapotter-hq/snapotter
+          tag: 2.2.0@sha256:2e11b4fa9138fa93e0fdfde5da3a2d042eebcfa81dd51286488872a3eb8086c8
+        env:
+          PORT: &port 1349
+          EXTERNAL_URL: "https://snapotter.atoca.house"
+          # Setting DATABASE_URL + REDIS_URL turns off the in-container
+          # Postgres/Redis (embedded mode requires root, which we don't run as).
+          REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/13"
+          # Postgres TLS verified against the cert-manager CA mounted at
+          # /etc/ssl/postgres/ca.crt; the pguser secret pins sslmode=verify-full.
+          NODE_EXTRA_CA_CERTS: /etc/ssl/postgres/ca.crt
+          ANALYTICS_ENABLED: "false"
+          AUTH_ENABLED: "true"
+          # Pod IPs are RFC1918, so the default TRUST_PROXY
+          # (loopback,linklocal,uniquelocal) already trusts X-Forwarded-For
+          # from the in-cluster gateway.
+          MAX_UPLOAD_SIZE_MB: 2048
+          FILE_MAX_AGE_HOURS: 72
+        envFrom:
+          - secretRef:
+              name: snapotter-secret
+          - secretRef:
+              name: snapotter-db-secret
+        probes:
+          liveness: &probe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v1/health
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probe
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/v1/health
+                port: *port
+              # First boot copies the AI venv out of the image into /data and
+              # can take several minutes: 60 x 10s before giving up.
+              periodSeconds: 10
+              failureThreshold: 60
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 100m
+            memory: 1Gi
+          limits:
+            memory: 8Gi
+
+defaultPodOptions:
+  annotations:
+    k8s.ksgate.org/postgres-ready: |
+      {
+        "apiVersion": "postgres-operator.crunchydata.com/v1beta1",
+        "kind": "PostgresCluster",
+        "name": "postgres",
+        "namespace": "crunchy-postgres-cluster",
+        "expression": "has(resource.status.instances) && resource.status.instances.exists(i, i.readyReplicas >= 1)"
+      }
+    k8s.ksgate.org/dragonfly-ready: |
+      {
+        "apiVersion": "dragonflydb.io/v1alpha1",
+        "kind": "Dragonfly",
+        "name": "dragonfly",
+        "namespace": "dragonfly-cluster",
+        "expression": "has(resource.status) && has(resource.status.phase) && resource.status.phase == 'Ready'"
+      }
+    k8s.ksgate.org/dragonfly-service: |
+      {
+        "apiVersion": "v1",
+        "kind": "Service",
+        "name": "dragonfly",
+        "namespace": "dragonfly-cluster"
+      }
+  schedulingGates:
+    - name: k8s.ksgate.org/postgres-ready
+    - name: k8s.ksgate.org/dragonfly-ready
+    - name: k8s.ksgate.org/dragonfly-service
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    controller: snapotter
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    annotations:
+      gatus.io/enabled: "true"
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - tools.atoca.house
+    rules:
+      - backendRefs:
+          - name: snapotter
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  # /data: user files, logs, AI models and the bootstrapped Python venv.
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 30Gi
+    advancedMounts:
+      snapotter:
+        app:
+          - path: /data
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    globalMounts:
+      - path: /etc/ssl/postgres/ca.crt
+        subPath: ca.crt
+        readOnly: true
+  # WORKSPACE_PATH=/tmp/workspace holds per-job scratch files; the root
+  # filesystem is read-only, so /tmp has to be a writable volume.
+  tmpfs:
+    type: emptyDir
+    advancedMounts:
+      snapotter:
+        app:
+          - path: /tmp

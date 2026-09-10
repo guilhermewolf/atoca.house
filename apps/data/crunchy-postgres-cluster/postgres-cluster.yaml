@@ -134,6 +134,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: snapotter
+      databases:
+        - snapotter
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

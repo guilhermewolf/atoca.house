@@ -7,7 +7,12 @@ metadata:
 spec:
   groupRef:
     name: mcp-tools
-  image: ghcr.io/rust84/kubesearch-mcp-server:0.1.5@sha256:e28899d3e962e19570ecbb3a926e21eb525b9953d93b5ff72dc4dfa2fe2eecbb
+  # renovate: datasource=docker depName=ghcr.io/rust84/kubesearch-mcp-server
+  # Pinned to `main`, not v0.1.5: the tagged release re-runs the full
+  # multi-table join on *every* tool call (~35-60s), which trips the
+  # ToolHive stdio proxy's 60s request timeout. `main` memoises
+  # collectReleases(), so only the first call pays that cost.
+  image: ghcr.io/rust84/kubesearch-mcp-server:main@sha256:dc7eea9ea35371c34617d4aa445b8f8a3abd79c23b48557367bd9d2a008e450c
   podTemplateSpec:
     spec:
       volumes:
@@ -60,9 +65,8 @@ spec:
             - name: KUBESEARCH_DB_EXTENDED_PATH
               value: /data/repos-extended.db
           volumeMounts:
-            # Not readOnly: SQLite needs to create its journal/temp files
-            # alongside the database, even for pure read queries. A read-only
-            # mount makes every query fail with SQLITE_IOERR.
+            # Kept writable: harmless, and SQLite may still want to place
+            # journal/temp files alongside the database.
             - name: data
               mountPath: /data
             - name: tmp

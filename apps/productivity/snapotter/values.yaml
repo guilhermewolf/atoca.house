@@ -13,7 +13,7 @@ controllers:
           tag: 2.2.0@sha256:2e11b4fa9138fa93e0fdfde5da3a2d042eebcfa81dd51286488872a3eb8086c8
         env:
           PORT: &port 1349
-          EXTERNAL_URL: "https://snapotter.atoca.house"
+          EXTERNAL_URL: "https://tools.atoca.house"
           # Setting DATABASE_URL + REDIS_URL turns off the in-container
           # Postgres/Redis (embedded mode requires root, which we don't run as).
           REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/13"

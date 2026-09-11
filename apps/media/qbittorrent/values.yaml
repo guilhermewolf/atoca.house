@@ -95,6 +95,6 @@ persistence:
   media:
     type: nfs
     server: nas.internal
-    path: /mnt/user/data/torrents
+    path: /mnt/user/data/
     globalMounts:
-      - path: /data/torrents
+      - path: /data

@@ -119,9 +119,10 @@ persistence:
     enabled: true
     type: nfs
     server: nas.internal
-    path: /mnt/user/data/media/manga
+    path: /mnt/user/data
     globalMounts:
       - path: /home/suwayomi/.local/share/Tachidesk/downloads
+        subPath: media/manga
 
   # Keep scratch writes out of the container layer
   tmp:

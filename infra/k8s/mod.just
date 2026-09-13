@@ -25,9 +25,17 @@ prune-pods:
 
 [doc('Snapshot VolSync PVCs')]
 snapshot:
+    ts=$(date +%s); \
+    total=$(kubectl get replicationsources --no-headers -A | wc -l | tr -d ' '); \
     kubectl get replicationsources --no-headers -A | while read -r ns name _; do \
-        kubectl -n "$ns" patch replicationsources "$name" --type merge -p '{"spec":{"trigger":{"manual":"$(date +%s)"}}}'; \
-    done
+        kubectl -n "$ns" patch replicationsources "$name" --type merge -p "{\"spec\":{\"trigger\":{\"manual\":\"$ts\"}}}"; \
+    done; \
+    echo "waiting for $total snapshots to finish..."; \
+    until [ "$(kubectl get replicationsources -A -o json | jq --arg ts "$ts" '[.items[] | select(.status.lastManualSync==$ts)] | length')" -eq "$total" ]; do sleep 20; done; \
+    kubectl get replicationsources --no-headers -A | while read -r ns name _; do \
+        kubectl -n "$ns" patch replicationsources "$name" --type json -p '[{"op":"remove","path":"/spec/trigger/manual"}]'; \
+    done; \
+    kubectl get replicationsources -A -o json | jq -r '.items[] | select(.status.latestMoverStatus.result != "Successful") | "FAILED: \(.metadata.namespace)/\(.metadata.name) = \(.status.latestMoverStatus.result)"'
 
 [doc('Sync ExternalSecrets')]
 sync-es:

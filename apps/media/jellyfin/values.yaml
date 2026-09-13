@@ -148,7 +148,8 @@ persistence:
   media:
     type: nfs
     server: nas.internal
-    path: /mnt/user/data/media/
+    path: /mnt/user/data
     globalMounts:
       - path: /media
+        subPath: media
         readOnly: false

@@ -1,0 +1,113 @@
+---
+controllers:
+  skylight:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    replicas: 1
+    strategy: Recreate
+    containers:
+      app:
+        image:
+          repository: forge.atoca.house/guilherme/skylight
+          tag: 0.1.0-dev.4.g8d59db4
+        env:
+          TZ: Europe/Amsterdam
+          DATA_SOURCE: api
+          SFO_GROUND: "0"
+          API_POLL_MS: "15000"
+          ALLOWED_HOSTS: skylight.atoca.house
+          GEOCODE_USER_AGENT: skylight/0.1 (https://forge.atoca.house/guilherme/skylight)
+          HOME: /tmp
+          TMPDIR: /tmp
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/health
+                port: &port 3000
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/health
+                port: *port
+              periodSeconds: 3
+              timeoutSeconds: 3
+              failureThreshold: 40
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 100m
+            memory: 192Mi
+          limits:
+            memory: 768Mi
+
+defaultPodOptions:
+  terminationGracePeriodSeconds: 30
+  automountServiceAccountToken: false
+  imagePullSecrets:
+    - name: forgejo-registry
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    controller: skylight
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - skylight.atoca.house
+    rules:
+      - backendRefs:
+          - name: skylight
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    suffix: config
+    advancedMounts:
+      skylight:
+        app:
+          - path: /app/server/data
+
+  tmp:
+    enabled: true
+    type: emptyDir
+    medium: Memory
+    sizeLimit: 64Mi
+    advancedMounts:
+      skylight:
+        app:
+          - path: /tmp

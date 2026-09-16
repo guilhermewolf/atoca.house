@@ -1,0 +1,38 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/monitoring.coreos.com/prometheusrule_v1.json
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: odido-bundle-replenisher
+  namespace: odido-bundle-replenisher
+spec:
+  groups:
+    - name: odido-bundle-replenisher.rules
+      rules:
+        - alert: OdidoCheckStale
+          expr: |-
+            time() - odido_last_check_timestamp_seconds > 1800
+          for: 5m
+          annotations:
+            summary: >-
+              No Odido check for {{ $labels.msisdn }} in over 30 minutes
+          labels:
+            severity: warning
+        - alert: OdidoCheckFailing
+          expr: |-
+            odido_last_check_ok == 0
+          for: 30m
+          annotations:
+            summary: >-
+              Odido checks for {{ $labels.msisdn }} keep failing (expired token or number not on account?)
+          labels:
+            severity: critical
+        - alert: OdidoBelowThreshold
+          expr: |-
+            odido_mb_left < on(namespace, pod) group_left() odido_threshold_mb
+          for: 15m
+          annotations:
+            summary: >-
+              {{ $labels.msisdn }} has {{ $value }} MB left and top-ups are not bringing it back up
+          labels:
+            severity: critical

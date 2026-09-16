@@ -1,0 +1,9 @@
+---
+# Application configuration for Odido Bundle Replenisher
+app:
+  name: odido-bundle-replenisher
+  namespace: odido-bundle-replenisher
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.1.0
+  volsyncPrivileged: false

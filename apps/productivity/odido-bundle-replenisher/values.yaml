@@ -1,0 +1,103 @@
+controllers:
+  odido-bundle-replenisher:
+    replicas: 1
+    # RWO volume + SQLite + non-idempotent bundle requests: never run two pods.
+    strategy: Recreate
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # Fork with multi-number/account support and dashboard: https://forge.atoca.house/guilherme/odido-bundle
+          repository: forge.atoca.house/guilherme/odido-bundle
+          tag: 1.3.0@sha256:2bc3c3b9016648b21828f34f13354234245bf7b1ac1c2f6e886633b6d781c3d7
+        env:
+          MB_THRESHOLD: "2000"
+          TZ: Europe/Amsterdam
+          DATABASE_PATH: /data/odido.db
+          RETENTION_DAYS: "90"
+          DASHBOARD_ADDR: 0.0.0.0:8080
+        envFrom:
+          - secretRef:
+              name: odido-bundle-replenisher-secret
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: &port 8080
+              periodSeconds: 30
+              timeoutSeconds: 2
+              failureThreshold: 3
+          readiness: *probes
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 5m
+            memory: 24Mi
+          limits:
+            memory: 128Mi
+
+defaultPodOptions:
+  imagePullSecrets:
+    - name: forgejo-registry
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    controller: odido-bundle-replenisher
+    ports:
+      http:
+        port: *port
+
+# /metrics shares the dashboard's auth: if DASHBOARD_PASSWORD is ever set,
+# add basicAuth to this endpoint.
+serviceMonitor:
+  app:
+    endpoints:
+      - port: http
+        path: /metrics
+        interval: 1m
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - odido.atoca.house
+    rules:
+      - backendRefs:
+          - identifier: app
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /data
+  # SQLite temp files for large sorts; root filesystem is read-only.
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

@@ -1,0 +1,30 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/volsync.backube/replicationsource_v1alpha1.json
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: odido-bundle-replenisher-backup
+  namespace: odido-bundle-replenisher
+spec:
+  sourcePVC: odido-bundle-replenisher
+  trigger:
+    schedule: "0 0 * * *"
+  restic:
+    accessModes:
+      - ReadWriteOnce
+    cacheAccessModes:
+      - ReadWriteOnce
+    cacheStorageClassName: openebs-hostpath
+    pruneIntervalDays: 14
+    repository: odido-bundle-replenisher-r2-secret
+    moverSecurityContext:
+      runAsUser: 99
+      runAsGroup: 100
+      fsGroup: 100
+    retain:
+      daily: 7
+      weekly: 4
+      monthly: 3
+    copyMethod: Snapshot
+    storageClassName: ceph-block
+    volumeSnapshotClassName: csi-ceph-blockpool

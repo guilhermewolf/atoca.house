@@ -3,6 +3,6 @@ app:
   namespace: kube-system
   chart: cilium
   chartRepo: https://helm.cilium.io/
-  chartVersion: 1.20.1
+  chartVersion: 1.20.2
   customIgnoreDifferences: true
   disableAutoSync: true

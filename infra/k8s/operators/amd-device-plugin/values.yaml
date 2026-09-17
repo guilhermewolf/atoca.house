@@ -7,7 +7,7 @@ controllers:
       app:
         image:
           repository: docker.io/rocm/k8s-device-plugin
-          tag: 1.31.0.10@sha256:0555caf9ccc1cf407b353d1aade87d4598059f87a784085aafe3ece19405b612
+          tag: 1.31.0.11@sha256:e4df5dc9a7fa34e2344852256dcc5762171a6d68f1f9a34026ce26786ae335e2
 
         workingDir: /root
 

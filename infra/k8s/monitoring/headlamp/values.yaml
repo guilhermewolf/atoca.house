@@ -19,7 +19,7 @@ initContainers:
         value: "6443"
       - name: KUBECONFIG
         value: /home/headlamp/.config/Headlamp/kubeconfigs/config
-    image: docker.io/rancher/shell:v0.8.1@sha256:f293af9c635f0646f07e918788b97450406e6d0de1041b8afa9ed263ecff76bf
+    image: docker.io/rancher/shell:v0.8.2@sha256:1eeed72d4eda486de13403c4ae6e9d29a0842edc35d0f4a8fb7b0dab79d04be9
     name: create-kubeconfig
     securityContext:
       capabilities:

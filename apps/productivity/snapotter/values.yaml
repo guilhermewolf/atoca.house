@@ -25,6 +25,12 @@ controllers:
           # Pod IPs are RFC1918, so the default TRUST_PROXY
           # (loopback,linklocal,uniquelocal) already trusts X-Forwarded-For
           # from the in-cluster gateway.
+          # OIDC (Authelia). Callback: ${EXTERNAL_URL}/api/auth/oidc/callback.
+          # Local password login stays enabled as break-glass.
+          OIDC_ENABLED: "true"
+          OIDC_ISSUER_URL: https://auth.atoca.house
+          OIDC_CLIENT_ID: snapotter
+          OIDC_PROVIDER_NAME: Authelia
           MAX_UPLOAD_SIZE_MB: 2048
           FILE_MAX_AGE_HOURS: 72
         envFrom:

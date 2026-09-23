@@ -1,0 +1,8 @@
+---
+# Application configuration for donetick
+app:
+  name: donetick
+  namespace: donetick
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.2.1

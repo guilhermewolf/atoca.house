@@ -14,10 +14,10 @@
       allowedVersions: "<21",
     },
     {
-      description: "Pin Jellyfin to 10.x — 12.0 disables legacy authorization by default, which breaks InfuseSync/Infuse",
+      description: "Pin Jellyfin to 12.x — majors need plugin ABI checks; 12.0 migration disables legacy authorization (breaks Infuse unless re-enabled)",
       matchDatasources: ["docker"],
       matchPackageNames: ["ghcr.io/jellyfin/jellyfin"],
-      allowedVersions: "<12",
+      allowedVersions: "<13",
       // Patch releases change the plugin ABI: 10.11.7 -> 10.11.11 broke LDAP-Auth 22
       // (MissingMethodException on IUserManager.RenameUser) and locked every user out.
       // Never merge unattended, and let each release soak before the PR appears.

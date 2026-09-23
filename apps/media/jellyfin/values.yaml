@@ -7,7 +7,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/jellyfin/jellyfin
-          tag: 10.11.11@sha256:45f648c382a0c8b552582fcea40e95cb17c5d475473a891cba0eb7523fb92112
+          tag: 12.1@sha256:008ec8024bdaaa6f0a3f0de468e185633eeba9d67c56936e8dbf5ef6b8d6200f
         env:
           JELLYFIN_PublishedServerUrl: https://jellyfin.atoca.house
           NVIDIA_VISIBLE_DEVICES: all
@@ -36,7 +36,7 @@ controllers:
           capabilities: { drop: ["ALL"] }
         resources:
           requests:
-            cpu: 75m
+            cpu: 500m
             memory: 1Gi
             nvidia.com/gpu: 1
           limits:
@@ -122,7 +122,7 @@ persistence:
       - path: /config
 
   metadata:
-    size: 10Gi
+    size: 20Gi
     accessMode: ReadWriteOnce
     suffix: "metadata"
     globalMounts:

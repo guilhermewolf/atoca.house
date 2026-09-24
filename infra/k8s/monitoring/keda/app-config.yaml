@@ -5,5 +5,5 @@ app:
   namespace: keda
   chart: keda
   chartRepo: ghcr.io/home-operations/charts-mirror
-  chartVersion: 2.20.2
+  chartVersion: 2.21.0
   useVaultPlugin: false

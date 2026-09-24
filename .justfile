@@ -6,6 +6,7 @@ set shell := ['bash', '-euo', 'pipefail', '-c']
 mod bootstrap "bootstrap"
 mod kube "infra/k8s"
 mod talos "infra/talos"
+mod tofu "infra/terraform"
 
 [private]
 default:

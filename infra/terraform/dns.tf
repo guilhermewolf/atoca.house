@@ -19,6 +19,7 @@ locals {
 resource "unifi_dns_record" "subdomain" {
   for_each    = toset(local.subdomains)
   name        = "${each.value}.${local.domain}"
+  site        = "default"
   enabled     = true
   record_type = "A"
   ttl         = "5m"

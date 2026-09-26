@@ -12,7 +12,7 @@ spec:
   # multi-table join on *every* tool call (~35-60s), which trips the
   # ToolHive stdio proxy's 60s request timeout. `main` memoises
   # collectReleases(), so only the first call pays that cost.
-  image: ghcr.io/rust84/kubesearch-mcp-server:main@sha256:dc7eea9ea35371c34617d4aa445b8f8a3abd79c23b48557367bd9d2a008e450c
+  image: ghcr.io/rust84/kubesearch-mcp-server:main@sha256:20bc74f2ae1058263b0c79f511ef5f5856af931619113a1b306e33dbee44e623
   podTemplateSpec:
     spec:
       volumes:

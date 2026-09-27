@@ -1,0 +1,106 @@
+---
+controllers:
+  actual:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/actualbudget/actual
+          repository: ghcr.io/actualbudget/actual
+          tag: 26.9.0-alpine@sha256:1c14eef351234f4b5dd0433865b5de89d70bdbdc57368d5b07e910662c6498f9
+        env:
+          ACTUAL_PORT: &port 5006
+          ACTUAL_DATA_DIR: /data
+          # Budget files can outgrow the 20MB defaults once attachments/history pile up
+          ACTUAL_UPLOAD_FILE_SIZE_LIMIT_MB: 100
+          ACTUAL_UPLOAD_FILE_SYNC_SIZE_LIMIT_MB: 100
+          ACTUAL_UPLOAD_SYNC_ENCRYPTED_FILE_SYNC_SIZE_LIMIT_MB: 100
+          # Authelia OIDC (client secret via actual-secret). SSO-only, and
+          # first-login auto-provisioning gated by Authelia's actual_policy.
+          # The first user to log in becomes the server owner.
+          ACTUAL_LOGIN_METHOD: openid
+          ACTUAL_OPENID_ENFORCE: true
+          ACTUAL_USER_CREATION_MODE: login
+          ACTUAL_TOKEN_EXPIRATION: openid-provider
+          ACTUAL_OPENID_PROVIDER_NAME: Authelia
+          ACTUAL_OPENID_DISCOVERY_URL: https://auth.atoca.house/.well-known/openid-configuration
+          ACTUAL_OPENID_CLIENT_ID: actual
+          ACTUAL_OPENID_SERVER_HOSTNAME: https://actual.atoca.house
+        envFrom:
+          - secretRef:
+              name: actual-secret
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: *port
+              initialDelaySeconds: 0
+              periodSeconds: 10
+              timeoutSeconds: 1
+              failureThreshold: 3
+          readiness: *probes
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile: { type: RuntimeDefault }
+
+service:
+  app:
+    controller: actual
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    annotations:
+      gatus.io/enabled: "true"
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+        sectionName: https
+    hostnames:
+      - actual.atoca.house
+    rules:
+      - backendRefs:
+          - name: actual
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /data
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

@@ -11,14 +11,24 @@ machine:
   nodeLabels:
     node.kubernetes.io/gpu: "true"
     topology.kubernetes.io/zone: node-04
-  kernel:
-    modules:
-      - name: nvidia
-      - name: nvidia_uvm
-      - name: nvidia_drm
-        parameters:
-          - modeset=1
-      - name: nvidia_modeset
+---
+apiVersion: v1alpha1
+kind: KernelModuleConfig
+name: nvidia
+---
+apiVersion: v1alpha1
+kind: KernelModuleConfig
+name: nvidia_uvm
+---
+apiVersion: v1alpha1
+kind: KernelModuleConfig
+name: nvidia_drm
+parameters:
+  - modeset=1
+---
+apiVersion: v1alpha1
+kind: KernelModuleConfig
+name: nvidia_modeset
 ---
 apiVersion: v1alpha1
 kind: HostnameConfig

@@ -3,10 +3,10 @@
 
 machine:
   type: controlplane
-  # Install configuration - node-01 specific disk
+  # Install configuration - system disk is the M.2 2242 slot
   install:
     diskSelector:
-      model: SSD 256GB
+      busPath: /pci0000:00/0000:00:02.4/0000:04:00.0/nvme
   nodeLabels:
     topology.kubernetes.io/zone: node-01
 ---
@@ -56,3 +56,12 @@ name: bond0.6
 vlanID: 6
 parent: bond0
 mtu: 1500
+---
+# BIOS has no CPPC (_CPC), so amd-pstate can't load and acpi-cpufreq has no EPP.
+# Capping boost keeps the 4800H under ~90 C (it was hitting 100 C). If CPPC gets
+# enabled in BIOS, replace this with energy_performance_preference: balance_power
+# per CPU (cpu0..cpu15) and drop the boost cap.
+apiVersion: v1alpha1
+kind: SysfsConfig
+params:
+  devices.system.cpu.cpufreq.boost: "0"

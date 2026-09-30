@@ -49,45 +49,16 @@ deschedulerPolicy:
                     - name: ceph-block
         - name: LowNodeUtilization
           args:
-            # Retuned 2026-09-10 after 17h of logs showed 1838 evictions
-            # (108/hour, the 3-per-node cap hit in 608 of 610 node-cycles) that
-            # rebalanced nothing. Pods ping-ponged between node-01/02/03 forever
-            # (postgres-pgbouncer alone was evicted 202 times) and never once
-            # landed on node-04, the only node classified underutilized.
-            #
-            # Cause: the previous config omitted cpu, so node-04 read as a valid
-            # sink on memory+pods while kube-scheduler - which scores cpu AND
-            # memory with LeastAllocated - ranked it last (56% cpu requests on
-            # 11950m allocatable vs 15950m elsewhere, 98% cpu limits). The two
-            # controllers optimised different resources, so the loop could never
-            # converge. cpu is now listed on both sides so the descheduler's
-            # notion of utilisation matches what the scheduler actually sees.
-            #
-            # Distribution at retune time (requests):
-            #   memory  92 / 75 / 45 / 58 %
-            #   cpu     30 / 26 / 30 / 56 %
-            #   pods    64 / 66 / 85 / 42  (of 110)
-            # Real usage was 58 / 49 / 42 / 39 % memory - the cluster was fine.
-            #
-            # A node is underutilized only when ALL listed resources are below
-            # thresholds, and overutilized when ANY exceeds targetThresholds.
+            # Relative to cluster mean: under = all < mean-10, over = any > mean+10.
+            useDeviationThresholds: true
             thresholds:
-              cpu: 40
-              memory: 50
-              pods: 40
-            # Both maps must list the identical resource set - the descheduler
-            # rejects the policy otherwise ("thresholds and targetThresholds
-            # configured different resources"). pods therefore stays here, but
-            # at 95 (104 of 110) it is a genuine near-the-kubelet-limit alarm
-            # rather than a balance trigger: node-03 sat at 85 pods on 45%
-            # memory and was flagged overutilized for it, which produced a third
-            # of the churn for no benefit. Pod count alone is not pressure.
-            # memory 85 leaves the current spread reading as balanced, so only a
-            # genuine post-reboot skew (node-01 hit 99% on 2026-08-19) fires.
+              cpu: 10
+              memory: 10
+              pods: 10
             targetThresholds:
-              cpu: 80
-              memory: 85
-              pods: 95
+              cpu: 10
+              memory: 10
+              pods: 10
             # One pod per node per hourly cycle. A four-node reboot sweep still
             # unwinds overnight. evictionLimits takes only `node` - the
             # cluster-wide ceiling is maxNoOfPodsToEvictTotal on the policy root.

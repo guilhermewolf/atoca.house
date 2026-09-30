@@ -42,11 +42,20 @@ controllers:
               httpGet:
                 path: /healthz
                 port: *port
-              initialDelaySeconds: 90
               periodSeconds: 10
               timeoutSeconds: 5
               failureThreshold: 6
           readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: *port
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 60
         resources:
           requests:
             cpu: 200m

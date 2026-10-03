@@ -91,6 +91,13 @@ route:
       - backendRefs:
           - name: gatus
             port: *port
+        filters:
+          # script hash = inline window.config block; regenerate when config.yaml `ui:` or the Gatus image changes
+          - type: ResponseHeaderModifier
+            responseHeaderModifier:
+              set:
+                - name: Content-Security-Policy
+                  value: "default-src 'none'; script-src 'self' 'sha256-OIB07aHOgNzsSYoYu5LHfR/LDQqYJgK45QFIIFoV09g='; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://raw.githubusercontent.com; connect-src 'self'; font-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         matches:
           - path:
               type: PathPrefix

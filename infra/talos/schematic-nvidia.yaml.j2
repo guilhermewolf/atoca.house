@@ -12,7 +12,6 @@ customization:
     - mitigations=off # Less security, faster puter
     - security=none # Less security, faster puter
     - talos.auditd.disabled=1 # Less security, faster puter
-    - tsc=reliable # Skip clocksource watchdog; HPET false-positive at boot marks TSC unstable -> slow hpet fallback, no IRQ PSI
   systemExtensions:
     officialExtensions:
       - siderolabs/amd-ucode # AMD CPU microcode (yes, AMD CPU even with NVIDIA GPU)

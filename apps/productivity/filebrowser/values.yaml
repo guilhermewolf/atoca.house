@@ -14,9 +14,9 @@ controllers:
         resources:
           requests:
             cpu: 10m
-            memory: 64Mi
+            memory: 256Mi
           limits:
-            memory: 512Mi
+            memory: 2Gi
             cpu: 1000m
         securityContext:
           allowPrivilegeEscalation: false
@@ -107,8 +107,7 @@ persistence:
   cache:
     enabled: true
     type: emptyDir
-    medium: Memory
-    sizeLimit: 1Gi
+    sizeLimit: 5Gi
     globalMounts:
       - path: /home/filebrowser/tmp
 

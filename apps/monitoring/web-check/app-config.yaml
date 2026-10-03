@@ -1,0 +1,8 @@
+---
+# Application configuration for web-check
+app:
+  name: web-check
+  namespace: web-check
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.2.1

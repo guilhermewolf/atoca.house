@@ -1,0 +1,92 @@
+---
+controllers:
+  web-check:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=lissy93/web-check
+          repository: lissy93/web-check
+          tag: 2.3.0@sha256:6fb2b5a58e4fa77afb724a7e6e041f876c081e2f9340b7ba6520ac4d4fc2290a
+        env:
+          TZ: Europe/Amsterdam
+          # Chromium (screenshots/tech-stack) needs a writable HOME
+          HOME: /tmp
+          # Internal-only, so no need to throttle ourselves
+          API_ENABLE_RATE_LIMIT: "false"
+          PUBLIC_API_TIMEOUT_LIMIT: "60000"
+          TRUST_PROXY: "1"
+          # Stop random sites in a LAN browser from driving the API (default is *)
+          API_CORS_ORIGIN: https://web-check.atoca.house
+          # Needs NET_RAW, which is dropped
+          API_DISABLED_CHECKS: trace-route
+        envFrom:
+          - secretRef:
+              name: web-check-secret
+        probes:
+          liveness: &probe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: 3000
+              periodSeconds: 30
+              timeoutSeconds: 5
+          readiness: *probe
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            memory: 2Gi
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    ports:
+      http:
+        port: &port 3000
+
+# Internal gateway only: the API is unauthenticated and fetches arbitrary URLs (SSRF risk if exposed)
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - web-check.atoca.house
+    rules:
+      - backendRefs:
+          - name: web-check
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  tmp:
+    type: emptyDir
+    sizeLimit: 1Gi
+    globalMounts:
+      - path: /tmp
+  shm:
+    type: emptyDir
+    medium: Memory
+    sizeLimit: 512Mi
+    globalMounts:
+      - path: /dev/shm

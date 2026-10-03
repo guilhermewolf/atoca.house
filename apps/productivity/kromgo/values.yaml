@@ -52,6 +52,12 @@ route:
       - backendRefs:
           - name: kromgo
             port: 80
+        filters:
+          - type: ResponseHeaderModifier
+            responseHeaderModifier:
+              set:
+                - name: Content-Security-Policy
+                  value: "default-src 'none'; frame-ancestors 'none'"
         matches:
           - path:
               type: PathPrefix

@@ -59,6 +59,13 @@ route:
       - backendRefs:
           - name: error-pages
             port: *port
+        filters:
+          # script hash = generated localization script; if stale after an upgrade, pages just render untranslated
+          - type: ResponseHeaderModifier
+            responseHeaderModifier:
+              set:
+                - name: Content-Security-Policy
+                  value: "default-src 'none'; script-src 'sha256-fUN4SzN/I8PVVdjlINOlstTz/75Gvf3F/xcNuPUb3GA='; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
         matches:
           - path:
               type: PathPrefix

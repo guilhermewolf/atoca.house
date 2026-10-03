@@ -82,6 +82,13 @@ route:
       - backendRefs:
           - name: filebrowser
             port: 80
+        filters:
+          # second policy on top of the app's own nonce-based script-src; browsers enforce both
+          - type: ResponseHeaderModifier
+            responseHeaderModifier:
+              add:
+                - name: Content-Security-Policy
+                  value: "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
         matches:
           - path:
               type: PathPrefix

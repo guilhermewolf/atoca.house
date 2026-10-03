@@ -12,6 +12,7 @@ customization:
     - nvme_core.default_ps_max_latency_us=0 # No NVMe APST; DRAM-less system disks stall waking from deep power states
     - security=none # Less security, faster puter
     - talos.auditd.disabled=1 # Less security, faster puter
+    - tsc=reliable # Skip clocksource watchdog; HPET false-positive at boot marks TSC unstable -> slow hpet fallback, no IRQ PSI
     - usbcore.autosuspend=-1 # Never suspend the r8152 USB NIC (bond0 active link)
   systemExtensions:
     officialExtensions:

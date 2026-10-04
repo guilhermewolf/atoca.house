@@ -10,7 +10,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/berriai/litellm-non_root
-          tag: v1.102.1@sha256:ce9eec5907c9828706183dc9b80962f932ad2e34171fc8c7f131e3deda439f36
+          tag: v1.104.0@sha256:37066242e6b8327fdd627682a66a9ae2a599553b4d5a84c905c6d8b9eb35c01e
         args: ["--config=/app/config.yaml"]
         env:
           LITELLM_LOG: INFO

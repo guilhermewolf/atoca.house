@@ -10,16 +10,20 @@ controllers:
     containers:
       thelounge:
         image:
-          repository: thelounge/thelounge
-          tag: 4.5.2@sha256:bae46016776b0a18639dcaff69a103b3bbee9cbb40e86cd24fb278eccc6bac7b
+          repository: ghcr.io/home-operations/thelounge
+          tag: 4.5.2@sha256:7e18ada1421f341b6b129dbb8e4a307320c34ffe38ceef0799ead7f5a3643dbc
           pullPolicy: IfNotPresent
         env:
-          - name: AUTO_UPDATE
-            value: "true"
-          - name: PUID
-            value: "1000"
-          - name: PGID
-            value: "1000"
+          # Keep existing PVC layout (was official image's home dir)
+          THELOUNGE_HOME: /var/opt/thelounge
+          # Image enables 30-day message deletion by default; keep history as before
+          THELOUNGE_STORAGE_POLICY_ENABLED: "false"
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
         resources:
           requests:
             memory: 128Mi

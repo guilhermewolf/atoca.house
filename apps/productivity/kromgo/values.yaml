@@ -6,12 +6,27 @@ controllers:
     containers:
       kromgo:
         image:
-          repository: ghcr.io/kashalls/kromgo
-          tag: v0.10.0@sha256:965ecc92d68dc1a4a969397855367bbc70da03227a941ea607b73bb7e0b78fd6
+          repository: ghcr.io/home-operations/kromgo
+          tag: 0.16.1@sha256:ad39dd32da600ea261112e7a098345d474d48c997790b0373eb651c66e490844
         env:
-          PROMETHEUS_URL: http://kube-prometheus-stack-moni-prometheus.monitoring.svc.cluster.local:9090
-          SERVER_HOST: 0.0.0.0
-          SERVER_PORT: 8080
+          KROMGO_PROMETHEUS_URL: http://kube-prometheus-stack-moni-prometheus.monitoring.svc.cluster.local:9090
+          KROMGO_SERVER_PORT: &port 8080
+          KROMGO_METRICS_ENABLED: "false"
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: *port
+              periodSeconds: 10
+          readiness:
+            <<: *probes
+            spec:
+              httpGet:
+                path: /readyz
+                port: *port
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -35,7 +50,7 @@ service:
       http:
         primary: true
         port: 80
-        targetPort: 8080
+        targetPort: *port
 route:
   kromgo:
     enabled: true
@@ -52,12 +67,6 @@ route:
       - backendRefs:
           - name: kromgo
             port: 80
-        filters:
-          - type: ResponseHeaderModifier
-            responseHeaderModifier:
-              set:
-                - name: Content-Security-Policy
-                  value: "default-src 'none'; frame-ancestors 'none'"
         matches:
           - path:
               type: PathPrefix
@@ -67,6 +76,6 @@ persistence:
     type: configMap
     name: kromgo-configmap
     globalMounts:
-      - path: /kromgo/config.yaml
+      - path: /config/config.yaml
         subPath: config.yaml
         readOnly: true

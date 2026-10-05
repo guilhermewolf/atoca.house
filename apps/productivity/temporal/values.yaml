@@ -22,12 +22,21 @@ controllers:
           ENABLE_ES: "true"
           ES_SEEDS: temporal-elasticsearch.temporal.svc.cluster.local
           ES_VERSION: v7
-          # Crunchy presents a self-signed CA -> TLS on, host verification off.
-          # POSTGRES_TLS_* is used by the schema-setup tool, SQL_* by the server.
+          # Crunchy TLS is signed by the cert-manager postgres-ca (trust-manager
+          # bundle). POSTGRES_TLS_* is used by the schema-setup tool, SQL_* by the server.
           POSTGRES_TLS_ENABLED: "true"
-          POSTGRES_TLS_DISABLE_HOST_VERIFICATION: "true"
+          POSTGRES_TLS_DISABLE_HOST_VERIFICATION: "false"
+          POSTGRES_TLS_CA_FILE: &pgca /etc/ssl/postgres/ca.crt
           SQL_TLS_ENABLED: "true"
-          SQL_HOST_VERIFICATION: "false"
+          SQL_HOST_VERIFICATION: "true"
+          SQL_CA: *pgca
+          # Talks to postgres-primary directly (headless Service -> primary pod IP).
+          # pgbouncer runs pool_mode=transaction, which breaks Temporal's prepared
+          # statements. After a Patroni failover, pooled conns can stay pinned to
+          # the demoted (read-only) node until they expire; default lifetime 1h
+          # caused ~2h of "read-only transaction" errors on 2026-09-30. Recycle fast.
+          SQL_MAX_CONN_TIME: 5m
+          SQL_VIS_MAX_CONN_TIME: 5m
           # Listen on all interfaces so Postiz can reach the frontend; advertise
           # the real pod IP for intra-process service membership (ringpop).
           BIND_ON_IP: "0.0.0.0"
@@ -105,7 +114,7 @@ defaultPodOptions:
       {
         "apiVersion": "v1",
         "kind": "Service",
-        "name": "postgres-pgbouncer",
+        "name": "postgres-primary",
         "namespace": "crunchy-postgres-cluster"
       }
   schedulingGates:
@@ -130,6 +139,16 @@ service:
         port: 9200
 
 persistence:
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    advancedMounts:
+      temporal:
+        app:
+          - path: /etc/ssl/postgres/ca.crt
+            subPath: ca.crt
+            readOnly: true
+
   es-data:
     type: persistentVolumeClaim
     storageClass: ceph-block

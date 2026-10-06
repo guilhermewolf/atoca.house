@@ -2,7 +2,7 @@
 resource "cloudflare_zero_trust_access_service_token" "kf_events" {
   account_id = var.account_id
   name       = "kf-events-worker"
-  duration   = "8760h"
+  duration   = "forever"
 }
 
 resource "cloudflare_zero_trust_access_application" "n8n_webhooks" {

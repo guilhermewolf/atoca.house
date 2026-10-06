@@ -7,7 +7,13 @@ metadata:
 data:
   settings.yml: |
     ---
-    use_default_settings: true
+    # wikidata fetches data at engine init; when that fails it is never
+    # registered yet still queried -> KeyError 'wikidata' -> HTTP 500 on every
+    # search (seen 2026-10-06). Drop it from the defaults.
+    use_default_settings:
+      engines:
+        remove:
+          - wikidata
 
     server:
       limiter: true

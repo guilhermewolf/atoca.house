@@ -5,69 +5,69 @@ metadata:
   name: hermes-kf-config
   namespace: hermes-kf
 data:
+  # Copied over /opt/data/config.yaml on every start (copy-config init) — this
+  # file is the source of truth; edits made in the dashboard are discarded.
+  # SOUL.md, memories and skills live on the PVC only (not in this public repo).
   config.yaml: |
-    # hermes-kf Agent configuration
-    # Docs: https://hermes-kf-agent.nousresearch.com/docs
-    # Main model: Nous Portal Plus subscription (OAuth via `hermes auth`, token
-    # persisted in /opt/data/auth.json on the PVC — no k8s secret involved).
-    # The Portal proxies the full OpenRouter catalog; claude-opus-4.8 is the
-    # strongest generalist on it and multimodal, so it doubles as the vision
-    # model. Credit-metered ($22/mo on Plus), so background/auxiliary work must
-    # NOT run here — see auxiliary below.
+    # hermes-kf — KitchenFrequencies.TV team operator, WhatsApp group only.
+    # Docs: https://hermes-agent.nousresearch.com/docs
+
+    # --- Models ---------------------------------------------------------------
+    # Every model goes through LiteLLM, which holds the only ChatGPT login and
+    # the spend-capped Nous API key; this pod holds no OAuth (a login held in
+    # two places revokes the other). Main = flat-rate ChatGPT Pro; Nous credit
+    # ($10/mo key cap) is the fallback, never the default.
     model:
-      default: anthropic/claude-opus-4.8
-      provider: nous
-      base_url: https://inference-api.nousresearch.com/v1
+      provider: custom:litellm
+      default: chatgpt/gpt-6.1-sol
     providers:
       litellm:
         base_url: http://litellm.litellm.svc.cluster.local:4000/v1
-        api_key: ${LITELLM_MASTER_KEY}
-    # Failover: when Nous rate-limits or the monthly credit runs out (402/429),
-    # drop to the ChatGPT Plus subscription — reached DIRECTLY via the
-    # `openai-codex` OAuth provider, not litellm's `chatgpt/*` shim, which cannot
-    # refresh a subscription's OAuth token and fails every call with "Unknown
-    # items in responses API response: []". After both subscriptions, litellm's
-    # keyed free tiers, and local ollama dead last: the GPU is the floor of the
-    # chain, never a default.
-    fallback_model:
-      - provider: openai-codex
-        model: gpt-5.4
+        api_key: ${LITELLM_API_KEY}
+    fallback_providers:
       - provider: custom:litellm
-        model: cerebras-gpt-oss-120b
-        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
-        key_env: LITELLM_MASTER_KEY
+        model: nous-claude-sonnet
       - provider: custom:litellm
-        model: groq-gpt-oss-120b
-        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
-        key_env: LITELLM_MASTER_KEY
+        model: openrouter-free
       - provider: custom:litellm
         model: qwen3.5-9b
-        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
-        key_env: LITELLM_MASTER_KEY
-    # Side tasks stay off the metered Portal credit — they run on litellm's free
-    # cloud tiers. Vision keeps the Nous default (gemini flash class): gpt-oss is
-    # text-only and claude-opus on every screenshot would burn credit fast.
+    delegation:
+      provider: custom:litellm
+      model: chatgpt/gpt-6-luna
+    # Pin EVERY auxiliary task: anything unlisted runs on the main model.
     auxiliary:
+      approval:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+        timeout: 30
+      vision:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+      compression:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+      background_review:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+      review:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+      curator:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+        timeout: 600
       title_generation:
         provider: custom:litellm
         model: groq-gpt-oss-120b
-      compression:
-        provider: custom:litellm
-        model: cerebras-gpt-oss-120b
-      web_extract:
+      memory_query_rewrite:
         provider: custom:litellm
         model: groq-gpt-oss-120b
-        reasoning_effort: low
-      session_search:
+      skills_hub:
         provider: custom:litellm
         model: groq-gpt-oss-120b
-      vision:
-        provider: nous
-        model: ""
-    toolsets:
-      - hermes-cli
-      - browser
-      - vision
+      mcp:
+        provider: custom:litellm
+        model: groq-gpt-oss-120b
     agent:
       max_turns: 90
       gateway_timeout: 1800
@@ -76,106 +76,194 @@ data:
       reasoning_effort: medium
       tool_use_enforcement: auto
       verify_on_stop: false
+    timezone: Europe/Amsterdam
+
+    # --- Workspace --------------------------------------------------------------
+    # Workspace holds the shorts history (workspace/shorts/) and git checkouts
+    # of the KitchenFrequencies-TV repos (workspace/events,
+    # workspace/kitchenfrequencies), cloned/fetched by the agent itself on demand
+    # (kf-repo-work skill).
     terminal:
       backend: local
       cwd: /opt/data/workspace
       timeout: 180
       persistent_shell: true
-    # Nous Tool Gateway (included with every paid Portal plan, doesn't burn the
-    # monthly credit): web fetch (firecrawl), cloud browser (browser-use),
-    # image/video gen. Search still goes to in-cluster SearXNG.
-    web:
-      backend: firecrawl
-      search_backend: searxng
-      use_gateway: true
-    browser:
-      cloud_provider: browser-use
-      use_gateway: true
-    image_gen:
-      use_gateway: true
-    video_gen:
-      provider: fal
-      use_gateway: true
+      env_passthrough:
+        # Feeds the git credential helper in /opt/data/.gitconfig (pushes).
+        - GIT_HTTPS_TOKEN
+        - POSTIZ_API_KEY
+        - POSTIZ_API_URL
+        - OPUS_API_KEY
+    # Skills live on the PVC only (/opt/data/skills — private, Volsync-backed).
+    skills:
+      project_discovery: false
+    # Scheduled jobs are created on purpose by a human (`hermes cron`), never by
+    # the agent on its own; the weekly shorts job lives in cron/jobs.json.
+    cron:
+      allow_agent_scheduling: false
+
+    # --- Guardrails -------------------------------------------------------------
+    approvals:
+      mode: smart
+      deny:
+        - "rm -rf *"
+        # Org is on GitHub Free: no server-side branch protection, so these are
+        # the only guard. A push to events/main is a production deploy.
+        - "git push --force *"
+        - "git push -f *"
+        - "git push origin main*"
+        - "git push*HEAD:main*"
+        - "git push*:main*"
+        - "git branch -D main*"
+        - "wrangler *"
+        - "npx wrangler *"
+        # Remote (production) package scripts; the *:local variants stay allowed.
+        - "npm run deploy*"
+        - "npm run db:console*"
+        - "npm run db:migrate"
+        - "npm run db:migrate -*"
+        - "postiz posts:create*-t now*"
+        - "postiz posts:create*-t schedule*"
+      smart_policy: |
+        Context: KitchenFrequencies.TV team assistant in a WhatsApp group. The
+        shell is for the postiz CLI, OpusClip API calls (curl), ffmpeg/scripts
+        from the weekly-shorts skill, files under /opt/data/workspace, and git
+        work in the checkouts /opt/data/workspace/{events,kitchenfrequencies}.
+        Those repos are LIVE sites: merging/pushing to main deploys production
+        (events = events.kitchenfrequencies.tv). Code reaches main only through
+        a pull request that a human merges.
+        APPROVE: read-only commands, postiz list/analytics commands,
+        `postiz posts:create` with `-t draft`, curl GETs, scripts shipped in
+        /opt/data/skills, file work inside /opt/data/workspace, routine git on a
+        feature branch (status/diff/log/fetch/checkout -b/add/commit/rebase onto
+        origin/main/push of a non-main branch, push --force-with-lease).
+        ESCALATE anything that publishes or schedules content, sends messages
+        to people outside the group, deletes data, touches files outside
+        /opt/data/workspace, deploys, or runs package scripts that hit
+        production (D1, Cloudflare, real WhatsApp/email sends).
+        Never approve a push to main or a merge.
+    security:
+      redact_secrets: true
+    privacy:
+      redact_pii: true
+
+    # --- Memory -----------------------------------------------------------------
+    # Built-in MEMORY.md/USER.md (on the PVC) + holographic local
+    # fact store (people/brand facts) + the atoca-memory graph via the `atoca-memory` MCP.
+    memory:
+      provider: holographic
+    plugins:
+      hermes-memory-store:
+        db_path: /opt/data/memory_store.db
+        auto_extract: true
+        default_trust: 0.5
     compression:
       enabled: true
       threshold: 0.5
       target_ratio: 0.2
       protect_last_n: 20
-    display:
-      tool_progress: all
-    # TTS and STT (whisper) both ride the Nous Tool Gateway instead of local
-    # CPU faster-whisper / an in-cluster TTS endpoint.
-    tts:
-      provider: openai
-      use_gateway: true
-    stt:
-      enabled: true
-      provider: openai
-      local:
-        model: small
-        language: ""
-      use_gateway: true
-    # Memory: built-in MEMORY.md/USER.md always active; external provider is additive.
-    # Holographic = local SQLite (FTS5 + trust scoring + contradiction detection),
-    # zero extra infra, no LLM/embeddings/Qdrant, no GPU. DB lives on the /opt/data
-    # PVC (covered by Volsync backup). See plugins.hermes-kf-memory-store below.
-    memory:
-      provider: holographic
-      auto_migrate: true
-      auto_summarize:
-        threshold: 50
-    group_sessions_per_user: false
-    streaming:
-      enabled: false
-    security:
-      redact_secrets: true
-    privacy:
-      redact_pii: true
-    # WhatsApp via the Baileys bridge (self-chat mode: paired to your own
-    # personal WhatsApp account). Cloud API adapter doesn't support groups,
-    # so this must be the unofficial bridge. Group-only: DMs are disabled,
-    # only the allowlisted group JID below can trigger the bot.
-    # Pairing (one-time, interactive): kubectl exec into the pod and run
-    # `hermes whatsapp` to scan the QR code; session persists on the PVC at
-    # /opt/data/platforms/whatsapp/session.
+
+    # --- WhatsApp -----------------------------------------------------------------
+    # Baileys bridge in bot mode (WHATSAPP_MODE=bot in values.yaml). Group-only:
+    # DMs are disabled; only the allowlisted group can trigger the bot.
+    # ${GROUP_ID} is substituted by the copy-config init container.
+    # Pairing (one-time): `hermes whatsapp` in the pod; the session persists on
+    # the PVC at /opt/data/platforms/whatsapp/session.
     whatsapp:
       unauthorized_dm_behavior: ignore
       dm_policy: disabled
       group_policy: allowlist
       group_allow_from:
         - "${GROUP_ID}@g.us"
-    # Holographic memory store (local SQLite on the /opt/data PVC).
-    plugins:
-      hermes-kf-memory-store:
-        db_path: /opt/data/memory_store.db
-        auto_extract: true
-        default_trust: 0.5
-      enabled: []
-    # External MCP servers. In-cluster ones go through the toolhive proxies in
-    # the mcp namespace (streamable HTTP at /mcp, no auth for in-cluster
-    # traffic — the proxies hold the upstream credentials). Env vars expand
-    # the same way as LITELLM_MASTER_KEY above.
+    # One shared session for the whole group.
+    group_sessions_per_user: false
+    # Explicit toolsets keep ~50 unused tool schemas out of every turn.
+    platform_toolsets:
+      whatsapp:
+        - web
+        - browser
+        - vision
+        - terminal
+        - file
+        - skills
+        - memory
+        - session_search
+        - todo
+        - clarify
+        - vikunja
+        - outline
+        - context7
+        - postiz
+        - n8n
+        - atoca-memory
+        - github
+    display:
+      platforms:
+        whatsapp:
+          tool_progress: "off"
+    streaming:
+      enabled: false
+    # Search via in-cluster SearXNG; pages/browsing via the local Chromium.
+    web:
+      search_backend: searxng
+    # WhatsApp voice notes -> local faster-whisper on CPU.
+    stt:
+      enabled: true
+      provider: local
+      local:
+        model: small
+        language: ""
+
+    # --- MCP servers --------------------------------------------------------------
     mcp_servers:
-      # n8n built-in instance-level MCP (N8N_MCP_ACCESS_ENABLED=true on the
-      # n8n deploy). Probed: 401 without key = endpoint live.
-      n8n:
-        url: http://n8n.n8n.svc.cluster.local/mcp-server/http
-        headers:
-          Authorization: Bearer ${N8N_API_KEY}
-      # Outline has a native MCP endpoint (no toolhive proxy needed). Same
-      # endpoint the KitchenFrequencies.TV Claude Code project uses.
+      # Tickets: project KITCHENFREQUENCIES.TV (id 69) only.
+      vikunja:
+        url: http://mcp-vikunja-mcp-proxy.mcp.svc.cluster.local:8080/mcp
+      # Docs: collection KitchenFrequencies.TV — the source of truth.
       outline:
         url: https://outline.atoca.house/mcp
         headers:
           Authorization: Bearer ${OUTLINE_API_KEY}
       context7:
         url: http://mcp-context7-mcp-proxy.mcp.svc.cluster.local:8080/mcp
-      memory:
-        url: http://mcp-memory-mcp-proxy.mcp.svc.cluster.local:8080/mcp
-      # Postiz native MCP endpoint (NEXT_PUBLIC_BACKEND_URL + /mcp, Bearer auth,
-      # per https://docs.postiz.com/mcp/setup). Exposes channel listing and
-      # per-channel analytics. POSTIZ_API_KEY from Postiz Settings -> API.
+      # Postiz native MCP (channel listing, drafts). Drafts only, ever.
       postiz:
         url: https://postiz.atoca.house/api/mcp
         headers:
           Authorization: Bearer ${POSTIZ_API_KEY}
+      # n8n instance MCP: kf-events / kf-notify / shorts pipeline workflows.
+      n8n:
+        url: http://n8n.n8n.svc.cluster.local/mcp-server/http
+        headers:
+          Authorization: Bearer ${N8N_API_KEY}
+      # PR flow on KitchenFrequencies-TV/{events,kitchenfrequencies}. Content
+      # changes go through the local git checkouts (single write path); merge
+      # and file-writing tools are deliberately left out — humans merge.
+      github:
+        command: "npx"
+        args: ["-y", "@modelcontextprotocol/server-github"]
+        env:
+          GITHUB_PERSONAL_ACCESS_TOKEN: ${GIT_HTTPS_TOKEN}
+        tools:
+          include:
+            - get_file_contents
+            - search_code
+            - list_commits
+            - create_pull_request
+            - list_pull_requests
+            - get_pull_request
+            - get_pull_request_status
+            - get_pull_request_files
+            - get_pull_request_comments
+            - get_pull_request_reviews
+            - update_pull_request_branch
+            - list_issues
+            - get_issue
+            - create_issue
+            - update_issue
+            - add_issue_comment
+        prompts: false
+        resources: false
+      # atoca-memory knowledge graph (shared with Claude Code).
+      atoca-memory:
+        url: http://mcp-memory-mcp-proxy.mcp.svc.cluster.local:8080/mcp

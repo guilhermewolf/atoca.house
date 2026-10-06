@@ -11,6 +11,12 @@ spec:
   # Models come from LiteLLMModel CRs in ./models, rendered into config.yaml
   # (GitOps source of truth). Postgres still backs the UI, virtual keys, spend.
   applyMode: file
+  # Admin API credentials the operator uses to mint LiteLLMVirtualKeys
+  # (per-consumer keys, e.g. apps/ai/hermes/litellm-key.yaml).
+  apiAccess:
+    masterKeyRef:
+      name: litellm-secret
+      key: LITELLM_MASTER_KEY
   generalSettings:
     health_check_endpoint: /v1/health
   routerSettings:

@@ -1,0 +1,29 @@
+---
+# Per-consumer LiteLLM key (not the master key): spend and requests show up
+# per agent in LiteLLM, and it can be revoked or rate-limited on its own.
+# The operator mints it via the proxy's admin API and writes Secret
+# litellm-key (LITELLM_API_KEY) into this namespace.
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMVirtualKey
+metadata:
+  name: hermes
+spec:
+  proxyRef: litellm
+  proxyNamespace: litellm
+  keyAlias: hermes
+  secretName: litellm-key
+  secretKey: LITELLM_API_KEY
+  # Exactly the groups hermes's config.yaml routes to (main, fallbacks, aux).
+  models:
+    - chatgpt/gpt-6.1-sol
+    - chatgpt/gpt-6-sol
+    - chatgpt/gpt-6-luna
+    - nous-claude-sonnet
+    - openrouter-free
+    - groq-gpt-oss-120b
+    - cerebras-gpt-oss-120b
+    - qwen3.5-9b
+  rpmLimit: 60
+  maxParallelRequests: 4
+  metadata:
+    consumer: hermes

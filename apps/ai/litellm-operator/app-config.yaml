@@ -1,0 +1,8 @@
+---
+# Application configuration for litellm-operator
+app:
+  name: litellm-operator
+  namespace: litellm-operator
+  chart: litellm-operator
+  chartRepo: ghcr.io/home-operations/charts
+  chartVersion: 0.0.22

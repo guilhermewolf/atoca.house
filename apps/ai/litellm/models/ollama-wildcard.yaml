@@ -1,0 +1,14 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+# Any model pulled in ollama, e.g. ollama/qwen3:14b. Named ollama models keep their fallbacks.
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: ollama-wildcard
+spec:
+  modelName: ollama/*
+  params:
+    model: ollama_chat/*
+    apiBase: http://ollama.ollama.svc.cluster.local
+  info:
+    maxInputTokens: 15000

@@ -1,8 +1,6 @@
 ---
 # Application configuration for litellm
+# No chart: LiteLLMProxy/LiteLLMModel CRs reconciled by litellm-operator.
 app:
   name: litellm
   namespace: litellm
-  chart: app-template
-  chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 5.2.1

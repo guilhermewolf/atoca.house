@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: nomic-embed-text
+spec:
+  modelName: nomic-embed-text
+  params:
+    model: ollama/nomic-embed-text
+    apiBase: http://ollama.ollama.svc.cluster.local
+  info:
+    mode: embedding

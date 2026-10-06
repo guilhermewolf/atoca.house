@@ -1,0 +1,14 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+# ChatGPT Pro subscription (OAuth token on the chatgpt-auth PVC). Verified live
+# 2026-10-06; 5.3/5.4 and every -pro/-mini/-nano are rejected for this account.
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: chatgpt-gpt-6-luna
+spec:
+  modelName: chatgpt/gpt-6-luna
+  params:
+    model: chatgpt/gpt-6-luna
+  info:
+    mode: responses

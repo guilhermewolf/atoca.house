@@ -1,0 +1,19 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+# Nous Portal ~latest alias: follows the newest Claude Sonnet.
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: nous-claude-sonnet
+spec:
+  modelName: nous-claude-sonnet
+  params:
+    model: openai/~anthropic/claude-sonnet-latest
+    apiBase: https://inference-api.nousresearch.com/v1
+    apiKeyRef:
+      name: litellm-secret
+      key: NOUS_API_KEY
+    dropParams: true
+  info:
+    supportsFunctionCalling: true
+    supportsVision: true

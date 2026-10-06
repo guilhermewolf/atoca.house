@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+# OpenRouter's free router: picks from whatever :free models currently exist, so it never goes stale.
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: openrouter-free
+spec:
+  modelName: openrouter-free
+  params:
+    model: openrouter/openrouter/free
+    dropParams: true
+    rpm: 20

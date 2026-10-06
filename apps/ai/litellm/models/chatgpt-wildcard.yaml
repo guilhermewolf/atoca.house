@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+# Any model the ChatGPT Pro backend accepts (e.g. chatgpt/gpt-5.6-sol). Exact-named models win over this.
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: chatgpt-wildcard
+spec:
+  modelName: chatgpt/*
+  params:
+    model: chatgpt/*
+  info:
+    mode: responses

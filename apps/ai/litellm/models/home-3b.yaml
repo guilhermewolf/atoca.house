@@ -1,0 +1,11 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: home-3b
+spec:
+  modelName: home-3b
+  params:
+    model: ollama_chat/fixt/home-3b-v3:latest
+    apiBase: http://ollama.ollama.svc.cluster.local

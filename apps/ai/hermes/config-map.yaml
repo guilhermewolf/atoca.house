@@ -8,30 +8,34 @@ data:
   config.yaml: |
     # Hermes Agent configuration
     # Docs: https://hermes-agent.nousresearch.com/docs
-    # Main model: ChatGPT Plus subscription, reached DIRECTLY through the
+    # Main model: ChatGPT Pro subscription, reached DIRECTLY through the
     # `openai-codex` provider (OAuth device-flow, `hermes auth add openai-codex`,
-    # token in /opt/data/auth.json). It used to go through litellm's `chatgpt/*`
-    # shim, which cannot refresh an OAuth subscription and fails every call with
-    # "Unknown items in responses API response: []". hermes owns the credential
-    # pool — refresh, rotation and exhaustion tracking — so it talks to the
-    # subscription itself. The picker also offers gpt-5.5 / gpt-5.4-mini.
+    # token in /opt/data/auth.json) — hermes owns refresh/rotation itself.
+    # Models the Codex backend accepts for this account (probed 2026-10-06):
+    # gpt-5.5, gpt-5.6-{sol,luna,terra}, gpt-6-{sol,luna}, gpt-6.1-sol.
+    # gpt-5.3/5.4 are retired (400 "not supported when using Codex with a
+    # ChatGPT account"); -pro/-mini/-nano variants 403.
     model:
-      default: gpt-5.4
+      default: gpt-6.1-sol
       provider: openai-codex
     providers:
       litellm:
         base_url: http://litellm.litellm.svc.cluster.local:4000/v1
         api_key: ${LITELLM_MASTER_KEY}
     # Fallback chain, tried in order on rate-limit / overload / connection error.
-    # Subscription first (the other paid account), then litellm's keyed cloud
-    # tiers, and only then local ollama — the GPU is the last resort, never the
-    # default. Free-tier caps are small (groq 8k TPM, cerebras 30k TPM), so a
-    # long conversation skips them via litellm's pre-call context checks and
-    # lands wherever it fits.
+    # An older ChatGPT model first (separate per-model limits, same flat rate),
+    # then Nous credit via litellm (this pod has no Nous OAuth token, so the
+    # native `nous` provider was always skipped), then litellm's keyed free
+    # tiers, and only then local ollama — the GPU is the last resort. Free-tier
+    # caps are small (groq 8k TPM, cerebras 30k TPM), so a long conversation
+    # skips them via litellm's pre-call context checks.
     fallback_model:
-      - provider: nous
-        model: anthropic/claude-opus-4.8
-        base_url: https://inference-api.nousresearch.com/v1
+      - provider: openai-codex
+        model: gpt-5.5
+      - provider: custom:litellm
+        model: nous-claude-opus
+        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
+        key_env: LITELLM_MASTER_KEY
       - provider: custom:litellm
         model: cerebras-gpt-oss-120b
         base_url: http://litellm.litellm.svc.cluster.local:4000/v1
@@ -45,9 +49,12 @@ data:
         base_url: http://litellm.litellm.svc.cluster.local:4000/v1
         key_env: LITELLM_MASTER_KEY
     # Side tasks never touch the metered subscriptions: they go to litellm's
-    # free cloud tiers, which is exactly what those keys are for. Vision is the
-    # exception — gpt-oss is text-only, so it uses the Nous default (gemini
-    # flash class), the cheapest multimodal route available.
+    # free cloud tiers, which is exactly what those keys are for. Any task NOT
+    # listed here defaults to the main model, so every task hermes runs is
+    # pinned explicitly (approval/background_review/curator/skills_hub/mcp were
+    # silently riding the main model). Vision is the exception — gpt-oss is
+    # text-only, so it uses the flat-rate ChatGPT subscription (the old `nous`
+    # route had no token in this pod).
     auxiliary:
       title_generation:
         provider: custom:litellm
@@ -55,16 +62,27 @@ data:
       compression:
         provider: custom:litellm
         model: cerebras-gpt-oss-120b
-      web_extract:
+      approval:
         provider: custom:litellm
         model: groq-gpt-oss-120b
-        reasoning_effort: low
-      session_search:
+        timeout: 30
+      background_review:
+        provider: custom:litellm
+        model: cerebras-gpt-oss-120b
+      curator:
+        provider: custom:litellm
+        model: cerebras-gpt-oss-120b
+        timeout: 600
+      skills_hub:
+        provider: custom:litellm
+        model: groq-gpt-oss-120b
+      mcp:
         provider: custom:litellm
         model: groq-gpt-oss-120b
       vision:
-        provider: nous
-        model: ""
+        provider: openai-codex
+        model: gpt-6-luna
+    timezone: Europe/Amsterdam
     toolsets:
       - hermes-cli
     terminal:

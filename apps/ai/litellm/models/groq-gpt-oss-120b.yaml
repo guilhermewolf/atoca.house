@@ -1,0 +1,15 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: groq-gpt-oss-120b
+spec:
+  modelName: groq-gpt-oss-120b
+  params:
+    model: groq/openai/gpt-oss-120b
+    dropParams: true
+    rpm: 30
+    tpm: 8000
+  info:
+    maxInputTokens: 8000

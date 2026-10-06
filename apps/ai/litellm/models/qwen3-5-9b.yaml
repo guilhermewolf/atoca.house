@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: qwen3-5-9b
+spec:
+  modelName: qwen3.5-9b
+  params:
+    model: ollama_chat/qwen3.5:9b
+    apiBase: http://ollama.ollama.svc.cluster.local
+  info:
+    maxInputTokens: 15000

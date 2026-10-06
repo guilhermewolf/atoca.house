@@ -1,0 +1,141 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmproxy_v1alpha1.json
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMProxy
+metadata:
+  name: litellm
+spec:
+  # Renovate's kubernetes manager picks up this image line.
+  image: ghcr.io/berriai/litellm-non_root:v1.104.0@sha256:37066242e6b8327fdd627682a66a9ae2a599553b4d5a84c905c6d8b9eb35c01e
+  replicas: 1
+  # Models come from LiteLLMModel CRs in ./models, rendered into config.yaml
+  # (GitOps source of truth). Postgres still backs the UI, virtual keys, spend.
+  applyMode: file
+  generalSettings:
+    health_check_endpoint: /v1/health
+  routerSettings:
+    routing_strategy: simple-shuffle
+    redis_host: os.environ/REDIS_HOST
+    redis_port: os.environ/REDIS_PORT
+    # On free-tier 429/limit, cool the deployment down and fail over.
+    allowed_fails: 2
+    cooldown_time: 60
+    num_retries: 2
+    retry_after: 5
+    timeout: 600
+    # Filter deployments by max_input_tokens before dispatch, so an oversized
+    # request skips the small free tiers rather than 429ing through all of them.
+    enable_pre_call_checks: true
+    # Cloud free tiers first, local ollama always last: the GPU is the floor of
+    # every chain. Paid subscriptions are sources, never cross-provider fallback
+    # targets, so no request silently burns Nous credit or ChatGPT quota.
+    fallbacks:
+      - groq-gpt-oss-120b: ["cerebras-gpt-oss-120b", "qwen3.5-9b"]
+      - cerebras-gpt-oss-120b: ["groq-gpt-oss-120b", "qwen3.5-9b"]
+      - openrouter-free: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
+      - mistral-small: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
+      - qwen3.5-9b: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b"]
+      - gemma4-12b: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b"]
+      - gemma4-e4b: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b"]
+      - nous-claude-opus: ["nous-claude-sonnet", "cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
+      - nous-claude-sonnet: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
+      - chatgpt/gpt-6.1-sol: ["chatgpt/gpt-6-sol", "cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
+      - chatgpt/gpt-6-luna: ["chatgpt/gpt-6-sol", "cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
+      - chatgpt/gpt-6-sol: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
+  callbacks:
+    success: ["prometheus"]
+  litellmSettings:
+    prometheus_adapter: true
+    cache: true
+    cache_params:
+      type: redis
+      host: os.environ/REDIS_HOST
+      port: os.environ/REDIS_PORT
+    drop_params: false
+    request_timeout: 600
+    merge_reasoning_content_in_choices: true
+    set_verbose: false
+  env:
+    - name: LITELLM_LOG
+      value: INFO
+    - name: LITELLM_MODE
+      value: PRODUCTION
+    - name: REDIS_HOST
+      value: dragonfly.dragonfly-cluster.svc.cluster.local
+    - name: REDIS_PORT
+      value: "6379"
+    # ChatGPT subscription: auth.json seeded once via device login (see pvc.yaml)
+    - name: CHATGPT_TOKEN_DIR
+      value: /data/chatgpt
+  # Provider keys (GROQ_API_KEY, ...) are read from env by litellm; DATABASE_URL
+  # switches the proxy into DB mode.
+  envFrom:
+    - secretRef:
+        name: litellm-secret
+    - secretRef:
+        name: litellm-db-secret
+  podLabels:
+    postgres: "true"
+  # The operator's Deployment is RollingUpdate (not configurable) and the
+  # chatgpt-auth PVC is RWO: a surge pod on another node waits forever for the
+  # volume while the old pod holds it. Co-locate with the running pod so both
+  # can mount it during a rollout. Not a node pin — the pair moves together.
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: litellm
+              app.kubernetes.io/instance: litellm
+          topologyKey: kubernetes.io/hostname
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+  securityContext:
+    allowPrivilegeEscalation: false
+    # Prisma generates/migrates into the image's site-packages on startup.
+    readOnlyRootFilesystem: false
+    capabilities: { drop: ["ALL"] }
+  resources:
+    requests:
+      cpu: 25m
+      memory: 1536Mi
+    limits:
+      memory: 2Gi
+  volumes:
+    - name: postgres-ca
+      configMap:
+        name: postgres-ca
+    - name: tmpfs
+      emptyDir: {}
+    - name: chatgpt-auth
+      persistentVolumeClaim:
+        claimName: litellm-chatgpt-auth
+  volumeMounts:
+    - name: chatgpt-auth
+      mountPath: /data/chatgpt
+    - name: postgres-ca
+      mountPath: /etc/ssl/postgres/ca.crt
+      subPath: ca.crt
+      readOnly: true
+    - name: tmpfs
+      mountPath: /cache
+      subPath: cache
+    - name: tmpfs
+      mountPath: /tmp
+      subPath: tmp
+  service:
+    type: ClusterIP
+    port: 4000
+  route:
+    hostnames:
+      - litellm.atoca.house
+    parentRefs:
+      # group/kind spelled out: the CRD defaults them, which Argo flags as drift.
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: atoca-house-internal
+        namespace: kube-system

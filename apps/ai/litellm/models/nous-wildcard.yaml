@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+# Any Nous Portal catalog id behind a nous/ prefix, e.g. nous/anthropic/claude-opus-4.8
+# or nous/~google/gemini-pro-latest (live list: GET inference-api.nousresearch.com/v1/models).
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: nous-wildcard
+spec:
+  modelName: nous/*
+  params:
+    model: openai/*
+    apiBase: https://inference-api.nousresearch.com/v1
+    apiKeyRef:
+      name: litellm-secret
+      key: NOUS_API_KEY
+    dropParams: true

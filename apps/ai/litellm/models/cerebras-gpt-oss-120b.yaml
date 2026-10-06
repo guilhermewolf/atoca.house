@@ -1,0 +1,15 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: cerebras-gpt-oss-120b
+spec:
+  modelName: cerebras-gpt-oss-120b
+  params:
+    model: cerebras/gpt-oss-120b
+    dropParams: true
+    rpm: 5
+    tpm: 30000
+  info:
+    maxInputTokens: 30000

@@ -1,6 +1,10 @@
 ---
 defaultPodOptions:
   automountServiceAccountToken: true
+  enableServiceLinks: false
+  # agent.restart_drain_timeout is 60s; the k8s default 30s grace SIGKILLed the
+  # gateway mid-drain. 120s covers the drain plus s6 service teardown.
+  terminationGracePeriodSeconds: 120
   securityContext:
     # hermes-agent uses s6-overlay: the entrypoint must start as root to fix
     # /run permissions, then drops to the image's internal hermes user (uid 10000).
@@ -19,6 +23,9 @@ controllers:
       reloader.stakater.com/auto: "true"
 
     pod:
+      # Only LiteLLM gates scheduling: every model call goes through it. MCP
+      # servers are optional at runtime (hermes reconnects), so they no longer
+      # block the pod.
       annotations:
         k8s.ksgate.org/litellm-deployment: |
           {
@@ -35,107 +42,15 @@ controllers:
             "name": "litellm",
             "namespace": "litellm"
           }
-
-        k8s.ksgate.org/searxng-deployment: |
-          {
-            "apiVersion": "apps/v1",
-            "kind": "Deployment",
-            "name": "searxng",
-            "namespace": "searxng",
-            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
-          }
-        k8s.ksgate.org/searxng-service: |
-          {
-            "apiVersion": "v1",
-            "kind": "Service",
-            "name": "searxng",
-            "namespace": "searxng"
-          }
-
-        k8s.ksgate.org/n8n-deployment: |
-          {
-            "apiVersion": "apps/v1",
-            "kind": "Deployment",
-            "name": "n8n",
-            "namespace": "n8n",
-            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
-          }
-        k8s.ksgate.org/n8n-service: |
-          {
-            "apiVersion": "v1",
-            "kind": "Service",
-            "name": "n8n",
-            "namespace": "n8n"
-          }
-
-        k8s.ksgate.org/context7-mcp-deployment: |
-          {
-            "apiVersion": "apps/v1",
-            "kind": "Deployment",
-            "name": "context7-mcp",
-            "namespace": "mcp",
-            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
-          }
-        k8s.ksgate.org/context7-mcp-service: |
-          {
-            "apiVersion": "v1",
-            "kind": "Service",
-            "name": "mcp-context7-mcp-proxy",
-            "namespace": "mcp"
-          }
-
-        k8s.ksgate.org/memory-mcp-deployment: |
-          {
-            "apiVersion": "apps/v1",
-            "kind": "Deployment",
-            "name": "memory-mcp",
-            "namespace": "mcp",
-            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
-          }
-        k8s.ksgate.org/memory-mcp-service: |
-          {
-            "apiVersion": "v1",
-            "kind": "Service",
-            "name": "mcp-memory-mcp-proxy",
-            "namespace": "mcp"
-          }
-
-        k8s.ksgate.org/ha-mcp-deployment: |
-          {
-            "apiVersion": "apps/v1",
-            "kind": "Deployment",
-            "name": "ha-mcp",
-            "namespace": "mcp",
-            "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
-          }
-        k8s.ksgate.org/ha-mcp-service: |
-          {
-            "apiVersion": "v1",
-            "kind": "Service",
-            "name": "mcp-ha-mcp-proxy",
-            "namespace": "mcp"
-          }
       schedulingGates:
         - name: k8s.ksgate.org/litellm-deployment
         - name: k8s.ksgate.org/litellm-service
-        - name: k8s.ksgate.org/searxng-deployment
-        - name: k8s.ksgate.org/searxng-service
-        - name: k8s.ksgate.org/n8n-deployment
-        - name: k8s.ksgate.org/n8n-service
-        - name: k8s.ksgate.org/context7-mcp-deployment
-        - name: k8s.ksgate.org/context7-mcp-service
-        - name: k8s.ksgate.org/memory-mcp-deployment
-        - name: k8s.ksgate.org/memory-mcp-service
-        - name: k8s.ksgate.org/ha-mcp-deployment
-        - name: k8s.ksgate.org/ha-mcp-service
 
     initContainers:
-      # Seed the writable data volume with the read-only ConfigMap and create the
-      # agent workspace. chown to the image's hermes user (10000) so the gateway
-      # can read/rewrite its own config on start.
-      #
-      # Hermes' own markdown (SOUL.md, MEMORY.md, skills/) is NOT managed here:
-      # it lives on the PVC only, and is preserved by the volume's backup.
+      # Seed config.yaml from git on every start (git is its source of truth).
+      # Persona, memories and skills are NOT in git (private IDs; the repo is
+      # public): they live only on this PVC, protected by Volsync, pushed from
+      # a local private folder with its sync.sh (see the Outline runbook).
       copy-config:
         image:
           repository: docker.io/library/alpine
@@ -144,12 +59,18 @@ controllers:
           - sh
           - -c
           - |
-            set -euo pipefail
+            set -eu
             mkdir -p /opt/data/workspace
-            cp /tmp/config.yaml /opt/data/config.yaml
-            chown 10000:10000 /opt/data/config.yaml
+            cp /seed/config/config.yaml /opt/data/config.yaml
+            # A stray ~/.gitconfig once rewrote https->ssh and embedded a token;
+            # git config comes only from /opt/data/.gitconfig (clone-repo below).
+            rm -f /opt/data/home/.gitconfig
+            chown -R 10000:10000 /opt/data/config.yaml /opt/data/workspace
 
-      copy-kubectl:
+      # Static Go CLIs from alpine/k8s onto the PVC (on PATH via /opt/data/bin).
+      # jq is musl-linked there and can't run in the Debian app image: use
+      # `yq -p json` or python3 instead.
+      copy-tools:
         image:
           repository: docker.io/alpine/k8s
           tag: "1.37.1"
@@ -157,9 +78,9 @@ controllers:
           - sh
           - -c
           - |
-            set -euo pipefail
+            set -eu
             mkdir -p /opt/data/bin
-            cp /usr/bin/kubectl /opt/data/bin/kubectl
+            for b in kubectl helm kustomize kubeconform yq; do cp "/usr/bin/$b" /opt/data/bin/; done
             chown -R 10000:10000 /opt/data/bin
 
       # Keep a real git checkout of this repo on the PVC. hermes works in it
@@ -245,6 +166,8 @@ controllers:
           TZ: Europe/Amsterdam
           HOME: /opt/data
           HERMES_HOME: /opt/data
+          # Image PATH + /opt/data/bin (CLIs from the copy-tools init container).
+          PATH: /opt/data/bin:/opt/hermes/bin:/opt/hermes/.venv/bin:/opt/data/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
           # Gateway HTTP API (programmatic access, e.g. from Open WebUI)
           API_SERVER_ENABLED: "true"
           API_SERVER_HOST: 0.0.0.0
@@ -259,6 +182,10 @@ controllers:
           HERMES_DASHBOARD: "1"
           HERMES_DASHBOARD_HOST: 0.0.0.0
           HERMES_DASHBOARD_PORT: &dashPort "9119"
+          HERMES_DASHBOARD_PUBLIC_URL: https://hermes.atoca.house
+          # s6 gives services ~3s to stop by default — far less than the 60s
+          # gateway drain. Match terminationGracePeriodSeconds (ms).
+          S6_SERVICES_GRACETIME: "90000"
           # Web search backend (in-cluster SearXNG)
           SEARXNG_URL: http://searxng.searxng.svc.cluster.local:8080
           # Discord gateway creds + allowlist + channel come from hermes-secret
@@ -268,28 +195,42 @@ controllers:
           - secretRef:
               name: hermes-secret
         securityContext:
-          # Do NOT drop capabilities or force runAsNonRoot: s6-overlay init needs
-          # CAP_CHOWN/SETUID/SETGID to fix /run and drop to uid 10000. The image
-          # also writes to its root fs, so readOnlyRootFilesystem must stay false.
+          # No runAsNonRoot: s6-overlay init starts as root to fix /run and drop
+          # to uid 10000. It needs exactly CHOWN/DAC_OVERRIDE/FOWNER/SETUID/SETGID
+          # for that, plus KILL so root s6 can signal the uid-10000 services —
+          # everything else is dropped. The image writes to its root fs, so
+          # readOnlyRootFilesystem must stay false.
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: false
+          capabilities:
+            drop: ["ALL"]
+            add: ["CHOWN", "DAC_OVERRIDE", "FOWNER", "SETUID", "SETGID", "KILL"]
         probes:
-          liveness: &probes
+          # Liveness watches the gateway's own API server: the dashboard
+          # (/api/status on 9119) keeps answering while the gateway is dead.
+          liveness:
             enabled: true
             custom: true
             spec:
               httpGet:
-                # /health redirects through the dashboard auth gate and 500s
-                # once basic_auth creds are set (BasicAuthProvider has no
-                # OAuth start_login). /api/status is documented as always
-                # public regardless of the gate — use that instead.
+                path: /health
+                port: 8642
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 5
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                # Dashboard's /health 500s behind basic_auth (BasicAuthProvider
+                # has no OAuth start_login); /api/status is always public.
                 path: /api/status
                 port: 9119
               initialDelaySeconds: 30
               periodSeconds: 15
               timeoutSeconds: 5
               failureThreshold: 3
-          readiness: *probes
           startup:
             enabled: true
             custom: true
@@ -303,8 +244,7 @@ controllers:
               failureThreshold: 30
         resources:
           requests:
-            # 500m: local faster-whisper transcription of Discord voice
-            # messages runs on CPU in this pod.
+            # Bursty: local faster-whisper transcription runs on CPU here.
             cpu: 75m
             memory: 1Gi
           limits:
@@ -373,13 +313,13 @@ persistence:
     size: 10Gi
     globalMounts:
       - path: /opt/data
-  config:
+  seed-config:
     type: configMap
     name: hermes-config
-    defaultMode: 0755
-    globalMounts:
-      - path: /tmp/config.yaml
-        subPath: config.yaml
+    advancedMounts:
+      hermes:
+        copy-config:
+          - path: /seed/config
 
 serviceAccount:
   hermes: {}

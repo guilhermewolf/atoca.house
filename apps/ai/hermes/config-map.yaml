@@ -5,131 +5,132 @@ metadata:
   name: hermes-config
   namespace: hermes
 data:
+  # Copied over /opt/data/config.yaml on every start (copy-config init) — this
+  # file is the source of truth; edits made in the dashboard are discarded.
+  # SOUL.md, memories and skills live on the PVC only (not in this public repo).
   config.yaml: |
-    # Hermes Agent configuration
+    # hermes — maintainer of guilhermewolf/atoca.house (Discord + API + dashboard)
     # Docs: https://hermes-agent.nousresearch.com/docs
-    # Main model: ChatGPT Pro subscription, reached DIRECTLY through the
-    # `openai-codex` provider (OAuth device-flow, `hermes auth add openai-codex`,
-    # token in /opt/data/auth.json) — hermes owns refresh/rotation itself.
-    # Models the Codex backend accepts for this account (probed 2026-10-06):
-    # gpt-5.5, gpt-5.6-{sol,luna,terra}, gpt-6-{sol,luna}, gpt-6.1-sol.
-    # gpt-5.3/5.4 are retired (400 "not supported when using Codex with a
-    # ChatGPT account"); -pro/-mini/-nano variants 403.
+
+    # --- Models ---------------------------------------------------------------
+    # Every model goes through LiteLLM. LiteLLM holds the ONLY ChatGPT login and
+    # the Nous API key: an OAuth login held in two places revokes the other
+    # (single-use refresh tokens), so this pod holds no OAuth at all.
     model:
-      default: gpt-6.1-sol
-      provider: openai-codex
+      provider: custom:litellm
+      default: chatgpt/gpt-6.1-sol
     providers:
       litellm:
         base_url: http://litellm.litellm.svc.cluster.local:4000/v1
         api_key: ${LITELLM_MASTER_KEY}
-    # Fallback chain, tried in order on rate-limit / overload / connection error.
-    # An older ChatGPT model first (separate per-model limits, same flat rate),
-    # then Nous credit via litellm (this pod has no Nous OAuth token, so the
-    # native `nous` provider was always skipped), then litellm's keyed free
-    # tiers, and only then local ollama — the GPU is the last resort. Free-tier
-    # caps are small (groq 8k TPM, cerebras 30k TPM), so a long conversation
-    # skips them via litellm's pre-call context checks.
-    fallback_model:
-      - provider: openai-codex
-        model: gpt-5.5
+    # Turn-scoped: each new message starts on the primary again. LiteLLM already
+    # falls back inside a group (gpt-6.1-sol -> gpt-6-sol -> free tiers); this
+    # list covers LiteLLM-side failures of the whole group.
+    fallback_providers:
       - provider: custom:litellm
-        model: nous-claude-opus
-        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
-        key_env: LITELLM_MASTER_KEY
+        model: nous-claude-sonnet
       - provider: custom:litellm
-        model: cerebras-gpt-oss-120b
-        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
-        key_env: LITELLM_MASTER_KEY
-      - provider: custom:litellm
-        model: groq-gpt-oss-120b
-        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
-        key_env: LITELLM_MASTER_KEY
+        model: openrouter-free
       - provider: custom:litellm
         model: qwen3.5-9b
-        base_url: http://litellm.litellm.svc.cluster.local:4000/v1
-        key_env: LITELLM_MASTER_KEY
-    # Side tasks never touch the metered subscriptions: they go to litellm's
-    # free cloud tiers, which is exactly what those keys are for. Any task NOT
-    # listed here defaults to the main model, so every task hermes runs is
-    # pinned explicitly (approval/background_review/curator/skills_hub/mcp were
-    # silently riding the main model). Vision is the exception — gpt-oss is
-    # text-only, so it uses the flat-rate ChatGPT subscription (the old `nous`
-    # route had no token in this pod).
+    delegation:
+      provider: custom:litellm
+      model: chatgpt/gpt-6-luna
+    # Pin EVERY auxiliary task: anything unlisted runs on the main model.
+    # Flat-rate ChatGPT (gpt-6-luna) for tasks that need judgement, vision or a
+    # large context; free tiers for small classifier-style calls.
     auxiliary:
+      approval:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+        timeout: 30
+      vision:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+      compression:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+      background_review:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+      review:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+      curator:
+        provider: custom:litellm
+        model: chatgpt/gpt-6-luna
+        timeout: 600
       title_generation:
         provider: custom:litellm
         model: groq-gpt-oss-120b
-      compression:
-        provider: custom:litellm
-        model: cerebras-gpt-oss-120b
-      approval:
+      memory_query_rewrite:
         provider: custom:litellm
         model: groq-gpt-oss-120b
-        timeout: 30
-      background_review:
-        provider: custom:litellm
-        model: cerebras-gpt-oss-120b
-      curator:
-        provider: custom:litellm
-        model: cerebras-gpt-oss-120b
-        timeout: 600
       skills_hub:
         provider: custom:litellm
         model: groq-gpt-oss-120b
       mcp:
         provider: custom:litellm
         model: groq-gpt-oss-120b
-      vision:
-        provider: openai-codex
-        model: gpt-6-luna
+    agent:
+      max_turns: 90
+      gateway_timeout: 1800
+      restart_drain_timeout: 60
+      api_max_retries: 2
+      reasoning_effort: medium
+      tool_use_enforcement: auto
+      # No image/video generation or TTS here; HA is reached via its MCP.
+      disabled_toolsets: [image_gen, video_gen, tts, homeassistant]
     timezone: Europe/Amsterdam
-    toolsets:
-      - hermes-cli
+
+    # --- Workspace --------------------------------------------------------------
+    # cwd is the atoca.house checkout kept fresh by the clone-repo init
+    # container; its root CLAUDE.md loads as project context automatically.
     terminal:
       backend: local
-      # Default cwd is the atoca.house checkout maintained by the clone-repo
-      # init container. Being inside the git root is what makes hermes pick up
-      # the repo's CLAUDE.md as project context; the GitOps/PR procedure itself
-      # is the `atoca-gitops` skill on the PVC (/opt/data/skills/devops/).
       cwd: /opt/data/workspace/atoca.house
       timeout: 300
       persistent_shell: true
-      # GITHUB_TOKEN must reach the shell: /opt/data/.gitconfig sets a
-      # credential helper that echoes it for github.com pushes. Without the
-      # passthrough the sandbox filter strips it and every push 403s.
+      # GITHUB_TOKEN feeds the git credential helper in /opt/data/.gitconfig;
+      # the sandbox strips it otherwise and every push 403s.
       env_passthrough:
         - GITHUB_TOKEN
-    # Hermes' own markdown (SOUL.md, MEMORY.md, skills/) lives on the PVC and
-    # nowhere else — not in this ConfigMap and not in the atoca.house tree. The
-    # GitOps procedure is the `atoca-gitops` skill under
-    # /opt/data/skills/devops/atoca-gitops/. Nothing to discover inside the
-    # checkout, so project scanning stays off.
+    # Skills live on the PVC only (/opt/data/skills — private, Volsync-backed).
     skills:
       project_discovery: false
-    # Git work is routine here, so the everyday commands are pre-approved and
-    # the genuinely irreversible ones are denied outright (deny beats yolo).
+    # No LLM turns on a timer unless a human asks for one.
+    cron:
+      allow_agent_scheduling: false
+
+    # --- Guardrails -------------------------------------------------------------
+    # Routine git is pre-approved; irreversible commands are denied outright
+    # (deny wins even over yolo).
     approvals:
       mode: smart
       deny:
-        # Blind force-push is out; `--force-with-lease` stays allowed because
-        # re-pushing a rebased feature branch needs it (the glob below does not
-        # match it — it requires a space right after `--force`).
+        # `--force-with-lease` stays allowed (re-pushing a rebased branch); the
+        # globs below need a space right after `--force`.
         - "git push --force *"
         - "git push -f *"
         - "git push origin main*"
         - "git push*HEAD:main*"
         - "git branch -D main*"
+        - "kubectl delete *"
+        - "kubectl apply *"
+        - "kubectl patch *"
+        - "kubectl edit *"
+        - "kubectl scale *"
       smart_policy: |
         Context: this shell owns a checkout of guilhermewolf/atoca.house at
         /opt/data/workspace/atoca.house. That repo is GitOps — anything merged
         to main deploys to the live Kubernetes cluster.
         APPROVE routine repo work: git status/diff/log/fetch/pull/checkout/
         switch/branch/add/commit/stash/rebase onto origin/main, git push of a
-        feature branch, kubectl get/describe/logs (read-only), yq/jq/grep/sed
-        over files inside the checkout.
+        feature branch, kubectl get/describe/logs/top/events (read-only),
+        helm template, kustomize build, kubeconform, yq/jq/rg/sed over files
+        inside the checkout, curl GETs to in-cluster services.
         ESCALATE anything that rewrites shared history, touches files outside
-        /opt/data/workspace/atoca.house, or writes to the cluster
-        (kubectl apply/delete/patch/scale, argocd sync).
+        /opt/data/workspace/atoca.house, or writes to the cluster.
         Never approve a direct push to main — changes reach main through a pull
         request that a human merges.
     command_allowlist:
@@ -142,64 +143,46 @@ data:
       - git switch *
       - git restore *
       - git stash *
-    # Memory: built-in MEMORY.md/USER.md always active; external provider is additive.
-    # Holographic = local SQLite (FTS5 + trust scoring + contradiction detection),
-    # zero extra infra, no LLM/embeddings/Qdrant, no GPU. DB lives on the /opt/data
-    # PVC (covered by Volsync backup). See plugins.hermes-memory-store below.
-    memory:
-      provider: holographic
-      auto_migrate: true
-      auto_summarize:
-        threshold: 50
+    security:
+      redact_secrets: true
+    privacy:
+      redact_pii: true
+
+    # --- Memory -----------------------------------------------------------------
+    # Built-in MEMORY.md/USER.md (on the PVC) plus the atoca-memory
+    # knowledge graph via the `atoca-memory` MCP — that graph is the canonical store
+    # shared with Claude Code. No local holographic store (it only collected
+    # cron noise).
     compression:
       enabled: true
       threshold: 0.5
       target_ratio: 0.2
       protect_last_n: 20
+
+    # --- Platforms --------------------------------------------------------------
     group_sessions_per_user: false
     streaming:
       enabled: false
-    security:
-      redact_secrets: true
-    privacy:
-      redact_pii: true
     web:
       search_backend: searxng
     discord:
       require_mention: false
       auto_thread: false
       reactions: false
-    agent:
-      max_turns: 90
-      gateway_timeout: 1800
-      restart_drain_timeout: 60
-      api_max_retries: 2
-      reasoning_effort: medium
-      tool_use_enforcement: auto
-    # Holographic memory store (local SQLite on the /opt/data PVC).
-    plugins:
-      hermes-memory-store:
-        db_path: /opt/data/memory_store.db
-        auto_extract: true
-        default_trust: 0.5
-    # External MCP servers. In-cluster ones go through the toolhive proxies in
-    # the mcp namespace (streamable HTTP at /mcp, no auth for in-cluster
-    # traffic — the proxies hold the upstream credentials). Env vars expand
-    # the same way as LITELLM_MASTER_KEY above.
+    # Discord voice messages -> local faster-whisper on CPU.
+    stt:
+      enabled: true
+      provider: local
+      local:
+        model: small
+        language: ""
+
+    # --- MCP servers --------------------------------------------------------------
+    # In-cluster toolhive proxies: streamable HTTP at /mcp, no auth for
+    # in-cluster callers (the proxies hold upstream credentials).
     mcp_servers:
-      # PR flow against guilhermewolf/atoca.house — the hermes-docs-recommended
-      # stdio server with a tool whitelist ("best default for sensitive
-      # systems"). Token is a fine-grained PAT scoped to that repo only
-      # (Contents RW, Pull requests RW, Metadata R), from hermes-secret.
-      # merge_pull_request intentionally NOT whitelisted — humans merge.
-      #
-      # Division of labour: all *content* changes go through the local git
-      # checkout at /opt/data/workspace/atoca.house (branch, commit, rebase,
-      # push — the only way to rebase and to see a real diff). This server is
-      # for the GitHub-side operations git cannot do: opening/reading PRs,
-      # CI status, issues. The file-writing tools (push_files,
-      # create_or_update_file, create_branch) are deliberately left out so
-      # there is exactly one write path and no divergence between them.
+      # PR flow only. Content changes go through the local git checkout (the
+      # one write path); file-writing tools and merge are deliberately left out.
       github:
         command: "npx"
         args: ["-y", "@modelcontextprotocol/server-github"]
@@ -209,6 +192,7 @@ data:
           include:
             - get_file_contents
             - search_code
+            - search_repositories
             - list_commits
             - create_pull_request
             - list_pull_requests
@@ -225,21 +209,26 @@ data:
             - add_issue_comment
         prompts: false
         resources: false
-      # n8n built-in instance-level MCP (N8N_MCP_ACCESS_ENABLED=true on the
-      # n8n deploy). Probed: 401 without key = endpoint live.
+      # atoca-memory knowledge graph — canonical memory, shared with Claude Code.
+      atoca-memory:
+        url: http://mcp-memory-mcp-proxy.mcp.svc.cluster.local:8080/mcp
+      # 16k community HelmReleases: research before adding or bumping a chart.
+      kubesearch:
+        url: http://mcp-kubesearch-mcp-proxy.mcp.svc.cluster.local:8080/mcp
+      context7:
+        url: http://mcp-context7-mcp-proxy.mcp.svc.cluster.local:8080/mcp
+      homeassistant:
+        url: http://mcp-ha-mcp-proxy.mcp.svc.cluster.local:8080/mcp
+      arr:
+        url: http://mcp-arr-mcp-proxy.mcp.svc.cluster.local:8080/mcp
       n8n:
         url: http://n8n.n8n.svc.cluster.local/mcp-server/http
         headers:
           Authorization: Bearer ${N8N_API_KEY}
-      context7:
-        url: http://mcp-context7-mcp-proxy.mcp.svc.cluster.local:8080/mcp
-      memory:
-        url: http://mcp-memory-mcp-proxy.mcp.svc.cluster.local:8080/mcp
-      homeassistant:
-        url: http://mcp-ha-mcp-proxy.mcp.svc.cluster.local:8080/mcp
-    stt:
-      enabled: true
-      provider: local
-      local:
-        model: small
-        language: ""
+      outline:
+        url: https://outline.atoca.house/mcp
+        headers:
+          Authorization: Bearer ${OUTLINE_API_KEY}
+      # Unraid Management Agent on the NAS (outside the cluster).
+      unraid:
+        url: http://192.168.40.160:8043/mcp

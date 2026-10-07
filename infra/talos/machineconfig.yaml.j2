@@ -181,6 +181,28 @@ cluster:
   serviceAccount:
     key: op://K8s/talos/CLUSTER_SERVICEACCOUNT_KEY
   {% endif %}
+{% if IS_CONTROLLER %}
+---
+# Lets kube-apiserver accept Authelia id_tokens (Headlamp forwards them).
+# RBAC bindings use the "oidc:" prefixed username/groups.
+apiVersion: v1alpha1
+kind: KubeAuthenticationConfig
+configuration:
+  anonymous:
+    enabled: true # keep apiserver default
+  jwt:
+    - issuer:
+        url: https://auth.atoca.house
+        audiences:
+          - headlamp
+      claimMappings:
+        username:
+          claim: preferred_username
+          prefix: "oidc:"
+        groups:
+          claim: groups
+          prefix: "oidc:"
+{% endif %}
 ---
 apiVersion: v1alpha1
 kind: SysctlConfig

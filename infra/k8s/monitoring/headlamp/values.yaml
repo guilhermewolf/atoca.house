@@ -1,59 +1,49 @@
 ---
 fullnameOverride: headlamp
-initContainers:
-  - # Generate kubeconfig file. Can be removed when https://github.com/kubernetes-sigs/headlamp/issues/1826 is resolved
-    command:
-      - /bin/sh
-      - "-c"
-      - |
-        kubectl config set-cluster main --server=https://kubernetes.default.svc --certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        kubectl config set-credentials main --token=$(cat /tmp/sa-token/token)
-        kubectl config set-context main --cluster=main --user=main
-        kubectl config use-context main
-    env:
-      - name: KUBERNETES_SERVICE_HOST
-        valueFrom:
-          fieldRef:
-            fieldPath: status.hostIP
-      - name: KUBERNETES_SERVICE_PORT
-        value: "6443"
-      - name: KUBECONFIG
-        value: /home/headlamp/.config/Headlamp/kubeconfigs/config
-    image: docker.io/rancher/shell:v0.8.2@sha256:1eeed72d4eda486de13403c4ae6e9d29a0842edc35d0f4a8fb7b0dab79d04be9
-    name: create-kubeconfig
-    securityContext:
-      capabilities:
-        drop:
-          - ALL
-      privileged: false
-      readOnlyRootFilesystem: true
-      runAsGroup: 1001
-      runAsNonRoot: true
-      runAsUser: 100
-    volumeMounts:
-      - mountPath: /home/headlamp/.config/Headlamp/kubeconfigs
-        name: kubeconfig
-      - mountPath: /tmp/sa-token
-        name: sa-token
-        readOnly: true
+config:
+  oidc:
+    secret:
+      create: false
+    # Only OIDC_CLIENT_SECRET comes from the secret (secrets.yaml); the chart
+    # adds the matching -oidc-* args for each OIDC_* var found in env below.
+    externalSecret:
+      enabled: true
+      name: headlamp-oidc
+      hasScopes: true
+env:
+  - name: OIDC_CLIENT_ID
+    value: headlamp
+  - name: OIDC_ISSUER_URL
+    value: https://auth.atoca.house
+  - name: OIDC_SCOPES
+    value: openid,profile,email,groups,offline_access
+  - name: OIDC_CALLBACK_URL
+    value: https://headlamp.atoca.house/oidc-callback
+  - name: OIDC_USE_PKCE
+    value: "true"
+# Users act with their own Authelia id_token; the kube-apiserver trusts
+# Authelia via Talos KubeAuthenticationConfig and RBAC is in rbac.yaml.
+# The pod's ServiceAccount needs no permissions.
 clusterRoleBinding:
   create: false
 podAnnotations:
   reloader.stakater.com/auto: "true"
 service:
   port: 4466
-serviceAccount:
-  create: false
-  name: headlamp-admin
-volumes:
-  - name: kubeconfig
-    emptyDir: {}
-  - name: sa-token
-    secret:
-      defaultMode: 420
-      secretName: headlamp-admin
-volumeMounts:
-  - mountPath: /home/headlamp/.config/Headlamp/kubeconfigs/config
-    name: kubeconfig
-    readOnly: true
-    subPath: config
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 100
+  runAsGroup: 101
+  seccompProfile:
+    type: RuntimeDefault
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    memory: 256Mi

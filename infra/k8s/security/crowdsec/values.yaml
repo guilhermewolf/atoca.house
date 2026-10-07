@@ -120,6 +120,11 @@ config:
       password: "${DB_PASSWORD}"
       db_name: "${DB_NAME}"
       sslmode: require
+      # Agent/appsec pods auto-register a machine per pod name; drop the ones
+      # that stop logging in so they don't pile up as stale LPs in the Console.
+      flush:
+        agents_autodelete:
+          login_password: 60m
   agent_config.yaml.local: |-
     api:
       client:
@@ -169,9 +174,15 @@ lapi:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
-  env:
-    - name: ENROLL_INSTANCE_NAME
-      value: cluster
+  # Console enrollment is NOT done on startup: the chart's start script runs
+  # `cscli console enroll` under `set -e`, so any CAPI 403 (free-tier 1h ban
+  # on login bursts) crashloops LAPI, which keeps the ban alive. The engine
+  # was enrolled once; enrollment is tied to the CAPI machine whose creds
+  # live in the crowdsec-capi-credentials Secret. To re-enroll, run
+  # `cscli console enroll --name cluster <key>` in the LAPI pod.
+  storeCAPICredentialsInSecret: true
+  # Stable `lapi-cscli` machine instead of a new random one per pod restart.
+  storeLAPICscliCredentialsInSecret: true
   envFrom:
     - secretRef:
         name: crowdsec-secrets

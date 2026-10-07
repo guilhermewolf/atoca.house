@@ -89,9 +89,10 @@ controllers:
             mkdir -p /opt/data/home && cp /opt/data/.gitconfig /opt/data/home/.gitconfig
             chown -R 10000:10000 /opt/data/config.yaml /opt/data/.gitconfig /opt/data/home/.gitconfig /opt/data/workspace
 
-      # Static Go CLIs from alpine/k8s onto the PVC (on PATH via /opt/data/bin).
-      # jq is musl-linked there and can't run in the Debian app image: use
-      # `yq -p json` or python3 instead.
+      # Static Go CLIs onto the PVC, into /opt/data/.local/bin: already on the
+      # image's PATH, which the agent's terminal keeps (a custom PATH env does
+      # not reach the terminal). alpine/k8s's jq and yq are musl-linked and can't
+      # run in the Debian app image: yq comes from copy-yq, use python3 for JSON.
       copy-tools:
         image:
           repository: docker.io/alpine/k8s
@@ -101,9 +102,25 @@ controllers:
           - -c
           - |
             set -eu
-            mkdir -p /opt/data/bin
-            for b in kubectl helm kustomize kubeconform yq; do cp "/usr/bin/$b" /opt/data/bin/; done
-            chown -R 10000:10000 /opt/data/bin
+            mkdir -p /opt/data/.local/bin
+            for b in kubectl helm kustomize kubeconform; do cp "/usr/bin/$b" /opt/data/.local/bin/; done
+            chown -R 10000:10000 /opt/data/.local
+
+      # yq: the official image ships a static binary (runs on Debian).
+      copy-yq:
+        image:
+          repository: docker.io/mikefarah/yq
+          tag: 4.54.1@sha256:4b3d9475d65571d28cbb19544d3820ec2945e4c8b2f18279394282b8dc3a592e
+        securityContext:
+          runAsUser: 0
+        command:
+          - sh
+          - -c
+          - |
+            set -eu
+            mkdir -p /opt/data/.local/bin
+            cp /usr/bin/yq /opt/data/.local/bin/yq
+            chown -R 10000:10000 /opt/data/.local
 
     containers:
       app:
@@ -117,8 +134,6 @@ controllers:
           TZ: Europe/Amsterdam
           HOME: /opt/data
           HERMES_HOME: /opt/data
-          # Image PATH + /opt/data/bin (CLIs from the copy-tools init container).
-          PATH: /opt/data/bin:/opt/hermes/bin:/opt/hermes/.venv/bin:/opt/data/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
           # Gateway HTTP API (programmatic access, e.g. from Open WebUI)
           API_SERVER_ENABLED: "true"
           API_SERVER_HOST: 0.0.0.0

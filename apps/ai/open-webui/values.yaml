@@ -115,15 +115,52 @@ controllers:
               secretKeyRef:
                 name: litellm-key
                 key: LITELLM_API_KEY
+          # LiteLLM's /v1/models expands the chatgpt/* and nous/* wildcards into
+          # ~200 entries (image/audio models, ones the account rejects). List
+          # only the chat model groups; add new LiteLLMModels here.
+          OPENAI_API_CONFIGS: >-
+            {"0":{"enable":true,"model_ids":[
+            "chatgpt/gpt-6.1-sol","chatgpt/gpt-6-sol","chatgpt/gpt-6-luna",
+            "nous-claude-opus","nous-claude-sonnet",
+            "groq-gpt-oss-120b","cerebras-gpt-oss-120b","openrouter-free","mistral-small",
+            "qwen3.5-9b","gemma4-12b","gemma4-e4b"]}}
+          # ChatGPT-like out of the box. Which models a non-admin sees at all is
+          # set per model (name, description, access) in Admin > Models — DB,
+          # not env. Pinned = the short list in the sidebar.
+          DEFAULT_MODELS: chatgpt/gpt-6-sol
+          DEFAULT_PINNED_MODELS: chatgpt/gpt-6.1-sol,chatgpt/gpt-6-sol,chatgpt/gpt-6-luna,groq-gpt-oss-120b,qwen3.5-9b
+          # Non-admins get Custom-GPT-style assistants, projects/knowledge,
+          # saved prompts and scheduled tasks.
+          USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS: "True"
+          USER_PERMISSIONS_WORKSPACE_KNOWLEDGE_ACCESS: "True"
+          USER_PERMISSIONS_WORKSPACE_PROMPTS_ACCESS: "True"
+          USER_PERMISSIONS_FEATURES_AUTOMATIONS: "True"
+          # Titles, tags, follow-ups, search queries: never on the chat model
+          # (would burn Nous credit / ChatGPT quota on housekeeping).
+          TASK_MODEL_EXTERNAL: groq-gpt-oss-120b
+          ENABLE_EVALUATION_ARENA_MODELS: "False"
+          ENABLE_COMMUNITY_SHARING: "False"
+          # Embeddings (RAG + memories) via LiteLLM -> ollama nomic-embed-text
+          # instead of in-pod SentenceTransformers. Changing the model means
+          # reindexing (Admin > Documents).
+          RAG_EMBEDDING_ENGINE: openai
+          RAG_EMBEDDING_MODEL: nomic-embed-text
+          RAG_OPENAI_API_BASE_URL: http://litellm.litellm.svc.cluster.local:4000/v1
+          RAG_OPENAI_API_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: litellm-key
+                key: LITELLM_API_KEY
           # Tools: in-cluster ToolHive MCP proxies (streamable HTTP at /mcp, no
-          # auth for in-cluster callers). Readable by every Open WebUI user.
+          # auth for in-cluster callers). With access_grants: every user; without:
+          # admin-only (memory, kubesearch, ha, arr are homelab/admin tools).
           TOOL_SERVER_CONNECTIONS: >-
             [
-            {"type":"mcp","url":"http://mcp-memory-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"memory","name":"Memory","description":"atoca-memory knowledge graph"}},
-            {"type":"mcp","url":"http://mcp-kubesearch-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"kubesearch","name":"Kubesearch","description":"Community homelab HelmReleases"}},
+            {"type":"mcp","url":"http://mcp-memory-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true},"info":{"id":"memory","name":"Memory","description":"atoca-memory knowledge graph"}},
+            {"type":"mcp","url":"http://mcp-kubesearch-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true},"info":{"id":"kubesearch","name":"Kubesearch","description":"Community homelab HelmReleases"}},
             {"type":"mcp","url":"http://mcp-context7-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"context7","name":"Context7","description":"Library documentation"}},
-            {"type":"mcp","url":"http://mcp-ha-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"ha","name":"Home Assistant","description":"Home Assistant control"}},
-            {"type":"mcp","url":"http://mcp-arr-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"arr","name":"Arr","description":"Sonarr, Radarr, Prowlarr"}},
+            {"type":"mcp","url":"http://mcp-ha-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true},"info":{"id":"ha","name":"Home Assistant","description":"Home Assistant control"}},
+            {"type":"mcp","url":"http://mcp-arr-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true},"info":{"id":"arr","name":"Arr","description":"Sonarr, Radarr, Prowlarr"}},
             {"type":"mcp","url":"http://mcp-vikunja-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"vikunja","name":"Vikunja","description":"Tasks"}}
             ]
           ENABLE_SEARCH_QUERY_GENERATION: True

@@ -36,20 +36,20 @@ controllers:
             "namespace": "dragonfly-cluster"
           }
 
-        k8s.ksgate.org/ollama-deployment: |
+        k8s.ksgate.org/litellm-deployment: |
           {
             "apiVersion": "apps/v1",
             "kind": "Deployment",
-            "name": "ollama",
-            "namespace": "ollama",
+            "name": "litellm",
+            "namespace": "litellm",
             "expression": "has(resource.status.conditions) && resource.status.conditions.exists(c, c.type == 'Available' && c.status == 'True')"
           }
-        k8s.ksgate.org/ollama-service: |
+        k8s.ksgate.org/litellm-service: |
           {
             "apiVersion": "v1",
             "kind": "Service",
-            "name": "ollama",
-            "namespace": "ollama"
+            "name": "litellm",
+            "namespace": "litellm"
           }
 
         k8s.ksgate.org/searxng-deployment: |
@@ -88,8 +88,8 @@ controllers:
         - name: k8s.ksgate.org/postgres-service
         - name: k8s.ksgate.org/dragonfly-ready
         - name: k8s.ksgate.org/dragonfly-service
-        - name: k8s.ksgate.org/ollama-deployment
-        - name: k8s.ksgate.org/ollama-service
+        - name: k8s.ksgate.org/litellm-deployment
+        - name: k8s.ksgate.org/litellm-service
         - name: k8s.ksgate.org/searxng-deployment
         - name: k8s.ksgate.org/searxng-service
         - name: k8s.ksgate.org/qdrant-deployment
@@ -101,9 +101,31 @@ controllers:
           tag: v0.11.4
         env:
           # Open-webui settings
-          ENABLE_OPENAI_API: "False"
-          ENABLE_OLLAMA_API: "True"
-          OLLAMA_BASE_URL: http://ollama.ollama.svc.cluster.local
+          # Env is the source of truth: without this, ConfigVars (provider,
+          # tool servers, ...) are read only on first boot and the DB wins.
+          # Anything changed in the admin UI resets on restart.
+          ENABLE_PERSISTENT_CONFIG: "False"
+          # Models: LiteLLM only (its ollama-backed groups cover local models).
+          # Per-app virtual key minted by litellm-operator (litellm-key.yaml).
+          ENABLE_OLLAMA_API: "False"
+          ENABLE_OPENAI_API: "True"
+          OPENAI_API_BASE_URL: http://litellm.litellm.svc.cluster.local:4000/v1
+          OPENAI_API_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: litellm-key
+                key: LITELLM_API_KEY
+          # Tools: in-cluster ToolHive MCP proxies (streamable HTTP at /mcp, no
+          # auth for in-cluster callers). Readable by every Open WebUI user.
+          TOOL_SERVER_CONNECTIONS: >-
+            [
+            {"type":"mcp","url":"http://mcp-memory-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"memory","name":"Memory","description":"atoca-memory knowledge graph"}},
+            {"type":"mcp","url":"http://mcp-kubesearch-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"kubesearch","name":"Kubesearch","description":"Community homelab HelmReleases"}},
+            {"type":"mcp","url":"http://mcp-context7-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"context7","name":"Context7","description":"Library documentation"}},
+            {"type":"mcp","url":"http://mcp-ha-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"ha","name":"Home Assistant","description":"Home Assistant control"}},
+            {"type":"mcp","url":"http://mcp-arr-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"arr","name":"Arr","description":"Sonarr, Radarr, Prowlarr"}},
+            {"type":"mcp","url":"http://mcp-vikunja-mcp-proxy.mcp.svc.cluster.local:8080/mcp","auth_type":"none","key":"","config":{"enable":true,"access_grants":[{"principal_type":"user","principal_id":"*","permission":"read"}]},"info":{"id":"vikunja","name":"Vikunja","description":"Tasks"}}
+            ]
           ENABLE_SEARCH_QUERY_GENERATION: True
           ENABLE_WEB_SEARCH: True
           ENABLE_LOGIN_FORM: False

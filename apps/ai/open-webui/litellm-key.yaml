@@ -1,0 +1,21 @@
+---
+# Per-consumer LiteLLM key (not the master key): spend and requests show up
+# per app in LiteLLM, and it can be revoked or rate-limited on its own.
+# The operator mints it via the proxy's admin API and writes Secret
+# litellm-key (LITELLM_API_KEY) into this namespace.
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMVirtualKey
+metadata:
+  name: open-webui
+spec:
+  proxyRef: litellm
+  proxyNamespace: litellm
+  keyAlias: open-webui
+  secretName: litellm-key
+  secretKey: LITELLM_API_KEY
+  # No `models` = every model group on the proxy (cloud, subscriptions, local
+  # ollama). Not `models: []`: the API server drops the empty list -> Argo drift.
+  rpmLimit: 60
+  maxParallelRequests: 4
+  metadata:
+    consumer: open-webui

@@ -10,6 +10,8 @@ config:
       enabled: true
       name: headlamp-oidc
       hasScopes: true
+  # Reload the UI when the plugin sidecar finishes installing.
+  watchPlugins: true
 env:
   - name: OIDC_CLIENT_ID
     value: headlamp
@@ -21,6 +23,47 @@ env:
     value: https://headlamp.atoca.house/oidc-callback
   - name: OIDC_USE_PKCE
     value: "true"
+# Sidecar running pluginctl: pulls each plugin from Artifact Hub and checks its
+# sha256 before installing it into the shared /headlamp/plugins emptyDir.
+# Prometheus is bundled in the image (static plugin), no entry needed.
+pluginsManager:
+  enabled: true
+  # renovate: datasource=docker depName=docker.io/library/node
+  baseImage: docker.io/library/node:24-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1
+  # renovate: datasource=npm depName=@headlamp-k8s/pluginctl
+  version: 0.1.1
+  resources:
+    requests:
+      cpu: 10m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+  configContent: |
+    plugins:
+      # Official plugin reads argoproj.io CRDs with the user's token. The
+      # privilegedescalation one calls argocd-server's REST API through the
+      # kube service proxy, which never carries an ArgoCD login (always 401).
+      - name: headlamp_argocd
+        source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_argocd
+        version: 0.1.0-alpha
+      - name: headlamp_cert-manager
+        source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_cert-manager
+        version: 0.1.1
+      - name: headlamp_keda
+        source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_keda
+        version: 0.1.2
+      - name: envoy-gateway
+        source: https://artifacthub.io/packages/headlamp/headlamp-envoy-gateway/envoy-gateway
+        version: 0.3.0
+      - name: headlamp-rook-plugin
+        source: https://artifacthub.io/packages/headlamp/headlamp-rook/headlamp-rook-plugin
+        version: 1.0.2
+      - name: headlamp_victoria_logs
+        source: https://artifacthub.io/packages/headlamp/headlamp-victoria-logs/headlamp_victoria_logs
+        version: 2026.904.1
+    installOptions:
+      parallel: true
+      maxConcurrent: 3
 # Users act with their own Authelia id_token; the kube-apiserver trusts
 # Authelia via Talos KubeAuthenticationConfig and RBAC is in rbac.yaml.
 # The pod's ServiceAccount needs no permissions.

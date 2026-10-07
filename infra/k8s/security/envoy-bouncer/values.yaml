@@ -4,6 +4,17 @@ controllers:
     annotations:
       reloader.stakater.com/auto: "true"
     strategy: RollingUpdate
+    # On the request path of every external call; one pod down = no
+    # bouncer/WAF (Envoy fails open). Spread across nodes, PDB in pdb.yaml.
+    replicas: 2
+    pod:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: envoy-bouncer
     containers:
       app:
         image:
@@ -21,11 +32,16 @@ controllers:
           ENVOY_BOUNCER_TEMPLATES_DENIEDTEMPLATEPATH: /ban.html
           # Pod CIDR must be trusted so the bouncer walks X-Forwarded-For back to
           # the real client IP when requests arrive via cloudflare-tunnel pods.
-          # Envoy Gateway's own ClientTrafficPolicy uses the same CIDR.
-          ENVOY_BOUNCER_TRUSTEDPROXIES: 10.244.0.0/16,192.168.0.0/16
+          # Envoy Gateway's own ClientTrafficPolicy uses the same CIDR. LAN
+          # (192.168.0.0/16) is deliberately NOT trusted: a LAN client could
+          # otherwise set its own XFF.
+          ENVOY_BOUNCER_TRUSTEDPROXIES: 10.244.0.0/16
           ENVOY_BOUNCER_WAF_APPSECURL: http://crowdsec-appsec-service.crowdsec.svc.cluster.local:7422
           ENVOY_BOUNCER_WAF_ENABLED: true
-          ENVOY_BOUNCER_WAF_FAILOVERHTTP: true
+          # v0.8: allow (reason "waf-unavailable") when AppSec is unreachable
+          # instead of erroring every request. Replaces WAF_FAILOVERHTTP,
+          # which v0.8 no longer reads.
+          ENVOY_BOUNCER_WAF_FAILOPEN: true
         envFrom:
           - secretRef:
               name: envoy-bouncer-secrets

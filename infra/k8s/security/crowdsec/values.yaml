@@ -4,8 +4,8 @@ config:
   parsers:
     s01-parse:
       envoy-logs.yaml: |-
-        # Exact match on 'envoy' so the cilium-envoy fallback acquisition
-        # (program: cilium-envoy) does not accidentally get parsed here.
+        # Exact match on 'envoy' so the cilium acquisition (program: cilium)
+        # does not accidentally get parsed here.
         filter: "evt.Parsed.program == 'envoy' && evt.Parsed.message contains ':authority'"
         onsuccess: next_stage
         name: hydaz/envoy-logs
@@ -15,8 +15,12 @@ config:
             expression: UnmarshalJSON(evt.Parsed.message, evt.Unmarshaled, "envoy")
           - parsed: time_local
             expression: evt.Unmarshaled.envoy["start_time"]
+          # Client IP as resolved by Envoy (ClientTrafficPolicy trustedCIDRs),
+          # with the port stripped; handles "[v6]:port". Do NOT use the
+          # leftmost x-forwarded-for entry: Cloudflare appends to whatever XFF
+          # the client sends, so XFF[0] is attacker-controlled.
           - parsed: remote_addr
-            expression: Split(evt.Unmarshaled.envoy["x-forwarded-for"], ",")[0]
+            expression: Trim(Join(Split(string(evt.Unmarshaled.envoy["downstream_remote_address"]), ":")[:-1], ":"), "[]")
           - parsed: verb
             expression: evt.Unmarshaled.envoy["method"]
           - parsed: request
@@ -92,7 +96,10 @@ config:
         whitelist:
           reason: "gatus uptime prober"
           expression:
-            - "evt.Meta.http_user_agent startsWith 'Gatus/'"
+            # UA alone is spoofable; also require the home WAN IP the prober
+            # hairpins out of. ponytail: hardcoded WAN IP, update if the ISP
+            # changes it (Gatus would then start getting banned for crawling).
+            - "evt.Meta.http_user_agent startsWith 'Gatus/' && evt.Meta.source_ip == '62.250.115.189'"
   postoverflows:
     s01-whitelist:
       spa-crawl-whitelist.yaml: |-
@@ -134,21 +141,21 @@ config:
       client:
         unregister_on_exit: false
   profiles.yaml: |-
-    # AppSec/WAF hits: short ban (5 minutes). CRS and virtual-patching can
-    # throw false positives on SPAs and API clients; don't nuke a legit
-    # session for 24h because of a single bad query string.
+    # AppSec/WAF hits: short first ban (30m) since CRS and virtual-patching
+    # can false-positive on SPAs and API clients, escalating by 30m for every
+    # prior decision on the IP so repeat scanners don't return every few
+    # minutes. GetDecisionsCount counts decisions still in the DB.
     name: appsec_remediation
     filters:
       - Alert.Remediation == true && Alert.GetScope() == "Ip" && Alert.GetScenario() contains "appsec"
     decisions:
       - type: ban
-        duration: 5m
+        duration: 30m
+    duration_expr: Sprintf('%dm', (GetDecisionsCount(Alert.GetValue()) + 1) * 30)
     on_success: break
     ---
-    # Default IP ban for all other scenarios. 24h is the CrowdSec recommended
-    # default. Escalation via duration_expr was considered but the expr
-    # helper surface in v1.7.7 doesn't expose historical ban duration in a
-    # way we can cleanly use from a profile — revisit on a newer release.
+    # Default IP ban for all other scenarios: 24h (CrowdSec recommended
+    # default), +24h for every prior decision on the IP.
     name: default_ip_remediation
     debug: false
     filters:
@@ -156,6 +163,7 @@ config:
     decisions:
       - type: ban
         duration: 24h
+    duration_expr: Sprintf('%dh', (GetDecisionsCount(Alert.GetValue()) + 1) * 24)
     on_success: break
 secrets:
   externalSecret:
@@ -255,6 +263,12 @@ agent:
       podName: seerr-*
       program: jellyseerr
       poll_without_inotify: true
+    # Filebrowser auth logs, for MrShippeR/filebrowser (filebrowser-bf). The
+    # collection was installed but nothing fed it.
+    - namespace: filebrowser
+      podName: filebrowser-*
+      program: filebrowser
+      poll_without_inotify: true
   env:
     - name: COLLECTIONS
       value: >-
@@ -289,7 +303,11 @@ appsec:
     - source: appsec
       listen_addr: "0.0.0.0:7422"
       path: /
-      appsec_config: crowdsecurity/appsec-default
+      # appsec-default = vpatch + generic rules (in-band, blocking);
+      # crs = OWASP CRS (out-of-band, feeds the appsec-outofband scenario).
+      appsec_configs:
+        - crowdsecurity/appsec-default
+        - crowdsecurity/crs
       labels:
         type: appsec
   env:

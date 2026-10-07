@@ -1,4 +1,34 @@
 ---
+# Fields the Headlamp VictoriaLogs plugin queries on (namespace, workload, pod,
+# job_name, node, source). They overwrite same-named keys an app may log via
+# merge_log, so the plugin never matches on stray app fields.
+luaScripts:
+  headlamp_fields.lua: |
+    function headlamp_fields(tag, ts, r)
+      r["namespace"] = r["k_namespace_name"]
+      r["pod"] = r["k_pod_name"]
+      r["container"] = r["k_container_name"]
+      r["node"] = r["k_host"]
+      r["source"] = "kubernetes"
+      r["job_name"] = nil
+      local w = r["k_pod_name"]
+      local refs = r["k_ownerReferences"]
+      local o = type(refs) == "table" and refs[1] or nil
+      if o and o["name"] then
+        w = o["name"]
+        if o["kind"] == "ReplicaSet" then
+          -- strip pod-template-hash: ReplicaSet -> Deployment
+          w = (string.gsub(w, "%-[^-]+$", ""))
+        elseif o["kind"] == "Job" then
+          r["job_name"] = o["name"]
+          -- strip CronJob schedule suffix: Job -> CronJob
+          w = (string.gsub(w, "%-%d+$", ""))
+        end
+      end
+      r["workload"] = w
+      r["k_ownerReferences"] = nil
+      return 2, ts, r
+    end
 config:
   service: |-
     [SERVICE]
@@ -36,6 +66,7 @@ config:
       k8s-logging.exclude on
       namespace_labels off
       annotations off
+      owner_references on
 
     [FILTER]
       name nest
@@ -43,6 +74,12 @@ config:
       operation lift
       nested_under kubernetes
       add_prefix k_
+
+    [FILTER]
+      name lua
+      match kubernetes.*
+      script /fluent-bit/scripts/headlamp_fields.lua
+      call headlamp_fields
 
     [FILTER]
       name nest

@@ -131,6 +131,10 @@ cluster:
       - 192.168.40.14
     disablePodSecurityPolicy: true
     extraArgs:
+      # Legacy cluster.apiServer mode doesn't pass the flag for the
+      # KubeAuthenticationConfig doc below; Talos renders the file into this
+      # already-mounted dir (siderolabs/talos#14032).
+      authentication-config: /system/config/kubernetes/kube-apiserver/authentication-config.yaml
       enable-aggregator-routing: "true"
       feature-gates: MutatingAdmissionPolicy=true
       runtime-config: admissionregistration.k8s.io/v1beta1=true
@@ -188,8 +192,8 @@ cluster:
 apiVersion: v1alpha1
 kind: KubeAuthenticationConfig
 configuration:
-  anonymous:
-    enabled: true # keep apiserver default
+  # No "anonymous" block: Talos already passes --anonymous-auth=false and
+  # kube-apiserver refuses to start when both are set.
   jwt:
     - issuer:
         url: https://auth.atoca.house

@@ -303,11 +303,16 @@ appsec:
     - source: appsec
       listen_addr: "0.0.0.0:7422"
       path: /
-      # appsec-default = vpatch + generic rules (in-band, blocking);
-      # crs = OWASP CRS (out-of-band, feeds the appsec-outofband scenario).
+      # appsec-default = vpatch + generic rules (in-band, blocking).
+      # crowdsecurity/crs deliberately NOT enabled: its out-of-band config
+      # SendAlert()s on every rule match, and CRS setup rule 901340 ("Enabling
+      # body inspection") matches nearly every request with a body. With the
+      # bouncer on both gateways that was ~800 alerts/h from LAN/internal
+      # traffic (forge runner, argocd, ...), pinning the 5000-alert DB cap.
+      # Re-enable only with a custom appsec-config that alerts on 949110
+      # (anomaly threshold exceeded) alone.
       appsec_configs:
         - crowdsecurity/appsec-default
-        - crowdsecurity/crs
       labels:
         type: appsec
   env:

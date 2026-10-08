@@ -127,9 +127,11 @@ config:
       password: "${DB_PASSWORD}"
       db_name: "${DB_NAME}"
       sslmode: require
-      # Agent/appsec pods auto-register a machine per pod name; drop the ones
-      # that stop logging in so they don't pile up as stale LPs in the Console.
+      # Cleanup excludes loopback machines, NULL heartbeats and alert owners.
+      # Stale registrations still require reviewed, manual pruning.
       flush:
+        max_items: 20000
+        max_age: 30d
         agents_autodelete:
           login_password: 60m
   agent_config.yaml.local: |-

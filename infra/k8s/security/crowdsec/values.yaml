@@ -169,10 +169,7 @@ secrets:
   externalSecret:
     name: crowdsec-lapi-secrets
 lapi:
-  replicaCount: 2
-  podDisruptionBudget:
-    enabled: true
-    minAvailable: 1
+  replicas: 2
   # Requests sized from 7d Prometheus data (p99 mem 43Mi, p95 cpu 6m). Chart
   # defaults request 500m/500Mi. Limits left at chart defaults.
   resources:
@@ -290,10 +287,7 @@ agent:
       enabled: true
 appsec:
   enabled: true
-  replicaCount: 2
-  podDisruptionBudget:
-    enabled: true
-    minAvailable: 1
+  replicas: 2
   # 7d p99 mem 44Mi, p95 cpu 11m. Chart defaults request 500m/250Mi.
   # Limits left at chart defaults.
   resources:

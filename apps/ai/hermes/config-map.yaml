@@ -235,3 +235,5 @@ data:
       # Unraid Management Agent on the NAS (outside the cluster).
       unraid:
         url: http://192.168.40.160:8043/mcp
+      vikunja:
+        url: http://mcp-vikunja-mcp-proxy.mcp.svc.cluster.local:8080/mcp

@@ -67,6 +67,9 @@ config:
       namespace_labels off
       annotations off
       owner_references on
+      # Default 32k is too small for some pods' metadata ("cannot increase
+      # buffer"); their records then ship without any k_* fields.
+      buffer_size 256k
 
     [FILTER]
       name nest

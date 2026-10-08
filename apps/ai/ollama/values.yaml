@@ -14,6 +14,9 @@ controllers:
           OLLAMA_ORIGINS: "*"
           OLLAMA_NUM_PARALLEL: "4"
           OLLAMA_CONTEXT_LENGTH: "15000"
+          # q8 KV cache halves context VRAM so 27B models fit fully on the 16GB GPU
+          OLLAMA_FLASH_ATTENTION: "1"
+          OLLAMA_KV_CACHE_TYPE: q8_0
         probes:
           liveness: &probes
             enabled: true

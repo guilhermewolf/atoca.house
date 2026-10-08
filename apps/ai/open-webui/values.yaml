@@ -123,7 +123,7 @@ controllers:
             "chatgpt/gpt-6.1-sol","chatgpt/gpt-6-sol","chatgpt/gpt-6-luna",
             "nous-claude-opus","nous-claude-sonnet",
             "groq-gpt-oss-120b","cerebras-gpt-oss-120b","openrouter-free","mistral-small",
-            "qwen3.5-9b","gemma4-12b","gemma4-e4b"]}}
+            "qwen3.8-27b","qwen3.5-9b","gemma4-12b","gemma4-e4b"]}}
           # ChatGPT-like out of the box. Which models a non-admin sees at all is
           # set per model (name, description, access) in Admin > Models — DB,
           # not env. Pinned = the short list in the sidebar.

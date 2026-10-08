@@ -41,6 +41,7 @@ spec:
       - openrouter-free: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
       - mistral-small: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]
       - qwen3.5-9b: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b"]
+      - qwen3.8-27b: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b"]
       - gemma4-12b: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b"]
       - gemma4-e4b: ["cerebras-gpt-oss-120b", "groq-gpt-oss-120b"]
       - nous-claude-opus: ["nous-claude-sonnet", "cerebras-gpt-oss-120b", "groq-gpt-oss-120b", "qwen3.5-9b"]

@@ -126,7 +126,8 @@ config:
       user: "${DB_USERNAME}"
       password: "${DB_PASSWORD}"
       db_name: "${DB_NAME}"
-      sslmode: require
+      sslmode: verify-full
+      ssl_ca_cert: /etc/postgres-ca/ca.crt
       # Agent/appsec pods auto-register a machine per pod name; drop the ones
       # that stop logging in so they don't pile up as stale LPs in the Console.
       flush:
@@ -169,6 +170,14 @@ secrets:
   externalSecret:
     name: crowdsec-lapi-secrets
 lapi:
+  extraVolumes:
+    - name: postgres-ca
+      configMap:
+        name: postgres-ca
+  extraVolumeMounts:
+    - name: postgres-ca
+      mountPath: /etc/postgres-ca
+      readOnly: true
   # Requests sized from 7d Prometheus data (p99 mem 43Mi, p95 cpu 6m). Chart
   # defaults request 500m/500Mi. Limits left at chart defaults.
   resources:

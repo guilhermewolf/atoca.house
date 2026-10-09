@@ -25,8 +25,11 @@ config:
             expression: evt.Unmarshaled.envoy["method"]
           - parsed: request
             expression: evt.Unmarshaled.envoy["x-envoy-origin-path"]
+          # Envoy logs "HTTP/2" / "HTTP/3"; nginx-style consumers (e.g.
+          # http-dos-invalid-http-versions) expect "2.0" / "3.0".
           - parsed: http_version
-            expression: TrimPrefix(evt.Unmarshaled.envoy["protocol"], "HTTP/")
+            expression: |-
+              TrimPrefix(evt.Unmarshaled.envoy["protocol"], "HTTP/") matches "^[0-9]$" ? TrimPrefix(evt.Unmarshaled.envoy["protocol"], "HTTP/") + ".0" : TrimPrefix(evt.Unmarshaled.envoy["protocol"], "HTTP/")
           - parsed: status
             expression: Sprintf('%.0f', evt.Unmarshaled.envoy["response_code"])
           - parsed: body_bytes_sent
@@ -100,6 +103,15 @@ config:
             # hairpins out of. ponytail: hardcoded WAN IP, update if the ISP
             # changes it (Gatus would then start getting banned for crawling).
             - "evt.Meta.http_user_agent startsWith 'Gatus/' && evt.Meta.source_ip == '62.250.115.189'"
+      jellyfin-success-whitelist.yaml: |-
+        name: hydaz/jellyfin-success-whitelist
+        description: "Jellyfin clients fire dozens of extensionless image/API requests per page and trip http-crawl-non_statics"
+        filter: "evt.Meta.service == 'http' && evt.Meta.log_type == 'http_access-log'"
+        whitelist:
+          reason: "jellyfin successful requests"
+          expression:
+            # Only 2xx/3xx; 4xx/5xx still feed probing/bruteforce scenarios.
+            - "evt.Meta.target_fqdn == 'jellyfin.atoca.house' && evt.Meta.http_status matches '^[23]'"
   config.yaml.local: |-
     api:
       server:
@@ -207,6 +219,11 @@ lapi:
     privileged: false
     capabilities:
       drop: [ALL]
+      # LAPI runs as root and the plugin broker fork/execs notification
+      # plugins as plugin_config.user/group (nobody); setuid/setgid needs
+      # SETUID/SETGID, and dialing the nobody-owned plugin socket in /tmp
+      # needs DAC_OVERRIDE.
+      add: [SETUID, SETGID, DAC_OVERRIDE]
   replicas: 2
   # Requests sized from 7d Prometheus data (p99 mem 43Mi, p95 cpu 6m). Chart
   # defaults request 500m/500Mi. Limits left at chart defaults.

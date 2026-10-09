@@ -122,8 +122,8 @@ defaultPodOptions:
   automountServiceAccountToken: false
   securityContext:
     runAsNonRoot: true
-    runAsUser: 99
-    runAsGroup: 100
+    runAsUser: 1000
+    runAsGroup: 1000
     seccompProfile:
       type: RuntimeDefault
 service:

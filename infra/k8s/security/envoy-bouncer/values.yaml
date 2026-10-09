@@ -4,14 +4,13 @@ controllers:
     annotations:
       reloader.stakater.com/auto: "true"
     strategy: RollingUpdate
-    # On the request path of every external call; one pod down = no
-    # bouncer/WAF (Envoy fails open). Spread across nodes, PDB in pdb.yaml.
+    # Keep replicas on separate nodes; PDB in pdb.yaml protects voluntary drains.
     replicas: 2
     pod:
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: ScheduleAnyway
+          whenUnsatisfiable: DoNotSchedule
           labelSelector:
             matchLabels:
               app.kubernetes.io/name: envoy-bouncer
@@ -24,8 +23,8 @@ controllers:
           ENVOY_BOUNCER_BOUNCER_BANSTATUSCODE: 418
           ENVOY_BOUNCER_BOUNCER_ENABLED: true
           ENVOY_BOUNCER_BOUNCER_LAPIURL: http://crowdsec-service.crowdsec.svc.cluster.local:8080
-          # v0.6+: report bouncer heartbeat/metrics to LAPI every 60s.
-          ENVOY_BOUNCER_BOUNCER_METRICSINTERVAL: 60s
+          ENVOY_BOUNCER_BOUNCER_METRICS: true
+          ENVOY_BOUNCER_BOUNCER_METRICSINTERVAL: 15m
           # v0.6+: native Prometheus /metrics endpoint.
           ENVOY_BOUNCER_PROMETHEUS_ENABLED: true
           ENVOY_BOUNCER_PROMETHEUS_PORT: 9090
@@ -38,6 +37,7 @@ controllers:
           ENVOY_BOUNCER_TRUSTEDPROXIES: 10.244.0.0/16
           ENVOY_BOUNCER_WAF_APPSECURL: http://crowdsec-appsec-service.crowdsec.svc.cluster.local:7422
           ENVOY_BOUNCER_WAF_ENABLED: true
+          ENVOY_BOUNCER_WAF_HTTPTIMEOUT: 1s
           # v0.8: allow (reason "waf-unavailable") when AppSec is unreachable
           # instead of erroring every request. Replaces WAF_FAILOVERHTTP,
           # which v0.8 no longer reads.
@@ -45,6 +45,28 @@ controllers:
         envFrom:
           - secretRef:
               name: envoy-bouncer-secrets
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              grpc:
+                port: 8080
+                service: liveness
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              # Serve traffic only after the initial LAPI decision sync.
+              grpc:
+                port: 8080
+                service: readiness
+              periodSeconds: 5
+              timeoutSeconds: 5
+              failureThreshold: 2
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

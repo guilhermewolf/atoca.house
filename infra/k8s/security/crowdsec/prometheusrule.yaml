@@ -104,11 +104,15 @@ spec:
 
         - alert: CrowdSecAgentHeartbeatMissing
           expr: |-
-            count(up{namespace="crowdsec", service="crowdsec-agent-service"} == 1)
-            >
-            count(
-              (time() - cs_machines_last_heartbeat_timestamp{namespace="crowdsec", exported_machine=~"crowdsec-agent-.*"}) < 300
-            )
+            (
+              count(up{namespace="crowdsec", service="crowdsec-agent-service"} == 1)
+              -
+              count(
+                max by (exported_machine) (
+                  cs_machines_last_heartbeat_timestamp{namespace="crowdsec", exported_machine=~"crowdsec-agent-.*"}
+                ) > 0
+              )
+            ) > 0
           for: 15m
           labels:
             severity: warning

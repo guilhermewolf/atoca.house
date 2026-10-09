@@ -100,16 +100,6 @@ config:
             # hairpins out of. ponytail: hardcoded WAN IP, update if the ISP
             # changes it (Gatus would then start getting banned for crawling).
             - "evt.Meta.http_user_agent startsWith 'Gatus/' && evt.Meta.source_ip == '62.250.115.189'"
-  postoverflows:
-    s01-whitelist:
-      spa-crawl-whitelist.yaml: |-
-        name: hydaz/spa-crawl-whitelist
-        description: "Whitelist http-crawl-non_statics on the SPA frontends"
-        filter: "evt.Overflow.Alert.Scenario == 'crowdsecurity/http-crawl-non_statics'"
-        whitelist:
-          reason: "jellyfin/seerr web client legitimate API burst"
-          expression:
-            - "evt.Overflow.Alert.Events[0].GetMeta('target_fqdn') in ['jellyfin.atoca.house', 'seerr.atoca.house']"
   config.yaml.local: |-
     api:
       server:
@@ -151,7 +141,7 @@ config:
     decisions:
       - type: ban
         duration: 30m
-    duration_expr: Sprintf('%dm', (GetDecisionsCount(Alert.GetValue()) + 1) * 30)
+    duration_expr: Sprintf('%dm', min((GetDecisionsCount(Alert.GetValue()) + 1) * 30, 10080))
     on_success: break
     ---
     # Default IP ban for all other scenarios: 24h (CrowdSec recommended
@@ -163,7 +153,7 @@ config:
     decisions:
       - type: ban
         duration: 24h
-    duration_expr: Sprintf('%dh', (GetDecisionsCount(Alert.GetValue()) + 1) * 24)
+    duration_expr: Sprintf('%dh', min((GetDecisionsCount(Alert.GetValue()) + 1) * 24, 168))
     on_success: break
 secrets:
   externalSecret:
@@ -182,6 +172,7 @@ lapi:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # Console context is enabled by a one-time human-run `cscli console enable context`.
   # Console enrollment is NOT done on startup: the chart's start script runs
   # `cscli console enroll` under `set -e`, so any CAPI 403 (free-tier 1h ban
   # on login bursts) crashloops LAPI, which keeps the ban alive. The engine
@@ -273,6 +264,7 @@ agent:
     - name: COLLECTIONS
       value: >-
         crowdsecurity/base-http-scenarios
+        crowdsecurity/http-dos
         crowdsecurity/http-cve
         LePresidente/authelia
         LePresidente/jellyfin

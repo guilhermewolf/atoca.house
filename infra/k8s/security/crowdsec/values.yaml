@@ -133,6 +133,33 @@ config:
     api:
       client:
         unregister_on_exit: false
+  notifications:
+    http.yaml: |-
+      type: http
+      name: http_default
+      log_level: info
+      # CrowdSec v1.8.1 passes a list of models.Alert objects to this template.
+      # Build Alertmanager's v2 array shape and JSON-encode the whole list so
+      # quotes/newlines in attacker-controlled scenario and source values stay data.
+      format: |
+        {{- $alerts := list -}}
+        {{- range . -}}
+        {{- $start := .StartAt -}}
+        {{- if not $start -}}{{- $start = now | date "2006-01-02T15:04:05Z07:00" -}}{{- end -}}
+        {{- $end := now | dateModify "+1h" | date "2006-01-02T15:04:05Z07:00" -}}
+        {{- $alert := dict
+          "labels" (dict "alertname" "CrowdSecLocalBan" "severity" "warning" "namespace" "crowdsec" "scenario" .Scenario "source_ip" .Source.Value)
+          "annotations" (dict "summary" (printf "CrowdSec local ban: %s" .Scenario) "description" (printf "Local ban for %s" .Source.Value))
+          "startsAt" $start
+          "endsAt" $end
+        -}}
+        {{- $alerts = append $alerts $alert -}}
+        {{- end -}}
+        {{- $alerts | toJson -}}
+      url: http://kube-prometheus-stack-monitoring-alertmanager.monitoring.svc.cluster.local:9093/api/v2/alerts
+      method: POST
+      headers:
+        Content-Type: application/json
   profiles.yaml: |-
     # AppSec/WAF hits: short first ban (30m) since CRS and virtual-patching
     # can false-positive on SPAs and API clients, escalating by 30m for every
@@ -157,6 +184,8 @@ config:
       - type: ban
         duration: 24h
     duration_expr: Sprintf('%dh', min((GetDecisionsCount(Alert.GetValue()) + 1) * 24, 168))
+    notifications:
+      - http_default
     on_success: break
 secrets:
   externalSecret:

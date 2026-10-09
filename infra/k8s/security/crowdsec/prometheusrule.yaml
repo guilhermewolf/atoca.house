@@ -36,6 +36,17 @@ spec:
               With WAF_FAILOVERHTTP=true the bouncer will fall back to plain
               IP checks (no WAF inspection). Check the appsec pod logs.
 
+        - alert: CrowdSecAgentDown
+          expr: up{service="crowdsec-agent-service", namespace="crowdsec"} == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: CrowdSec agent on {{ $labels.machine }} is unreachable
+            description: >-
+              The CrowdSec agent scrape target has been unreachable for 10 minutes.
+              Check the CrowdSec agent pod on this node.
+
         - alert: CrowdSecAgentNoLogs
           expr: |-
             sum by (pod) (rate(cs_parser_hits_total{namespace="crowdsec", pod=~"crowdsec-agent-.*"}[30m])) == 0
@@ -53,29 +64,155 @@ spec:
 
         - alert: CrowdSecParsingErrors
           expr: |-
-            sum by (pod) (rate(cs_parser_hits_total{namespace="crowdsec", type="ko"}[10m])) > 1
+            (
+              sum by (machine) (rate(cs_parser_hits_ko_total{namespace="crowdsec"}[15m]))
+              /
+              sum by (machine) (rate(cs_parser_hits_ok_total{namespace="crowdsec"}[15m]) + rate(cs_parser_hits_ko_total{namespace="crowdsec"}[15m]))
+            ) > 0.5
+            and on (machine)
+            sum by (machine) (rate(cs_parser_hits_ok_total{namespace="crowdsec"}[15m]) + rate(cs_parser_hits_ko_total{namespace="crowdsec"}[15m])) > 0
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: CrowdSec parser failure ratio is high on {{ $labels.machine }}
+            description: >-
+              More than half of parser attempts failed for 30 minutes on this
+              node. Check `cscli metrics show parsers` on its agent pod.
+
+        - alert: EnvoyBouncerLAPIStreamDisconnected
+          expr: bouncer_lapi_stream_connected{namespace="envoy-bouncer"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Envoy bouncer {{ $labels.pod }} lost its LAPI stream
+            description: >-
+              The bouncer has been disconnected from the CrowdSec decision stream
+              for 5 minutes and may be enforcing stale decisions.
+
+        - alert: EnvoyBouncerDecisionsStale
+          expr: (time() - bouncer_lapi_last_sync_timestamp_seconds{namespace="envoy-bouncer"}) > 600
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: Envoy bouncer {{ $labels.pod }} has stale decisions
+            description: >-
+              The bouncer has not successfully synchronized LAPI decisions for
+              more than 10 minutes.
+
+        - alert: CrowdSecAgentHeartbeatMissing
+          expr: |-
+            (
+              count(up{namespace="crowdsec", service="crowdsec-agent-service"} == 1)
+              -
+              count(
+                max by (exported_machine) (
+                  cs_machines_last_heartbeat_timestamp{namespace="crowdsec", exported_machine=~"crowdsec-agent-.*"}
+                ) > 0
+              )
+            ) > 0
           for: 15m
           labels:
             severity: warning
           annotations:
-            summary: CrowdSec parser errors on {{ $labels.pod }}
+            summary: One or more CrowdSec agents have stopped heartbeating
             description: >-
-              More than 1 parser failure per second sustained for 15 minutes.
-              Usually means an upstream log format changed or a custom parser
-              is broken. Check `cscli metrics show parsers` on the pod.
+              Fewer registered agent heartbeats are fresh than the number of
+              healthy agent scrape targets. Check LAPI connectivity and stale
+              machine registrations.
 
-        - alert: CrowdSecLAPIDecisionErrors
+        - alert: CrowdSecCommunityBlocklistEmpty
+          expr: (sum(cs_active_decisions{namespace="crowdsec", origin="CAPI"}) or vector(0)) == 0
+          for: 6h
+          labels:
+            severity: warning
+          annotations:
+            summary: CrowdSec has no active CAPI decisions
+            description: >-
+              No community blocklist decisions have been active for 6 hours.
+              Check CAPI enrollment and LAPI pull health.
+
+        - alert: CrowdSecEnvoyParserYieldZero
           expr: |-
-            sum(rate(cs_lapi_route_requests_total{namespace="crowdsec", route=~"/v1/decisions.*", code=~"5.."}[5m])) > 0
+            sum(rate(cs_node_hits_ok_total{namespace="crowdsec", name="crowdsecurity/cri-logs"}[15m])) > 0
+            and
+            (sum(rate(cs_node_hits_ok_total{namespace="crowdsec", name="hydaz/envoy-logs"}[15m])) or vector(0)) == 0
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: CrowdSec Envoy log parser stopped matching
+            description: >-
+              CRI logs are being parsed but the Envoy-specific parser has no
+              successful matches. Check acquisition and parser configuration.
+
+        - alert: CrowdSecAlertFlood
+          expr: sum(rate(cs_lapi_route_requests_total{namespace="crowdsec", route="/v1/alerts", method="POST"}[10m])) > 0.2
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: CrowdSec LAPI alert ingestion is unusually high
+            description: >-
+              LAPI has received more than 0.2 alert submissions per second for
+              30 minutes. Investigate noisy scenarios and incoming logs.
+
+        - alert: EnvoyBouncerErrors
+          expr: |-
+            (
+              sum(rate(bouncer_requests_total{namespace="envoy-bouncer", action="error"}[5m]))
+              /
+              sum(rate(bouncer_requests_total{namespace="envoy-bouncer"}[5m]))
+            ) > 0.01
+            and on ()
+            sum(rate(bouncer_requests_total{namespace="envoy-bouncer"}[5m])) > 0
           for: 10m
           labels:
             severity: warning
           annotations:
-            summary: CrowdSec LAPI /v1/decisions is returning 5xx
+            summary: Envoy bouncer request error ratio is high
             description: >-
-              Bouncers polling decisions are getting server errors. Usually a
-              PostgreSQL connectivity or migration issue. Check the LAPI pod
-              logs and the crunchy-postgres cluster health.
+              More than 1% of bouncer requests have failed for 10 minutes.
+              Check bouncer logs and its LAPI and AppSec connectivity.
+
+        - alert: EnvoyBouncerWAFErrors
+          expr: |-
+            (
+              sum(rate(bouncer_waf_errors_total{namespace="envoy-bouncer"}[10m]))
+              /
+              sum(rate(bouncer_waf_requests_total{namespace="envoy-bouncer"}[10m]))
+            ) > 0.05
+            and on ()
+            sum(rate(bouncer_waf_requests_total{namespace="envoy-bouncer"}[10m])) > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Envoy bouncer WAF error ratio is high
+            description: >-
+              More than 5% of WAF inspections have failed for 15 minutes.
+              WAF fail-open may silently bypass inspection during these errors.
+
+        - alert: EnvoyBouncerHighLatency
+          expr: histogram_quantile(0.99, sum by (le) (rate(bouncer_request_duration_seconds_bucket{namespace="envoy-bouncer"}[10m]))) > 0.5
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: Envoy bouncer p99 request latency exceeds 500ms
+            description: >-
+              The 99th percentile bouncer request duration has exceeded 500ms
+              for 15 minutes.
+
+        - alert: CrowdSecAttackSpike
+          expr: sum(increase(cs_bucket_overflowed_total{namespace="crowdsec"}[15m])) > 50
+          labels:
+            severity: info
+          annotations:
+            summary: CrowdSec scenario overflow spike
+            description: More than 50 scenario overflows occurred in 15 minutes.
 
         - alert: EnvoyBouncerDown
           expr: |-

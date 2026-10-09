@@ -66,7 +66,7 @@ spec:
 
         - alert: CrowdSecLAPIDecisionErrors
           expr: |-
-            sum(rate(cs_lapi_route_requests_total{namespace="crowdsec", route=~"/v1/decisions.*", status_code=~"5.."}[5m])) > 0
+            sum(rate(cs_lapi_route_requests_total{namespace="crowdsec", route=~"/v1/decisions.*", code=~"5.."}[5m])) > 0
           for: 10m
           labels:
             severity: warning

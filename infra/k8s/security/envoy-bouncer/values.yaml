@@ -119,10 +119,13 @@ defaultPodOptions:
     - name: k8s.ksgate.org/crowdsec-lapi-service
     - name: k8s.ksgate.org/crowdsec-appsec-deployment
     - name: k8s.ksgate.org/crowdsec-appsec-service
+  automountServiceAccountToken: false
   securityContext:
     runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
+    runAsUser: 99
+    runAsGroup: 100
+    seccompProfile:
+      type: RuntimeDefault
 service:
   app:
     ports:

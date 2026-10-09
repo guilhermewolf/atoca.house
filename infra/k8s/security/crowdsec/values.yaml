@@ -100,16 +100,6 @@ config:
             # hairpins out of. ponytail: hardcoded WAN IP, update if the ISP
             # changes it (Gatus would then start getting banned for crawling).
             - "evt.Meta.http_user_agent startsWith 'Gatus/' && evt.Meta.source_ip == '62.250.115.189'"
-  postoverflows:
-    s01-whitelist:
-      spa-crawl-whitelist.yaml: |-
-        name: hydaz/spa-crawl-whitelist
-        description: "Whitelist http-crawl-non_statics on the SPA frontends"
-        filter: "evt.Overflow.Alert.Scenario == 'crowdsecurity/http-crawl-non_statics'"
-        whitelist:
-          reason: "jellyfin/seerr web client legitimate API burst"
-          expression:
-            - "evt.Overflow.Alert.Events[0].GetMeta('target_fqdn') in ['jellyfin.atoca.house', 'seerr.atoca.house']"
   config.yaml.local: |-
     api:
       server:
@@ -131,6 +121,8 @@ config:
       # Agent/appsec pods auto-register a machine per pod name; drop the ones
       # that stop logging in so they don't pile up as stale LPs in the Console.
       flush:
+        max_items: 20000
+        max_age: 30d
         agents_autodelete:
           login_password: 60m
   agent_config.yaml.local: |-
@@ -152,7 +144,7 @@ config:
     decisions:
       - type: ban
         duration: 30m
-    duration_expr: Sprintf('%dm', (GetDecisionsCount(Alert.GetValue()) + 1) * 30)
+    duration_expr: Sprintf('%dm', min((GetDecisionsCount(Alert.GetValue()) + 1) * 30, 10080))
     on_success: break
     ---
     # Default IP ban for all other scenarios: 24h (CrowdSec recommended
@@ -164,7 +156,7 @@ config:
     decisions:
       - type: ban
         duration: 24h
-    duration_expr: Sprintf('%dh', (GetDecisionsCount(Alert.GetValue()) + 1) * 24)
+    duration_expr: Sprintf('%dh', min((GetDecisionsCount(Alert.GetValue()) + 1) * 24, 168))
     on_success: break
 secrets:
   externalSecret:
@@ -178,6 +170,15 @@ lapi:
     - name: postgres-ca
       mountPath: /etc/postgres-ca
       readOnly: true
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    privileged: false
+    capabilities:
+      drop: [ALL]
+  replicas: 2
   # Requests sized from 7d Prometheus data (p99 mem 43Mi, p95 cpu 6m). Chart
   # defaults request 500m/500Mi. Limits left at chart defaults.
   resources:
@@ -191,6 +192,7 @@ lapi:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+  # Console context is enabled by a one-time human-run `cscli console enable context`.
   # Console enrollment is NOT done on startup: the chart's start script runs
   # `cscli console enroll` under `set -e`, so any CAPI 403 (free-tier 1h ban
   # on login bursts) crashloops LAPI, which keeps the ban alive. The engine
@@ -215,6 +217,15 @@ lapi:
     serviceMonitor:
       enabled: true
 agent:
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  wait_for_lapi:
+    securityContext:
+      allowPrivilegeEscalation: false
+      privileged: false
+      capabilities:
+        drop: [ALL]
   # DaemonSet: requests count on every node. 7d p99 mem 107Mi, p95 cpu 15m.
   # Chart defaults request 500m/250Mi. Limits left at chart defaults.
   resources:
@@ -282,6 +293,7 @@ agent:
     - name: COLLECTIONS
       value: >-
         crowdsecurity/base-http-scenarios
+        crowdsecurity/http-dos
         crowdsecurity/http-cve
         LePresidente/authelia
         LePresidente/jellyfin
@@ -295,12 +307,29 @@ agent:
       enabled: true
 appsec:
   enabled: true
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    privileged: false
+    capabilities:
+      drop: [ALL]
+  wait_for_lapi:
+    securityContext:
+      allowPrivilegeEscalation: false
+      privileged: false
+      capabilities:
+        drop: [ALL]
+  replicas: 2
   # 7d p99 mem 44Mi, p95 cpu 11m. Chart defaults request 500m/250Mi.
   # Limits left at chart defaults.
   resources:
     requests:
       cpu: 25m
       memory: 96Mi
+    limits:
+      memory: 512Mi
   podAnnotations:
     reloader.stakater.com/auto: "true"
   strategy:

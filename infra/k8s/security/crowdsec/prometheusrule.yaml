@@ -53,7 +53,7 @@ spec:
 
         - alert: CrowdSecParsingErrors
           expr: |-
-            sum by (pod) (rate(cs_parser_hits_total{namespace="crowdsec", type="ko"}[10m])) > 1
+            sum by (pod) (rate(cs_node_hits_ko_total{namespace="crowdsec", source="parser"}[10m])) > 0
           for: 15m
           labels:
             severity: warning
@@ -66,7 +66,7 @@ spec:
 
         - alert: CrowdSecLAPIDecisionErrors
           expr: |-
-            sum(rate(cs_lapi_route_requests_total{namespace="crowdsec", route=~"/v1/decisions.*", code=~"5.."}[5m])) > 0
+            sum(rate(cs_lapi_route_requests_total{namespace="crowdsec", route=~"/v1/decisions.*", status_code=~"5.."}[5m])) > 0
           for: 10m
           labels:
             severity: warning

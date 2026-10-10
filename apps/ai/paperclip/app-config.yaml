@@ -1,0 +1,8 @@
+---
+# Application configuration for paperclip
+app:
+  name: paperclip
+  namespace: paperclip
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.2.1

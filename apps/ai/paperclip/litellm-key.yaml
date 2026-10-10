@@ -1,0 +1,17 @@
+---
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMVirtualKey
+metadata:
+  name: paperclip
+spec:
+  proxyRef: litellm
+  proxyNamespace: litellm
+  keyAlias: paperclip
+  secretName: litellm-key
+  secretKey: LITELLM_API_KEY
+  # No `models` = every model group on the proxy (cloud, subscriptions, local
+  # ollama). Not `models: []`: the API server drops the empty list -> Argo drift.
+  rpmLimit: 60
+  maxParallelRequests: 4
+  metadata:
+    consumer: paperclip

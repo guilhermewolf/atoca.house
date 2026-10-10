@@ -1,0 +1,131 @@
+---
+controllers:
+  paperclip:
+    strategy: Recreate
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/paperclipai/paperclip
+          tag: 2026.1005.0
+        env:
+          NODE_ENV: production
+          PORT: &port 3100
+          HOST: 0.0.0.0
+          PAPERCLIP_HOME: /paperclip
+          # DATABASE_URL (from the secret) turns the embedded Postgres off:
+          # the entrypoint only starts it when DATABASE_URL is unset.
+          PAPERCLIP_DEPLOYMENT_MODE: authenticated
+          PAPERCLIP_DEPLOYMENT_EXPOSURE: private
+          PAPERCLIP_PUBLIC_URL: https://paperclip.atoca.house
+          PAPERCLIP_CODEX_AUTH_CACHE: "false"
+          BETTER_AUTH_URL: https://paperclip.atoca.house
+
+          # Anthropic / Claude Code via LiteLLM
+          # No /v1 suffix: Claude Code adds /v1/messages.
+          ANTHROPIC_BASE_URL: http://litellm.litellm.svc.cluster.local:4000
+          ANTHROPIC_API_KEY: &litellmKey
+            valueFrom:
+              secretKeyRef:
+                name: litellm-key
+                key: LITELLM_API_KEY
+          ANTHROPIC_AUTH_TOKEN: *litellmKey
+
+          # Default Claude Code model
+          ANTHROPIC_MODEL: nous-claude-sonnet
+          ANTHROPIC_DEFAULT_SONNET_MODEL: nous-claude-sonnet
+          ANTHROPIC_DEFAULT_OPUS_MODEL: nous-claude-opus
+
+          # OpenAI-compatible clients
+          OPENAI_BASE_URL: http://litellm.litellm.svc.cluster.local:4000/v1
+          OPENAI_API_KEY: *litellmKey
+          # Codex CLI must use a custom model provider.
+          PAPERCLIP_CODEX_PROVIDERS: >-
+            {
+              "providers": {
+                "litellm": {
+                  "name": "LiteLLM",
+                  "base_url": "http://litellm.litellm.svc.cluster.local:4000/v1",
+                  "env_key": "OPENAI_API_KEY",
+                  "wire_api": "responses"
+                }
+              },
+              "model_provider": "litellm"
+            }
+
+        envFrom:
+          - secretRef:
+              name: paperclip-db-secret
+          - secretRef:
+              name: paperclip-secret
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/health
+                port: *port
+                httpHeaders:
+                  - name: Host
+                    value: paperclip.atoca.house
+              initialDelaySeconds: 15
+              periodSeconds: 10
+              timeoutSeconds: 2
+              failureThreshold: 3
+          readiness: *probes
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+              - "ALL"
+
+defaultPodOptions:
+  securityContext:
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - paperclip.atoca.house
+    rules:
+      - backendRefs:
+          - name: paperclip
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /paperclip

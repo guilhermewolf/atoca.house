@@ -146,6 +146,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: paperclip
+      databases:
+        - paperclip
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

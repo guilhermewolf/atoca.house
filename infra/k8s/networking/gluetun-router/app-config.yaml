@@ -6,4 +6,4 @@ app:
   namespace: gluetun-router
   chart: app-template
   chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 5.2.1
+  chartVersion: 5.3.0

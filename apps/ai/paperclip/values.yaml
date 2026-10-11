@@ -22,24 +22,13 @@ controllers:
           PAPERCLIP_CODEX_AUTH_CACHE: "false"
           BETTER_AUTH_URL: https://paperclip.atoca.house
 
-          # Anthropic / Claude Code via LiteLLM
-          # No /v1 suffix: Claude Code adds /v1/messages.
-          ANTHROPIC_BASE_URL: http://litellm.litellm.svc.cluster.local:4000
-          ANTHROPIC_API_KEY: &litellmKey
+          # OpenAI-compatible clients
+          OPENAI_BASE_URL: http://litellm.litellm.svc.cluster.local:4000/v1
+          OPENAI_API_KEY:
             valueFrom:
               secretKeyRef:
                 name: litellm-key
                 key: LITELLM_API_KEY
-          ANTHROPIC_AUTH_TOKEN: *litellmKey
-
-          # Default Claude Code model
-          ANTHROPIC_MODEL: nous-claude-sonnet
-          ANTHROPIC_DEFAULT_SONNET_MODEL: nous-claude-sonnet
-          ANTHROPIC_DEFAULT_OPUS_MODEL: nous-claude-opus
-
-          # OpenAI-compatible clients
-          OPENAI_BASE_URL: http://litellm.litellm.svc.cluster.local:4000/v1
-          OPENAI_API_KEY: *litellmKey
           # Codex CLI must use a custom model provider.
           PAPERCLIP_CODEX_PROVIDERS: >-
             {
@@ -60,27 +49,37 @@ controllers:
           - secretRef:
               name: paperclip-secret
         resources:
+          # Each agent run spawns a Claude/Codex CLI child (~300-600Mi each).
           requests:
-            cpu: 100m
-            memory: 512Mi
-          limits:
+            cpu: 500m
             memory: 2Gi
+          limits:
+            memory: 8Gi
         probes:
-          liveness: &probes
+          # Lenient liveness: a busy event loop must not kill in-flight agent runs.
+          liveness:
             enabled: true
             custom: true
             spec:
-              httpGet:
+              httpGet: &health
                 path: /api/health
                 port: *port
                 httpHeaders:
                   - name: Host
                     value: paperclip.atoca.house
+              initialDelaySeconds: 30
+              periodSeconds: 20
+              timeoutSeconds: 10
+              failureThreshold: 6
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet: *health
               initialDelaySeconds: 15
               periodSeconds: 10
-              timeoutSeconds: 2
+              timeoutSeconds: 5
               failureThreshold: 3
-          readiness: *probes
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000

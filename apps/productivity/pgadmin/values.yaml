@@ -28,16 +28,33 @@ controllers:
         runAsGroup: 5050
         fsGroup: 5050
         fsGroupChangePolicy: OnRootMismatch
-    containers:
-      pgadmin:
-        image:
+    initContainers:
+      # libpq ignores a pgpass with group access, and kubelet forces 0640 on
+      # secret volumes when fsGroup is set — copy it to the PVC as 0600.
+      pgpass:
+        image: &image
           repository: dpage/pgadmin4
           tag: 9.18@sha256:c332c5f6dfba995d9ebc4af261d93506d6876085d712eaaa3defc8dd1a3f26de
+        command: ["install", "-m", "600", "/pgadmin4/pgpass", "/var/lib/pgadmin/pgpass"]
+    containers:
+      pgadmin:
+        image: *image
         env:
+          # Re-import servers.json each start so changes reach the existing DB
+          PGADMIN_REPLACE_SERVERS_ON_STARTUP: "True"
           PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
           PGADMIN_DISABLE_POSTFIX: "true"
           PGADMIN_LISTEN_PORT: &port 80
           PGADMIN_DEFAULT_EMAIL: "admin@atoca.house"
+          # Authelia OIDC (authorization_policy: admins); internal login kept as
+          # break-glass. Provider config (with secret) comes from pgadmin-secret-auth.
+          PGADMIN_CONFIG_AUTHENTICATION_SOURCES: "['oauth2', 'internal']"
+          PGADMIN_CONFIG_OAUTH2_AUTO_CREATE_USER: "True"
+          PGADMIN_CONFIG_OAUTH2_CONFIG:
+            valueFrom:
+              secretKeyRef:
+                name: pgadmin-secret-auth
+                key: OAUTH2_CONFIG
           PGADMIN_DEFAULT_PASSWORD:
             valueFrom:
               secretKeyRef:
@@ -68,7 +85,6 @@ configMaps:
               "Port": 5432,
               "MaintenanceDB": "postgres",
               "Username": "postgres",
-              "PassFile": "/pgadmin4/pgpass",
               "DBRestrictionType": "databases",
               "UseSSHTunnel": 0,
               "TunnelPort": "22",
@@ -79,6 +95,7 @@ configMaps:
               "ConnectionParameters": {
                 "sslmode": "verify-full",
                 "sslrootcert": "/etc/ssl/postgres/ca.crt",
+                "passfile": "/var/lib/pgadmin/pgpass",
                 "connect_timeout": 10
               }
             }
@@ -127,7 +144,7 @@ persistence:
     defaultMode: 0600
     advancedMounts:
       pgadmin:
-        pgadmin:
+        pgpass:
           - path: /pgadmin4/pgpass
             subPath: pgpass
   servers:

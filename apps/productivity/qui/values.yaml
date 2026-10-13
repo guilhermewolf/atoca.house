@@ -15,6 +15,11 @@ controllers:
           QUI__LOG_LEVEL: INFO
           QUI__METRICS_ENABLED: true
           QUI__METRICS_HOST: 0.0.0.0
+          # OIDC (Authelia, authorization_policy: admins). Secret in qui-secret.
+          QUI__OIDC_ENABLED: true
+          QUI__OIDC_ISSUER: https://auth.atoca.house
+          QUI__OIDC_CLIENT_ID: qui
+          QUI__OIDC_REDIRECT_URL: https://qui.atoca.house/api/auth/oidc/callback
           QUI__METRICS_PORT: &metricsPort 8080
         envFrom:
           - secretRef:

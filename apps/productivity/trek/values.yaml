@@ -28,7 +28,7 @@ controllers:
           OIDC_DISPLAY_NAME: Authelia
           OIDC_SCOPE: openid email profile groups
           OIDC_ADMIN_CLAIM: groups
-          OIDC_ADMIN_VALUE: trek_admins
+          OIDC_ADMIN_VALUE: admins
           # SSO-only: disables password login and password registration.
           # Break-glass: set to "false" and restart to get the local admin back.
           OIDC_ONLY: "true"

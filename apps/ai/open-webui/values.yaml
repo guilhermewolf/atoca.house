@@ -189,8 +189,8 @@ controllers:
           OAUTH_CLIENT_ID: "open-webui"
           OAUTH_SCOPES: "openid email profile groups"
           ENABLE_OAUTH_ROLE_MANAGEMENT: "true"
-          OAUTH_ALLOWED_ROLES: "openwebui,openwebui-admin"
-          OAUTH_ADMIN_ROLES: "openwebui-admin"
+          OAUTH_ALLOWED_ROLES: "household,admins"
+          OAUTH_ADMIN_ROLES: "admins"
           OAUTH_ROLES_CLAIM: "groups"
           OAUTH_CODE_CHALLENGE_METHOD: "S256"
 

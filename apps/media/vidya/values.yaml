@@ -1,0 +1,86 @@
+---
+controllers:
+  vidya:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/dextify-org/vidya
+          tag: 1.0.1@sha256:71b2639d3ddc0ff1f8de9c66c158939df9db33ac9892246cda460b21b22a9995
+        env:
+          VIDYA_DATA_PATH: /data
+          PORT: &port 31415
+          TMPDIR: /tmp
+        resources:
+          requests:
+            cpu: 10m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - vidya.atoca.house
+    rules:
+      - backendRefs:
+          - name: vidya
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
+
+  # key "config" keeps PVC name = "vidya", matching backup.yaml/restore.yaml (same as kavita)
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 2Gi
+    globalMounts:
+      - path: /data
+
+  # whole media share read-only; add course folders (e.g. /media/masterclass) in Vidya's admin UI
+  media:
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/data/media/
+    globalMounts:
+      - path: /media
+        readOnly: true

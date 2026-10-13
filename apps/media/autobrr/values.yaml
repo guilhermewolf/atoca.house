@@ -13,6 +13,11 @@ controllers:
           AUTOBRR__PORT: &port 80
           AUTOBRR__METRICS_ENABLED: true
           AUTOBRR__METRICS_HOST: 0.0.0.0
+          # OIDC (Authelia, authorization_policy: admins). Secret in autobrr-secret.
+          AUTOBRR__OIDC_ENABLED: true
+          AUTOBRR__OIDC_ISSUER: https://auth.atoca.house
+          AUTOBRR__OIDC_CLIENT_ID: autobrr
+          AUTOBRR__OIDC_REDIRECT_URL: https://autobrr.atoca.house/api/auth/oidc/callback
           AUTOBRR__METRICS_PORT: &metricsPort 9094
           AUTOBRR__CHECK_FOR_UPDATES: false
           AUTOBRR__LOG_LEVEL: INFO

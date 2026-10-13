@@ -61,6 +61,13 @@ controllers:
           FORGEJO__repository__DEFAULT_PUSH_CREATE_PRIVATE: true
           FORGEJO__repository__ENABLE_PUSH_CREATE_USER: true
           FORGEJO__security__INSTALL_LOCK: true
+          # Authelia OIDC (authorization_policy: admins). The auth source lives in
+          # the DB, registered once with `forgejo admin auth add-oauth` (see the
+          # OIDC doc in Outline). Registration stays closed: an SSO login must
+          # link to an existing local account.
+          FORGEJO__oauth2_client__ENABLE_AUTO_REGISTRATION: false
+          FORGEJO__oauth2_client__ACCOUNT_LINKING: login
+          FORGEJO__oauth2_client__USERNAME: nickname
           # Logging
           FORGEJO__log__MODE: console
           FORGEJO__log__LEVEL: info

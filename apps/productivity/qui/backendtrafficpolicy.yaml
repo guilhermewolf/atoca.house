@@ -1,0 +1,49 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/gateway.envoyproxy.io/backendtrafficpolicy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: qui
+  namespace: qui
+spec:
+  mergeType: StrategicMerge
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: qui
+  # Custom error page redirects — 5xx only.
+  # 403/404/500 are intentionally omitted: qui returns 403 from /api/auth/me
+  # when logged out (OIDC); redirecting it to error-pages loops the SPA forever.
+  responseOverride:
+    # 502 Bad Gateway
+    - match:
+        statusCodes:
+          - type: Value
+            value: 502
+      redirect: &redirect
+        scheme: https
+        hostname: error-pages.atoca.house
+        path:
+          type: &pathType ReplaceFullPath
+          replaceFullPath: /502.html
+        statusCode: 302
+
+    # 503 Service Unavailable
+    - match:
+        statusCodes: [{ type: Value, value: 503 }]
+      redirect:
+        <<: *redirect
+        path:
+          type: *pathType
+          replaceFullPath: /503.html
+        statusCode: 302
+
+    # 504 Gateway Timeout
+    - match:
+        statusCodes: [{ type: Value, value: 504 }]
+      redirect:
+        <<: *redirect
+        path:
+          type: *pathType
+          replaceFullPath: /504.html
+        statusCode: 302

@@ -28,16 +28,48 @@ controllers:
         runAsGroup: 5050
         fsGroup: 5050
         fsGroupChangePolicy: OnRootMismatch
-    containers:
-      pgadmin:
-        image:
+    initContainers:
+      # In server mode pgAdmin resolves passfile/sslrootcert relative to each
+      # user's storage dir, so copy them there. libpq also ignores a pgpass with
+      # group access (kubelet forces 0640 on secret volumes with fsGroup).
+      # Entrypoint only imports servers.json for PGADMIN_DEFAULT_EMAIL, so load
+      # it for the Authelia user too (exists after first OIDC login).
+      pgpass:
+        image: &image
           repository: dpage/pgadmin4
           tag: 9.18@sha256:c332c5f6dfba995d9ebc4af261d93506d6876085d712eaaa3defc8dd1a3f26de
+        workingDir: /pgadmin4
+        command:
+          - sh
+          - -c
+          - |
+            for d in admin_atoca.house guilhermewolf_outlook.com; do
+              mkdir -p /var/lib/pgadmin/storage/$d
+              install -m 600 /pgadmin4/pgpass /var/lib/pgadmin/storage/$d/pgpass
+              install -m 644 /etc/ssl/postgres/ca.crt /var/lib/pgadmin/storage/$d/ca.crt
+            done
+            [ -f /var/lib/pgadmin/pgadmin4.db ] || exit 0
+            /venv/bin/python3 setup.py load-servers /pgadmin4/servers.json \
+              --user guilhermewolf@outlook.com --auth-source oauth2 --replace || true
+    containers:
+      pgadmin:
+        image: *image
         env:
+          # Re-import servers.json each start so changes reach the existing DB
+          PGADMIN_REPLACE_SERVERS_ON_STARTUP: "True"
           PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
           PGADMIN_DISABLE_POSTFIX: "true"
           PGADMIN_LISTEN_PORT: &port 80
           PGADMIN_DEFAULT_EMAIL: "admin@atoca.house"
+          # Authelia OIDC (authorization_policy: admins); internal login kept as
+          # break-glass. Provider config (with secret) comes from pgadmin-secret-auth.
+          PGADMIN_CONFIG_AUTHENTICATION_SOURCES: "['oauth2', 'internal']"
+          PGADMIN_CONFIG_OAUTH2_AUTO_CREATE_USER: "True"
+          PGADMIN_CONFIG_OAUTH2_CONFIG:
+            valueFrom:
+              secretKeyRef:
+                name: pgadmin-secret-auth
+                key: OAUTH2_CONFIG
           PGADMIN_DEFAULT_PASSWORD:
             valueFrom:
               secretKeyRef:
@@ -68,7 +100,6 @@ configMaps:
               "Port": 5432,
               "MaintenanceDB": "postgres",
               "Username": "postgres",
-              "PassFile": "/pgadmin4/pgpass",
               "DBRestrictionType": "databases",
               "UseSSHTunnel": 0,
               "TunnelPort": "22",
@@ -78,7 +109,8 @@ configMaps:
               "KerberosAuthentication": false,
               "ConnectionParameters": {
                 "sslmode": "verify-full",
-                "sslrootcert": "/etc/ssl/postgres/ca.crt",
+                "sslrootcert": "ca.crt",
+                "passfile": "pgpass",
                 "connect_timeout": 10
               }
             }
@@ -127,7 +159,7 @@ persistence:
     defaultMode: 0600
     advancedMounts:
       pgadmin:
-        pgadmin:
+        pgpass:
           - path: /pgadmin4/pgpass
             subPath: pgpass
   servers:

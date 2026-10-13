@@ -61,10 +61,19 @@ configs:
 
     kustomize.buildOptions: --enable-helm --load-restrictor LoadRestrictionsNone
 
+    # Authelia OIDC; client registered in apps/auth/authelia/config.yaml
+    # (authorization_policy: admins). Secret from the argocd-oidc ExternalSecret.
+    oidc.config: |
+      name: Authelia
+      issuer: https://auth.atoca.house
+      clientID: argocd
+      clientSecret: $argocd-oidc:clientSecret
+      requestedScopes: ["openid", "profile", "email", "groups"]
+
   rbac:
+    scopes: "[groups]"
     policy.csv: |
-      g, ArgoCD Admins, role:admin
-      g, ArgoCD Viewers, role:readonly
+      g, admins, role:admin
 
   params:
     server.insecure: "true" # IMPORTANT: Let the edge (Envoy Gateway) terminate TLS and run argocd-server in HTTP mode behind it.

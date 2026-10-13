@@ -19,6 +19,20 @@ controllers:
           - -b
           - 0.0.0.0:8084
           - shelfmark.main:app
+        env:
+          # Authelia OIDC (authorization_policy: household); admins group maps
+          # to Shelfmark admin. Local login kept as break-glass.
+          AUTH_METHOD: oidc
+          OIDC_DISCOVERY_URL: https://auth.atoca.house/.well-known/openid-configuration
+          OIDC_CLIENT_ID: shelfmark
+          OIDC_SCOPES: openid email profile groups
+          OIDC_GROUP_CLAIM: groups
+          OIDC_USE_ADMIN_GROUP: "true"
+          OIDC_ADMIN_GROUP: admins
+          OIDC_AUTO_PROVISION: "true"
+        envFrom:
+          - secretRef:
+              name: shelfmark-secret
         probes:
           liveness: &probe
             enabled: true

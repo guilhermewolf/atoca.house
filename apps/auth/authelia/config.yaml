@@ -569,8 +569,8 @@ data:
             response_types: ["code"]
             grant_types: ["authorization_code", "refresh_token"]
             userinfo_signed_response_alg: none
-            # Envoy's oauth2 filter sends credentials in the request body by default.
-            token_endpoint_auth_method: client_secret_post
+            # Envoy Gateway's oauth2 filter sends credentials as HTTP Basic auth.
+            token_endpoint_auth_method: client_secret_basic
 
           - client_id: litellm
             client_name: LiteLLM

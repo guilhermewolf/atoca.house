@@ -8,7 +8,7 @@ controllers:
       app:
         image:
           repository: ghcr.io/paperclipai/paperclip
-          tag: 2026.1005.0
+          tag: 2026.1012.0
         env:
           NODE_ENV: production
           PORT: &port 3100

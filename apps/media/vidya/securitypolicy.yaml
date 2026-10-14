@@ -1,0 +1,28 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/gateway.envoyproxy.io/securitypolicy_v1alpha1.json
+# Vidya 1.0.1 signs its JWTs with a hardcoded upstream secret, so anyone who can
+# reach it can forge a session. Gate the whole route with Authelia OIDC at the
+# gateway (authorization_policy: household) before requests reach the app.
+# StrategicMerge keeps the gateway-level crowdsec-bouncer extAuth on this route;
+# without it this route-level policy would replace it.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: vidya-oidc
+spec:
+  mergeType: StrategicMerge
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: vidya
+  oidc:
+    provider:
+      issuer: https://auth.atoca.house
+    clientID: vidya
+    clientSecret:
+      name: vidya-oidc
+    redirectURL: https://vidya.atoca.house/oauth2/callback
+    # Keep the app's own /logout untouched
+    logoutPath: /oauth2/logout
+    scopes: ["openid", "profile", "email", "offline_access"]
+    refreshToken: true

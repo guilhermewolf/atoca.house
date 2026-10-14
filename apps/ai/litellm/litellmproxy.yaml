@@ -74,6 +74,23 @@ spec:
     # ChatGPT subscription: auth.json seeded once via device login (see pvc.yaml)
     - name: CHATGPT_TOKEN_DIR
       value: /data/chatgpt
+    # Admin UI SSO (Authelia client 'litellm', authorization_policy: admins).
+    # Free tier allows SSO for up to 5 users. User id = preferred_username, so
+    # PROXY_ADMIN_ID makes that LLDAP user proxy admin. Master key still works.
+    - name: PROXY_BASE_URL
+      value: https://litellm.atoca.house
+    - name: PROXY_ADMIN_ID
+      value: guilhermewolf
+    - name: GENERIC_CLIENT_ID
+      value: litellm
+    - name: GENERIC_AUTHORIZATION_ENDPOINT
+      value: https://auth.atoca.house/api/oidc/authorization
+    - name: GENERIC_TOKEN_ENDPOINT
+      value: https://auth.atoca.house/api/oidc/token
+    - name: GENERIC_USERINFO_ENDPOINT
+      value: https://auth.atoca.house/api/oidc/userinfo
+    - name: GENERIC_SCOPE
+      value: openid email profile
   # Provider keys (GROQ_API_KEY, ...) are read from env by litellm; DATABASE_URL
   # switches the proxy into DB mode.
   envFrom:

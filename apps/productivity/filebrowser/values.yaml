@@ -126,6 +126,13 @@ persistence:
     globalMounts:
       - path: /mnt/media
         readOnly: false
+  data:
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/data/
+    globalMounts:
+      - path: /mnt/data
+
   kf:
     enabled: true
     type: nfs

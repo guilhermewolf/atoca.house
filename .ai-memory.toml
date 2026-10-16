@@ -1,0 +1,3 @@
+# ai-memory scope for this repo (see akitaonrails/ai-memory docs/marker-file.md)
+workspace = "default"
+project = "atoca.house"

@@ -1,0 +1,218 @@
+---
+controllers:
+  mealie:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/mealie-recipes/mealie
+          repository: ghcr.io/mealie-recipes/mealie
+          tag: v3.28.0@sha256:8b02290f4d1806f02acac6f25f6d48a3c965612fda1f8e914d5af533276f8688
+        env:
+          BASE_URL: https://mealie.atoca.house
+          # entry.sh skips its root->gosu user switch when uid == PUID.
+          PUID: 1000
+          PGID: 1000
+          ALLOW_SIGNUP: false
+          # OIDC only; also blocks the seeded changeme@example.com / MyPassword admin.
+          ALLOW_PASSWORD_LOGIN: false
+          AUTO_BACKUP_ENABLED: true
+          API_PORT: &port 9000
+          WORKERS_PER_CORE: 1
+          MAX_WORKERS: 1
+          WEB_CONCURRENCY: 1
+          DB_ENGINE: postgres
+          # OIDC (Authelia)
+          OIDC_AUTH_ENABLED: true
+          OIDC_SIGNUP_ENABLED: true
+          OIDC_CONFIGURATION_URL: https://auth.atoca.house/.well-known/openid-configuration
+          OIDC_CLIENT_ID: mealie
+          OIDC_PROVIDER_NAME: Authelia
+          OIDC_AUTO_REDIRECT: false
+          OIDC_ADMIN_GROUP: admins
+          OIDC_USER_GROUP: household
+          # AI via LiteLLM (per-app virtual key from litellm-key.yaml)
+          OPENAI_BASE_URL: http://litellm.litellm.svc.cluster.local:4000/v1
+          OPENAI_MODEL: cerebras-gpt-oss-120b
+          OPENAI_API_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: mealie-litellm-key
+                key: OPENAI_API_KEY
+        envFrom:
+          - secretRef:
+              name: mealie-db-secret
+          - secretRef:
+              name: mealie-secret
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/app/about
+                port: *port
+              periodSeconds: 30
+              timeoutSeconds: 5
+          readiness: *probes
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
+    pod:
+      annotations:
+        k8s.ksgate.org/postgres-ready: |
+          {
+            "apiVersion": "postgres-operator.crunchydata.com/v1beta1",
+            "kind": "PostgresCluster",
+            "name": "postgres",
+            "namespace": "crunchy-postgres-cluster",
+            "expression": "has(resource.status.instances) && resource.status.instances.exists(i, i.readyReplicas >= 1)"
+          }
+      schedulingGates:
+        - name: k8s.ksgate.org/postgres-ready
+
+  social-to-mealie:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/gerardpollorebozado/social-to-mealie
+          repository: ghcr.io/gerardpollorebozado/social-to-mealie
+          tag: v1.8.1@sha256:2dc8ecdea53e632093bf368fdd330b1dbe4cd063bf28800fbb644a0edaa54f7d
+        env:
+          MEALIE_URL: http://mealie-app.mealie.svc.cluster.local:9000
+          EXTERNAL_MEALIE_URL: https://mealie.atoca.house
+          MEALIE_GROUP_NAME: home
+          OPENAI_URL: http://litellm.litellm.svc.cluster.local:4000/v1
+          TEXT_MODEL: cerebras-gpt-oss-120b
+          TRANSCRIPTION_MODEL: whisper-large-v3
+          # Use the yt-dlp baked into the image: the entrypoint's runtime pip
+          # upgrade can't write with a read-only root fs. Renovate bumps the image.
+          YTDLP_VERSION: skip
+          OPENAI_API_KEY:
+            valueFrom:
+              secretKeyRef:
+                name: social-to-mealie-litellm-key
+                key: OPENAI_API_KEY
+        envFrom:
+          - secretRef:
+              name: social-to-mealie-secret
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 128Mi
+          limits:
+            memory: 1Gi
+    pod:
+      # Image files are owned by its nextjs user (1001).
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile: { type: RuntimeDefault }
+
+service:
+  app:
+    controller: mealie
+    ports:
+      http:
+        port: *port
+  social-to-mealie:
+    controller: social-to-mealie
+    ports:
+      http:
+        port: &s2mPort 3000
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    annotations:
+      gatus.io/enabled: "true"
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - mealie.atoca.house
+    rules:
+      - backendRefs:
+          - name: mealie-app
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+  social-to-mealie:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - recipes.atoca.house
+    rules:
+      - backendRefs:
+          - name: mealie-social-to-mealie
+            port: *s2mPort
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 3Gi
+    # Restore gate - see restore.yaml.
+    dataSourceRef:
+      apiGroup: volsync.backube
+      kind: ReplicationDestination
+      name: mealie-restore
+    advancedMounts:
+      mealie:
+        app:
+          - path: /app/data
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    advancedMounts:
+      mealie:
+        app:
+          - path: /etc/ssl/postgres/ca.crt
+            subPath: ca.crt
+            readOnly: true
+  tmp:
+    type: emptyDir
+    advancedMounts:
+      mealie:
+        app:
+          - path: /tmp
+      social-to-mealie:
+        app:
+          - path: /tmp
+          - path: /app/.next/cache
+            subPath: next-cache

@@ -1,0 +1,26 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/toolhive.stacklok.dev/mcpserver_v1beta1.json
+apiVersion: toolhive.stacklok.dev/v1beta1
+kind: MCPServer
+metadata:
+  name: argocd-mcp
+spec:
+  groupRef:
+    name: mcp-tools
+  # renovate: datasource=docker depName=ghcr.io/argoproj-labs/mcp-for-argocd
+  image: ghcr.io/argoproj-labs/mcp-for-argocd:v0.9.0@sha256:dffc6c719d8635be2d5f2c8ad1c0178540325da4b40da0b373307e12b4c48f86
+  # Image CMD defaults to `http`; ToolHive fronts stdio with its own proxy.
+  args:
+    - stdio
+  env:
+    # Talk to argocd-server in-cluster (server.insecure: plain HTTP behind the gateway).
+    - name: ARGOCD_BASE_URL
+      value: http://argocd-server.argocd.svc.cluster.local
+    # Hides create/update/delete/sync tools. The `mcp` account is also
+    # role:readonly in argocd/install/values.yaml, so this is belt and braces.
+    - name: MCP_READ_ONLY
+      value: "true"
+  secrets:
+    - name: argocd-mcp-secret
+      key: ARGOCD_API_TOKEN
+  transport: stdio

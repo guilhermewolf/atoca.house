@@ -1,0 +1,43 @@
+---
+# Per-consumer LiteLLM keys (see apps/ai/hermes/litellm-key.yaml). The operator
+# mints each via the proxy admin API and writes the Secret into this namespace.
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMVirtualKey
+metadata:
+  name: mealie
+spec:
+  proxyRef: litellm
+  proxyNamespace: litellm
+  keyAlias: mealie
+  secretName: mealie-litellm-key
+  secretKey: OPENAI_API_KEY
+  # cerebras is the primary (30k input fits scraped recipe pages); the rest are
+  # its fallback chain in litellmproxy.yaml.
+  models:
+    - cerebras-gpt-oss-120b
+    - groq-gpt-oss-120b
+    - qwen3.5-9b
+  rpmLimit: 30
+  maxParallelRequests: 2
+  metadata:
+    consumer: mealie
+---
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMVirtualKey
+metadata:
+  name: social-to-mealie
+spec:
+  proxyRef: litellm
+  proxyNamespace: litellm
+  keyAlias: social-to-mealie
+  secretName: social-to-mealie-litellm-key
+  secretKey: OPENAI_API_KEY
+  models:
+    - cerebras-gpt-oss-120b
+    - groq-gpt-oss-120b
+    - qwen3.5-9b
+    - whisper-large-v3
+  rpmLimit: 30
+  maxParallelRequests: 2
+  metadata:
+    consumer: social-to-mealie

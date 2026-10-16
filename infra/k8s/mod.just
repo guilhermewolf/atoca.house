@@ -47,3 +47,8 @@ sync-es:
 [doc('View a secret')]
 view-secret namespace secret:
     kubectl view-secret -n {{ namespace }} {{ secret }}
+
+[doc('Resource request/limit recommendations from Prometheus history (krr)')]
+krr *args:
+    command -v krr >/dev/null || { echo "krr missing: brew install robusta-dev/homebrew-krr/krr"; exit 1; }; \
+    krr simple --context admin@atoca-house -p https://prometheus.atoca.house {{ args }}

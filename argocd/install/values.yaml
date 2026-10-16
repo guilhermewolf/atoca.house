@@ -21,6 +21,9 @@ configs:
     statusbadge.enabled: true
     url: &argocd-url https://argocd.atoca.house
 
+    # API-token-only account for apps/mcp/argocd-mcp (role:readonly below).
+    accounts.mcp: apiKey
+
     # Poll git every 60s (was 120s). Lower = faster UI updates on push,
     # since the internal gateway can't receive GitHub webhooks.
     timeout.reconciliation: 60s
@@ -74,6 +77,7 @@ configs:
     scopes: "[groups]"
     policy.csv: |
       g, admins, role:admin
+      g, mcp, role:readonly
 
   params:
     server.insecure: "true" # IMPORTANT: Let the edge (Envoy Gateway) terminate TLS and run argocd-server in HTTP mode behind it.

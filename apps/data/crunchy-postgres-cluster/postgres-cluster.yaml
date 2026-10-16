@@ -134,6 +134,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: mealie
+      databases:
+        - mealie
+      password:
+        type: AlphaNumeric
+
     - name: python-app
       databases:
         - python-app

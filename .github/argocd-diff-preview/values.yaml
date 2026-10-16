@@ -1,0 +1,6 @@
+---
+# Helm values for the throwaway Argo CD that argocd-diff-preview spins up in kind.
+# Mirrors the parts of argocd/install/values.yaml that change rendering.
+configs:
+  cm:
+    kustomize.buildOptions: --enable-helm --load-restrictor LoadRestrictionsNone

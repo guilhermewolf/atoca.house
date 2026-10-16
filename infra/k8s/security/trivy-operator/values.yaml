@@ -1,0 +1,30 @@
+---
+# Scan jobs pull images and the trivy DB; keep concurrency low for a homelab.
+excludeNamespaces: "kube-system,kube-public,kube-node-lease"
+
+operator:
+  scanJobsConcurrentLimit: 3
+  # One in-cluster trivy server caches the vuln DB instead of every scan job
+  # downloading it.
+  builtInTrivyServer: true
+  # Node collector reads kubelet/apiserver files from host paths that Talos
+  # doesn't have, so the CIS infra assessment would only produce noise.
+  infraAssessmentScannerEnabled: false
+  clusterComplianceEnabled: false
+  # SBOMs are big CRs in etcd and nothing consumes them here.
+  sbomGenerationEnabled: false
+
+trivy:
+  storageClassName: ceph-block
+  ignoreUnfixed: true
+  severity: MEDIUM,HIGH,CRITICAL
+
+serviceMonitor:
+  enabled: true
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 512Mi

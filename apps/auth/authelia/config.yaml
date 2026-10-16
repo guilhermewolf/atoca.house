@@ -601,3 +601,32 @@ data:
             userinfo_signed_response_alg: none
             # openid-client v6 defaults to client_secret_post when a secret is set.
             token_endpoint_auth_method: client_secret_post
+
+          - client_id: mealie
+            client_name: Mealie
+            client_secret: '{{ secret "/config/secret/MEALIE_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            authorization_policy: household
+            # Mealie maps admin/user from the 'groups' claim (OIDC_ADMIN_GROUP/_USER_GROUP).
+            claims_policy: 'default'
+            require_pkce: true
+            pkce_challenge_method: S256
+            redirect_uris: ["https://mealie.atoca.house/login"]
+            scopes: ["openid", "profile", "groups", "email"]
+            response_types: ["code"]
+            grant_types: ["authorization_code"]
+            userinfo_signed_response_alg: none
+            token_endpoint_auth_method: client_secret_basic
+
+          - client_id: freshrss
+            client_name: FreshRSS
+            client_secret: '{{ secret "/config/secret/FRESHRSS_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            authorization_policy: household
+            # mod_auth_openidc builds the callback from X-Forwarded-*, which may include :443.
+            redirect_uris: ["https://freshrss.atoca.house/i/oidc/", "https://freshrss.atoca.house:443/i/oidc/"]
+            scopes: ["openid", "profile", "groups", "email"]
+            response_types: ["code"]
+            grant_types: ["authorization_code"]
+            userinfo_signed_response_alg: none
+            token_endpoint_auth_method: client_secret_basic

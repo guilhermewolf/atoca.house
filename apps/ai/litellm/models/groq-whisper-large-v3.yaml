@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/litellm.home-operations.com/litellmmodel_v1alpha1.json
+# Speech-to-text for social-to-mealie (video recipe imports). Groq free tier.
+apiVersion: litellm.home-operations.com/v1alpha1
+kind: LiteLLMModel
+metadata:
+  name: groq-whisper-large-v3
+spec:
+  modelName: whisper-large-v3
+  params:
+    model: groq/whisper-large-v3
+  info:
+    mode: audio_transcription

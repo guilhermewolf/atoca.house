@@ -1,0 +1,50 @@
+name: Argo CD Diff Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: argocd-diff-preview-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  diff:
+    # Needs a Docker daemon (spins up kind); the in-cluster ARC runners have none.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: pull-request
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+          path: main
+
+      - name: Generate diff
+        run: |
+          docker run \
+            --network=host \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$(pwd)/main:/base-branch" \
+            -v "$(pwd)/pull-request:/target-branch" \
+            -v "$(pwd)/output:/output" \
+            -v "$(pwd)/pull-request/.github/argocd-diff-preview:/argocd-config" \
+            -e TARGET_BRANCH=refs/pull/${{ github.event.number }}/merge \
+            -e REPO=${{ github.repository }} \
+            -e ARGOCD_CONFIG_DIR=/argocd-config \
+            -e ARGOCD_UI_URL=https://argocd.atoca.house \
+            dagandersen/argocd-diff-preview:v0.2.16@sha256:21e7c8fa794220118feedc6e5316afd90cf0a107bfc845e08aa0291996efd968
+
+      - name: Post diff as comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file output/diff.md --edit-last || \
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file output/diff.md

@@ -10,7 +10,7 @@ controllers:
       server:
         image:
           repository: docker.io/twentycrm/twenty
-          tag: v2.47
+          tag: v2.48
           pullPolicy: Always
         env:
           NODE_PORT: &port 3000
@@ -74,7 +74,7 @@ controllers:
       worker:
         image:
           repository: docker.io/twentycrm/twenty
-          tag: v2.47
+          tag: v2.48
           pullPolicy: Always
         command:
           - yarn

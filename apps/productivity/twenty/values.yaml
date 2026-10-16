@@ -29,6 +29,8 @@ controllers:
           IS_MULTIWORKSPACE_ENABLED: false
           EMAIL_DRIVER: smtp
           LOG_LEVELS: log
+          # Startup upgrade sequence OOMs at Node's default ~500MB heap
+          NODE_OPTIONS: --max-old-space-size=1536
         envFrom:
           - secretRef:
               name: twenty-db-secret
@@ -62,7 +64,7 @@ controllers:
             memory: 768Mi
           limits:
             cpu: 1000m
-            memory: 1Gi
+            memory: 2Gi
 
   worker:
     replicas: 1

@@ -168,7 +168,7 @@ config:
         {{- $alerts = append $alerts $alert -}}
         {{- end -}}
         {{- $alerts | toJson -}}
-      url: http://kube-prometheus-stack-monitoring-alertmanager.monitoring.svc.cluster.local:9093/api/v2/alerts
+      url: http://kube-prometheus-stack-moni-alertmanager.monitoring.svc.cluster.local:9093/api/v2/alerts
       method: POST
       headers:
         Content-Type: application/json

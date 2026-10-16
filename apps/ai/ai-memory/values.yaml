@@ -1,0 +1,102 @@
+---
+controllers:
+  ai-memory:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    # One server per data dir (single SQLite writer) — never scale past 1.
+    replicas: 1
+    strategy: Recreate
+    containers:
+      main:
+        image:
+          # renovate: datasource=docker depName=akitaonrails/ai-memory
+          repository: docker.io/akitaonrails/ai-memory
+          tag: 3.1.0@sha256:01af788550335e41f23818fed38e101cffff2166aef7021b719e6e165708307f
+        args:
+          - serve
+          - --transport
+          - http
+          - --bind
+          - 0.0.0.0:49374
+          - --enable-web
+        env:
+          AI_MEMORY_DATA_DIR: /data
+          HOME: /data
+          # DNS-rebinding guard: every Host header clients use.
+          AI_MEMORY_ALLOWED_HOSTS: ai-memory.atoca.house,ai-memory.ai-memory.svc.cluster.local,ai-memory.ai-memory.svc,ai-memory,localhost,127.0.0.1
+          AI_MEMORY_AUTH__SECURE_COOKIE: "true"
+          AI_MEMORY_NO_VERSION_CHECK: "1"
+          RUST_LOG: ai_memory=info,ai_memory_store=info,ai_memory_wiki=info,ai_memory_mcp=info,tracing_appender=warn
+        envFrom:
+          - secretRef:
+              name: ai-memory-secret
+        probes:
+          # tcpSocket: httpGet sends the pod IP as Host, which the allowlist rejects.
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              tcpSocket:
+                port: &port 49374
+              periodSeconds: 10
+              failureThreshold: 3
+          readiness: *probes
+        resources:
+          requests:
+            cpu: 10m
+            memory: 128Mi
+          limits:
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+    pod:
+      securityContext:
+        runAsUser: 99
+        runAsGroup: 100
+        runAsNonRoot: true
+        fsGroup: 100
+        fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+        sectionName: https
+    hostnames:
+      - ai-memory.atoca.house
+    rules:
+      - backendRefs:
+          - name: ai-memory
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /data
+  tmp:
+    enabled: true
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

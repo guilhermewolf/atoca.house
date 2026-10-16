@@ -161,7 +161,7 @@ config:
         {{- $end := now | dateModify "+1h" | date "2006-01-02T15:04:05Z07:00" -}}
         {{- $alert := dict
           "labels" (dict "alertname" "CrowdSecLocalBan" "severity" "warning" "namespace" "crowdsec" "scenario" .Scenario "source_ip" .Source.Value)
-          "annotations" (dict "summary" (printf "CrowdSec local ban: %s" .Scenario) "description" (printf "Local ban for %s" .Source.Value))
+          "annotations" (dict "summary" (printf "CrowdSec local ban: %s" (.Scenario | toJson | trimAll "\"")) "description" (printf "Local ban for %s" (.Source.Value | toJson | trimAll "\"")))
           "startsAt" $start
           "endsAt" $end
         -}}

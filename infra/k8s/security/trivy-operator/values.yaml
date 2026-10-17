@@ -4,20 +4,28 @@ excludeNamespaces: "kube-system,kube-public,kube-node-lease"
 
 operator:
   scanJobsConcurrentLimit: 3
-  # One in-cluster trivy server caches the vuln DB instead of every scan job
-  # downloading it.
+  scanJobTTL: 300s
+  scanJobTimeout: 20m
   builtInTrivyServer: true
+  vulnerabilityScannerScanOnlyCurrentRevisions: true
+  configAuditScannerScanOnlyCurrentRevisions: true
   # Node collector reads kubelet/apiserver files from host paths that Talos
   # doesn't have, so the CIS infra assessment would only produce noise.
   infraAssessmentScannerEnabled: false
   clusterComplianceEnabled: false
   # SBOMs are big CRs in etcd and nothing consumes them here.
   sbomGenerationEnabled: false
+  annotations:
+    reloader.stakater.com/auto: "true"
 
 trivy:
+  slow: true
   storageClassName: ceph-block
   ignoreUnfixed: true
   severity: MEDIUM,HIGH,CRITICAL
+
+trivyOperator:
+  skipResourceByLabels: "app.kubernetes.io/created-by=volsync"
 
 serviceMonitor:
   enabled: true

@@ -23,9 +23,21 @@ trivy:
   storageClassName: ceph-block
   ignoreUnfixed: true
   severity: MEDIUM,HIGH,CRITICAL
+  # Scanning big images (e.g. chromium) OOMs at the 500M default.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100M
+    limits:
+      cpu: 500m
+      memory: 1Gi
 
 trivyOperator:
   skipResourceByLabels: "app.kubernetes.io/created-by=volsync"
+  # Scan containers are named after the scanned container; for bare pods that
+  # includes the injected "k8tz" init container, so k8tz injecting its own
+  # "k8tz" init container makes the scan pod invalid (duplicate name).
+  scanJobAnnotations: "k8tz.io/inject=false"
 
 serviceMonitor:
   enabled: true
@@ -35,4 +47,4 @@ resources:
     cpu: 50m
     memory: 128Mi
   limits:
-    memory: 512Mi
+    memory: 1Gi

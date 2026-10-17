@@ -60,6 +60,7 @@ controllers:
         runAsNonRoot: true
         fsGroup: 100
         fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
 
 service:
   app:

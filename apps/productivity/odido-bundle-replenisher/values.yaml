@@ -47,6 +47,7 @@ defaultPodOptions:
   imagePullSecrets:
     - name: forgejo-registry
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     runAsNonRoot: true
     runAsUser: 99
     runAsGroup: 100

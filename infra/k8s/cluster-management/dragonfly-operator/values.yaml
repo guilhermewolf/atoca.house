@@ -53,6 +53,7 @@ controllers:
         runAsUser: 65534
         runAsGroup: 65534
         runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname

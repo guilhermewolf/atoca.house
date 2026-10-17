@@ -3,6 +3,8 @@ controllers:
     replicas: 1
     containers:
       flaresolverr:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: flaresolverr/flaresolverr
           tag: v3.5.2@sha256:c80ae007ce2ccdcd217a12426e4f039ef763ff90738c808d38810c3e59323767
@@ -42,3 +44,6 @@ route:
           - path:
               type: PathPrefix
               value: /
+defaultPodOptions:
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }

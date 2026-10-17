@@ -7,6 +7,8 @@ controllers:
       hostUsers: false
     containers:
       app:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           # renovate: datasource=docker depName=docker.io/freshrss/freshrss
           # Debian variant: only it ships mod_auth_openidc (OIDC_ENABLED).
@@ -95,3 +97,6 @@ persistence:
       freshrss:
         app:
           - path: /var/www/FreshRSS/data/cache
+defaultPodOptions:
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }

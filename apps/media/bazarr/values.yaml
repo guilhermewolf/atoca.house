@@ -5,6 +5,8 @@ controllers:
       reloader.stakater.com/auto: "true"
     containers:
       bazarr:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: ghcr.io/home-operations/bazarr
           tag: 1.6.2@sha256:17dc1cff22e99694ffbfb06555526cb47a66b362b4d6c982f06b557f7caae2bb
@@ -44,6 +46,7 @@ controllers:
 
 defaultPodOptions:
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     runAsNonRoot: true
     runAsUser: 99
     runAsGroup: 100

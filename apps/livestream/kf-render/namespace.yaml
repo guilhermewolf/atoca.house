@@ -9,3 +9,5 @@ metadata:
   name: kf-render
   labels:
     forgejo-registry: "true"
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted

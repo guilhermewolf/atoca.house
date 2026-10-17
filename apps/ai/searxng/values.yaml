@@ -62,11 +62,6 @@ controllers:
           capabilities:
             drop:
               - ALL
-            add:
-              - CHOWN
-              - SETGID
-              - SETUID
-              - DAC_OVERRIDE
 service:
   app:
     ports:
@@ -106,3 +101,11 @@ persistence:
     type: emptyDir
     globalMounts:
       - path: /tmp
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 977
+    runAsGroup: 977
+    fsGroup: 977
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile: { type: RuntimeDefault }

@@ -5,6 +5,8 @@ controllers:
       reloader.stakater.com/auto: "true"
     initContainers:
       fix-permissions:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: docker.io/library/alpine
           tag: "3.24"
@@ -62,6 +64,7 @@ controllers:
 
 defaultPodOptions:
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
 

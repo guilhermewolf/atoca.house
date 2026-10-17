@@ -50,6 +50,7 @@ defaultPodOptions:
   nodeSelector:
     node.kubernetes.io/gpu: "true"
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     runAsNonRoot: true
     runAsUser: 1000
     runAsGroup: 1000

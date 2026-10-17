@@ -34,6 +34,7 @@ controllers:
         runAsGroup: 1000
         runAsUser: 1000
         runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
 
 persistence:
   config:

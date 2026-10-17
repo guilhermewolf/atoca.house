@@ -6,6 +6,8 @@ controllers:
       reloader.stakater.com/auto: "true"
     containers:
       app:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: ghcr.io/dgtlmoon/changedetection.io
           tag: 0.60.9
@@ -35,6 +37,8 @@ controllers:
           limits:
             memory: 1Gi
       browser:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: mirror.gcr.io/browserless/chrome
           tag: latest@sha256:57d19e414d9fe4ae9d2ab12ba768c97f38d51246c5b31af55a009205c136012f
@@ -57,6 +61,8 @@ controllers:
             memory: 2Gi
 
 defaultPodOptions:
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }
   annotations:
     k8s.v1.cni.cncf.io/networks: |-
       [{

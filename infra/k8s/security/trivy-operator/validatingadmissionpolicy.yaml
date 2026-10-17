@@ -1,0 +1,46 @@
+---
+# Repo conventions PSA "restricted" doesn't cover: read-only root filesystem and
+# digest-pinned images. Warn + Audit only, scoped to app namespaces through the
+# PSA warn label the apps/* ApplicationSets set.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: workload-conventions
+spec:
+  # Never block a workload because the policy itself errored.
+  failurePolicy: Ignore
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["cronjobs"]
+  variables:
+    - name: pod
+      expression: "object.kind == 'CronJob' ? object.spec.jobTemplate.spec.template.spec : object.spec.template.spec"
+    - name: containers
+      expression: "variables.pod.containers + (has(variables.pod.initContainers) ? variables.pod.initContainers : [])"
+  validations:
+    - expression: >-
+        variables.containers.all(c, has(c.securityContext) && has(c.securityContext.readOnlyRootFilesystem) && c.securityContext.readOnlyRootFilesystem)
+      messageExpression: >-
+        'readOnlyRootFilesystem not set on: ' + variables.containers.filter(c, !(has(c.securityContext) && has(c.securityContext.readOnlyRootFilesystem) && c.securityContext.readOnlyRootFilesystem)).map(c, c.name).join(', ')
+    - expression: "variables.containers.all(c, c.image.contains('@sha256:'))"
+      messageExpression: >-
+        'image not pinned by digest: ' + variables.containers.filter(c, !c.image.contains('@sha256:')).map(c, c.image).join(', ')
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: workload-conventions
+spec:
+  policyName: workload-conventions
+  validationActions: ["Warn", "Audit"]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        pod-security.kubernetes.io/warn: restricted

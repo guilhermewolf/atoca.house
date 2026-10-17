@@ -92,6 +92,7 @@ controllers:
 
 defaultPodOptions:
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
 

@@ -40,6 +40,7 @@ defaultPodOptions:
         "mac": "32:0b:d8:1f:b6:f1"
       }]
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     runAsNonRoot: true
     runAsUser: 99
     runAsGroup: 100

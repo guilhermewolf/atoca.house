@@ -50,6 +50,7 @@ controllers:
             memory: 4Gi
 defaultPodOptions:
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     # Container entrypoint must be root; it setpriv's the app down to PUID/PGID.
     runAsNonRoot: false
     runAsUser: 0

@@ -7,7 +7,7 @@ controllers:
       lldap:
         image:
           repository: ghcr.io/lldap/lldap
-          tag: v0.6.3@sha256:2a8454b668c1aba7157e832eab0e242e1e7eb5fb7591d7e7774ba05286511ca8
+          tag: v0.6.3-alpine-rootless@sha256:ba2c50930ea998eefd5454aa678a7977448019248b1827da87d330df0b71c284
         env:
           LLDAP_HTTP_PORT: &port 80
           LLDAP_HTTP_URL: https://lldap.atoca.house
@@ -22,6 +22,10 @@ controllers:
             enabled: true
           readiness:
             enabled: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
         resources:
           requests:
             cpu: 10m
@@ -84,3 +88,13 @@ route:
 persistence:
   data:
     type: emptyDir
+  tmp:
+    type: emptyDir
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile: { type: RuntimeDefault }

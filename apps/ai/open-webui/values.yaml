@@ -96,6 +96,8 @@ controllers:
         - name: k8s.ksgate.org/qdrant-service
     containers:
       app:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: ghcr.io/open-webui/open-webui
           tag: v0.12.3
@@ -214,6 +216,8 @@ controllers:
             memory: 1Gi
 
       tika:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: docker.io/apache/tika
           tag: 3.3.1.0-full
@@ -257,3 +261,6 @@ persistence:
     size: 5Gi
     globalMounts:
       - path: /app/backend/data
+defaultPodOptions:
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }

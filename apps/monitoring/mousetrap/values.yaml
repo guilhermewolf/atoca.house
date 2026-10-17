@@ -46,6 +46,7 @@ defaultPodOptions:
         "mac": "aa:11:5c:3e:9f:2b"
       }]
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
     runAsUser: 0

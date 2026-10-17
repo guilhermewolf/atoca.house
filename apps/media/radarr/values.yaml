@@ -50,6 +50,7 @@ controllers:
             memory: 3Gi
 defaultPodOptions:
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     runAsNonRoot: true
     runAsUser: 99
     runAsGroup: 100

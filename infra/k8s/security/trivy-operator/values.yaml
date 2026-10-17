@@ -12,7 +12,9 @@ operator:
   # Node collector reads kubelet/apiserver files from host paths that Talos
   # doesn't have, so the CIS infra assessment would only produce noise.
   infraAssessmentScannerEnabled: false
-  clusterComplianceEnabled: false
+  # NSA/PSS/CIS reports built from the config audit results; the node-level
+  # CIS checks stay empty since the infra scanner is off.
+  clusterComplianceEnabled: true
   # SBOMs are big CRs in etcd and nothing consumes them here.
   sbomGenerationEnabled: false
   annotations:
@@ -23,6 +25,10 @@ trivy:
   storageClassName: ceph-block
   ignoreUnfixed: true
   severity: MEDIUM,HIGH,CRITICAL
+  # Secret-scan false positives in bundled third-party code: yt-dlp extractor
+  # keys/JWTs, python-ldap and autobahn test keys, Debian snakeoil cert.
+  skipDirs: "**/yt_dlp/extractor,**/slapdtest/certs"
+  skipFiles: "**/autobahn/wamp/cryptosign.py,**/autobahn/wamp/__pycache__/cryptosign.*.pyc,**/ssl-cert-snakeoil.key"
   # Scanning big images (e.g. chromium) OOMs at the 500M default.
   resources:
     requests:

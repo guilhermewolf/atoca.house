@@ -5,6 +5,8 @@ controllers:
       reloader.stakater.com/auto: "true"
     containers:
       soulsync:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: boulderbadgedad/soulsync
           tag: 2.3
@@ -44,6 +46,7 @@ controllers:
             memory: 2Gi
 defaultPodOptions:
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     fsGroup: 100
     fsGroupChangePolicy: OnRootMismatch
 service:

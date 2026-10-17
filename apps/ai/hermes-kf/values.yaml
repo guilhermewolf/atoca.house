@@ -52,6 +52,8 @@ controllers:
       # public): they live only on this PVC, protected by Volsync, pushed from
       # a local private folder with its sync.sh (see the Outline runbook).
       copy-config:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: docker.io/library/alpine
           tag: "3.24"
@@ -102,6 +104,8 @@ controllers:
       # volume (survives pod restarts, no image rebuild needed since hermes-agent
       # is a third-party image) using the main image's own node/npm.
       install-postiz-cli:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: docker.io/nousresearch/hermes-agent
           tag: v2026.9.24@sha256:fca358f12efd65bfaaca05884166f15c0e2788375ca30d77061ac1ebc96452b7

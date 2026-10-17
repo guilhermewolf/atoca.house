@@ -29,6 +29,7 @@ controllers:
 
 defaultPodOptions:
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     runAsNonRoot: true
     runAsUser: 99
     runAsGroup: 100

@@ -40,6 +40,7 @@ defaultPodOptions:
         "mac": "6a:3f:82:19:d4:7e"
       }]
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     fsGroup: 1000
     fsGroupChangePolicy: OnRootMismatch
 service:

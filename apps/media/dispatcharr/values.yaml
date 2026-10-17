@@ -55,6 +55,8 @@ controllers:
             memory: 256Mi
     containers:
       dispatcharr:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: ghcr.io/dispatcharr/dispatcharr
           tag: 0.32.0
@@ -107,6 +109,8 @@ controllers:
               timeoutSeconds: 5
               failureThreshold: 3
       celery:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: ghcr.io/dispatcharr/dispatcharr
           tag: 0.32.0
@@ -170,6 +174,7 @@ defaultPodOptions:
   nodeSelector:
     node.kubernetes.io/gpu: "true"
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     fsGroup: 1000
     fsGroupChangePolicy: "OnRootMismatch"
 

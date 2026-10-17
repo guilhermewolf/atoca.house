@@ -56,6 +56,7 @@ controllers:
             memory: 128Mi
 defaultPodOptions:
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     runAsNonRoot: true
     runAsUser: 1000
     runAsGroup: 1000

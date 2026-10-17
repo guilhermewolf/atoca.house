@@ -6,8 +6,11 @@ controllers:
     pod:
       securityContext:
         fsGroup: 1000
+        seccompProfile: { type: RuntimeDefault }
     containers:
       server:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: docker.io/twentycrm/twenty
           tag: v2.48
@@ -72,6 +75,8 @@ controllers:
       reloader.stakater.com/auto: "true"
     containers:
       worker:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: docker.io/twentycrm/twenty
           tag: v2.48
@@ -106,6 +111,8 @@ controllers:
             memory: 2Gi
 
 defaultPodOptions:
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }
   annotations:
     k8s.ksgate.org/postgres-ready: |
       {

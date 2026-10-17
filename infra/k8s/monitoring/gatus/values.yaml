@@ -6,6 +6,8 @@ controllers:
       reloader.stakater.com/auto: "true"
     initContainers:
       gatus-sidecar:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: ghcr.io/home-operations/gatus-sidecar
           tag: 0.5.3@sha256:b52ae9161639c7453308096aa8f5095d540196d097f5e3c681465737f22e8e76
@@ -61,6 +63,7 @@ controllers:
 defaultPodOptions:
   automountServiceAccountToken: true
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     runAsNonRoot: true
     runAsUser: 1000
     runAsGroup: 1000

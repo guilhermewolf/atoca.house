@@ -11,7 +11,9 @@ controllers:
           tag: 4.39.28@sha256:bd97cff4fcbf715b5ff1f9ae286afbe6033afce385302520b0368122d43a6f54
         env:
           AUTHELIA_SERVER_ADDRESS: tcp://0.0.0.0:80
-          AUTHELIA_SERVER_DISABLE_HEALTHCHECK: "false"
+          # The healthcheck writes /app/.healthcheck.env, which the read-only
+          # rootfs rejects; Kubernetes probes cover it instead.
+          AUTHELIA_SERVER_DISABLE_HEALTHCHECK: "true"
           AUTHELIA_TELEMETRY_METRICS_ADDRESS: tcp://0.0.0.0:8080
           AUTHELIA_TELEMETRY_METRICS_ENABLED: "true"
           AUTHELIA_THEME: auto
@@ -41,6 +43,10 @@ controllers:
           readiness: *probes
           startup:
             enabled: false
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
         resources:
           requests:
             cpu: 10m
@@ -141,6 +147,8 @@ route:
               value: /
 
 persistence:
+  tmp:
+    type: emptyDir
   config:
     type: configMap
     name: authelia-configmap
@@ -161,3 +169,11 @@ persistence:
       - path: /certificates/postgres-ca.crt
         subPath: ca.crt
         readOnly: true
+defaultPodOptions:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile: { type: RuntimeDefault }

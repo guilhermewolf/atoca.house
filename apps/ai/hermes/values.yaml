@@ -52,6 +52,8 @@ controllers:
       # public): they live only on this PVC, protected by Volsync, pushed from
       # a local private folder with its sync.sh (see the Outline runbook).
       copy-config:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: docker.io/library/alpine
           tag: "3.24"
@@ -94,6 +96,8 @@ controllers:
       # not reach the terminal). alpine/k8s's jq and yq are musl-linked and can't
       # run in the Debian app image: yq comes from copy-yq, use python3 for JSON.
       copy-tools:
+        securityContext:
+          allowPrivilegeEscalation: false
         image:
           repository: docker.io/alpine/k8s
           tag: "1.37.1"
@@ -112,6 +116,7 @@ controllers:
           repository: docker.io/mikefarah/yq
           tag: 4.54.1@sha256:4b3d9475d65571d28cbb19544d3820ec2945e4c8b2f18279394282b8dc3a592e
         securityContext:
+          allowPrivilegeEscalation: false
           runAsUser: 0
         command:
           - sh

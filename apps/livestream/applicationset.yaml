@@ -62,6 +62,12 @@ spec:
             - /spec/volumeClaimTemplates/0/kind
 
       syncPolicy:
+        # Surface Pod Security "restricted" violations (kubectl warnings + audit
+        # log) without blocking anything; enforce stays at the cluster default.
+        managedNamespaceMetadata:
+          labels:
+            pod-security.kubernetes.io/warn: restricted
+            pod-security.kubernetes.io/audit: restricted
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true

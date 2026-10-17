@@ -24,10 +24,12 @@ controllers:
         - name: k8s.ksgate.org/postgres-ready
         - name: k8s.ksgate.org/postgres-service
       securityContext:
+        runAsNonRoot: true
         runAsUser: 5050
         runAsGroup: 5050
         fsGroup: 5050
         fsGroupChangePolicy: OnRootMismatch
+        seccompProfile: { type: RuntimeDefault }
     initContainers:
       # In server mode pgAdmin resolves passfile/sslrootcert relative to each
       # user's storage dir, so copy them there. libpq also ignores a pgpass with

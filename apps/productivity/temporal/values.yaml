@@ -121,6 +121,7 @@ defaultPodOptions:
     - name: k8s.ksgate.org/postgres-ready
     - name: k8s.ksgate.org/postgres-service
   securityContext:
+    seccompProfile: { type: RuntimeDefault }
     runAsNonRoot: true
     runAsUser: 1000
     runAsGroup: 1000

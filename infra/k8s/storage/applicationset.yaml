@@ -19,6 +19,8 @@ spec:
   template:
     metadata:
       name: '{{.app.name}}'
+      annotations:
+        argocd-diff-preview/watch-pattern: 'infra/k8s/storage/{{.app.name}}/.*'
       namespace: argocd
     spec:
       project: infra

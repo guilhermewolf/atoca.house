@@ -19,6 +19,8 @@ spec:
   template:
     metadata:
       name: '{{.app.name}}'
+      annotations:
+        argocd-diff-preview/watch-pattern: 'apps/auth/{{.app.name}}/.*'
       namespace: argocd
     spec:
       project: applications

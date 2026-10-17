@@ -5,6 +5,8 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: apps-livestream
+  annotations:
+    argocd-diff-preview/watch-pattern: 'apps/livestream/.*'
   namespace: argocd
 spec:
   goTemplate: true

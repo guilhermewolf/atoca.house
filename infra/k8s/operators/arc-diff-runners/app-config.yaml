@@ -1,0 +1,7 @@
+app:
+  name: arc-diff-runners
+  namespace: arc-diff-runners
+  chart: gha-runner-scale-set
+  chartRepo: ghcr.io/actions/actions-runner-controller-charts
+  chartVersion: 0.15.0
+  disableAutoSync: true

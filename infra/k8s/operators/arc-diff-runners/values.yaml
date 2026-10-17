@@ -1,0 +1,27 @@
+# Runners for .github/workflows/argocd-diff-preview.yaml only (runs-on: arc-diff-runners).
+# Their service account can only touch the argocd-diff-preview namespace
+# (infra/k8s/cluster-management/argocd-diff-preview/rbac.yaml) and carries no other secrets.
+githubConfigSecret: "github-pat"
+githubConfigUrl: "https://github.com/guilhermewolf/atoca.house"
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-systems-gha-rs-controller
+
+maxRunners: 3
+minRunners: 1
+
+template:
+  spec:
+    serviceAccountName: arc-diff-runner
+    automountServiceAccountToken: true
+    containers:
+      - name: runner
+        image: ghcr.io/home-operations/actions-runner:2.338.0@sha256:c867ecdf82d4e8537ea8a41acc6addae09f069daec137e5614b87e4678a953e8
+        command: ["/home/runner/run.sh"]
+        env:
+          - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+            value: "false"
+metrics:
+  controllerManagerAddr: ":8080"
+  listenerAddr: ":8080"
+  listenerEndpoint: "/metrics"

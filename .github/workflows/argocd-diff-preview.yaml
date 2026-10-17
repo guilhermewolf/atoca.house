@@ -11,36 +11,52 @@ permissions:
 
 concurrency:
   group: argocd-diff-preview-${{ github.event.number }}
-  cancel-in-progress: true
+  # Runs take seconds; cancelling mid-run would leave orphaned Applications
+  # in the shared argocd-diff-preview namespace.
+  cancel-in-progress: false
 
 jobs:
   diff:
-    # Needs a Docker daemon (spins up kind); the in-cluster ARC runners have none.
-    runs-on: ubuntu-latest
+    # Runs inside the cluster: never execute code from forks.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Dedicated runners whose service account only reaches the argocd-diff-preview
+    # namespace (infra/k8s/operators/arc-diff-runners).
+    runs-on: arc-diff-runners
+    env:
+      # renovate: datasource=github-releases depName=dag-andersen/argocd-diff-preview
+      ADP_VERSION: v0.2.16
+      # sha256 of argocd-diff-preview-Linux-x86_64.tar.gz; update together with ADP_VERSION.
+      ADP_SHA256: 242dce4938535962a0160585974b6ac7eb2d86e6547dcbffe97a6aad6fa34f43
     steps:
+      # Pin both sides to exact SHAs: the long-lived Argo CD caches branch refs
+      # (https://dag-andersen.github.io/argocd-diff-preview/reusing-clusters/branch-vs-sha/).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          path: pull-request
+          ref: ${{ github.sha }}
+          path: target-branch
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: main
-          path: main
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base-branch
+
+      - name: Install argocd-diff-preview
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/adp.tar.gz" \
+            "https://github.com/dag-andersen/argocd-diff-preview/releases/download/${ADP_VERSION}/argocd-diff-preview-Linux-x86_64.tar.gz"
+          echo "${ADP_SHA256}  $RUNNER_TEMP/adp.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/adp.tar.gz" -C "$RUNNER_TEMP" argocd-diff-preview
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
 
       - name: Generate diff
         run: |
-          docker run \
-            --network=host \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "$(pwd)/main:/base-branch" \
-            -v "$(pwd)/pull-request:/target-branch" \
-            -v "$(pwd)/output:/output" \
-            -v "$(pwd)/pull-request/.github/argocd-diff-preview:/argocd-config" \
-            -e TARGET_BRANCH=refs/pull/${{ github.event.number }}/merge \
-            -e REPO=${{ github.repository }} \
-            -e ARGOCD_CONFIG_DIR=/argocd-config \
-            -e ARGOCD_UI_URL=https://argocd.atoca.house \
-            dagandersen/argocd-diff-preview:v0.2.16@sha256:21e7c8fa794220118feedc6e5316afd90cf0a107bfc845e08aa0291996efd968
+          argocd-diff-preview \
+            --repo=${{ github.repository }} \
+            --base-branch=${{ github.event.pull_request.base.sha }} \
+            --target-branch=${{ github.sha }} \
+            --create-cluster=false \
+            --argocd-namespace=argocd-diff-preview \
+            --argocd-ui-url=https://argocd.atoca.house
 
       - name: Post diff as comment
         env:

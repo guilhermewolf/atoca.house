@@ -1,9 +1,23 @@
 ---
-# Helm values for the throwaway Argo CD that argocd-diff-preview spins up in kind.
-# Mirrors the parts of argocd/install/values.yaml that change rendering.
+# Dedicated, namespace-scoped Argo CD used only by .github/workflows/argocd-diff-preview.yaml
+# (https://dag-andersen.github.io/argocd-diff-preview/reusing-clusters/lockdown-mode/).
+# Never syncs anything: the tool strips syncPolicy and only asks for rendered manifests.
+# Keep chartVersion in step with argocd/install/kustomization.yaml so diffs render like prod.
+nameOverride: argocd-diff-preview
+createClusterRoles: false
+
+crds:
+  install: false # shared with the prod Argo CD
+
+global:
+  networkPolicy:
+    create: false
+
 configs:
   cm:
     kustomize.buildOptions: --enable-helm --load-restrictor LoadRestrictionsNone
+  params:
+    server.insecure: "true"
 
   # Stub of the prod argocd-vault-plugin CMP (same name, no AVP binary/1Password):
   # emits the raw manifests so `<path:...>` placeholders show up unresolved in the diff.
@@ -21,6 +35,26 @@ configs:
               -q "^kind:" "{}" && cat "{}" && echo "---" || true''
               2>/dev/null'
 
+dex:
+  enabled: false
+
+notifications:
+  enabled: false
+
+# ApplicationSets are expanded through the server API; no controller needed.
+applicationSet:
+  replicas: 0
+
+controller:
+  # Read-only in its own namespace; Applications show "Unknown" health, which is fine.
+  roleRules:
+    - apiGroups: ["*"]
+      resources: ["*"]
+      verbs: [get, list, watch]
+    - apiGroups: [argoproj.io]
+      resources: [applications, applications/status]
+      verbs: [get, list, watch, update, patch]
+
 repoServer:
   extraContainers:
     - name: avp
@@ -29,6 +63,9 @@ repoServer:
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
+        capabilities: { drop: ["ALL"] }
       volumeMounts:
         - mountPath: /var/run/argocd
           name: var-files

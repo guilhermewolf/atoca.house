@@ -20,6 +20,8 @@ controllers:
           PAPERCLIP_DEPLOYMENT_EXPOSURE: private
           PAPERCLIP_PUBLIC_URL: https://paperclip.atoca.house
           PAPERCLIP_CODEX_AUTH_CACHE: "false"
+          # Hourly in-app pg_dumps filled the PVC; Crunchy pgBackRest backs up the DB.
+          PAPERCLIP_DB_BACKUP_ENABLED: "false"
           BETTER_AUTH_URL: https://paperclip.atoca.house
 
           # OpenAI-compatible clients

@@ -4,3 +4,44 @@
 configs:
   cm:
     kustomize.buildOptions: --enable-helm --load-restrictor LoadRestrictionsNone
+
+  # Stub of the prod argocd-vault-plugin CMP (same name, no AVP binary/1Password):
+  # emits the raw manifests so `<path:...>` placeholders show up unresolved in the diff.
+  cmp:
+    create: true
+    plugins:
+      argocd-vault-plugin:
+        allowConcurrency: true
+        generate:
+          command:
+            - sh
+          args:
+            - "-c"
+            - 'find . -name ''*.yaml'' -o -name ''*.yml'' | xargs -I {} sh -c ''grep
+              -q "^kind:" "{}" && cat "{}" && echo "---" || true''
+              2>/dev/null'
+
+repoServer:
+  extraContainers:
+    - name: avp
+      command: [/var/run/argocd/argocd-cmp-server]
+      image: quay.io/argoproj/argocd:v3.5.5@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      volumeMounts:
+        - mountPath: /var/run/argocd
+          name: var-files
+        - mountPath: /home/argocd/cmp-server/plugins
+          name: plugins
+        - mountPath: /tmp
+          name: cmp-tmp
+        - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: argocd-vault-plugin.yaml
+          name: argocd-cmp-cm
+  volumes:
+    - name: cmp-tmp
+      emptyDir: {}
+    - name: argocd-cmp-cm
+      configMap:
+        name: argocd-cmp-cm

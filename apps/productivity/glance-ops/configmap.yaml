@@ -61,6 +61,8 @@ data:
 
               - $include: w-unifi.yml
 
+              - $include: w-alerts.yml
+
           - size: full
             widgets:
               - type: search
@@ -117,6 +119,8 @@ data:
                 pull-requests-limit: 10
                 issues-limit: 3
                 commits-limit: 5
+
+              - $include: w-github-actions.yml
 
           - size: small
             widgets:
@@ -238,6 +242,12 @@ data:
 
               - $include: w-jellyfin-stats.yml
 
+              - $include: w-jellyfin-now-playing.yml
+
+              - $include: w-radarr-stats.yml
+
+              - $include: w-sonarr-stats.yml
+
               - type: bookmarks
                 groups:
                   - title: Downloads
@@ -264,6 +274,8 @@ data:
               - $include: w-radarr-upcoming.yml
 
               - $include: w-sonarr-upcoming.yml
+
+              - $include: w-seerr-requests.yml
 
               - type: monitor
                 title: Media Services
@@ -325,6 +337,10 @@ data:
                       - title: Jellystat
                         url: https://jellystat.atoca.house
                         icon: mdi:chart-donut
+
+              - $include: w-seerr-stats.yml
+
+              - $include: w-prowlarr.yml
 
               - type: releases
                 title: Upstream Releases
@@ -581,7 +597,7 @@ data:
         kubesearch-mcp: mdi:magnify
         kubesearch-mcp-url: https://kubesearch-mcp.atoca.house
         mealie-app: sh:mealie-light
-        mealie-app-url: https://recipes.atoca.house
+        mealie-app-url: https://mealie.atoca.house
         mealie-social-to-mealie: sh:mealie-light
         mealie-social-to-mealie-url: https://recipes.atoca.house
         n8n-webhooks: sh:n8n-light
@@ -594,8 +610,6 @@ data:
         skylight-url: https://skylight.atoca.house
         snapotter: mdi:image-edit
         snapotter-url: https://tools.atoca.house
-        stirling-pdf: mdi:file-pdf-box
-        stirling-pdf-url: https://pdf.atoca.house
         vidya: mdi:school
         vidya-url: https://vidya.atoca.house
         web-check: sh:web-check-light
@@ -1155,6 +1169,10 @@ data:
           url: ${PROMETHEUS_URL}/api/v1/query
           parameters:
             query: count((certmanager_certificate_expiration_timestamp_seconds - time()) < 14*86400) or vector(0)
+        crowdsec:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: sum(cs_active_decisions) or vector(0)
         cpu:
           url: ${PROMETHEUS_URL}/api/v1/query
           parameters:
@@ -1209,6 +1227,7 @@ data:
         {{ $alertTop  := (.Subrequest "alert-top").JSON.String "data.result.0.metric.alertname" }}
         {{ $argocd    := (.Subrequest "argocd").JSON.Float    "data.result.0.value.1" }}
         {{ $certs     := (.Subrequest "certs").JSON.Float     "data.result.0.value.1" }}
+        {{ $crowdsec  := (.Subrequest "crowdsec").JSON.Float  "data.result.0.value.1" }}
 
         <style>
           .ch-grid {
@@ -1262,6 +1281,13 @@ data:
             <div class="size-h6 ch-sub color-subdue">
               {{ if gt $certs 0.0 }}expire within 14d{{ else }}none expiring{{ end }}
             </div>
+          </a>
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="https://crowdsec.atoca.house">
+            <div class="size-h3 color-highlight">{{ printf "%.0f" $crowdsec }}</div>
+            <div class="size-h6 color-subdue ch-sub">CROWDSEC</div>
+            <div class="size-h6 ch-sub color-subdue">active bans</div>
           </a>
 
           <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
@@ -1479,7 +1505,8 @@ data:
                   {{ $series := "" }}
                   {{ if eq $coverProxy "" }}
                     {{ $coverBase = printf "%s/api/v3/mediacover" $apiBaseUrl }}
-                    {{ $coverUrl = printf "%s/%s/poster-500.jpg?apikey=%s" $coverBase (.String "seriesId") $key }}
+                    {{/* atoca: TMDB poster from the API payload; the mediacover URL is in-cluster and would put the API key in the page */}}
+                    {{ range .Array "series.images" }}{{ if eq (.String "coverType") "poster" }}{{ $coverUrl = .String "remoteUrl" }}{{ end }}{{ end }}
                   {{ else }}
                     {{ $coverBase = $coverProxy }}
                     {{ $coverUrl = printf "%s/%s/poster-500.jpg" $coverBase (.String "seriesId") }}
@@ -1574,7 +1601,8 @@ data:
 
                   {{ if eq $type "recent" }}
                     {{ if eq $coverProxy "" }}
-                      {{ $coverUrl = printf "%s/%s/poster-500.jpg?apikey=%s" $coverBase (.String "movie.id") $key }}
+                      {{/* atoca: TMDB poster from the API payload; the mediacover URL is in-cluster and would put the API key in the page */}}
+                      {{ range .Array "movie.images" }}{{ if eq (.String "coverType") "poster" }}{{ $coverUrl = .String "remoteUrl" }}{{ end }}{{ end }}
                     {{ else }}
                       {{ $coverUrl = printf "%s/%s/poster-500.jpg" $coverBase (.String "movie.id") }}
                     {{ end }}
@@ -1594,7 +1622,8 @@ data:
                     {{ end }}
                   {{ else }}
                     {{ if eq $coverProxy "" }}
-                      {{ $coverUrl = printf "%s/%s/poster-500.jpg?apikey=%s" $coverBase (.String "id") $key }}
+                      {{/* atoca: TMDB poster from the API payload; the mediacover URL is in-cluster and would put the API key in the page */}}
+                      {{ range .Array "images" }}{{ if eq (.String "coverType") "poster" }}{{ $coverUrl = .String "remoteUrl" }}{{ end }}{{ end }}
                     {{ else }}
                       {{ $coverUrl = printf "%s/%s/poster-500.jpg" $coverBase (.String "id") }}
                     {{ end }}
@@ -1930,7 +1959,8 @@ data:
                   {{ $series := "" }}
                   {{ if eq $coverProxy "" }}
                     {{ $coverBase = printf "%s/api/v3/mediacover" $apiBaseUrl }}
-                    {{ $coverUrl = printf "%s/%s/poster-500.jpg?apikey=%s" $coverBase (.String "seriesId") $key }}
+                    {{/* atoca: TMDB poster from the API payload; the mediacover URL is in-cluster and would put the API key in the page */}}
+                    {{ range .Array "series.images" }}{{ if eq (.String "coverType") "poster" }}{{ $coverUrl = .String "remoteUrl" }}{{ end }}{{ end }}
                   {{ else }}
                     {{ $coverBase = $coverProxy }}
                     {{ $coverUrl = printf "%s/%s/poster-500.jpg" $coverBase (.String "seriesId") }}
@@ -2025,7 +2055,8 @@ data:
 
                   {{ if eq $type "recent" }}
                     {{ if eq $coverProxy "" }}
-                      {{ $coverUrl = printf "%s/%s/poster-500.jpg?apikey=%s" $coverBase (.String "movie.id") $key }}
+                      {{/* atoca: TMDB poster from the API payload; the mediacover URL is in-cluster and would put the API key in the page */}}
+                      {{ range .Array "movie.images" }}{{ if eq (.String "coverType") "poster" }}{{ $coverUrl = .String "remoteUrl" }}{{ end }}{{ end }}
                     {{ else }}
                       {{ $coverUrl = printf "%s/%s/poster-500.jpg" $coverBase (.String "movie.id") }}
                     {{ end }}
@@ -2045,7 +2076,8 @@ data:
                     {{ end }}
                   {{ else }}
                     {{ if eq $coverProxy "" }}
-                      {{ $coverUrl = printf "%s/%s/poster-500.jpg?apikey=%s" $coverBase (.String "id") $key }}
+                      {{/* atoca: TMDB poster from the API payload; the mediacover URL is in-cluster and would put the API key in the page */}}
+                      {{ range .Array "images" }}{{ if eq (.String "coverType") "poster" }}{{ $coverUrl = .String "remoteUrl" }}{{ end }}{{ end }}
                     {{ else }}
                       {{ $coverUrl = printf "%s/%s/poster-500.jpg" $coverBase (.String "id") }}
                     {{ end }}
@@ -2279,3 +2311,636 @@ data:
             <p>Failed: {{ $jellyfinData.Response.Status }}</p>
           {{- end -}}
         {{- end -}}
+  w-alerts.yml: |
+    # atoca: active, unsilenced Alertmanager alerts
+    - type: custom-api
+      title: Firing Alerts
+      title-url: https://alertmanager.atoca.house
+      cache: 1m
+      url: ${ALERTMANAGER_URL}/api/v2/alerts
+      parameters:
+        active: "true"
+        silenced: "false"
+        inhibited: "false"
+      template: |
+        {{ $alerts := .JSON.Array "" }}
+        {{ $shown := 0 }}
+        <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+        {{ range $alerts }}
+          {{ $name := .String "labels.alertname" }}
+          {{ if eq $name "Watchdog" "InfoInhibitor" }}{{ continue }}{{ end }}
+          {{ $shown = add $shown 1 }}
+          {{ $sev := .String "labels.severity" }}
+          <li>
+            <div class="flex gap-10 items-baseline">
+              <span class="size-h6 shrink-0 {{ if eq $sev "critical" }}color-negative{{ else }}color-highlight{{ end }}">{{ $sev }}</span>
+              <a class="color-primary-if-not-visited text-truncate" href="{{ .String "generatorURL" }}" target="_blank" rel="noreferrer">{{ $name }}</a>
+            </div>
+            <ul class="list-horizontal-text size-h6 color-subdue">
+              {{ with .String "labels.namespace" }}<li>{{ . }}</li>{{ end }}
+              {{ with .String "labels.instance" }}<li class="text-truncate">{{ . }}</li>{{ end }}
+              <li {{ .String "startsAt" | parseTime "rfc3339" | toRelativeTime }}></li>
+            </ul>
+          </li>
+        {{ end }}
+        </ul>
+        {{ if eq $shown 0 }}<p class="color-positive">All quiet</p>{{ end }}
+  w-github-actions.yml: |
+    # vendored from glanceapp/community-widgets/widgets/github-actions-status
+    - type: custom-api
+      title: GitHub Actions
+      url: https://api.github.com/repos/guilhermewolf/atoca.house/actions/runs
+      cache: 10m
+      parameters:
+        branch: main
+        exclude_pull_requests: true
+        per_page: 6
+      headers:
+        Accept: application/vnd.github.v3+json
+        User-Agent: Glance-Dashboard
+      template: |
+        <div class="github-repos">
+          <ul class="list list-gap-14 collapsible-container" data-collapse-after="2">
+
+            {{ range .JSON.Array "workflow_runs" }}
+              {{ $rzt := .String "conclusion" }}
+              <li>
+                <a class="size-h3 color-primary-if-not-visited" href="{{ .String "html_url" }}">{{ .String "display_title" }}</a>
+                <h3><a href="" target=""></a></h3>
+                <p>{{ .String "description" }}</p>
+                <ul class="list-horizontal-text">
+                  <li data-popover-type="html" {{ .String "updated_at" | parseTime "rfc3339" | toRelativeTime }}></li>              
+                  <li data-popover-type="html"><div data-popover-html="">{{ .String "actor.login" }}</div>{{ .String "name" }}</li>
+                  <li data-popover-type="html"><div data-popover-html="">{{ .String "status" }}</div>
+                  {{ if eq $rzt "success" }}
+                    <svg width="20" height="20" fill="var(--color-positive)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" />
+                    </svg>
+                  {{ else }}
+                    <svg width="20" height="20" fill="var(--color-negative)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd" />
+                    </svg>
+                  {{ end }}
+                  </li>
+                </ul>
+              </li>
+            {{ end }}
+          </ul>
+        </div>
+  w-prowlarr.yml: |
+    # vendored from glanceapp/community-widgets/widgets/prowlarr-indexers
+    - type: custom-api
+      title: Prowlarr Indexers
+      cache: 1m
+      options:
+        url: "https://prowlarr.atoca.house"
+        base-url: ${PROWLARR_API_URL}
+        api-key: ${PROWLARR_KEY}
+        collapse-after: 6
+      template: |
+        {{ $apiBaseUrl := .Options.StringOr "base-url" "" }}
+        {{ $key := .Options.StringOr "api-key" "" }}
+        {{ $url := .Options.StringOr "url" "" }}
+        {{ $collapseAfter := .Options.IntOr "collapse-after" 5 }}
+
+        {{ if or (eq $apiBaseUrl "") (eq $key "") (eq $url "") }}
+          <div class="widget-error-header">
+              <div class="color-negative size-h3">ERROR</div>
+              <svg class="widget-error-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path>
+              </svg>
+            </div>
+            <p class="break-all">
+              Some options are not set or malformed
+                <table style="border-spacing: 1rem;">
+                  <tr>
+                    <td><strong>PROWLARR_URL & PROWLARR_API_URL</strong> <br/> should include http(s):// and port if needed</td>
+                  </tr>
+                  <tr>
+                    <td><strong>PROWLARR_KEY</strong> <br/> must be set (Settings > General > Security)</td>
+                  </tr>
+                </table> 
+            </p>
+        {{ else }}
+
+          {{ $indexUrl := printf "%s/api/v1/indexer" $apiBaseUrl }}
+
+          {{ $indexData := newRequest $indexUrl
+            | withHeader "Accept" "application/json"
+            | withHeader "X-Api-Key" $key
+            | getResponse }}
+
+          {{ if eq $indexData.Response.StatusCode 200 }}
+            <style>
+              .prowlarr-indexers .prowlarr-index-item
+              {
+                align-items: center;        
+              }
+              .prowlarr-indexers .prowlarr-index-item > span{
+                text-transform: capitalize;
+                background: var(--color-background);
+                padding: 0.2rem 0.75rem;
+                border: 1px solid var(--color-widget-content-border);
+                border-radius: var(--border-radius);
+                font-size: var(--font-size-tiny);
+              }
+            </style>
+
+            <ul class="prowlarr-indexers list list-gap-10 collapsible-container" data-collapse-after="{{ $collapseAfter }}">
+
+              {{ range $indexData.JSON.Array "" }}
+                {{ $isEnabled := .String "enable" }}
+
+                <li class="flex items-center gap-12 prowlarr-index-item">
+                  <a href="{{ $url }}" target="_blank" class="size-title-dynamic color-highlight text-truncate block grow">{{ .String "name" }}</a>
+                  <span>{{ .String "privacy" }}</span>
+                  {{ if eq $isEnabled "true" }}
+                    <div class="margin-left-auto shrink-0" data-popover-type="text" data-popover-position="above" data-popover-text="Enabled" aria-label="Enabled">
+                      <div class="monitor-site-status-icon-compact" title="Enabled">
+                        <svg fill="var(--color-positive)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  {{ else }}
+                    <div class="margin-left-auto shrink-0" data-popover-type="text" data-popover-position="above" data-popover-text="Disabled" aria-label="Disabled">
+                      <div class="monitor-site-status-icon-compact" title="Disabled">
+                        <svg fill="var(--color-negative)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  {{ end }}
+
+                </li>
+              {{ end }}
+
+            </ul>
+          {{ else }}
+            <p>Failed to fetch data (Status: {{ $indexData.Response.StatusCode }})</p>
+          {{ end }}
+
+        {{ end }}
+  w-radarr-stats.yml: |
+    # vendored from glanceapp/community-widgets/widgets/radarr-stats
+    - type: custom-api
+      title: Radarr Stats
+      cache: 5m
+      url: ${RADARR_API_URL}/api/v3/movie
+      headers:
+        X-Api-Key: ${RADARR_KEY}
+      subrequests:
+        missing:
+          url: ${RADARR_API_URL}/api/v3/wanted/missing
+          headers:
+            X-Api-Key: ${RADARR_KEY}
+        queue:
+          url: ${RADARR_API_URL}/api/v3/queue
+          headers:
+            X-Api-Key: ${RADARR_KEY}
+      template: |
+        <div class="flex justify-between text-center">
+          <div>
+            <div class="color-highlight size-h3">{{ len (.JSON.Array "") }}</div>
+            <div class="size-h6">MOVIES</div>
+          </div>
+          <div>
+            <div class="color-highlight size-h3">{{ (.Subrequest "missing").JSON.Int "totalRecords" }}</div>
+            <div class="size-h6">MISSING</div>
+          </div>
+          <div>
+            <div class="color-highlight size-h3">{{ (.Subrequest "queue").JSON.Int "totalRecords" }}</div>
+            <div class="size-h6">QUEUED</div>
+          </div>
+        </div>
+  w-sonarr-stats.yml: |
+    # vendored from glanceapp/community-widgets/widgets/sonarr-stats
+    - type: custom-api
+      title: Sonarr Stats
+      cache: 5m
+      url: ${SONARR_API_URL}/api/v3/series
+      headers:
+        X-Api-Key: ${SONARR_KEY}
+      subrequests:
+        missing:
+          url: ${SONARR_API_URL}/api/v3/wanted/missing
+          headers:
+            X-Api-Key: ${SONARR_KEY}
+        queue:
+          url: ${SONARR_API_URL}/api/v3/queue
+          headers:
+            X-Api-Key: ${SONARR_KEY}
+      template: |
+        <div class="flex justify-between text-center">
+          <div>
+            <div class="color-highlight size-h3">{{ len (.JSON.Array "") }}</div>
+            <div class="size-h6">SERIES</div>
+          </div>
+          <div>
+            <div class="color-highlight size-h3">{{ (.Subrequest "missing").JSON.Int "totalRecords" }}</div>
+            <div class="size-h6">MISSING</div>
+          </div>
+          <div>
+            <div class="color-highlight size-h3">{{ (.Subrequest "queue").JSON.Int "totalRecords" }}</div>
+            <div class="size-h6">QUEUED</div>
+          </div>
+        </div>
+  w-seerr-stats.yml: |
+    # vendored from glanceapp/community-widgets/widgets/overseerr-requests-stats
+    - type: custom-api
+      title: Overseerr Requests
+      title-url: https://seerr.atoca.house/requests
+      url: ${OVERSEERR_URL}/api/v1/request/count
+      cache: 1h
+      options:
+        small-column: true
+        compact: false
+      headers:
+        accept: "application/json"
+        x-api-key: ${OVERSEERR_API_KEY}
+      template: |  
+        {{ $isSmallColumn := .Options.BoolOr "small-column" false }}
+        {{ $isCompact := .Options.BoolOr "compact" false }}
+
+        {{ if eq .Response.StatusCode 200 }}
+          {{ if $isSmallColumn }}
+            <ul class="list list-gap-10 collapsible-container" data-collapse-after="3">
+              <li class="flex items-start gap-10">
+                <div class="flex-1 size-h3 {{ if $isCompact }}size-h5{{ end }}">Total</div>
+                <div class="flex-1 color-highlight shrink-0 text-right size-h3 {{ if $isCompact }}size-h5{{ end }}">
+                  {{ .JSON.Int "total" | formatNumber }}
+                </div>
+              </li>
+              <li class="flex items-start gap-10">
+                <div class="flex-1 size-h3 {{ if $isCompact }}size-h5{{ end }}">Movies</div>
+                <div class="flex-1 color-highlight shrink-0 text-right size-h3 {{ if $isCompact }}size-h5{{ end }}">
+                  {{ .JSON.Int "movie" | formatNumber }}
+                </div>
+              </li>
+              <li class="flex items-start gap-10">
+                <div class="flex-1 size-h3 {{ if $isCompact }}size-h5{{ end }}">TV Series</div>
+                <div class="flex-1 color-highlight shrink-0 text-right size-h3 {{ if $isCompact }}size-h5{{ end }}">
+                  {{ .JSON.Int "tv" | formatNumber }}
+                </div>
+              </li>
+              <li class="flex items-start gap-10">
+                <div class="flex-1 size-h3 {{ if $isCompact }}size-h5{{ end }}">Pending</div>
+                <div class="flex-1 color-highlight shrink-0 text-right size-h3 {{ if $isCompact }}size-h5{{ end }}">
+                  {{ .JSON.Int "pending" | formatNumber }}
+                </div>
+              </li>
+              <li class="flex items-start gap-10">
+                <div class="flex-1 size-h3 {{ if $isCompact }}size-h5{{ end }}">Approved</div>
+                <div class="flex-1 color-highlight shrink-0 text-right size-h3 {{ if $isCompact }}size-h5{{ end }}">
+                  {{ .JSON.Int "approved" | formatNumber }}
+                </div>
+              </li>
+              <li class="flex items-start gap-10">
+                <div class="flex-1 size-h3 {{ if $isCompact }}size-h5{{ end }}">Declined</div>
+                <div class="flex-1 color-highlight shrink-0 text-right size-h3 {{ if $isCompact }}size-h5{{ end }}">
+                  {{ .JSON.Int "declined" | formatNumber }}
+                </div>
+              </li>
+              <li class="flex items-start gap-10">
+                <div class="flex-1 size-h3 {{ if $isCompact }}size-h5{{ end }}">Processing</div>
+                <div class="flex-1 color-highlight shrink-0 text-right size-h3 {{ if $isCompact }}size-h5{{ end }}">
+                  {{ .JSON.Int "processing" | formatNumber }}
+                </div>
+              </li>
+              <li class="flex items-start gap-10">
+                <div class="flex-1 size-h3 {{ if $isCompact }}size-h5{{ end }}">Available</div>
+                <div class="flex-1 color-highlight shrink-0 text-right size-h3 {{ if $isCompact }}size-h5{{ end }}">
+                  {{ .JSON.Int "available" | formatNumber }}
+                </div>
+              </li>
+            </ul>
+          {{ else }} 
+            <div class="flex justify-evenly text-center">
+              <div>
+                  <div class="color-highlight size-h1 {{ if $isCompact }}size-h3{{ end }}">{{ .JSON.Int "total" | formatNumber }}</div>
+                  <div class="size-h3 {{ if $isCompact }}size-h5{{ end }}">Total</div>
+              </div>
+              <div>
+                  <div class="color-highlight size-h1 {{ if $isCompact }}size-h3{{ end }}">{{ .JSON.Int "movie" | formatNumber }}</div>
+                  <div class="size-h3 {{ if $isCompact }}size-h5{{ end }}">Movies</div>
+              </div>
+              <div>
+                  <div class="color-highlight size-h1 {{ if $isCompact }}size-h3{{ end }}">{{ .JSON.Int "tv" | formatNumber }}</div>
+                  <div class="size-h3 {{ if $isCompact }}size-h5{{ end }}">TV Series</div>
+              </div>
+            {{ if not $isCompact }}
+              </div>
+              <div class="flex justify-evenly text-center margin-top-20">        
+            {{ end }}
+              <div>
+                  <div class="color-highlight size-h1 {{ if $isCompact }}size-h3{{ end }}">{{ .JSON.Int "pending" | formatNumber }}</div>
+                  <div class="size-h3 {{ if $isCompact }}size-h5{{ end }}">Pending</div>
+              </div>
+              <div>
+                  <div class="color-highlight size-h1 {{ if $isCompact }}size-h3{{ end }}">{{ .JSON.Int "approved" | formatNumber }}</div>
+                  <div class="size-h3 {{ if $isCompact }}size-h5{{ end }}">Approved</div>
+              </div>
+              <div>
+                  <div class="color-highlight size-h1 {{ if $isCompact }}size-h3{{ end }}">{{ .JSON.Int "declined" | formatNumber }}</div>
+                  <div class="size-h3 {{ if $isCompact }}size-h5{{ end }}">Declined</div>
+              </div>
+              <div>
+                  <div class="color-highlight size-h1 {{ if $isCompact }}size-h3{{ end }}">{{ .JSON.Int "processing" | formatNumber }}</div>
+                  <div class="size-h3 {{ if $isCompact }}size-h5{{ end }}">Processing</div>
+              </div>
+              <div>
+                  <div class="color-highlight size-h1 {{ if $isCompact }}size-h3{{ end }}">{{ .JSON.Int "available" | formatNumber }}</div>
+                  <div class="size-h3 {{ if $isCompact }}size-h5{{ end }}">Available</div>
+              </div>  
+            </div>   
+          {{ end }}
+        {{ end }}
+  w-seerr-requests.yml: |
+    # vendored from glanceapp/community-widgets/widgets/seerr-requests
+    - type: custom-api
+      title: Seerr Requests
+      title-url: https://seerr.atoca.house/requests?filter=pending
+      cache: 5m
+      options:
+        seerr-url: ${OVERSEERR_URL}
+        api-key: ${OVERSEERR_API_KEY}
+        link-url: https://seerr.atoca.house
+        filter: pending       # pending | all | approved | processing | available | unavailable | failed
+        sort: added           # added | modified
+        max-requests: 10
+        collapse-after: 4
+        show-posters: true
+        ha-webhook-url: ""    # set to enable Approve / Decline, see README
+      template: |
+        {{ $baseUrl := .Options.StringOr "seerr-url" "" | trimSuffix "/" }}
+        {{ $apiKey := .Options.StringOr "api-key" "" }}
+        {{ $linkUrl := .Options.StringOr "link-url" $baseUrl | trimSuffix "/" }}
+        {{ $filter := .Options.StringOr "filter" "pending" }}
+        {{ $sort := .Options.StringOr "sort" "added" }}
+        {{ $max := .Options.IntOr "max-requests" 10 }}
+        {{ $collapseAfter := .Options.IntOr "collapse-after" 4 }}
+        {{ $showPosters := .Options.BoolOr "show-posters" true }}
+        {{ $webhook := .Options.StringOr "ha-webhook-url" "" }}
+
+        {{ $list := newRequest (concat $baseUrl "/api/v1/request")
+          | withParameter "take" (printf "%d" $max)
+          | withParameter "filter" $filter
+          | withParameter "sort" $sort
+          | withHeader "Accept" "application/json"
+          | withHeader "X-Api-Key" $apiKey
+          | getResponse }}
+
+        {{ if ne $list.Response.StatusCode 200 }}
+          <div class="text-center">
+            <p class="color-negative">Could not load requests (HTTP {{ $list.Response.StatusCode }})</p>
+            <p class="size-h6 color-subdue margin-top-3">
+              {{ if eq $list.Response.StatusCode 403 }}Check SEERR_API_KEY.{{ else }}Check SEERR_URL and that Seerr is reachable from Glance.{{ end }}
+            </p>
+          </div>
+        {{ else }}
+          {{ $requests := $list.JSON.Array "results" }}
+          {{ if eq (len $requests) 0 }}
+            <p class="text-center color-subdue">No {{ if ne $filter "all" }}{{ $filter }} {{ end }}requests</p>
+          {{ else }}
+            {{ if ne $webhook "" }}<iframe name="sink-seerr-requests" title="Fallback target for the Approve and Decline buttons" hidden></iframe>{{ end }}
+            <ul class="list collapsible-container" data-collapse-after="{{ $collapseAfter }}"
+              style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr)); gap: 1.6rem 2.4rem;">
+            {{ range $requests }}
+              {{ $type := .String "type" }}
+              {{ $tmdbId := .String "media.tmdbId" }}
+              {{ $is4k := .Bool "is4k" }}
+              {{ $link := concat $linkUrl "/" $type "/" $tmdbId }}
+
+              {{ $details := newRequest (concat $baseUrl "/api/v1/" $type "/" $tmdbId)
+                | withHeader "Accept" "application/json"
+                | withHeader "X-Api-Key" $apiKey
+                | getResponse }}
+
+              {{ $title := concat "TMDB " $tmdbId }}
+              {{ $year := "" }}
+              {{ $poster := "" }}
+              {{ if eq $details.Response.StatusCode 200 }}
+                {{ if eq $type "movie" }}
+                  {{ $title = $details.JSON.String "title" }}
+                  {{ $year = findMatch "^[0-9]{4}" ($details.JSON.String "releaseDate") }}
+                {{ else }}
+                  {{ $title = $details.JSON.String "name" }}
+                  {{ $year = findMatch "^[0-9]{4}" ($details.JSON.String "firstAirDate") }}
+                {{ end }}
+                {{ $poster = $details.JSON.String "posterPath" }}
+              {{ end }}
+
+              {{ $who := .String "requestedBy.displayName" }}
+              {{ if eq $who "" }}{{ $who = .String "requestedBy.username" }}{{ end }}
+              {{ if eq $who "" }}{{ $who = .String "requestedBy.email" }}{{ end }}
+
+              {{ $requestStatus := .Int "status" }}
+              {{ $mediaStatus := .Int "media.status" }}
+              {{ if $is4k }}{{ $mediaStatus = .Int "media.status4k" }}{{ end }}
+              {{ $statusLabel := "Approved" }}
+              {{ $statusClass := "color-primary" }}
+              {{ if eq $requestStatus 1 }}{{ $statusLabel = "Pending" }}{{ $statusClass = "color-highlight" }}
+              {{ else if eq $requestStatus 3 }}{{ $statusLabel = "Declined" }}{{ $statusClass = "color-negative" }}
+              {{ else if eq $requestStatus 4 }}{{ $statusLabel = "Failed" }}{{ $statusClass = "color-negative" }}
+              {{ else if eq $mediaStatus 5 }}{{ $statusLabel = "Available" }}{{ $statusClass = "color-positive" }}
+              {{ else if eq $mediaStatus 4 }}{{ $statusLabel = "Partial" }}{{ $statusClass = "color-positive" }}
+              {{ else if eq $mediaStatus 3 }}{{ $statusLabel = "Processing" }}{{ $statusClass = "color-primary" }}
+              {{ end }}
+
+              <li class="flex items-center gap-15" style="margin-top: 0;" data-seerrha-id="{{ .Int "id" }}">
+                {{ if $showPosters }}
+                  <a href="{{ $link }}" target="_blank" rel="noreferrer" class="shrink-0">
+                    {{ if ne $poster "" }}
+                      <img src="https://image.tmdb.org/t/p/w185{{ $poster }}" alt="" loading="lazy"
+                        style="display: block; width: 3.6rem; aspect-ratio: 2 / 3; object-fit: cover; border-radius: var(--border-radius);">
+                    {{ else }}
+                      <div class="color-subdue size-h6 text-center"
+                        style="display: flex; align-items: center; justify-content: center; width: 3.6rem; aspect-ratio: 2 / 3; border: 1px dashed currentColor; border-radius: var(--border-radius);">No art</div>
+                    {{ end }}
+                  </a>
+                {{ end }}
+                <div class="flex-1 min-width-0">
+                  <a href="{{ $link }}" target="_blank" rel="noreferrer"
+                    class="size-h4 block text-truncate color-primary" title="{{ $title }}">{{ $title }}{{ if ne $year "" }} ({{ $year }}){{ end }}</a>
+                  <ul class="list-horizontal-text size-h6 margin-top-3">
+                    <li class="{{ $statusClass }}" data-seerrha-status>{{ $statusLabel }}</li>
+                    <li>{{ $who }}</li>
+                    <li {{ .String "createdAt" | parseTime "rfc3339" | toRelativeTime }}></li>
+                  </ul>
+                  <ul class="list-horizontal-text size-h6 color-subdue margin-top-3">
+                    <li>{{ if eq $type "movie" }}Movie{{ else }}Series{{ end }}</li>
+                    {{ if eq $type "tv" }}
+                      {{ $seasons := .Array "seasons" }}
+                      {{ if gt (len $seasons) 0 }}
+                        <li class="text-truncate">{{ if eq (len $seasons) 1 }}Season{{ else }}Seasons{{ end }} {{ range $i, $s := $seasons }}{{ if $i }}, {{ end }}{{ $s.Int "seasonNumber" }}{{ end }}</li>
+                      {{ end }}
+                    {{ end }}
+                    {{ if $is4k }}<li>4K</li>{{ end }}
+                  </ul>
+                  {{ if eq $requestStatus 1 }}
+                    {{ if ne $webhook "" }}
+                      <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" hidden data-seerrha-mark
+                        onload="var row = this.closest('li'), key = 'seerrha-' + row.dataset.seerrhaId, cmd = this.dataset.cmd, saved;
+                          if (!cmd) {
+                            try { saved = JSON.parse(localStorage.getItem(key)); } catch (e) {}
+                            if (!saved || Date.now() - saved.t > 600000) return;
+                            cmd = saved.cmd;
+                          }
+                          var tone = cmd === 'approve' ? 'positive' : 'negative';
+                          var tint = 'color-mix(in srgb, var(--color-' + tone + ') 14%, transparent)';
+                          row.style.background = tint;
+                          row.style.boxShadow = '0 0 0 0.6rem ' + tint;
+                          row.style.borderRadius = 'var(--border-radius)';
+                          row.querySelectorAll('img').forEach(function (img) { img.style.filter = 'grayscale(1)'; img.style.opacity = '0.6'; });
+                          var status = row.querySelector('[data-seerrha-status]');
+                          status.textContent = cmd === 'approve' ? 'Approve sent' : 'Decline sent';
+                          status.className = 'color-' + tone;
+                          row.querySelector('[data-seerrha-actions]').style.display = 'none';">
+                    {{ end }}
+                    {{ if or (ne $webhook "") (eq $type "tv") }}
+                      <div class="flex items-center gap-10 margin-top-5" style="flex-wrap: wrap;" data-seerrha-actions>
+                        {{ if ne $webhook "" }}
+                        <form method="post" action="{{ $webhook }}" target="sink-seerr-requests" class="flex gap-10"
+                          onsubmit="var form = this, row = form.closest('li'), cmd = event.submitter.value;
+                            var status = row.querySelector('[data-seerrha-status]'), mark = row.querySelector('[data-seerrha-mark]');
+                            var buttons = form.querySelectorAll('button');
+                            var body = new URLSearchParams(new FormData(form));
+                            body.set('cmd', cmd);
+                            buttons.forEach(function (b) { b.disabled = true; });
+                            status.textContent = 'Sending';
+                            fetch(form.action, { method: 'POST', mode: 'no-cors', body: body })
+                              .then(function () {
+                                try { localStorage.setItem('seerrha-' + row.dataset.seerrhaId, JSON.stringify({ cmd: cmd, t: Date.now() })); } catch (e) {}
+                                mark.dataset.cmd = cmd;
+                                mark.onload();
+                              })
+                              .catch(function () {
+                                buttons.forEach(function (b) { b.disabled = false; });
+                                status.textContent = 'Home Assistant unreachable';
+                                status.className = 'color-negative';
+                              });
+                            return false;">
+                          <input type="hidden" name="request_id" value="{{ .Int "id" }}">
+                          <button type="submit" name="cmd" value="approve" class="size-h6 color-positive"
+                            style="background: none; border: 1px solid currentColor; border-radius: var(--border-radius); padding: 0.2rem 0.8rem; cursor: pointer; font-family: inherit; white-space: nowrap;">Approve</button>
+                          <button type="submit" name="cmd" value="decline" class="size-h6 color-negative"
+                            style="background: none; border: 1px solid currentColor; border-radius: var(--border-radius); padding: 0.2rem 0.8rem; cursor: pointer; font-family: inherit; white-space: nowrap;">Decline</button>
+                        </form>
+                        {{ end }}
+                        {{ if eq $type "tv" }}
+                          <a href="{{ $link }}?manage=1" target="_blank" rel="noreferrer" class="size-h6 color-subdue"
+                            title="Opens the series in Seerr with its requests listed; the pencil there edits the seasons"
+                            style="background: none; border: 1px solid currentColor; border-radius: var(--border-radius); padding: 0.2rem 0.8rem; cursor: pointer; font-family: inherit; text-decoration: none; white-space: nowrap;">Edit seasons</a>
+                        {{ end }}
+                      </div>
+                    {{ end }}
+                  {{ end }}
+                </div>
+              </li>
+            {{ end }}
+            </ul>
+          {{ end }}
+        {{ end }}
+  w-jellyfin-now-playing.yml: |
+    # vendored from glanceapp/community-widgets/widgets/jellyfin-now-playing
+    - type: custom-api
+      cache: 1m
+      title: Now Playing
+      url: ${JELLYFIN_URL}/Sessions
+      headers:
+        X-Emby-Token: ${JELLYFIN_API_KEY}
+      template: |
+        {{ $sessions := .JSON.Array "" }}
+        {{ $found := false }}
+        {{ $showArt := false }}
+
+        {{ range $index, $s := $sessions }}
+
+          {{ $type := $.JSON.String (printf "%d.NowPlayingItem.MediaType" $index) }}
+
+          {{ if ne $type "" }}
+            {{ $found = true }}
+
+            {{ $user := $.JSON.String (printf "%d.UserName" $index) }}
+            {{ $device := $.JSON.String (printf "%d.DeviceName" $index) }}
+            {{ $client := $.JSON.String (printf "%d.Client" $index) }}
+
+            {{ if eq $device "" }}
+              {{ $device = $client }}
+            {{ end }}
+
+            {{ $name := $.JSON.String (printf "%d.NowPlayingItem.Name" $index) }}
+            {{ $artist := $.JSON.String (printf "%d.NowPlayingItem.Artists.0" $index) }}
+                    {{ if eq $artist "" }}{{ $artist = $.JSON.String (printf "%d.NowPlayingItem.SeriesName" $index) }}{{ end }}
+            {{ $album := $.JSON.String (printf "%d.NowPlayingItem.Album" $index) }}
+            {{ $albumId := $.JSON.String (printf "%d.NowPlayingItem.AlbumId" $index) }}
+
+            {{ $position := $.JSON.Float (printf "%d.PlayState.PositionTicks" $index) }}
+            {{ $runtime := $.JSON.Float (printf "%d.NowPlayingItem.RunTimeTicks" $index) }}
+
+            {{ $progress := 0.0 }}
+            {{ if gt $runtime 0.0 }}
+              {{ $progress = mul (div $position $runtime) 100.0 }}
+            {{ end }}
+
+            <div style="
+              display:flex;
+              gap:12px;
+              align-items:center;
+              padding:12px;
+              border-radius:12px;
+              background:var(--color-subdue);
+              margin-bottom:10px;
+            ">
+
+              {{ if and $showArt (ne $albumId "") }}
+              <img
+                src="${JELLYFIN_URL}/Items/{{ $albumId }}/Images/Primary?maxWidth=200&quality=80&api_key=${JELLYFIN_API_KEY}"
+                style="width:60px;height:60px;border-radius:8px;object-fit:cover;"
+              />
+              {{ end }}
+
+              <div style="flex:1; overflow:hidden;">
+
+                <div style="font-size:12px;opacity:0.7;margin-bottom:2px;">
+                  {{ $device }} · {{ $user }}
+                </div>
+
+                <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                  {{ $name }}
+                </div>
+
+                <div style="font-size:12px;opacity:0.7;">
+                  {{ $artist }}
+                </div>
+
+                <div style="font-size:11px;opacity:0.5;">
+                  {{ $album }}
+                </div>
+
+                <div style="margin-top:8px;">
+                  <div style="
+                    background:var(--color-highlight);
+                    height:6px;
+                    border-radius:5px;
+                    overflow:hidden;
+                  ">
+                    <div style="
+                      width:{{ printf "%.2f" $progress }}%;
+                      background:var(--color-positive);
+                      height:100%;
+                      transition: width 0.5s ease;
+                    "></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          {{ end }}
+
+        {{ end }}
+
+        {{ if not $found }}
+          <div style="opacity:0.6;">Nothing playing</div>
+        {{ end }}

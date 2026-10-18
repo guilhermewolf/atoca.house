@@ -21,6 +21,8 @@ controllers:
           JELLYFIN_USER: kiosk
           # --- Seerr (Overseerr-compatible API) ---------------------------
           OVERSEERR_URL: https://seerr.atoca.house
+          # --- Mealie (in-cluster API; images load from recipes.atoca.house) -
+          MEALIE_URL: http://mealie-app.mealie.svc.cluster.local:9000
         envFrom:
           - secretRef:
               name: glance

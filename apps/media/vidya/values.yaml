@@ -9,7 +9,7 @@ controllers:
           # Fork with in-app OIDC, built by vidya-self's Forgejo Actions workflow.
           # Not Renovate-managed: the private registry has no host rule here.
           repository: forge.atoca.house/guilherme/vidya-self
-          tag: aa52a10@sha256:8ca68cea23c25257a0990c7bf50ba618762e6136d4799852f30251ddeaf58985
+          tag: 9b4bb03@sha256:72b02b815a5d889023f01e53c509c80e0a8f73151fe3d810f8c1e933ffaf7caf
         env:
           VIDYA_DATA_PATH: /data
           PORT: &port 31415

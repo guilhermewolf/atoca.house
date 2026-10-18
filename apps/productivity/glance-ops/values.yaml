@@ -34,6 +34,10 @@ controllers:
           SONARR_URL: https://sonarr.atoca.house
           # --- Jellyfin -------------------------------------------------------
           JELLYFIN_URL: https://jellyfin.atoca.house
+          # --- Seerr / Prowlarr / Alertmanager (in-cluster, server-side only) -
+          OVERSEERR_URL: http://seerr.seerr.svc.cluster.local
+          PROWLARR_API_URL: http://prowlarr.prowlarr.svc.cluster.local
+          ALERTMANAGER_URL: http://kube-prometheus-stack-moni-alertmanager.monitoring.svc.cluster.local:9093
         envFrom:
           - secretRef:
               name: glance-ops

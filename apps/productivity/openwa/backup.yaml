@@ -18,9 +18,9 @@ spec:
     pruneIntervalDays: 14
     repository: openwa-r2-secret
     moverSecurityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
+      runAsUser: 997
+      runAsGroup: 997
+      fsGroup: 997
     retain:
       hourly: 5
       daily: 4

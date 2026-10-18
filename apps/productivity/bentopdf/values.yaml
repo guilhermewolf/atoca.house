@@ -1,0 +1,72 @@
+---
+controllers:
+  bentopdf:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/alam00000/bentopdf
+          repository: ghcr.io/alam00000/bentopdf
+          tag: v2.8.8@sha256:6ef493c8e3bdbaa26c9bfcec330377ae95116fa00660ca0342769063197b1952
+        probes:
+          liveness: &probe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: &port 8080
+              periodSeconds: 30
+              timeoutSeconds: 5
+          readiness: *probe
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 5m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+defaultPodOptions:
+  securityContext:
+    # Image's nginx user
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
+    seccompProfile: { type: RuntimeDefault }
+service:
+  app:
+    ports:
+      http:
+        port: *port
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - pdf.atoca.house
+    rules:
+      - backendRefs:
+          - name: bentopdf
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+persistence:
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
+        subPath: tmp
+      - path: /etc/nginx/tmp
+        subPath: nginx
+      - path: /var/cache/nginx
+        subPath: cache

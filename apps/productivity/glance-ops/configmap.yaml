@@ -137,6 +137,9 @@ data:
                       - title: pgAdmin
                         url: https://pgadmin.atoca.house
                         icon: sh:pgadmin-light
+                      - title: Forgejo
+                        url: https://forge.atoca.house
+                        icon: sh:forgejo-light
 
                   - title: Observability
                     color: 38 85 55
@@ -151,7 +154,7 @@ data:
                         url: https://alertmanager.atoca.house
                         icon: mdi:bell-alert
                       - title: VictoriaLogs
-                        url: https://victorialogs.atoca.house
+                        url: https://victoria-logs.atoca.house
                         icon: sh:victoriametrics-light
                       - title: Gatus
                         url: https://status.atoca.house
@@ -166,6 +169,12 @@ data:
                       - title: LLDAP
                         url: https://lldap.atoca.house
                         icon: sh:lldap-light
+                      - title: CrowdSec
+                        url: https://crowdsec.atoca.house
+                        icon: sh:crowdsec-light
+                      - title: Web Check
+                        url: https://web-check.atoca.house
+                        icon: sh:web-check-light
                       - title: UniFi Toolkit
                         url: https://ui-toolkit.atoca.house
                         icon: sh:ubiquiti-unifi-light
@@ -207,6 +216,12 @@ data:
                       - title: SearXNG
                         url: https://search.atoca.house
                         icon: sh:searxng-light
+                      - title: Ollama
+                        url: https://ollama.atoca.house
+                        icon: sh:ollama-light
+                      - title: Paperclip
+                        url: https://paperclip.atoca.house
+                        icon: mdi:paperclip
                       - title: TheLounge
                         url: https://thelounge.atoca.house
                         icon: sh:the-lounge-light
@@ -240,9 +255,6 @@ data:
                       - title: SLSKD
                         url: https://slskd.atoca.house
                         icon: sh:slskd-light
-                      - title: Soulsync
-                        url: https://soulsync.atoca.house
-                        icon: mdi:sync
                       - title: Shelfmark
                         url: https://shelfmark.atoca.house
                         icon: sh:shelfmark-light
@@ -313,9 +325,6 @@ data:
                       - title: Jellystat
                         url: https://jellystat.atoca.house
                         icon: mdi:chart-donut
-                      - title: Spoolman
-                        url: https://spoolman.atoca.house
-                        icon: sh:spoolman-light
 
               - type: releases
                 title: Upstream Releases
@@ -439,8 +448,6 @@ data:
         kromgo-url: https://kromgo.atoca.house
         postiz: sh:postiz-light
         postiz-url: https://postiz.atoca.house
-        whoami: mdi:account-question
-        whoami-url: https://whoami.atoca.house
         argocd-server: sh:argo-cd-light
         argocd-server-url: https://argocd.atoca.house
         atuin: sh:atuin-light
@@ -479,20 +486,16 @@ data:
         hermes-url: https://hermes.atoca.house
         hermes-kf: mdi:message-fast
         hermes-kf-url: https://hermes-kf.atoca.house
-        homebridge: sh:homebridge-light
-        homebridge-url: https://homebridge.atoca.house
         it-tools: sh:it-tools-light
         it-tools-url: https://it-tools.atoca.house
-        jellyfin: sh:jellyfin-light
-        jellyfin-url: https://jellyfin.atoca.house
+        jellyfin-app: sh:jellyfin-light
+        jellyfin-app-url: https://jellyfin.atoca.house
         jellystat: mdi:chart-donut
         jellystat-url: https://jellystat.atoca.house
         karakeep: sh:karakeep-light
         karakeep-url: https://karakeep.atoca.house
         kavita: sh:kavita-light
         kavita-url: https://kavita.atoca.house
-        kopia: sh:kopia-light
-        kopia-url: https://kopia.atoca.house
         kube-prometheus-stack-moni-alertmanager: mdi:bell-alert
         kube-prometheus-stack-moni-alertmanager-url: https://alertmanager.atoca.house
         kube-prometheus-stack-moni-prometheus: sh:prometheus-light
@@ -503,8 +506,6 @@ data:
         litellm-url: https://litellm.atoca.house
         lldap: sh:lldap-light
         lldap-url: https://lldap.atoca.house
-        memory-mcp: mdi:brain
-        memory-mcp-url: https://memory-mcp.atoca.house
         mousetrap: mdi:mouse
         mousetrap-url: https://mousetrap.atoca.house
         n8n: sh:n8n-light
@@ -543,8 +544,6 @@ data:
         slskd-url: https://slskd.atoca.house
         sonarr: sh:sonarr-light
         sonarr-url: https://sonarr.atoca.house
-        soulsync: mdi:sync
-        soulsync-url: https://soulsync.atoca.house
         suwayomi: sh:suwayomi-light
         suwayomi-url: https://suwayomi.atoca.house
         thelounge: sh:the-lounge-light
@@ -556,9 +555,51 @@ data:
         unifi-toolkit: sh:ubiquiti-unifi-light
         unifi-toolkit-url: https://ui-toolkit.atoca.house
         victoria-logs-server: sh:victoriametrics-light
-        victoria-logs-server-url: https://victorialogs.atoca.house
+        victoria-logs-server-url: https://victoria-logs.atoca.house
         vikunja: sh:vikunja-light
         vikunja-url: https://vikunja.atoca.house
+        actual: sh:actual-budget-light
+        actual-url: https://actual.atoca.house
+        ai-memory: mdi:brain
+        ai-memory-url: https://ai-memory.atoca.house
+        argocd-mcp: sh:argo-cd-light
+        argocd-mcp-url: https://argocd-mcp.atoca.house
+        arr-mcp: mdi:robot
+        arr-mcp-url: https://arr-mcp.atoca.house
+        bentopdf: mdi:file-pdf-box
+        bentopdf-url: https://pdf.atoca.house
+        camcontrol: mdi:cctv
+        camcontrol-url: https://camcontrol.atoca.house
+        crowdsec-web-ui: sh:crowdsec-light
+        crowdsec-web-ui-url: https://crowdsec.atoca.house
+        donetick: sh:donetick-light
+        donetick-url: https://donetick.atoca.house
+        forgejo: sh:forgejo-light
+        forgejo-url: https://forge.atoca.house
+        freshrss: sh:freshrss-light
+        freshrss-url: https://freshrss.atoca.house
+        kubesearch-mcp: mdi:magnify
+        kubesearch-mcp-url: https://kubesearch-mcp.atoca.house
+        mealie-app: sh:mealie-light
+        mealie-app-url: https://recipes.atoca.house
+        mealie-social-to-mealie: sh:mealie-light
+        mealie-social-to-mealie-url: https://recipes.atoca.house
+        n8n-webhooks: sh:n8n-light
+        n8n-webhooks-url: https://hooks.atoca.house
+        odido-bundle-replenisher: mdi:sim
+        odido-bundle-replenisher-url: https://odido.atoca.house
+        paperclip: mdi:paperclip
+        paperclip-url: https://paperclip.atoca.house
+        skylight: mdi:calendar-month
+        skylight-url: https://skylight.atoca.house
+        snapotter: mdi:image-edit
+        snapotter-url: https://tools.atoca.house
+        stirling-pdf: mdi:file-pdf-box
+        stirling-pdf-url: https://pdf.atoca.house
+        vidya: mdi:school
+        vidya-url: https://vidya.atoca.house
+        web-check: sh:web-check-light
+        web-check-url: https://web-check.atoca.house
       template: |
         {{/* Required config options */}}
         {{ $baseURL := .Options.StringOr "base-url" "" }}
@@ -902,6 +943,13 @@ data:
           url: http://${QBITTORRENT_IP}/api/v2/torrents/info
           parameters:
             filter: seeding
+        seeding-top:
+          url: http://${QBITTORRENT_IP}/api/v2/torrents/info
+          parameters:
+            filter: seeding
+            sort: upspeed
+            reverse: "true"
+            limit: "10"
         leeching:
           url: http://${QBITTORRENT_IP}/api/v2/torrents/info
           parameters:
@@ -1004,7 +1052,7 @@ data:
 
             <!-- Seeding list -->
             {{ if eq $mode "upload" }}
-              {{ $seedingTorrents := $seeding.JSON.Array "" }}
+              {{ $seedingTorrents := (.Subrequest "seeding-top").JSON.Array "" }}
               {{ if gt (len $seedingTorrents) 0 }}
                 <div style="margin-top: 20px;">
                   <ul class="list collapsible-container" data-collapse-after="0" style="--list-gap: 15px;">
@@ -1095,6 +1143,18 @@ data:
           url: ${PROMETHEUS_URL}/api/v1/query
           parameters:
             query: count(ALERTS{alertstate="firing",alertname!="Watchdog"}) or vector(0)
+        alert-top:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: topk(1, count by (alertname) (ALERTS{alertstate="firing",alertname!="Watchdog"}))
+        argocd:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: count(argocd_app_info{health_status!="Healthy"} or argocd_app_info{sync_status!="Synced"}) or vector(0)
+        certs:
+          url: ${PROMETHEUS_URL}/api/v1/query
+          parameters:
+            query: count((certmanager_certificate_expiration_timestamp_seconds - time()) < 14*86400) or vector(0)
         cpu:
           url: ${PROMETHEUS_URL}/api/v1/query
           parameters:
@@ -1122,7 +1182,7 @@ data:
         disk-temp:
           url: ${PROMETHEUS_URL}/api/v1/query
           parameters:
-            query: max(smartctl_device_temperature)
+            query: max(smartctl_device_temperature{temperature_type="current"})
         gpu-temp:
           url: ${PROMETHEUS_URL}/api/v1/query
           parameters:
@@ -1146,6 +1206,9 @@ data:
         {{ $diskTemp  := (.Subrequest "disk-temp").JSON.Float "data.result.0.value.1" }}
         {{ $gpuTemp   := (.Subrequest "gpu-temp").JSON.Float  "data.result.0.value.1" }}
         {{ $pods      := (.Subrequest "pods").JSON.Float      "data.result.0.value.1" }}
+        {{ $alertTop  := (.Subrequest "alert-top").JSON.String "data.result.0.metric.alertname" }}
+        {{ $argocd    := (.Subrequest "argocd").JSON.Float    "data.result.0.value.1" }}
+        {{ $certs     := (.Subrequest "certs").JSON.Float     "data.result.0.value.1" }}
 
         <style>
           .ch-grid {
@@ -1176,7 +1239,29 @@ data:
               {{ printf "%.0f" $alerts }}
             </div>
             <div class="size-h6 color-subdue ch-sub">ALERTS FIRING</div>
-            <div class="size-h6 ch-sub color-subdue">excl. watchdog</div>
+            <div class="size-h6 ch-sub color-subdue text-truncate">{{ if $alertTop }}{{ $alertTop }}{{ else }}excl. watchdog{{ end }}</div>
+          </a>
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="https://argocd.atoca.house/applications?health=Degraded&health=Progressing&health=Missing&health=Unknown&sync=OutOfSync">
+            <div class="size-h3 {{ if gt $argocd 0.0 }}color-negative{{ else }}color-positive{{ end }}">
+              {{ if gt $argocd 0.0 }}{{ printf "%.0f" $argocd }}{{ else }}OK{{ end }}
+            </div>
+            <div class="size-h6 color-subdue ch-sub">ARGOCD</div>
+            <div class="size-h6 ch-sub color-subdue">
+              {{ if gt $argocd 0.0 }}apps not synced/healthy{{ else }}all synced{{ end }}
+            </div>
+          </a>
+
+          <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
+             href="https://headlamp.atoca.house">
+            <div class="size-h3 {{ if gt $certs 0.0 }}color-negative{{ else }}color-positive{{ end }}">
+              {{ if gt $certs 0.0 }}{{ printf "%.0f" $certs }}{{ else }}OK{{ end }}
+            </div>
+            <div class="size-h6 color-subdue ch-sub">CERTIFICATES</div>
+            <div class="size-h6 ch-sub color-subdue">
+              {{ if gt $certs 0.0 }}expire within 14d{{ else }}none expiring{{ end }}
+            </div>
           </a>
 
           <a class="ch-tile background-faint radius-8 block" target="_blank" rel="noreferrer"
@@ -2161,7 +2246,7 @@ data:
 
         {{- else -}}
 
-          {{- $requestUrl := printf "%s/emby/Items/Counts?api_key=%s" $url $key -}}
+          {{- $requestUrl := printf "%s/Items/Counts?api_key=%s" $url $key -}}
           {{- $jellyfinData := newRequest $requestUrl | getResponse -}}
 
           {{- if eq $jellyfinData.Response.StatusCode 200 -}}

@@ -15,7 +15,6 @@ controllers:
           repository: glanceapp/glance
           tag: v0.8.7@sha256:bc5a392672c1ec8823c50b61f3bd4b7e5acc34fcbb8477862577b3af1c633875
         env:
-          TZ: Europe/Amsterdam
           # --- UniFi (UCG Max, local API) ---------------------------------
           UNIFI_CONSOLE_IP: 192.168.10.1
           # --- qBittorrent -------------------------------------------------
@@ -53,8 +52,6 @@ controllers:
         image:
           repository: ghcr.io/lukasdietrich/glance-k8s/glance-k8s
           tag: v0.5.8@sha256:e96b0d80b96a6d01afbf881f722507476133b770da1edb91b43f5bf60ec9f352
-        env:
-          TZ: Europe/Amsterdam
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true

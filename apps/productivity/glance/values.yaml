@@ -12,7 +12,6 @@ controllers:
           repository: glanceapp/glance
           tag: v0.8.7@sha256:bc5a392672c1ec8823c50b61f3bd4b7e5acc34fcbb8477862577b3af1c633875
         env:
-          TZ: Europe/Amsterdam
           # --- Home Assistant --------------------------------------------
           HASS_URL: https://hass.atoca.house
           # --- Jellyfin ----------------------------------------------------
@@ -22,9 +21,6 @@ controllers:
           JELLYFIN_USER: kiosk
           # --- Seerr (Overseerr-compatible API) ---------------------------
           OVERSEERR_URL: https://seerr.atoca.house
-          # --- YouTube embed via a public RSS-Bridge instance -------------
-          RSS_BRIDGE: https://rss-bridge.org/bridge01/
-          YOUTUBE_CHANNEL: Kurzgesagt
         envFrom:
           - secretRef:
               name: glance

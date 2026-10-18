@@ -61,10 +61,11 @@ controllers:
             cpu: 1000m
             memory: 2Gi
         securityContext:
-          # Entrypoint chowns /app/data as root before stepping down — dropping
-          # ALL caps strips CAP_CHOWN and crash-loops the container
-          privileged: true
-          readOnlyRootFilesystem: false
+          # Started as non-root, the entrypoint skips its chown/gosu step and
+          # runs node directly; fsGroup keeps /app/data writable.
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
         probes:
           liveness: &probes
             enabled: true
@@ -127,7 +128,11 @@ controllers:
         - name: k8s.ksgate.org/dragonfly-ready
         - name: k8s.ksgate.org/dragonfly-service
       securityContext:
-        fsGroup: 1000
+        # Image's openwa user; existing /app/data is already 997:997
+        runAsNonRoot: true
+        runAsUser: 997
+        runAsGroup: 997
+        fsGroup: 997
         fsGroupChangePolicy: OnRootMismatch
         seccompProfile: { type: RuntimeDefault }
 
@@ -172,3 +177,8 @@ persistence:
     size: 5Gi
     globalMounts:
       - path: /app/data
+  # XDG config/cache dirs (entrypoint mkdirs them under /tmp)
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

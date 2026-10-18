@@ -151,6 +151,28 @@ data:
                       - title: Trips
                         url: https://trek.atoca.house
                         icon: sh:trek-light
+                      - title: Tasks
+                        url: https://vikunja.atoca.house
+                        icon: sh:vikunja-light
+                      - title: Chores
+                        url: https://donetick.atoca.house
+                        icon: sh:donetick-light
+                      - title: Saved links
+                        url: https://karakeep.atoca.house
+                        icon: sh:karakeep-light
+                      - title: Files
+                        url: https://filebrowser.atoca.house
+                        icon: sh:file-browser-light
+
+                  - title: Home & Money
+                    color: 20 80 60
+                    links:
+                      - title: Recipes & meal plan
+                        url: https://recipes.atoca.house
+                        icon: sh:mealie-light
+                      - title: Budget
+                        url: https://actual.atoca.house
+                        icon: sh:actual-budget-light
 
                   - title: House
                     color: 38 85 55
@@ -248,6 +270,12 @@ data:
                       - title: Ask for a book
                         url: https://shelfmark.atoca.house
                         icon: sh:shelfmark-light
+                      - title: Courses
+                        url: https://vidya.atoca.house
+                        icon: mdi:school
+                      - title: News reader
+                        url: https://freshrss.atoca.house
+                        icon: sh:freshrss-light
 
                   - title: Everyday
                     color: 160 60 45
@@ -256,16 +284,20 @@ data:
                         url: https://outline.atoca.house
                         icon: sh:outline-light
                       - title: Handy tools
-                        url: https://it-tools.atoca.house
-                        icon: sh:it-tools-light
+                        url: https://omni-tools.atoca.house
+                        icon: mdi:tools
+                      - title: PDF tools
+                        url: https://pdf.atoca.house
+                        icon: mdi:file-pdf-box
+                      - title: Photo tools
+                        url: https://tools.atoca.house
+                        icon: mdi:image-edit
                       - title: Private Search
                         url: https://search.atoca.house
                         icon: sh:searxng-light
 
           - size: full
             widgets:
-              - $include: w-youtube.yml
-
               - type: videos
                 title: Subscriptions
                 limit: 12
@@ -322,13 +354,31 @@ data:
         Cloudflare-url: https://dash.cloudflare.com
         Google: sh:google-light
         Google-url: https://www.google.com
+        actual: sh:actual-budget-light
+        actual-url: https://actual.atoca.house
         audiobookshelf: sh:audiobookshelf-light
         audiobookshelf-url: https://audiobookshelf.atoca.house
+        bentopdf: mdi:file-pdf-box
+        bentopdf-url: https://pdf.atoca.house
+        dispatcharr: sh:dispatcharr-light
+        dispatcharr-url: https://dispatcharr.atoca.house
+        donetick: sh:donetick-light
+        donetick-url: https://donetick.atoca.house
+        filebrowser: sh:file-browser-light
+        filebrowser-url: https://filebrowser.atoca.house
+        freshrss: sh:freshrss-light
+        freshrss-url: https://freshrss.atoca.house
         glance: sh:glance-light
         glance-url: https://home.atoca.house
-        jellyfin: sh:jellyfin-light
-        jellyfin-url: https://jellyfin.atoca.house
+        jellyfin-app: sh:jellyfin-light
+        jellyfin-app-url: https://jellyfin.atoca.house
+        karakeep: sh:karakeep-light
+        karakeep-url: https://karakeep.atoca.house
         kavita: sh:kavita-light
+        mealie-app: sh:mealie-light
+        mealie-app-url: https://recipes.atoca.house
+        omni-tools: mdi:tools
+        omni-tools-url: https://omni-tools.atoca.house
         kavita-url: https://kavita.atoca.house
         open-webui: sh:open-webui-light
         open-webui-url: https://chat.atoca.house
@@ -340,10 +390,18 @@ data:
         seerr-url: https://seerr.atoca.house
         shelfmark: sh:shelfmark-light
         shelfmark-url: https://shelfmark.atoca.house
+        snapotter: mdi:image-edit
+        snapotter-url: https://tools.atoca.house
+        stirling-pdf: mdi:file-pdf-box
+        stirling-pdf-url: https://pdf.atoca.house
         suwayomi: sh:suwayomi-light
         suwayomi-url: https://suwayomi.atoca.house
         trek: sh:trek-light
         trek-url: https://trek.atoca.house
+        vidya: mdi:school
+        vidya-url: https://vidya.atoca.house
+        vikunja: sh:vikunja-light
+        vikunja-url: https://vikunja.atoca.house
       template: |
         {{/* Required config options */}}
         {{ $baseURL := .Options.StringOr "base-url" "" }}
@@ -1109,7 +1167,7 @@ data:
 
         {{- else -}}
 
-          {{- $requestUrl := printf "%s/emby/Items/Counts?api_key=%s" $url $key -}}
+          {{- $requestUrl := printf "%s/Items/Counts?api_key=%s" $url $key -}}
           {{- $jellyfinData := newRequest $requestUrl | getResponse -}}
 
           {{- if eq $jellyfinData.Response.StatusCode 200 -}}
@@ -1193,129 +1251,3 @@ data:
             </details>
           {{ end }}
         {{ end }}
-  w-youtube.yml: |
-    - type: custom-api
-      title: ${YOUTUBE_CHANNEL} on YouTube
-      url: ${RSS_BRIDGE}
-      parameters:
-        action: display
-        bridge: YoutubeBridge
-        context: By username
-        u: ${YOUTUBE_CHANNEL}
-        duration_min: 3
-        duration_max: nil
-        format: Json
-      frameless: true
-      headers:
-        content-type: application/json
-      cache: 30m
-      template: |
-        {{ $arrayList := .JSON.Array "items" }}
-        {{ $closeOutsideIframe := false }} {{/* Closes the popup anywhere around the iframe */}}
-        {{ $popupWidth := "85%" }}
-        {{ $popupHeight := "85%" }}
-        {{ $author := .JSON.String "title" | trimSuffix " - YouTube" }}
-        {{ $authorUrl := .JSON.String "home_page_url" | trimSuffix "/videos" }}
-        <div class="cards-grid collapsible-container" data-collapse-after-rows="3">
-          {{ if eq (len ($arrayList)) 0 }}
-          <div>Nothing to show</div>
-          {{ else }}
-            {{ range $arrayList }}
-
-            {{ $iframeAllow := "" }}
-
-            {{ $youtubeUrl := .String "url" }}
-            {{ $youtubeId := .String "_rssbridge.id" }}
-            {{ $youtubeEmbedInstance := "https://www.youtube-nocookie.com/embed/" }}
-            {{ $youtubeParameters := "" }}
-            {{ $youtubeEmbedUrl := concat $youtubeEmbedInstance $youtubeId $youtubeParameters }}
-
-            {{ $title := .String "title" }}
-            {{ $timestamp := .String "date_modified" | parseTime "rfc3339" }}
-            {{ $thumbnail := findSubmatch "img src=\"([^\"]+)" (.String "content_html") }}
-
-            <div class="card widget-content-frame thumbnail-parent">
-              <div onclick="
-                const classPrefix = 'popup-youtube-';
-                const embedClass = classPrefix + 'embed';
-                const dimBgClass = classPrefix + 'dim';
-                const closeBtnClass = classPrefix + 'close';
-                const popupEmbedExistingDiv = document.querySelector('.' + embedClass);
-                if (!popupEmbedExistingDiv) {
-                  const dimBackground = document.createElement('div');
-                  dimBackground.className = dimBgClass;
-                  dimBackground.style = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-widget-background-highlight); opacity: 0.7;';
-                  document.body.appendChild(dimBackground);
-
-                  const popupEmbedDiv = document.createElement('div');
-                  popupEmbedDiv.className = embedClass;
-                  popupEmbedDiv.style = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: {{ $popupWidth }}; height: {{ $popupHeight }}; z-index: 11;';
-
-                  const popupIframe = document.createElement('iframe');
-                  popupIframe.className = classPrefix + 'iframe';
-                  popupIframe.src = {{ $youtubeEmbedUrl }};
-                  popupIframe.loading = 'lazy';
-                  popupIframe.allowFullscreen = true;
-                  popupIframe.allow = {{ $iframeAllow }};
-                  popupIframe.style ='outline: 2px solid var(--color-primary); outline-offset: -0.1rem; border-radius: 20px; width: 100%; height: 100%; border: none; background-color: var(--color-popover-background);';
-
-                  popupEmbedDiv.appendChild(popupIframe);
-                  document.body.appendChild(popupEmbedDiv);
-
-                  const closeBtn = document.createElement('span');
-                  closeBtn.className = closeBtnClass;
-                  closeBtn.innerHTML = '&times';
-                  closeBtn.style = 'cursor: pointer; font-size: 3rem; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; position: absolute; top: 3rem; right: 3rem;';
-                  document.body.appendChild(closeBtn);
-                  document.body.style.overflowY = 'hidden';
-
-                  const closePopup = () => {
-                    popupEmbedDiv.remove();
-                    dimBackground.remove();
-                    closeBtn.remove();
-                    document.body.style.overflowY = 'scroll';
-                  }
-
-                  {{ if $closeOutsideIframe }} dimBackground.onclick = closePopup; {{ end }}
-                  closeBtn.onclick = closePopup;
-                } else {
-                  document.querySelector('.' + dimBgClass).remove();
-                  document.querySelector('.' + closeBtnClass).remove();
-                  document.body.style.overflowY = 'scroll';
-                  popupEmbedExistingDiv.remove();
-                }
-              " style="cursor: pointer;">
-                <span>
-                  {{ if ne $thumbnail "" }}
-                  <img class="video-thumbnail thumbnail" loading="lazy" src="{{ $thumbnail }}" alt="">
-                  {{ else }}
-                  <svg class="video-thumbnail thumbnail" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="var(--color-text-subdue)">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
-                  </svg>
-                  {{ end }}
-                </span>
-              </div>
-              <div class="margin-bottom-widget padding-inline-widget flex flex-column grow">
-                <div class="margin-top-10 margin-bottom-auto">
-                  <a href="{{ $youtubeUrl }}#" class="color-primary-if-not-visited text-truncate-2-lines" target="_blank" rel="noreferrer">
-                    {{ $title }}
-                  </a>
-                </div>
-                <ul class="list-horizontal-text flex-nowrap margin-top-7">
-                  {{/* The public RSS-Bridge instance omits date_modified, which
-                       parses to the zero time and renders as "56y". Only show
-                       the age when the feed actually supplied a date. */}}
-                  {{ if not $timestamp.IsZero }}
-                  <li class="shrink-0" {{ $timestamp | toRelativeTime }}></li>
-                  {{ end }}
-                  <li class="min-width-0">
-                    <a href="{{ $authorUrl }}" class="color-primary-if-not-visited text-truncate-2-lines" target="_blank" rel="noreferrer">
-                      {{ $author }}
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            {{ end }}
-          {{ end }}
-        </div>

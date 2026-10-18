@@ -21,7 +21,7 @@ controllers:
           # attributes, which SQL visibility cannot hold (max 3 of each type).
           ENABLE_ES: "true"
           ES_SEEDS: temporal-elasticsearch.temporal.svc.cluster.local
-          ES_VERSION: v7
+          ES_VERSION: v8
           # Crunchy TLS is signed by the cert-manager postgres-ca (trust-manager
           # bundle). POSTGRES_TLS_* is used by the schema-setup tool, SQL_* by the server.
           POSTGRES_TLS_ENABLED: "true"
@@ -72,7 +72,7 @@ controllers:
       app:
         image:
           repository: docker.io/library/elasticsearch
-          tag: 7.17.28@sha256:a06b03a2db8db2be43d3c3851e7bcebdd4fff79f4db08c7da6bad7a8776d3e15
+          tag: 8.19.23@sha256:3f4d63c59ca5a05b535179dfcced47a514119e351fa81653f69902beacae90c9
         env:
           discovery.type: single-node
           xpack.security.enabled: "false"

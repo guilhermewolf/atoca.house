@@ -23,6 +23,6 @@ spec:
     storageClassName: ceph-block
     volumeSnapshotClassName: csi-ceph-blockpool
     moverSecurityContext:
-      runAsUser: 1000
-      runAsGroup: 1000
-      fsGroup: 1000
+      runAsUser: 997
+      runAsGroup: 997
+      fsGroup: 997

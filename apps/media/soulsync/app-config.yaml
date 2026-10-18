@@ -1,9 +1,0 @@
----
-# Application configuration for soulsync
-app:
-  name: soulsync
-  namespace: soulsync
-  chart: app-template
-  chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 5.3.0
-  volsyncPrivileged: true

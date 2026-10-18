@@ -572,6 +572,22 @@ data:
             # Envoy Gateway's oauth2 filter sends credentials as HTTP Basic auth.
             token_endpoint_auth_method: client_secret_basic
 
+          - client_id: bentopdf
+            client_name: BentoPDF
+            client_secret: '{{ secret "/config/secret/BENTOPDF_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            # Static site with no auth of its own: gateway-level OIDC (Envoy oauth2
+            # filter), see apps/productivity/bentopdf/securitypolicy.yaml.
+            authorization_policy: household
+            pre_configured_consent_duration: 1y
+            redirect_uris: ["https://pdf.atoca.house/oauth2/callback"]
+            scopes: ["openid", "profile", "email", "offline_access"]
+            response_types: ["code"]
+            grant_types: ["authorization_code", "refresh_token"]
+            userinfo_signed_response_alg: none
+            # Envoy Gateway's oauth2 filter sends credentials as HTTP Basic auth.
+            token_endpoint_auth_method: client_secret_basic
+
           - client_id: litellm
             client_name: LiteLLM
             client_secret: '{{ secret "/config/secret/LITELLM_OAUTH_CLIENT_SECRET" }}'

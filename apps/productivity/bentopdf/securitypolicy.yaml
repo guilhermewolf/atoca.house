@@ -1,0 +1,26 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/gateway.envoyproxy.io/securitypolicy_v1alpha1.json
+# BentoPDF is a static site with no login. Gate the whole route with Authelia
+# OIDC at the gateway (authorization_policy: household).
+# StrategicMerge keeps the gateway-level crowdsec-bouncer extAuth on this route;
+# without it this route-level policy would replace it.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: bentopdf-oidc
+spec:
+  mergeType: StrategicMerge
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: bentopdf
+  oidc:
+    provider:
+      issuer: https://auth.atoca.house
+    clientID: bentopdf
+    clientSecret:
+      name: bentopdf-oidc
+    redirectURL: https://pdf.atoca.house/oauth2/callback
+    logoutPath: /oauth2/logout
+    scopes: ["openid", "profile", "email", "offline_access"]
+    refreshToken: true

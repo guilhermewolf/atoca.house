@@ -6,12 +6,29 @@ controllers:
     containers:
       app:
         image:
-          repository: ghcr.io/dextify-org/vidya
-          tag: 1.0.1@sha256:71b2639d3ddc0ff1f8de9c66c158939df9db33ac9892246cda460b21b22a9995
+          # Fork with in-app OIDC, built by vidya-self's Forgejo Actions workflow.
+          # Not Renovate-managed: the private registry has no host rule here.
+          repository: forge.atoca.house/guilherme/vidya-self
+          tag: aa52a10@sha256:8ca68cea23c25257a0990c7bf50ba618762e6136d4799852f30251ddeaf58985
         env:
           VIDYA_DATA_PATH: /data
           PORT: &port 31415
           TMPDIR: /tmp
+          # In-app SSO via Authelia client vidya-app; the gateway OIDC in
+          # securitypolicy.yaml (client vidya) still gates the whole route.
+          OIDC_ISSUER_URL: https://auth.atoca.house
+          OIDC_CLIENT_ID: vidya-app
+          OIDC_CLIENT_SECRET:
+            valueFrom:
+              secretKeyRef:
+                name: vidya-oidc
+                key: OIDC_CLIENT_SECRET
+          OIDC_REDIRECT_URI: https://vidya.atoca.house/api/auth/oidc/callback
+          OIDC_SCOPES: openid profile email groups
+          OIDC_ADMIN_GROUP: admins
+          OIDC_BUTTON_LABEL: Log in with Authelia
+          OIDC_AUTO_CREATE: "true"
+          OIDC_DISABLE_LOCAL_LOGIN: "false"
         resources:
           requests:
             cpu: 10m
@@ -29,6 +46,8 @@ controllers:
           capabilities: { drop: ["ALL"] }
 
 defaultPodOptions:
+  imagePullSecrets:
+    - name: forgejo-registry
   securityContext:
     seccompProfile: { type: RuntimeDefault }
     runAsNonRoot: true

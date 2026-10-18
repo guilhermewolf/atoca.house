@@ -1,0 +1,13 @@
+---
+# The image lives in the private Forgejo registry, so the kubelet in this
+# namespace needs the pull credential. The `forgejo-registry` label makes the
+# ClusterExternalSecret in infra/k8s/security/external-secrets project the
+# `forgejo-registry` dockerconfigjson Secret into this namespace.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vidya
+  labels:
+    forgejo-registry: "true"
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted

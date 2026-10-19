@@ -25,6 +25,13 @@
       minimumReleaseAge: "7 days",
     },
     {
+      description: "Odoo nightly tags (19.0-YYYYMMDD) — majors need a DB migration and OCA auth_oidc for that branch",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["docker.io/library/odoo"],
+      versioning: "regex:^(?<major>\\d+)\\.(?<minor>\\d+)-(?<patch>\\d{8})$",
+      allowedVersions: "<20",
+    },
+    {
       description: "Override Talos Installer Package Name",
       matchDatasources: ["docker"],
       matchPackageNames: ["/factory\\.talos\\.dev/"],

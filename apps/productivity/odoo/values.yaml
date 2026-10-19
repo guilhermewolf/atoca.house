@@ -1,0 +1,227 @@
+---
+controllers:
+  odoo:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    # Filestore + sessions live on one RWO PVC — never scale past 1.
+    replicas: 1
+    strategy: Recreate
+    pod:
+      annotations:
+        k8s.ksgate.org/postgres-ready: |
+          {
+            "apiVersion": "postgres-operator.crunchydata.com/v1beta1",
+            "kind": "PostgresCluster",
+            "name": "postgres",
+            "namespace": "crunchy-postgres-cluster",
+            "expression": "has(resource.status.instances) && resource.status.instances.exists(i, i.readyReplicas >= 1)"
+          }
+        # Odoo's bus uses LISTEN/NOTIFY, which PgBouncer transaction pooling
+        # breaks — connect to the primary directly, not postgres-pgbouncer.
+        k8s.ksgate.org/postgres-service: |
+          {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "name": "postgres-primary",
+            "namespace": "crunchy-postgres-cluster"
+          }
+      schedulingGates:
+        - name: k8s.ksgate.org/postgres-ready
+        - name: k8s.ksgate.org/postgres-service
+
+    initContainers:
+      # OCA auth_oidc (OIDC code flow + PKCE against Authelia) is not in the
+      # image: fetch the module and its python-jose dependency onto the PVC.
+      # Re-downloads only when the pinned ref/version changes.
+      oca-addons:
+        image: &image
+          # renovate: datasource=docker depName=docker.io/library/odoo
+          repository: docker.io/library/odoo
+          tag: 19.0-20261015@sha256:076562619a5de059388d9f9d90545cb575799c04869610a5b20839893819b41b
+        env:
+          # OCA/server-auth branch 19.0 (auth_oidc for 20.0 is still an open MIG PR #1036)
+          OCA_SERVER_AUTH_REF: fd09d42bc9b093281bf8a34726af69fffccce6de
+          # renovate: datasource=pypi depName=python-jose
+          PYTHON_JOSE_VERSION: 3.5.0
+        args:
+          - bash
+          - -c
+          - |
+            set -euo pipefail
+            addons=/var/lib/odoo/oca-addons pydeps=/var/lib/odoo/pydeps
+            if [ ! -f "$addons/.ref-$OCA_SERVER_AUTH_REF" ]; then
+              rm -rf "$addons" && mkdir -p "$addons"
+              curl -fsSL "https://github.com/OCA/server-auth/archive/$OCA_SERVER_AUTH_REF.tar.gz" \
+                | tar -xz -C "$addons" --strip-components=1 "server-auth-$OCA_SERVER_AUTH_REF/auth_oidc"
+              touch "$addons/.ref-$OCA_SERVER_AUTH_REF"
+            fi
+            if [ ! -f "$pydeps/.jose-$PYTHON_JOSE_VERSION" ]; then
+              rm -rf "$pydeps"
+              python3 -m pip install --no-cache-dir --break-system-packages \
+                --target "$pydeps" "python-jose==$PYTHON_JOSE_VERSION"
+              touch "$pydeps/.jose-$PYTHON_JOSE_VERSION"
+            fi
+        securityContext: &securityContext
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+      # First boot only: an empty DB must be initialised with -i, Odoo won't
+      # serve it otherwise. Skipped once ir_module_module exists.
+      init-db:
+        # Needs auth_oidc on the addons path; init containers otherwise run alphabetically.
+        dependsOn: oca-addons
+        image: *image
+        env: &env
+          HOME: /var/lib/odoo
+          PYTHONPATH: /var/lib/odoo/pydeps
+          PGSSLMODE: verify-full
+          PGSSLROOTCERT: /etc/ssl/postgres/ca.crt
+        envFrom: &envFrom
+          - secretRef:
+              name: odoo-db-secret
+        args:
+          - bash
+          - -c
+          - |
+            set -euo pipefail
+            initialised=$(PGPASSWORD="$PASSWORD" psql -h "$HOST" -p "$PORT" -U "$USER" -d odoo -tAc \
+              "select to_regclass('ir_module_module') is not null")
+            if [ "$initialised" = "t" ]; then
+              echo "Database already initialised"; exit 0
+            fi
+            exec /entrypoint.sh odoo -i base,crm,auth_oidc --stop-after-init
+        securityContext: *securityContext
+
+    containers:
+      app:
+        image: *image
+        env: *env
+        envFrom: *envFrom
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /web/health
+                port: &port 8069
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 6
+          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /web/health
+                port: *port
+              periodSeconds: 10
+              failureThreshold: 30
+        securityContext: *securityContext
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+
+defaultPodOptions:
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+configMaps:
+  config:
+    data:
+      odoo.conf: |
+        [options]
+        ; Core addons (incl. crm) are always on the path; this adds OCA auth_oidc.
+        addons_path = /var/lib/odoo/oca-addons
+        data_dir = /var/lib/odoo
+        ; No dbfilter: with one set, Odoo lists DBs by datdba = its role, and
+        ; Crunchy's DB isn't owned by odoo -> empty list -> DB selector page.
+        ; db_name alone pins every request to this DB without that query.
+        db_name = odoo
+        db_sslmode = verify-full
+        ; Disables the database manager (and its default master password).
+        list_db = False
+        proxy_mode = True
+        ; Threaded mode: HTTP + websocket on one port, no gevent/8072 routing.
+        workers = 0
+        max_cron_threads = 1
+        limit_time_real = 600
+        log_level = info
+
+service:
+  app:
+    controller: odoo
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    annotations:
+      gatus.io/enabled: "true"
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - odoo.atoca.house
+    rules:
+      # Odoo only applies proxy_mode (X-Forwarded-Proto -> https URLs, e.g. the
+      # OIDC redirect_uri) when X-Forwarded-Host is present; Envoy doesn't send it.
+      - filters:
+          - type: RequestHeaderModifier
+            requestHeaderModifier:
+              set:
+                - name: X-Forwarded-Host
+                  value: odoo.atoca.house
+        backendRefs:
+          - name: odoo
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    # Restore gate - see restore.yaml.
+    dataSourceRef:
+      apiGroup: volsync.backube
+      kind: ReplicationDestination
+      name: odoo-restore
+    globalMounts:
+      - path: /var/lib/odoo
+  config:
+    type: configMap
+    name: odoo
+    globalMounts:
+      - path: /etc/odoo/odoo.conf
+        subPath: odoo.conf
+        readOnly: true
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    globalMounts:
+      - path: /etc/ssl/postgres/ca.crt
+        subPath: ca.crt
+        readOnly: true
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

@@ -663,3 +663,22 @@ data:
             grant_types: ["authorization_code"]
             userinfo_signed_response_alg: none
             token_endpoint_auth_method: client_secret_basic
+
+          - client_id: odoo
+            client_name: Odoo
+            client_secret: '{{ secret "/config/secret/ODOO_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            authorization_policy: household
+            # OCA auth_oidc reads email/name from the id_token, not UserInfo.
+            claims_policy: 'default'
+            # auth_oidc always sends an S256 code_challenge.
+            require_pkce: true
+            pkce_challenge_method: 'S256'
+            redirect_uris: ["https://odoo.atoca.house/auth_oauth/signin"]
+            scopes: ["openid", "profile", "email"]
+            response_types: ["code"]
+            grant_types: ["authorization_code"]
+            access_token_signed_response_alg: 'none'
+            userinfo_signed_response_alg: 'none'
+            # auth_oidc posts the token request with HTTP basic auth.
+            token_endpoint_auth_method: 'client_secret_basic'

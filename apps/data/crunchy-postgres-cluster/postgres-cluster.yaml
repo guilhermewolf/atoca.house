@@ -146,6 +146,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: odoo
+      databases:
+        - odoo
+      password:
+        type: AlphaNumeric
+
     - name: snapotter
       databases:
         - snapotter

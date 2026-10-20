@@ -3,6 +3,8 @@ controllers:
   garage:
     annotations:
       reloader.stakater.com/auto: "true"
+    # Single LMDB writer on an RWO volume - never run two pods at once.
+    strategy: Recreate
     containers:
       app:
         image:
@@ -95,10 +97,18 @@ persistence:
     path: /mnt/user/garage/data
     globalMounts:
       - path: /data
+  # LMDB metadata lives on Ceph, not NFS (LMDB locking/mmap is unsafe over NFS).
+  # Only bulk object data stays on the NAS.
   meta:
     enabled: true
-    type: nfs
-    server: nas.internal
-    path: /mnt/user/garage/meta
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    # Restore gate - see restore.yaml.
+    dataSourceRef:
+      apiGroup: volsync.backube
+      kind: ReplicationDestination
+      name: garage-restore
     globalMounts:
       - path: /meta

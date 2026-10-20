@@ -24,7 +24,7 @@ jobs:
     runs-on: arc-diff-runners
     env:
       # renovate: datasource=github-releases depName=dag-andersen/argocd-diff-preview
-      ADP_VERSION: v0.2.16
+      ADP_VERSION: v0.2.17
       # sha256 of argocd-diff-preview-Linux-x86_64.tar.gz; update together with ADP_VERSION.
       ADP_SHA256: 242dce4938535962a0160585974b6ac7eb2d86e6547dcbffe97a6aad6fa34f43
     steps:

@@ -42,10 +42,11 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: CrowdSec agent on {{ $labels.machine }} is unreachable
+            summary: CrowdSec agent {{ $labels.pod }} is unreachable
             description: >-
               The CrowdSec agent scrape target has been unreachable for 10 minutes.
-              Check the CrowdSec agent pod on this node.
+              It is a single Deployment, so log-based detection is down; the
+              bouncer still enforces existing decisions.
 
         - alert: CrowdSecAgentNoLogs
           expr: |-
@@ -56,11 +57,10 @@ spec:
           annotations:
             summary: CrowdSec agent {{ $labels.pod }} has read zero lines for 1h
             description: >-
-              This agent's acquisition sources matched no log files or the
-              tailer is stuck. Verify `cscli metrics show acquisition` on the
-              pod. The cilium-envoy fallback source should prevent this from
-              firing under normal conditions — if it does, check whether the
-              cilium-envoy DaemonSet is healthy on this node.
+              The agent streams pod logs from the Kubernetes API; none of its
+              selectors matched a pod or the stream is stuck. Verify
+              `cscli metrics show acquisition` on the pod and the
+              crowdsec-agent RBAC in rbac.yaml.
 
         - alert: CrowdSecParsingErrors
           expr: |-
@@ -69,9 +69,9 @@ spec:
               /
               sum by (machine) (rate(cs_parser_hits_ok_total{namespace="crowdsec"}[15m]) + rate(cs_parser_hits_ko_total{namespace="crowdsec"}[15m]))
             ) > 0.5
-            # Volume floor: nodes without a gateway pod only see filebrowser/
-            # seerr/cilium lines, which their parsers mostly reject by design,
-            # so the ratio is meaningless at a few lines per minute.
+            # Volume floor: filebrowser/seerr lines are mostly rejected by
+            # their parsers by design, so the ratio is meaningless at a few
+            # lines per minute.
             and on (machine)
             sum by (machine) (rate(cs_parser_hits_ok_total{namespace="crowdsec"}[15m]) + rate(cs_parser_hits_ko_total{namespace="crowdsec"}[15m])) > 0.5
           for: 30m
@@ -139,7 +139,7 @@ spec:
 
         - alert: CrowdSecEnvoyParserYieldZero
           expr: |-
-            sum(rate(cs_node_hits_ok_total{namespace="crowdsec", name="crowdsecurity/cri-logs"}[15m])) > 0
+            sum(rate(cs_kubernetessource_hits_total{namespace="crowdsec", acquis_type="envoy"}[15m])) > 0
             and
             (sum(rate(cs_node_hits_ok_total{namespace="crowdsec", name="hydaz/envoy-logs"}[15m])) or vector(0)) == 0
           for: 15m
@@ -148,7 +148,7 @@ spec:
           annotations:
             summary: CrowdSec Envoy log parser stopped matching
             description: >-
-              CRI logs are being parsed but the Envoy-specific parser has no
+              Envoy logs are being read but the Envoy-specific parser has no
               successful matches. Check acquisition and parser configuration.
 
         - alert: CrowdSecAlertFlood

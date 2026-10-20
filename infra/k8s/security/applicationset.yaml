@@ -30,11 +30,23 @@ spec:
         namespace: '{{.app.namespace}}'
         server: https://kubernetes.default.svc
 
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+
+  # sources live in the patch because skipSchemaValidation is a bool and plain
+  # template fields only take strings. Opt in per app with
+  # `app.skipSchemaValidation: true` in app-config.yaml (e.g. crowdsec, whose
+  # chart schema rejects the `kubernetes` acquisition source).
+  templatePatch: |
+    spec:
       sources:
         - chart: '{{.app.chart}}'
           repoURL: '{{.app.chartRepo}}'
           targetRevision: '{{.app.chartVersion}}'
           helm:
+            skipSchemaValidation: {{ dig "app" "skipSchemaValidation" false . }}
             valueFiles:
               - $values/infra/k8s/security/{{.app.name}}/values.yaml
 
@@ -47,15 +59,3 @@ spec:
           path: 'infra/k8s/security/{{.app.name}}'
           directory:
             exclude: '{application.yaml,values.yaml,app-config.yaml}'
-
-      ignoreDifferences:
-        - group: ""
-          kind: Secret
-          name: kguardian-db-credentials
-          namespace: kguardian
-          jsonPointers:
-            - /data
-      syncPolicy:
-        syncOptions:
-          - CreateNamespace=true
-          - ServerSideApply=true

@@ -1,0 +1,91 @@
+---
+# Agent reads pod logs through the Kubernetes API (`source: kubernetes`
+# acquisition). ClusterRole because the watched pods span several namespaces;
+# bound per namespace so the agent can only read logs it actually acquires.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: crowdsec-agent
+  namespace: crowdsec
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: crowdsec-agent-log-reader
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: crowdsec-agent-log-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: crowdsec-agent-log-reader
+subjects:
+  - kind: ServiceAccount
+    name: crowdsec-agent
+    namespace: crowdsec
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: crowdsec-agent-log-reader
+  namespace: authelia
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: crowdsec-agent-log-reader
+subjects:
+  - kind: ServiceAccount
+    name: crowdsec-agent
+    namespace: crowdsec
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: crowdsec-agent-log-reader
+  namespace: jellyfin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: crowdsec-agent-log-reader
+subjects:
+  - kind: ServiceAccount
+    name: crowdsec-agent
+    namespace: crowdsec
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: crowdsec-agent-log-reader
+  namespace: seerr
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: crowdsec-agent-log-reader
+subjects:
+  - kind: ServiceAccount
+    name: crowdsec-agent
+    namespace: crowdsec
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: crowdsec-agent-log-reader
+  namespace: filebrowser
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: crowdsec-agent-log-reader
+subjects:
+  - kind: ServiceAccount
+    name: crowdsec-agent
+    namespace: crowdsec

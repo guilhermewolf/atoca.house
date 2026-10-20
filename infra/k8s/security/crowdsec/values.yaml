@@ -1,5 +1,10 @@
 ---
 container_runtime: containerd
+# Used by lapi, agent and appsec. mirror.gcr.io avoids Docker Hub rate limits.
+image:
+  # renovate: datasource=docker depName=mirror.gcr.io/crowdsecurity/crowdsec
+  repository: mirror.gcr.io/crowdsecurity/crowdsec
+  tag: v1.8.1@sha256:0f2523fa61ef507f15d953045cface490cc880670c62f2755ced17524107f71a
 config:
   parsers:
     s01-parse:
@@ -263,6 +268,13 @@ lapi:
     serviceMonitor:
       enabled: true
 agent:
+  # Single Deployment streaming pod logs from the Kubernetes API (rbac.yaml)
+  # instead of a DaemonSet tailing hostPath /var/log on every node. No
+  # hostPath mount, one agent machine, and no per-node "no logs read"
+  # Console alerts on nodes that host none of the pods below.
+  isDeployment: true
+  hostVarLog: false
+  serviceAccountName: crowdsec-agent
   podSecurityContext:
     seccompProfile:
       type: RuntimeDefault
@@ -272,41 +284,35 @@ agent:
       privileged: false
       capabilities:
         drop: [ALL]
-  # DaemonSet: requests count on every node. 7d p99 mem 107Mi, p95 cpu 15m.
-  # Chart defaults request 500m/250Mi. Limits left at chart defaults.
+  # As a DaemonSet: 7d p99 mem 107Mi, p95 cpu 15m per node. One pod now sees
+  # every node's lines, so the memory limit is raised from the 250Mi chart
+  # default. Re-size from Prometheus after a week.
   resources:
     requests:
       cpu: 25m
       memory: 192Mi
+    limits:
+      memory: 512Mi
   podAnnotations:
     reloader.stakater.com/auto: "true"
-  acquisition:
+  # `kubernetes` source: one entry per namespace; `labels.type` becomes
+  # evt.Parsed.program via the built-in non-syslog parser. Tails new lines
+  # only (TailLines: 0), so restarts don't replay old logs.
+  additionalAcquisition:
     # Envoy Gateway access logs (both external and internal). This is the
     # primary signal source — the `hydaz/envoy-logs` custom parser turns the
     # envoy JSON access-log format into nginx-compatible fields.
-    - namespace: kube-system
-      podName: atoca-house-*
-      program: envoy
-      poll_without_inotify: true
-    # Cilium agent runs as a DaemonSet on every node and writes several
-    # thousand lines per day (health checks, policy updates). We don't have
-    # a parser for it, so lines are silently dropped at s01-parse — but the
-    # `lines_read` counter still increments, which is what the CrowdSec
-    # Console checks to decide whether an agent is healthy. Without this,
-    # agents scheduled on nodes that happen to host neither an atoca-house
-    # nor an authelia pod would trigger false "Log Processor: no logs read"
-    # alerts. Pattern matches both `cilium-*` (agent) and `cilium-envoy-*`.
-    # The `envoy-logs` parser uses an exact program match (`== 'envoy'`)
-    # so it will not try to parse these lines.
-    - namespace: kube-system
-      podName: cilium-*
-      program: cilium
-      poll_without_inotify: true
+    - source: kubernetes
+      namespace: kube-system
+      selector: app.kubernetes.io/name=envoy,gateway.envoyproxy.io/owning-gateway-namespace=kube-system
+      labels:
+        type: envoy
     # Authelia access/auth logs for brute-force detection.
-    - namespace: authelia
-      podName: authelia-*
-      program: authelia
-      poll_without_inotify: true
+    - source: kubernetes
+      namespace: authelia
+      selector: app.kubernetes.io/name=authelia
+      labels:
+        type: authelia
     # Jellyfin auth logs. jellyfin.atoca.house is on the external Gateway
     # and Jellyfin has no 2FA, so the login endpoint is the exposed surface.
     # Authentication is delegated to LLDAP, but that is transparent here:
@@ -316,25 +322,28 @@ agent:
     # against 10.11.11. The IP in that line is the real client (Jellyfin
     # `KnownProxies: 10.244.0.0/16` + the Gateway's xForwardedFor
     # trustedCIDRs), so bans land on the attacker, not on Envoy.
-    - namespace: jellyfin
-      podName: jellyfin-*
-      program: jellyfin
-      poll_without_inotify: true
+    - source: kubernetes
+      namespace: jellyfin
+      selector: app.kubernetes.io/name=jellyfin
+      labels:
+        type: jellyfin
     # Seerr auth logs. seerr.atoca.house is on the external Gateway and its
     # /api/v1/auth/jellyfin endpoint proxies straight through to Jellyfin,
-    # so it is a second front door onto the same LLDAP directory. `program`
+    # so it is a second front door onto the same LLDAP directory. `type`
     # is `jellyseerr`, not `seerr`, because that is what the hub parser and
     # scenarios filter on.
-    - namespace: seerr
-      podName: seerr-*
-      program: jellyseerr
-      poll_without_inotify: true
-    # Filebrowser auth logs, for MrShippeR/filebrowser (filebrowser-bf). The
-    # collection was installed but nothing fed it.
-    - namespace: filebrowser
-      podName: filebrowser-*
-      program: filebrowser
-      poll_without_inotify: true
+    - source: kubernetes
+      namespace: seerr
+      selector: app.kubernetes.io/name=seerr
+      labels:
+        type: jellyseerr
+    # Filebrowser auth logs, for MrShippeR/filebrowser (filebrowser-bf).
+    - source: kubernetes
+      namespace: filebrowser
+      selector: app.kubernetes.io/name=filebrowser
+      labels:
+        type: filebrowser
+  # cri-logs parser no longer needed: the API returns raw lines, no CRI prefix.
   env:
     - name: COLLECTIONS
       value: >-
@@ -345,8 +354,6 @@ agent:
         LePresidente/jellyfin
         LePresidente/jellyseerr
         MrShippeR/filebrowser
-    - name: PARSERS
-      value: crowdsecurity/cri-logs
   metrics:
     enabled: true
     serviceMonitor:
@@ -404,7 +411,6 @@ appsec:
       value: >-
         crowdsecurity/appsec-virtual-patching
         crowdsecurity/appsec-generic-rules
-        crowdsecurity/appsec-crs
   metrics:
     enabled: true
     serviceMonitor:

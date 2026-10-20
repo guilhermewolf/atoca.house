@@ -26,7 +26,7 @@ jobs:
       # renovate: datasource=github-releases depName=dag-andersen/argocd-diff-preview
       ADP_VERSION: v0.2.17
       # sha256 of argocd-diff-preview-Linux-x86_64.tar.gz; update together with ADP_VERSION.
-      ADP_SHA256: 242dce4938535962a0160585974b6ac7eb2d86e6547dcbffe97a6aad6fa34f43
+      ADP_SHA256: 3913c5ded0c4bb748ab8cabc47d9ea1060462fb797b4b61e1a12a805fc35a319
     steps:
       # Pin both sides to exact SHAs: the long-lived Argo CD caches branch refs
       # (https://dag-andersen.github.io/argocd-diff-preview/reusing-clusters/branch-vs-sha/).

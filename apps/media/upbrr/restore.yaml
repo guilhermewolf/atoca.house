@@ -1,0 +1,32 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/volsync.backube/replicationdestination_v1alpha1.json
+# Restore gate: the upbrr PVC (values.yaml) sets dataSourceRef to this object, so
+# VolSync's volume populator keeps it Pending - and the pod unscheduled - until
+# this restore produces status.latestImage. On an empty/new repo the mover
+# inits it, logs "No eligible snapshots found" and succeeds, giving an empty PVC.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: upbrr-restore
+  namespace: upbrr
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: upbrr-r2-secret
+    copyMethod: Snapshot
+    volumeSnapshotClassName: csi-ceph-blockpool
+    storageClassName: ceph-block
+    accessModes:
+      - ReadWriteOnce
+    capacity: 5Gi
+    cacheStorageClassName: openebs-hostpath
+    cacheAccessModes:
+      - ReadWriteOnce
+    cleanupCachePVC: true
+    cleanupTempPVC: true
+    enableFileDeletion: true
+    moverSecurityContext:
+      runAsUser: 99
+      runAsGroup: 100
+      fsGroup: 100

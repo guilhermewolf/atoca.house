@@ -1,0 +1,9 @@
+---
+# Application configuration for upbrr
+app:
+  name: upbrr
+  namespace: upbrr
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.3.0
+  volsyncPrivileged: true

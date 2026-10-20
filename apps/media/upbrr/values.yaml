@@ -1,0 +1,114 @@
+controllers:
+  upbrr:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      upbrr:
+        image:
+          repository: ghcr.io/autobrr/upbrr
+          tag: 0.4.0@sha256:cfd21650a797acc6a303a34f7fc6c004a03c9cbd1c364016bc89e7105126c937
+          pullPolicy: IfNotPresent
+        env:
+          UPBRR_WEB_HOST: 0.0.0.0
+          UPBRR_WEB_PORT: &port 80
+          UPBRR_WEB_OPEN_BROWSER: false
+        resources:
+          requests:
+            cpu: 10m
+            memory: 256Mi
+          limits:
+            # ffmpeg screenshots/audio analysis spike memory
+            memory: 4Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /api/auth/status
+                port: *port
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *probes
+          startup:
+            enabled: true
+            spec:
+              periodSeconds: 10
+              failureThreshold: 30
+
+defaultPodOptions:
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "vpn",
+        "namespace": "kube-system",
+        "ips": ["192.168.90.17/24"],
+        "mac": "5a:3c:e1:47:9b:22"
+      }]
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }
+    runAsNonRoot: true
+    # NAS NFS consumer - match Unraid nobody:users
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  upbrr:
+    controller: upbrr
+    ports:
+      http:
+        port: *port
+
+route:
+  upbrr:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - upbrr.atoca.house
+    rules:
+      - backendRefs:
+          - name: upbrr
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    # Restore gate - see restore.yaml.
+    dataSourceRef:
+      apiGroup: volsync.backube
+      kind: ReplicationDestination
+      name: upbrr-restore
+    globalMounts:
+      - path: /config
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp
+        subPath: tmp
+      - path: /config/logs
+        subPath: logs
+  # Same mount path as qbittorrent so client injection paths line up
+  media:
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/data/
+    globalMounts:
+      - path: /data

@@ -13,7 +13,7 @@ controllers:
           # renovate: datasource=docker depName=docker.io/freshrss/freshrss
           # Debian variant: only it ships mod_auth_openidc (OIDC_ENABLED).
           repository: docker.io/freshrss/freshrss
-          tag: 1.30.2@sha256:a4a4a2233c082940b3ed5a32e2bf12d6c5271062be7e34c188dec99816540fc4
+          tag: 1.30.4@sha256:af44385229541bee24aa9148d0ff8f3b40e095373c63a2c0f74e09a27d3c59df
         env:
           CRON_MIN: "*/15"
           DOMAIN: &hostName freshrss.atoca.house

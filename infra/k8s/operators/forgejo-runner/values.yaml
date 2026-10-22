@@ -11,7 +11,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=docker
           repository: docker.io/library/docker
-          tag: 29-dind@sha256:3e5756e2b6dad6a5f1f5deacf0a19f9eaa2581b76ae092b2d4a118162e1d4d4e
+          tag: 29-dind@sha256:9e79b879b177fbd72c34376a3dd3d91747da5db49e1f560f76aea59561471977
         args:
           - dockerd
           - --host=tcp://0.0.0.0:2375

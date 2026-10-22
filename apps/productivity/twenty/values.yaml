@@ -13,7 +13,7 @@ controllers:
           allowPrivilegeEscalation: false
         image:
           repository: docker.io/twentycrm/twenty
-          tag: v2.49
+          tag: v2.50
           pullPolicy: Always
         env:
           NODE_PORT: &port 3000
@@ -79,7 +79,7 @@ controllers:
           allowPrivilegeEscalation: false
         image:
           repository: docker.io/twentycrm/twenty
-          tag: v2.49
+          tag: v2.50
           pullPolicy: Always
         command:
           - yarn

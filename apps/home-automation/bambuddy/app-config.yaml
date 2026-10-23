@@ -1,0 +1,8 @@
+---
+# Application configuration for bambuddy
+app:
+  name: bambuddy
+  namespace: bambuddy
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.3.0

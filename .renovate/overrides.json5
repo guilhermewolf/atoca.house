@@ -32,6 +32,18 @@
       allowedVersions: "<20",
     },
     {
+      description: "Bambu Studio slicer sidecar tags are bambuddy-X.Y.Z[.W], released with Bambuddy",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["ghcr.io/maziggy/bambu-studio-api"],
+      versioning: "regex:^bambuddy-(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(?:\\.(?<build>\\d+))?$",
+    },
+    {
+      description: "Keep Bambuddy and its slicer sidecar on the same release",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["ghcr.io/maziggy/bambuddy", "ghcr.io/maziggy/bambu-studio-api"],
+      groupName: "bambuddy",
+    },
+    {
       description: "Override Talos Installer Package Name",
       matchDatasources: ["docker"],
       matchPackageNames: ["/factory\\.talos\\.dev/"],

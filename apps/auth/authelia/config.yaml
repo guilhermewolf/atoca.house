@@ -682,3 +682,21 @@ data:
             userinfo_signed_response_alg: 'none'
             # auth_oidc posts the token request with HTTP basic auth.
             token_endpoint_auth_method: 'client_secret_basic'
+
+          - client_id: bambuddy
+            client_name: Bambuddy
+            client_secret: '{{ secret "/config/secret/BAMBUDDY_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            authorization_policy: household
+            # Bambuddy reads email/groups from the ID token (BAMBUDDY_OIDC_GROUP_MAPPING).
+            claims_policy: 'default'
+            # Bambuddy always sends an S256 code_challenge.
+            require_pkce: true
+            pkce_challenge_method: S256
+            redirect_uris: ["https://bambuddy.atoca.house/api/v1/auth/oidc/callback"]
+            scopes: ["openid", "profile", "groups", "email"]
+            response_types: ["code"]
+            grant_types: ["authorization_code"]
+            userinfo_signed_response_alg: none
+            # Bambuddy sends client_secret in the token request form body.
+            token_endpoint_auth_method: client_secret_post

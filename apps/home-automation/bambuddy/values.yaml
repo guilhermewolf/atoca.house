@@ -1,0 +1,227 @@
+---
+controllers:
+  bambuddy:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/maziggy/bambuddy
+          repository: ghcr.io/maziggy/bambuddy
+          tag: 1.2.5.7@sha256:807f67511fa8c2b644b09de50a5d41794372214d00bd04fda59f576d9958d280
+        env:
+          PORT: &port 8000
+          # Base for the OIDC redirect_uri (<APP_URL>/api/v1/auth/oidc/callback).
+          APP_URL: https://bambuddy.atoca.house
+          # OIDC (Authelia), provider is written to the DB on every boot.
+          # Recovery if Authelia is down and local login is off: BAMBUDDY_LOCAL_LOGIN=true.
+          BAMBUDDY_OIDC_NAME: Authelia
+          BAMBUDDY_OIDC_ISSUER_URL: https://auth.atoca.house
+          BAMBUDDY_OIDC_CLIENT_ID: bambuddy
+          BAMBUDDY_OIDC_SCOPES: openid email profile groups
+          BAMBUDDY_OIDC_AUTO_CREATE_USERS: "true"
+          BAMBUDDY_OIDC_GROUP_MAPPING: '{"admins":"Administrators","household":"Operators"}'
+        envFrom:
+          - secretRef:
+              name: bambuddy-secret
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: *port
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 5
+          readiness: *probes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: *port
+              periodSeconds: 10
+              failureThreshold: 30
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+            # Image sets file cap cap_net_bind_service=+ep on python3; exec fails
+            # with EPERM unless the cap is in the bounding set.
+            add: ["NET_BIND_SERVICE"]
+        resources:
+          requests:
+            cpu: 50m
+            memory: 256Mi
+          limits:
+            memory: 2Gi
+      # Server-side slicing. Bambu Studio over OrcaSlicer: Orca 2.3.x/2.4-dev CLI
+      # segfaults on many Bambu-authored 3MFs (upstream #12426, #13386).
+      # Bambuddy's BAMBU_STUDIO_API_URL default is http://localhost:3001.
+      bambu-studio:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/maziggy/bambu-studio-api
+          repository: ghcr.io/maziggy/bambu-studio-api
+          tag: bambuddy-1.2.5.7@sha256:a3df1e7fe556f2ddd9d7ac294e730318eaad0d7200051a18b9076668f2a9bfa5
+        env:
+          PORT: &slicerPort 3001
+          # Bambu Studio CLI writes its config under $HOME.
+          HOME: /tmp
+          MAX_MODEL_UPLOAD_MB: "512"
+        probes:
+          liveness: &slicerProbes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: *slicerPort
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 5
+          readiness: *slicerProbes
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 4Gi
+      # AI failure detection (spaghetti etc). Settings -> Failure Detection:
+      # ML API URL http://localhost:3333, Bambuddy Internal URL http://localhost:8000.
+      obico-ml:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/thespaghettidetective/obico-ml-api-cpu
+          repository: ghcr.io/thespaghettidetective/obico-ml-api-cpu
+          tag: 2026.10.2@sha256:e1b1c5b4cfc517ed884cad24e4a709d31b935ea49dab45ff60d31a62f4cb86ee
+        # Loopback only: the pod IP is also on the IoT VLAN (net1).
+        command: ["gunicorn", "--bind", "127.0.0.1:3333", "--workers", "1", "--timeout", "120", "wsgi"]
+        probes:
+          liveness: &obicoProbes
+            enabled: true
+            custom: true
+            spec:
+              exec:
+                command: ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3333/hc/', timeout=5)"]
+              periodSeconds: 30
+              timeoutSeconds: 10
+              failureThreshold: 3
+          readiness: *obicoProbes
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              exec:
+                command: ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3333/hc/', timeout=5)"]
+              periodSeconds: 10
+              timeoutSeconds: 10
+              # Model loads during gunicorn worker boot; upstream allows ~140s.
+              failureThreshold: 30
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        resources:
+          requests:
+            cpu: 200m
+            memory: 1Gi
+          limits:
+            memory: 4Gi
+
+defaultPodOptions:
+  annotations:
+    # Second NIC on the IoT VLAN (printers live there; SSDP discovery needs L2).
+    # Static IP below the UniFi DHCP pool (192.168.70.6-254).
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "iot",
+        "namespace": "kube-system",
+        "ips": ["192.168.70.5/24"],
+        "mac": "02:6e:d7:05:0c:8c"
+      }]
+  # uvicorn + SQLite WAL checkpoint + MQTT disconnect on shutdown.
+  terminationGracePeriodSeconds: 30
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    controller: bambuddy
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    annotations:
+      gatus.io/enabled: "true"
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - bambuddy.atoca.house
+    rules:
+      - backendRefs:
+          - name: bambuddy
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  data:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    # Restore gate - see restore.yaml.
+    dataSourceRef:
+      apiGroup: volsync.backube
+      kind: ReplicationDestination
+      name: bambuddy-restore
+    advancedMounts:
+      bambuddy:
+        app:
+          - path: /app/data
+  scratch:
+    type: emptyDir
+    advancedMounts:
+      bambuddy:
+        app:
+          - path: /tmp
+            subPath: tmp
+          - path: /app/logs
+            subPath: logs
+        bambu-studio:
+          - path: /tmp
+            subPath: slicer-tmp
+          # Uploaded presets only; Bambuddy keeps the real profile store.
+          - path: /app/data
+            subPath: slicer-data
+        obico-ml:
+          - path: /tmp
+            subPath: obico-tmp

@@ -61,10 +61,6 @@ controllers:
         - name: k8s.ksgate.org/dragonfly-service
         - name: k8s.ksgate.org/temporal-deployment
         - name: k8s.ksgate.org/temporal-service
-      hostAliases:
-        - ip: "172.67.202.239"
-          hostnames:
-            - postiz.atoca.house
     containers:
       app:
         image:
@@ -150,8 +146,12 @@ route:
   app:
     enabled: true
     kind: HTTPRoute
+    # Internal only: providers never call Postiz. TikTok videos and YouTube are
+    # pushed by Postiz; Instagram and TikTok photos are pulled from the public
+    # R2 domain (CLOUDFLARE_BUCKET_URL = cdn.postiz.atoca.house), not this host.
+    # OAuth callbacks are browser redirects, so they only need LAN/tailnet.
     parentRefs:
-      - name: atoca-house-external
+      - name: atoca-house-internal
         namespace: kube-system
     hostnames:
       - postiz.atoca.house

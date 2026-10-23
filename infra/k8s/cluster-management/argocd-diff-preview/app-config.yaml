@@ -3,5 +3,5 @@ app:
   namespace: argocd-diff-preview
   chart: argo-cd
   chartRepo: https://argoproj.github.io/argo-helm
-  chartVersion: 10.10.5
+  chartVersion: 10.11.0
   disableAutoSync: true

@@ -1,0 +1,9 @@
+---
+# Application configuration for nextcloud
+# Official chart (not app-template), mirrors bjw-s-labs/home-ops selfhosted/nextcloud
+app:
+  name: nextcloud
+  namespace: nextcloud
+  chart: nextcloud
+  chartRepo: ghcr.io/nextcloud/helm
+  chartVersion: 9.4.1

@@ -1,0 +1,135 @@
+---
+# Translated from bjw-s-labs/home-ops kubernetes/apps/selfhosted/nextcloud.
+# SQLite (chart default internalDatabase) + shared Dragonfly for cache/locking/sessions.
+image:
+  flavor: fpm-alpine
+  # renovate: datasource=docker depName=docker.io/library/nextcloud
+  tag: 35.0.2-fpm-alpine@sha256:ee5b5612f24984941cdfaeeccb073e048370fd1e44104719149820eae3e28419
+
+deploymentAnnotations:
+  reloader.stakater.com/auto: "true"
+
+# TLS terminates at the gateway; tell Nextcloud links are https.
+phpClientHttpsFix:
+  enabled: true
+  protocol: https
+
+nginx:
+  enabled: true
+  image:
+    # renovate: datasource=docker depName=docker.io/library/nginx
+    tag: 1.31.8-alpine@sha256:1ef7ca94d7879df82421428ce13bd1eaa412404953859cf7a5b6512c25e67a60
+
+externalRedis:
+  enabled: true
+  host: dragonfly.dragonfly-cluster.svc.cluster.local
+  port: "6379"
+
+nextcloud:
+  host: &host nextcloud.atoca.house
+  datadir: /var/www/data
+  securityContext:
+    runAsUser: 82
+    runAsGroup: 82
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-secret
+    usernameKey: nextcloud-username
+    passwordKey: nextcloud-password
+  mail:
+    enabled: false
+  # Entrypoint (www-data) writes redis-session.ini; give it a writable file.
+  extraInitContainers:
+    - name: init-redis-session-ini
+      # renovate: datasource=docker depName=docker.io/library/alpine
+      image: docker.io/library/alpine:3.24.0@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4
+      command: ["/bin/sh", "-c", "touch /php-confd/redis-session.ini"]
+      securityContext:
+        runAsUser: 82
+        runAsGroup: 82
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities: { drop: ["ALL"] }
+      volumeMounts:
+        - name: php-confd
+          mountPath: /php-confd
+  extraVolumes:
+    - name: php-confd
+      emptyDir: {}
+  extraVolumeMounts:
+    - name: php-confd
+      mountPath: /usr/local/etc/php/conf.d/redis-session.ini
+      subPath: redis-session.ini
+  configs:
+    proxy.config.php: |-
+      <?php
+      $CONFIG = array (
+        'check_data_directory_permissions' => false,
+        'forwarded_for_headers' => array('HTTP_X_FORWARDED_FOR'),
+        'mail_smtpmode' => 'null',
+        'skeletondirectory' => '',
+        'trusted_proxies' => array(
+          0 => '127.0.0.1',
+          1 => '10.244.0.0/16',
+        ),
+      ); ?>
+    misc.config.php: |-
+      <?php
+      $CONFIG = array (
+        'default_phone_region' => 'NL',
+        'maintenance_window_start' => 2,
+      ); ?>
+
+cronjob:
+  enabled: true
+  type: cronjob
+  cronjob:
+    securityContext:
+      runAsUser: 82
+      runAsGroup: 82
+      runAsNonRoot: true
+    # RWO PVC: run next to the app pod.
+    affinity:
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/instance
+                  operator: In
+                  values: ["nextcloud"]
+                - key: app.kubernetes.io/component
+                  operator: In
+                  values: ["app"]
+            topologyKey: kubernetes.io/hostname
+    successfulJobsHistoryLimit: 1
+
+httpRoute:
+  enabled: true
+  annotations:
+    gatus.io/enabled: "true"
+  hostnames:
+    - *host
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: atoca-house-internal
+      namespace: kube-system
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            add:
+              - name: strict-transport-security
+                value: max-age=31536000
+
+# PVC defined in pvc.yaml (restore-gated via dataSourceRef).
+persistence:
+  enabled: true
+  existingClaim: nextcloud

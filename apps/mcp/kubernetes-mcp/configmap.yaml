@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-mcp-config
+data:
+  config.toml: |
+    port = "8080"
+    # Hides every create/update/delete/exec tool. RBAC in rbac.yaml is
+    # read-only too (no secrets), so this is belt and braces.
+    read_only = true

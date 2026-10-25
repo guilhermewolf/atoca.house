@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/toolhive.stacklok.dev/mcpserver_v1beta1.json
+apiVersion: toolhive.stacklok.dev/v1beta1
+kind: MCPServer
+metadata:
+  name: victorialogs-mcp
+spec:
+  groupRef:
+    name: mcp-tools
+  # renovate: datasource=docker depName=ghcr.io/victoriametrics/mcp-victorialogs
+  image: ghcr.io/victoriametrics/mcp-victorialogs:v1.9.0@sha256:753bb4fbe402ca1a782842f44636830f9895736f11d7fe783b924f8a0daf083d
+  env:
+    # Only exposes VictoriaLogs' read-only query APIs; no auth on the
+    # in-cluster endpoint.
+    - name: VL_INSTANCE_ENTRYPOINT
+      value: http://victoria-logs-server.victoria-logs.svc.cluster.local:9428
+  transport: stdio

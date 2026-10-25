@@ -1,0 +1,27 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/toolhive.stacklok.dev/mcpserver_v1beta1.json
+apiVersion: toolhive.stacklok.dev/v1beta1
+kind: MCPServer
+metadata:
+  name: grafana-mcp
+spec:
+  groupRef:
+    name: mcp-tools
+  # renovate: datasource=docker depName=docker.io/grafana/mcp-grafana
+  image: docker.io/grafana/mcp-grafana:2.1.1@sha256:71a3f4e6f412d253611314233df709ec2571fb50e39742d23fa2940f670646dc
+  # Image ENTRYPOINT hardcodes `--transport sse`; the later flag wins, so
+  # switch to stdio and let the ToolHive proxy expose HTTP.
+  args:
+    - --transport
+    - stdio
+    # Dashboards, alert rules, annotations etc. stay read-only. PromQL and
+    # Alertmanager queries (the useful part) still work.
+    - --disable-write
+  env:
+    - name: GRAFANA_URL
+      value: http://grafana-service.grafana.svc.cluster.local:3000
+  secrets:
+    - name: grafana-mcp-secret
+      key: GRAFANA_SERVICE_ACCOUNT_TOKEN
+      targetEnvName: GRAFANA_SERVICE_ACCOUNT_TOKEN
+  transport: stdio

@@ -3,6 +3,7 @@ controllers:
   jellyfin:
     annotations:
       reloader.stakater.com/auto: "true"
+    strategy: Recreate
     containers:
       app:
         image:
@@ -10,8 +11,7 @@ controllers:
           tag: 12.1@sha256:008ec8024bdaaa6f0a3f0de468e185633eeba9d67c56936e8dbf5ef6b8d6200f
         env:
           JELLYFIN_PublishedServerUrl: https://jellyfin.atoca.house
-          NVIDIA_VISIBLE_DEVICES: all
-          NVIDIA_DRIVER_CAPABILITIES: all
+          LIBVA_DRIVER_NAME: radeonsi
         probes:
           liveness: &probes
             enabled: true
@@ -38,13 +38,12 @@ controllers:
           requests:
             cpu: 500m
             memory: 1Gi
-            nvidia.com/gpu: 1
+            amd.com/gpu: 1
           limits:
             memory: 8Gi
-            nvidia.com/gpu: 1
+            amd.com/gpu: 1
 defaultPodOptions:
   enableServiceLinks: false
-  runtimeClassName: nvidia
   securityContext:
     runAsNonRoot: true
     runAsUser: 99

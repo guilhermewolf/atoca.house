@@ -44,7 +44,7 @@ nextcloud:
   extraInitContainers:
     - name: init-redis-session-ini
       # renovate: datasource=docker depName=docker.io/library/alpine
-      image: docker.io/library/alpine:3.24.0@sha256:a2d49ea686c2adfe3c992e47dc3b5e7fa6e6b5055609400dc2acaeb241c829f4
+      image: docker.io/library/alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
       command: ["/bin/sh", "-c", "touch /php-confd/redis-session.ini"]
       securityContext:
         runAsUser: 82

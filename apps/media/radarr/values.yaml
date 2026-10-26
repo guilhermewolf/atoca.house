@@ -10,9 +10,15 @@ controllers:
         env:
           RADARR__APP__INSTANCENAME: Radarr
           RADARR__APP__THEME: dark
+          # OIDC (Authelia, authorization_policy: admins). Secret + allowed user in radarr-secret.
+          RADARR__AUTH__METHOD: Oidc
+          RADARR__AUTH__OIDCAUTHORITY: https://auth.atoca.house
+          RADARR__AUTH__OIDCCLIENTID: radarr
           RADARR__LOG__DBENABLED: "False"
           RADARR__LOG__LEVEL: info
           RADARR__SERVER__PORT: &port 80
+          # Trust X-Forwarded-Proto from the gateway (pod CIDR) so the OIDC redirect_uri is https.
+          RADARR__SERVER__TRUSTEDNETWORKS: 10.244.0.0/16
         envFrom:
           - secretRef:
               name: "radarr-secret"

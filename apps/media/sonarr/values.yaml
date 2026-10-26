@@ -10,9 +10,15 @@ controllers:
         env:
           SONARR__APP__INSTANCENAME: Sonarr
           SONARR__APP__THEME: dark
+          # OIDC (Authelia, authorization_policy: admins). Secret + allowed user in sonarr-secret.
+          SONARR__AUTH__METHOD: Oidc
+          SONARR__AUTH__OIDCAUTHORITY: https://auth.atoca.house
+          SONARR__AUTH__OIDCCLIENTID: sonarr
           SONARR__LOG__DBENABLED: "False"
           SONARR__LOG__LEVEL: info
           SONARR__SERVER__PORT: &port 80
+          # Trust X-Forwarded-Proto from the gateway (pod CIDR) so the OIDC redirect_uri is https.
+          SONARR__SERVER__TRUSTEDNETWORKS: 10.244.0.0/16
         envFrom:
           - secretRef:
               name: "sonarr-secret"

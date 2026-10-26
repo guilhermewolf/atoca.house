@@ -10,7 +10,7 @@ controllers:
           allowPrivilegeEscalation: false
         image:
           repository: ghcr.io/dgtlmoon/changedetection.io
-          tag: 0.60.9
+          tag: 0.60.10
         env:
           PORT: &port 5000
           USE_X_SETTINGS: 1

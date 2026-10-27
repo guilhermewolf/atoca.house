@@ -142,7 +142,7 @@ controllers:
           allowPrivilegeEscalation: false
         image:
           repository: docker.io/getmeili/meilisearch
-          tag: v1.55.0
+          tag: v1.56.0
         env:
           MEILI_NO_ANALYTICS: true
           # Migrate the on-disk DB in place when the engine version bumps

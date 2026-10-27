@@ -37,7 +37,7 @@ controllers:
         image: &image
           # renovate: datasource=docker depName=docker.io/library/odoo
           repository: docker.io/library/odoo
-          tag: 19.0-20261015@sha256:076562619a5de059388d9f9d90545cb575799c04869610a5b20839893819b41b
+          tag: 19.0-20261015@sha256:27f920e002c43a1af7022a68f3cc17db71a2f9f3348800cb050721ce54893e49
         env:
           # OCA/server-auth branch 19.0 (auth_oidc for 20.0 is still an open MIG PR #1036)
           OCA_SERVER_AUTH_REF: fd09d42bc9b093281bf8a34726af69fffccce6de

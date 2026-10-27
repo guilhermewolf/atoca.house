@@ -54,6 +54,10 @@ controller:
     - apiGroups: [argoproj.io]
       resources: [applications, applications/status]
       verbs: [get, list, watch, update, patch]
+    # Audit events for app operations; without it every reconcile logs a 403.
+    - apiGroups: [""]
+      resources: [events]
+      verbs: [create, patch]
 
 repoServer:
   extraContainers:

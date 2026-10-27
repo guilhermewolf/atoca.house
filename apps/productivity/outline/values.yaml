@@ -29,6 +29,10 @@ controllers:
           OIDC_DISPLAY_NAME: Authelia
           OIDC_SCOPES: openid offline_access profile email
           REDIS_URL: "redis://dragonfly.dragonfly-cluster.svc.cluster.local:6379/7"
+          IFRAMELY_URL: http://iframely.iframely.svc.cluster.local:8061
+          # Outline's fetch blocks private IPs; allow the service CIDR so it
+          # can reach the in-cluster Iframely.
+          ALLOWED_PRIVATE_IP_ADDRESSES: 10.96.0.0/12
           NODE_EXTRA_CA_CERTS: /etc/ssl/postgres/ca.crt
           PORT: &port 8080
           WEB_CONCURRENCY: 10

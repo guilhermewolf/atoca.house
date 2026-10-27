@@ -1,0 +1,72 @@
+---
+# Link unfurling for Outline (IFRAMELY_URL). In-cluster only: it fetches any
+# URL it is given, so it gets no route. Upstream itteco/iframely publishes no
+# image; makeplane/iframely is Plane's maintained fork of it.
+controllers:
+  iframely:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: docker.io/makeplane/iframely
+          tag: v2.5.7@sha256:ed13efa0a8803667e8246bc17773a2f4d9279e1328573d2ec0d02f6769952189
+        env:
+          # Loads /iframely/config.production.js from the configmap below.
+          NODE_ENV: production
+          PORT: &port 8061
+          # Defaults to one worker per node CPU, ~120MB each.
+          IFRAMELY_WORKERS_COUNT: "2"
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+defaultPodOptions:
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+configMaps:
+  config:
+    data:
+      # Outline reads links.thumbnail / links.icon, i.e. the Cloud API's
+      # grouped format, which open-source Iframely only returns with GROUP_LINKS.
+      config.production.js: |
+        export default {
+          baseAppUrl: "http://iframely.iframely.svc.cluster.local:8061",
+          SKIP_IFRAMELY_RENDERS: true,
+          GROUP_LINKS: true,
+          MAX_REDIRECTS: 4,
+        };
+service:
+  app:
+    controller: iframely
+    ports:
+      http:
+        port: *port
+persistence:
+  config:
+    type: configMap
+    identifier: config
+    globalMounts:
+      - path: /iframely/config.production.js
+        subPath: config.production.js
+        readOnly: true
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

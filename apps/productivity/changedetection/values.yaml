@@ -14,7 +14,7 @@ controllers:
         env:
           PORT: &port 5000
           USE_X_SETTINGS: 1
-          PLAYWRIGHT_DRIVER_URL: ws://localhost:3000/?stealth=1&--disable-web-security=true&--user-data-dir=~/browserless-cache-123
+          PLAYWRIGHT_DRIVER_URL: ws://localhost:3000/chromium?stealth=true&blockAds=true&--disable-web-security=true
           ALLOW_IANA_RESTRICTED_ADDRESSES: true
           BASE_URL: "https://changedetection.atoca.house"
         probes:
@@ -39,20 +39,15 @@ controllers:
       browser:
         securityContext:
           allowPrivilegeEscalation: false
+        # browserless v1 (browserless/chrome) is unmaintained; its CVE report
+        # outgrew etcd's request limit and broke trivy scans. v2 moved stealth
+        # and ad-blocking to PLAYWRIGHT_DRIVER_URL query params.
         image:
-          repository: mirror.gcr.io/browserless/chrome
-          tag: latest@sha256:57d19e414d9fe4ae9d2ab12ba768c97f38d51246c5b31af55a009205c136012f
+          repository: ghcr.io/browserless/chromium
+          tag: v2.57.3@sha256:40dff7c23e0e378ba451c23ef66394ffb81bd11e6b9fe8ef3066d59eb402cc5d
         env:
-          - { name: SCREEN_WIDTH, value: "1920" }
-          - { name: SCREEN_HEIGHT, value: "1024" }
-          - { name: SCREEN_DEPTH, value: "16" }
-          - { name: ENABLE_DEBUGGER, value: "false" }
-          - { name: PREBOOT_CHROME, value: "true" }
-          - { name: CONNECTION_TIMEOUT, value: "300000" }
-          - { name: MAX_CONCURRENT_SESSIONS, value: "10" }
-          - { name: CHROME_REFRESH_TIME, value: "600000" }
-          - { name: DEFAULT_BLOCK_ADS, value: "true" }
-          - { name: DEFAULT_STEALTH, value: "true" }
+          - { name: TIMEOUT, value: "300000" }
+          - { name: CONCURRENT, value: "10" }
         resources:
           requests:
             cpu: 25m

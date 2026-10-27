@@ -239,7 +239,11 @@ data:
             public: false
             authorization_policy: admins
             pre_configured_consent_duration: 1y
-            scopes: ["openid", "profile", "groups", "email"]
+            scopes: ["openid", "profile", "groups", "email", "offline_access"]
+            # refresh_token lets argocd-server renew sessions instead of logging
+            # "oauth2: token expired and refresh token is not set".
+            response_types: ["code"]
+            grant_types: ["authorization_code", "refresh_token"]
             redirect_uris: ["https://argocd.atoca.house/auth/callback"]
             # Argo CD RBAC reads 'groups' from the id_token (g, admins, role:admin);
             # without the claims policy Authelia 4.39+ only puts 'sub' there.
@@ -268,6 +272,7 @@ data:
             lifespan: 'outline'
             public: false
             authorization_policy: two_factor
+            pre_configured_consent_duration: 1y
             require_pkce: false
             pkce_challenge_method: ''
             redirect_uris: ["https://outline.atoca.house/auth/oidc.callback"]
@@ -283,6 +288,7 @@ data:
             client_secret: '{{ secret "/config/secret/KARAKEEP_OAUTH_CLIENT_SECRET" }}'
             public: false
             authorization_policy: two_factor
+            pre_configured_consent_duration: 1y
             claims_policy: 'default'
             require_pkce: false
             pkce_challenge_method: ''
@@ -301,6 +307,7 @@ data:
             # Without this, every Authelia user could log in and TREK would
             # auto-provision them. Restricts issuance to the household group.
             authorization_policy: household
+            pre_configured_consent_duration: 1y
             # TREK maps admins from the 'groups' claim (OIDC_ADMIN_CLAIM/_VALUE),
             # so groups must be in the id_token — that is what claims_policy does.
             claims_policy: 'default'
@@ -323,6 +330,7 @@ data:
             # ABS auto-registers every OIDC login (no group claim configured), so
             # limit who can get a token at all.
             authorization_policy: 'family_friends'
+            pre_configured_consent_duration: '1y'
             require_pkce: true
             pkce_challenge_method: 'S256'
             redirect_uris:
@@ -368,6 +376,7 @@ data:
             client_secret: '{{ secret "/config/secret/KAVITA_OAUTH_CLIENT_SECRET" }}'
             public: false
             authorization_policy: 'two_factor'
+            pre_configured_consent_duration: '1y'
             require_pkce: true
             pkce_challenge_method: 'S256'
             redirect_uris:
@@ -386,6 +395,29 @@ data:
             access_token_signed_response_alg: 'none'
             userinfo_signed_response_alg: 'none'
             token_endpoint_auth_method: 'client_secret_post'
+
+          - client_id: 'komga'
+            client_name: 'Komga'
+            client_secret: '{{ secret "/config/secret/KOMGA_OAUTH_CLIENT_SECRET" }}'
+            public: false
+            # Komga auto-creates accounts on first OIDC login, so limit who can get a token.
+            authorization_policy: 'family_friends'
+            pre_configured_consent_duration: '1y'
+            # Spring Security only sends PKCE for public clients
+            require_pkce: false
+            redirect_uris:
+              - 'https://komga.atoca.house/login/oauth2/code/authelia'
+            scopes:
+              - 'openid'
+              - 'profile'
+              - 'email'
+            response_types:
+              - 'code'
+            grant_types:
+              - 'authorization_code'
+            access_token_signed_response_alg: 'none'
+            userinfo_signed_response_alg: 'none'
+            token_endpoint_auth_method: 'client_secret_basic'
 
           - client_id: kf-events
             client_name: Kitchen Frequencies — sessions admin
@@ -640,6 +672,7 @@ data:
             client_secret: '{{ secret "/config/secret/MEALIE_OAUTH_CLIENT_SECRET" }}'
             public: false
             authorization_policy: household
+            pre_configured_consent_duration: 1y
             # Mealie maps admin/user from the 'groups' claim (OIDC_ADMIN_GROUP/_USER_GROUP).
             claims_policy: 'default'
             require_pkce: true
@@ -656,6 +689,7 @@ data:
             client_secret: '{{ secret "/config/secret/FRESHRSS_OAUTH_CLIENT_SECRET" }}'
             public: false
             authorization_policy: household
+            pre_configured_consent_duration: 1y
             # mod_auth_openidc builds the callback from X-Forwarded-*, which may include :443.
             redirect_uris: ["https://freshrss.atoca.house/i/oidc/", "https://freshrss.atoca.house:443/i/oidc/"]
             scopes: ["openid", "profile", "groups", "email"]
@@ -688,6 +722,7 @@ data:
             client_secret: '{{ secret "/config/secret/BAMBUDDY_OAUTH_CLIENT_SECRET" }}'
             public: false
             authorization_policy: household
+            pre_configured_consent_duration: 1y
             # Bambuddy reads email/groups from the ID token (BAMBUDDY_OIDC_GROUP_MAPPING).
             claims_policy: 'default'
             # Bambuddy always sends an S256 code_challenge.

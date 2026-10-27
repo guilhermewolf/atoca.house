@@ -1,0 +1,118 @@
+---
+controllers:
+  komga:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: ghcr.io/gotson/komga
+          tag: 1.29.1@sha256:9fa656e8259bbd75c0f654bdfa91abf2b4813cbf4f40e80eb292495446ffdf1f
+        env:
+          SERVER_PORT: &port 25600
+          KOMGA_CONFIGDIR: /config
+          JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75
+          # Authelia OIDC; client secret comes from komga-secret
+          SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTHELIA_PROVIDER: authelia
+          SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTHELIA_CLIENT_ID: komga
+          SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTHELIA_CLIENT_NAME: Authelia
+          SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTHELIA_SCOPE: openid,profile,email
+          SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTHELIA_AUTHORIZATION_GRANT_TYPE: authorization_code
+          SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTHELIA_REDIRECT_URI: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+          SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTHELIA_ISSUER_URI: https://auth.atoca.house
+          SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTHELIA_USER_NAME_ATTRIBUTE: preferred_username
+          # Authelia's family_friends policy gates who can log in; new users start with no library access
+          KOMGA_OAUTH2_ACCOUNT_CREATION: "true"
+        envFrom:
+          - secretRef:
+              name: komga-secret
+        probes:
+          liveness: &probe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /actuator/health
+                port: *port
+              periodSeconds: 30
+              timeoutSeconds: 5
+          readiness: *probe
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 10
+        resources:
+          requests:
+            cpu: 15m
+            memory: 1Gi
+          limits:
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+
+defaultPodOptions:
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }
+    runAsNonRoot: true
+    # NFS consumer: match Unraid nobody:users
+    runAsUser: 99
+    runAsGroup: 100
+    fsGroup: 100
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    ports:
+      http:
+        port: *port
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - komga.atoca.house
+    rules:
+      - backendRefs:
+          - name: komga
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    # Restore gate - see restore.yaml.
+    dataSourceRef:
+      apiGroup: volsync.backube
+      kind: ReplicationDestination
+      name: komga-restore
+    globalMounts:
+      - path: /config
+
+  # Library is read-only: Komga only serves; Suwayomi/Shelfmark write
+  media:
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/data
+    globalMounts:
+      - path: /data
+        subPath: media
+        readOnly: true
+
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

@@ -71,7 +71,7 @@ configs:
       issuer: https://auth.atoca.house
       clientID: argocd
       clientSecret: $argocd-oidc:clientSecret
-      requestedScopes: ["openid", "profile", "email", "groups"]
+      requestedScopes: ["openid", "profile", "email", "groups", "offline_access"]
 
   rbac:
     scopes: "[groups]"

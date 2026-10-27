@@ -1,0 +1,82 @@
+---
+# Self-hosted diagrams.net; Outline's Diagrams.net integration
+# (Settings → Integrations) points here so diagrams are edited inline.
+controllers:
+  drawio:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: docker.io/jgraph/drawio
+          tag: 32.6.1@sha256:3d0a5a5ffb4f76abcecd9d17ae1373e3eefd0db07b657c545637dc9c6a7412e1
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: true
+          startup:
+            enabled: true
+            spec:
+              failureThreshold: 30
+              periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 256Mi
+          limits:
+            memory: 1Gi
+defaultPodOptions:
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+service:
+  app:
+    controller: drawio
+    ports:
+      http:
+        port: &port 8080
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+        sectionName: https
+    hostnames:
+      - drawio.atoca.house
+    rules:
+      - backendRefs:
+          - name: drawio
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+persistence:
+  # Tomcat writes logs, temp files and compiled JSPs under CATALINA_HOME.
+  logs:
+    type: emptyDir
+    globalMounts:
+      - path: /usr/local/tomcat/logs
+  temp:
+    type: emptyDir
+    globalMounts:
+      - path: /usr/local/tomcat/temp
+  work:
+    type: emptyDir
+    globalMounts:
+      - path: /usr/local/tomcat/work
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

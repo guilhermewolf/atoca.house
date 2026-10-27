@@ -133,8 +133,8 @@ data:
                         url: https://audiobookshelf.atoca.house
                         icon: sh:audiobookshelf-light
                       - title: Ebooks
-                        url: https://kavita.atoca.house
-                        icon: sh:kavita-light
+                        url: https://komga.atoca.house
+                        icon: sh:komga
                       - title: Comics & Manga
                         url: https://suwayomi.atoca.house
                         icon: sh:suwayomi-light
@@ -249,8 +249,8 @@ data:
                     url: https://audiobookshelf.atoca.house
                     icon: sh:audiobookshelf-light
                   - title: Ebooks
-                    url: https://kavita.atoca.house
-                    icon: sh:kavita-light
+                    url: https://komga.atoca.house
+                    icon: sh:komga
 
       # =========================================================================
       # LIFE — saved links, video, personal tools.
@@ -272,8 +272,8 @@ data:
                         url: https://audiobookshelf.atoca.house
                         icon: sh:audiobookshelf-light
                       - title: Ebooks
-                        url: https://kavita.atoca.house
-                        icon: sh:kavita-light
+                        url: https://komga.atoca.house
+                        icon: sh:komga
                       - title: Comics & Manga
                         url: https://suwayomi.atoca.house
                         icon: sh:suwayomi-light
@@ -388,12 +388,12 @@ data:
         jellyfin-app-url: https://jellyfin.atoca.house
         karakeep: sh:karakeep-light
         karakeep-url: https://karakeep.atoca.house
-        kavita: sh:kavita-light
+        komga: sh:komga
         mealie-app: sh:mealie-light
         mealie-app-url: https://mealie.atoca.house
         omni-tools: mdi:tools
         omni-tools-url: https://omni-tools.atoca.house
-        kavita-url: https://kavita.atoca.house
+        komga-url: https://komga.atoca.house
         open-webui: sh:open-webui-light
         open-webui-url: https://chat.atoca.house
         outline: sh:outline-light

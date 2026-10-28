@@ -1,5 +1,7 @@
+
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
+
   extends: [
     "config:recommended",
     "docker:enableMajor",
@@ -14,30 +16,62 @@
     ":disableRateLimiting",
     ":dependencyDashboard",
     ":semanticCommits",
-    ":timezone(Europe/Amsterdam)"
+    ":timezone(Europe/Amsterdam)",
   ],
+
   dependencyDashboardTitle: "Renovate Dashboard 🤖",
+
   suppressNotifications: [
     "prEditedNotification",
-    "prIgnoreNotification"
+    "prIgnoreNotification",
   ],
+
   ignorePaths: [
-    "**/resources/**"
+    "**/resources/**",
   ],
+
+  // Exclude internal and unavailable container registries
+  packageRules: [
+    {
+      description: "Ignore all internal Forgejo container images",
+      matchDatasources: ["docker"],
+      matchPackageNames: ["/^forge\\.atoca\\.house\\//"],
+      enabled: false,
+    },
+    {
+      description: "Ignore Crunchy Data PGO registry SSL failure",
+      matchDatasources: ["docker"],
+      matchPackageNames: [
+        "registry.developers.crunchydata.com/crunchydata/pgo",
+      ],
+      enabled: false,
+    },
+  ],
+
+  // Prevent access to the internal Forgejo registry
+  hostRules: [
+    {
+      matchHost: "https://forge.atoca.house",
+      enabled: false,
+    },
+  ],
+
   kubernetes: {
     managerFilePatterns: [
-      "/\\.yaml(?:\\.j2)?$/"
+      "/\\.yaml(?:\\.j2)?$/",
     ],
   },
+
   "docker-compose": {
     managerFilePatterns: [
-      "/(^|/)stacks/.+\\.ya?ml$/"
-    ]
+      "/(^|/)stacks/.+\\.ya?ml$/",
+    ],
   },
+
   "helm-values": {
     managerFilePatterns: [
       "/(^|/)infra/k8s/.+/values\\.ya?ml$/",
-      "/(^|/)apps/.+/values\\.ya?ml$/"
-    ]
+      "/(^|/)apps/.+/values\\.ya?ml$/",
+    ],
   },
 }

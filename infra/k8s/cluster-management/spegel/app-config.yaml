@@ -3,6 +3,6 @@ app:
   namespace: spegel
   chart: spegel
   chartRepo: ghcr.io/spegel-org/helm-charts
-  chartVersion: 0.8.0
+  chartVersion: 0.8.1
   podSecurityPrivileged: true
   disableAutoSync: true

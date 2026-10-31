@@ -8,7 +8,7 @@ spec:
   groupRef:
     name: mcp-tools
   # renovate: datasource=docker depName=quay.io/containers/kubernetes_mcp_server
-  image: quay.io/containers/kubernetes_mcp_server:v0.0.69@sha256:1da9d62ad0c008a6cadcf2718c86c2e2d18753ca1d9f1f3313068980794b24f2
+  image: quay.io/containers/kubernetes_mcp_server:v0.1.1@sha256:d616331a99184d42f7471eac5ae257192e7065bb684ad115cc95c2e76cfbc2d1
   # Since v0.0.69 runtime settings are TOML only (no CLI flags). The image's
   # default config just sets port 8080, so it always speaks HTTP; point it at
   # our config (configmap.yaml) which keeps the port and adds read_only.

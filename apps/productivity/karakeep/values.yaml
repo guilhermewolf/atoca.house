@@ -15,6 +15,10 @@ controllers:
           CRAWLER_ENABLE_ADBLOCKER: true
           CRAWLER_STORE_SCREENSHOT: true
           CRAWLER_FULL_PAGE_SCREENSHOT: true
+          # Full-page screenshots of long pages overrun the 5s default; the job
+          # budget also has to cover the 15s anti-bot challenge wait + 30s navigate.
+          CRAWLER_SCREENSHOT_TIMEOUT_SEC: 20
+          CRAWLER_JOB_TIMEOUT_SEC: 120
           DATA_DIR: /data
           # OIDC-only: allow OAuth users to auto-provision, but disable the
           # password signup/login form so OAuth is the only entry point.
@@ -108,6 +112,11 @@ controllers:
   chrome:
     annotations:
       reloader.stakater.com/auto: "true"
+    # Upstream runs chrome with `init: true`; without a reaper its exited
+    # renderer processes pile up as zombies. Sharing the PID namespace makes
+    # the pause container PID 1, which reaps them.
+    pod:
+      shareProcessNamespace: true
     containers:
       app:
         image:

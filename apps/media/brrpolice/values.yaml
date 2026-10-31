@@ -62,3 +62,5 @@ persistence:
     storageClass: ceph-block
     accessMode: ReadWriteOnce
     size: 3Gi
+  tmp:
+    type: emptyDir

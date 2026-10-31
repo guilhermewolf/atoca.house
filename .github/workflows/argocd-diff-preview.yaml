@@ -4,6 +4,13 @@ on:
   pull_request:
     branches:
       - main
+    # Only paths Argo CD renders; skips terraform, talos, stacks, bootstrap, docs.
+    paths:
+      - apps/**
+      - infra/k8s/**
+      - argocd/**
+      - .github/workflows/argocd-diff-preview.yaml
+      - '!**/*.md'
 
 permissions:
   contents: read

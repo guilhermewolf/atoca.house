@@ -290,12 +290,13 @@ agent:
   # evt.Parsed.program via the built-in non-syslog parser. Tails new lines
   # only (TailLines: 0), so restarts don't replay old logs.
   additionalAcquisition:
-    # Envoy Gateway access logs (both external and internal). This is the
-    # primary signal source — the `hydaz/envoy-logs` custom parser turns the
-    # envoy JSON access-log format into nginx-compatible fields.
+    # Envoy Gateway access logs, external Gateway only. This is the primary
+    # signal source — the `hydaz/envoy-logs` custom parser turns the envoy
+    # JSON access-log format into nginx-compatible fields. Internal Gateway
+    # clients are all private IPs, 100% dropped by crowdsecurity/whitelists.
     - source: kubernetes
       namespace: kube-system
-      selector: app.kubernetes.io/name=envoy,gateway.envoyproxy.io/owning-gateway-namespace=kube-system
+      selector: app.kubernetes.io/name=envoy,gateway.envoyproxy.io/owning-gateway-name=atoca-house-external
       labels:
         type: envoy
     # Authelia access/auth logs for brute-force detection.
@@ -328,12 +329,10 @@ agent:
       selector: app.kubernetes.io/name=seerr
       labels:
         type: jellyseerr
-    # Filebrowser auth logs, for MrShippeR/filebrowser (filebrowser-bf).
-    - source: kubernetes
-      namespace: filebrowser
-      selector: app.kubernetes.io/name=filebrowser
-      labels:
-        type: filebrowser
+    # No filebrowser source: it runs gtsteffaniak/filebrowser with password
+    # login disabled (OIDC via Authelia only), so brute force lands on
+    # Authelia. MrShippeR/filebrowser parses the upstream filebrowser format
+    # and never matched a line here.
   # cri-logs parser no longer needed: the API returns raw lines, no CRI prefix.
   env:
     - name: COLLECTIONS
@@ -344,7 +343,6 @@ agent:
         LePresidente/authelia
         LePresidente/jellyfin
         LePresidente/jellyseerr
-        MrShippeR/filebrowser
   metrics:
     enabled: true
     serviceMonitor:
@@ -397,6 +395,31 @@ appsec:
         - crowdsecurity/appsec-default
       labels:
         type: appsec
+  scenarios:
+    # Hub crowdsecurity/appsec-vpatch has `distinct: rule_name`, so it only
+    # bans an IP that trips two DIFFERENT rules within 60s. An IP replaying
+    # the same exploit is blocked per request but never banned (seen: 304
+    # CVE-2025-29927 hits from one IP, 0 decisions). This bans on 3 blocks
+    # of any rule in 60s. Name must contain "appsec" for appsec_remediation.
+    appsec-vpatch-repeat.yaml: |-
+      type: leaky
+      format: 3.0
+      name: atoca/appsec-vpatch-repeat
+      description: "Ban IPs repeatedly blocked by CrowdSec AppSec, same rule or not"
+      filter: "evt.Meta.log_type == 'appsec-block' && evt.Meta.rule_name not startsWith 'native_rule'"
+      groupby: evt.Meta.source_ip
+      capacity: 2
+      leakspeed: "60s"
+      blackhole: 1m
+      labels:
+        service: http
+        confidence: 3
+        spoofable: 0
+        classification:
+          - attack.T1190
+        label: "Repeatedly blocked by CrowdSec AppSec"
+        behavior: "http:exploit"
+        remediation: true
   env:
     - name: COLLECTIONS
       value: >-

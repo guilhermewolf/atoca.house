@@ -75,17 +75,3 @@ subjects:
   - kind: ServiceAccount
     name: crowdsec-agent
     namespace: crowdsec
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: crowdsec-agent-log-reader
-  namespace: filebrowser
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: crowdsec-agent-log-reader
-subjects:
-  - kind: ServiceAccount
-    name: crowdsec-agent
-    namespace: crowdsec

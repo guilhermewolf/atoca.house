@@ -10,13 +10,10 @@ spec:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: atoca-house-external
-    # Protect the internal Gateway too. LAN is not a trust boundary: a
-    # compromised LAN host or SSRF-capable pod can otherwise reach 40+
-    # HTTPRoutes (ArgoCD, Grafana, Prometheus, Rook, pgAdmin, etc.) without
-    # any IP reputation or WAF inspection.
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: atoca-house-internal
+    # Internal Gateway deliberately NOT bound: its clients are LAN/pod IPs,
+    # which crowdsecurity/whitelists drops, so no decision can ever exist for
+    # them and IP reputation is a no-op there. Binding it only put the WAF on
+    # every admin-UI request (latency + false positives) for no ban value.
   extAuth:
     failOpen: true
     grpc:

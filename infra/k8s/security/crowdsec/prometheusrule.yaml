@@ -69,7 +69,7 @@ spec:
               /
               sum by (machine) (rate(cs_parser_hits_ok_total{namespace="crowdsec"}[15m]) + rate(cs_parser_hits_ko_total{namespace="crowdsec"}[15m]))
             ) > 0.5
-            # Volume floor: filebrowser/seerr lines are mostly rejected by
+            # Volume floor: jellyfin/seerr lines are mostly rejected by
             # their parsers by design, so the ratio is meaningless at a few
             # lines per minute.
             and on (machine)

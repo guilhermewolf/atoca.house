@@ -5,4 +5,4 @@ app:
   namespace: trivy-operator
   chart: trivy-operator
   chartRepo: https://aquasecurity.github.io/helm-charts/
-  chartVersion: 0.37.0
+  chartVersion: 0.38.1

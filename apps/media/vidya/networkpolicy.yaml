@@ -1,0 +1,32 @@
+---
+# yaml-language-server: $schema=https://kube-schemas.pages.dev/networking.k8s.io/networkpolicy_v1.json
+# Only the internal Envoy gateway (user traffic) and Gatus (/healthz check)
+# may reach Vidya. Kubelet probes come from the host and Cilium allows them.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vidya
+  namespace: vidya
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: vidya
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              gateway.envoyproxy.io/owning-gateway-name: atoca-house-internal
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: gatus
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: gatus
+      ports:
+        - port: 31415
+          protocol: TCP

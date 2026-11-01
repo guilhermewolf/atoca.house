@@ -28,10 +28,14 @@ controllers:
           OIDC_ADMIN_GROUP: admins
           OIDC_BUTTON_LABEL: Log in with Authelia
           OIDC_AUTO_CREATE: "true"
-          OIDC_DISABLE_LOCAL_LOGIN: "false"
-          # Browser-incompatible videos (e.g. Xvid/MPEG-4 Part 2) are converted
-          # once to H.264 here; lives on the NAS, the config PVC is only 2Gi.
-          VIDYA_TRANSCODE_PATH: /nas/transcodes/vidya
+          OIDC_DISABLE_LOCAL_LOGIN: "true"
+          # Requests arrive from the Envoy gateway pods; trust X-Forwarded-For
+          # only from the pod CIDR so clients can't spoof their IP.
+          TRUST_PROXY: 10.244.0.0/16
+          VIDYA_SCAN_INTERVAL_MINUTES: "360"
+          # Browser-incompatible videos are transcoded on the fly to HLS
+          # segments in this scratch dir (the hls emptyDir below).
+          VIDYA_HLS_PATH: /tmp/vidya-hls
           VIDYA_TRANSCODE_THREADS: "4"
           # H.264 encode on the node's AMD iGPU (decode stays on CPU); falls
           # back to libx264 if the GPU path fails.
@@ -39,17 +43,45 @@ controllers:
           LIBVA_DRIVER_NAME: radeonsi
         resources:
           requests:
-            cpu: 10m
+            cpu: 500m
             memory: 256Mi
             amd.com/gpu: 1
           limits:
             memory: 2Gi
             amd.com/gpu: 1
+        # /healthz checks the DB and that every media root opendir()s within
+        # 5s, so a stale NFS handle or a blocked event loop fails the probe.
         probes:
           liveness:
             enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: *port
+              periodSeconds: 30
+              timeoutSeconds: 10
+              failureThreshold: 5
           readiness:
             enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: *port
+              periodSeconds: 10
+              timeoutSeconds: 10
+              failureThreshold: 3
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /healthz
+                port: *port
+              periodSeconds: 10
+              timeoutSeconds: 10
+              failureThreshold: 30
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -70,6 +102,15 @@ defaultPodOptions:
 
 service:
   app:
+    # Gatus probes /healthz in-cluster: the route is behind gateway OIDC and
+    # the internal gateway only gets a DNS check.
+    annotations:
+      gatus.home-operations.com/enabled: "true"
+      gatus.home-operations.com/endpoint: |-
+        name: vidya-healthz
+        group: internal
+        url: http://vidya.vidya.svc.cluster.local:31415/healthz
+        conditions: ["[STATUS] == 200"]
     ports:
       http:
         port: *port
@@ -98,6 +139,13 @@ persistence:
     globalMounts:
       - path: /tmp
 
+  # On-the-fly HLS segments (VIDYA_HLS_PATH); node disk, not RAM.
+  hls:
+    type: emptyDir
+    sizeLimit: 10Gi
+    globalMounts:
+      - path: /tmp/vidya-hls
+
   # key "config" keeps PVC name = "vidya", matching backup.yaml/restore.yaml (same as kavita)
   config:
     enabled: true
@@ -116,11 +164,3 @@ persistence:
     globalMounts:
       - path: /media
         readOnly: true
-
-  # writable export root, only for the transcode cache (VIDYA_TRANSCODE_PATH)
-  nas:
-    type: nfs
-    server: nas.internal
-    path: /mnt/user/data
-    globalMounts:
-      - path: /nas

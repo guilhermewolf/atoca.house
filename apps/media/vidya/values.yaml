@@ -9,7 +9,7 @@ controllers:
           # Fork with in-app OIDC, built by vidya-self's Forgejo Actions workflow.
           # Not Renovate-managed: the private registry has no host rule here.
           repository: forge.atoca.house/guilherme/vidya-self
-          tag: 9b4bb03@sha256:72b02b815a5d889023f01e53c509c80e0a8f73151fe3d810f8c1e933ffaf7caf
+          tag: 3882831@sha256:acad0d3a67648b27079958f6de16c7b6b7a9029e9ea8167b4800745d2250cc80
         env:
           VIDYA_DATA_PATH: /data
           PORT: &port 31415
@@ -29,12 +29,16 @@ controllers:
           OIDC_BUTTON_LABEL: Log in with Authelia
           OIDC_AUTO_CREATE: "true"
           OIDC_DISABLE_LOCAL_LOGIN: "false"
+          # Browser-incompatible videos (e.g. Xvid/MPEG-4 Part 2) are converted
+          # once to H.264 here; lives on the NAS, the config PVC is only 2Gi.
+          VIDYA_TRANSCODE_PATH: /nas/transcodes/vidya
+          VIDYA_TRANSCODE_THREADS: "4"
         resources:
           requests:
             cpu: 10m
             memory: 256Mi
           limits:
-            memory: 1Gi
+            memory: 2Gi
         probes:
           liveness:
             enabled: true
@@ -104,3 +108,11 @@ persistence:
     globalMounts:
       - path: /media
         readOnly: true
+
+  # writable export root, only for the transcode cache (VIDYA_TRANSCODE_PATH)
+  nas:
+    type: nfs
+    server: nas.internal
+    path: /mnt/user/data
+    globalMounts:
+      - path: /nas

@@ -9,7 +9,7 @@ controllers:
           # Fork with in-app OIDC, built by vidya-self's Forgejo Actions workflow.
           # Not Renovate-managed: the private registry has no host rule here.
           repository: forge.atoca.house/guilherme/vidya-self
-          tag: 3882831@sha256:acad0d3a67648b27079958f6de16c7b6b7a9029e9ea8167b4800745d2250cc80
+          tag: f88f49d@sha256:e0106c6e639e84484364ed514f3473403e978031d901918606915b123061b9b7
         env:
           VIDYA_DATA_PATH: /data
           PORT: &port 31415
@@ -33,12 +33,18 @@ controllers:
           # once to H.264 here; lives on the NAS, the config PVC is only 2Gi.
           VIDYA_TRANSCODE_PATH: /nas/transcodes/vidya
           VIDYA_TRANSCODE_THREADS: "4"
+          # H.264 encode on the node's AMD iGPU (decode stays on CPU); falls
+          # back to libx264 if the GPU path fails.
+          VIDYA_TRANSCODE_HWACCEL: vaapi
+          LIBVA_DRIVER_NAME: radeonsi
         resources:
           requests:
             cpu: 10m
             memory: 256Mi
+            amd.com/gpu: 1
           limits:
             memory: 2Gi
+            amd.com/gpu: 1
         probes:
           liveness:
             enabled: true
@@ -59,6 +65,8 @@ defaultPodOptions:
     runAsGroup: 100
     fsGroup: 100
     fsGroupChangePolicy: OnRootMismatch
+    # video/render groups for /dev/dri (same as jellyfin)
+    supplementalGroups: [44, 109]
 
 service:
   app:

@@ -8,7 +8,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=lissy93/web-check
           repository: lissy93/web-check
-          tag: 2.3.11@sha256:6fe1535bb4374c566f2e8eb38c455e91eb226a6af829054a13320071e09972ab
+          tag: 2.3.12@sha256:56e2e8573d0771302077a366ebcae10a71e5ba6aa37764597f8d7a19c1b7cb0d
         env:
           TZ: Europe/Amsterdam
           # Chromium (screenshots/tech-stack) needs a writable HOME

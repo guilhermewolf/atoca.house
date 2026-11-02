@@ -6,7 +6,7 @@ controllers:
     strategy: Recreate
     containers:
       app:
-        image:
+        image: &image
           repository: ghcr.io/jellyfin/jellyfin
           tag: 12.1@sha256:008ec8024bdaaa6f0a3f0de468e185633eeba9d67c56936e8dbf5ef6b8d6200f
         env:
@@ -30,7 +30,7 @@ controllers:
             spec:
               failureThreshold: 30
               periodSeconds: 10
-        securityContext:
+        securityContext: &securityContext
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
           capabilities: { drop: ["ALL"] }
@@ -42,6 +42,18 @@ controllers:
           limits:
             memory: 8Gi
             amd.com/gpu: 1
+    initContainers:
+      # EnableMetrics only lives in system.xml (no env var). Flip it before
+      # Jellyfin starts; no-op on first boot until system.xml exists.
+      enable-metrics:
+        image: *image
+        command: ["/bin/sh", "-c"]
+        args:
+          - >-
+            f=/config/config/system.xml;
+            [ ! -f "$f" ] || sed -i 's,<EnableMetrics>false</EnableMetrics>,<EnableMetrics>true</EnableMetrics>,' "$f" || echo "WARN: could not enable metrics in $f";
+            exit 0
+        securityContext: *securityContext
 defaultPodOptions:
   enableServiceLinks: false
   securityContext:
@@ -63,6 +75,12 @@ service:
       http:
         port: *port
 
+serviceMonitor:
+  app:
+    endpoints:
+      - port: http
+        path: /metrics
+
 route:
   app:
     enabled: true
@@ -73,6 +91,19 @@ route:
     hostnames: &hostname
       - jellyfin.atoca.house
     rules:
+      # Keep /metrics off the public gateway; Prometheus scrapes the Service directly
+      - matches:
+          - path:
+              # ASP.NET routing is case-insensitive: block /Metrics, /METRICS/ too
+              type: RegularExpression
+              value: "(?i)/metrics/?"
+        filters:
+          - type: RequestRedirect
+            requestRedirect:
+              path:
+                type: ReplaceFullPath
+                replaceFullPath: /
+              statusCode: 302
       - backendRefs:
           - name: jellyfin
             port: *port

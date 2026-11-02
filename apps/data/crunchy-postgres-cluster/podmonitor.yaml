@@ -1,0 +1,32 @@
+---
+# yaml-language-server: $schema=https://kube-schemas.pages.dev/monitoring.coreos.com/podmonitor_v1.json
+# Scrapes the PGO pgmonitor exporter (port 9187). Relabels mirror Crunchy's
+# reference Prometheus config so the PGO Grafana dashboards (pg_cluster/role) work.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: crunchy-postgres-exporter
+  namespace: crunchy-postgres-cluster
+spec:
+  selector:
+    matchLabels:
+      postgres-operator.crunchydata.com/crunchy-postgres-exporter: "true"
+  podMetricsEndpoints:
+    - port: exporter
+      path: /metrics
+      interval: 30s
+      relabelings:
+        - action: replace
+          sourceLabels: [__meta_kubernetes_namespace, __meta_kubernetes_pod_label_postgres_operator_crunchydata_com_cluster]
+          targetLabel: pg_cluster
+          separator: ":"
+          replacement: "$1$2"
+        - action: replace
+          sourceLabels: [__meta_kubernetes_pod_label_postgres_operator_crunchydata_com_instance]
+          targetLabel: deployment
+        - action: replace
+          sourceLabels: [__meta_kubernetes_pod_label_postgres_operator_crunchydata_com_role]
+          targetLabel: role
+        - action: replace
+          sourceLabels: [__meta_kubernetes_pod_ip]
+          targetLabel: ip

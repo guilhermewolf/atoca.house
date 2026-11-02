@@ -54,6 +54,29 @@ controllers:
             memory: 384Mi
           limits:
             memory: 3Gi
+      exportarr:
+        image:
+          repository: ghcr.io/onedr0p/exportarr
+          tag: v2.3.0@sha256:af535d94061cf97a52e1661945ffba78c03f9443eae7c0da1a80a5a4be56b520
+        args: ["radarr"]
+        env:
+          PORT: &metricsPort 9707
+          URL: http://localhost:80
+          APIKEY:
+            valueFrom:
+              secretKeyRef:
+                name: radarr-secret
+                key: RADARR__AUTH__APIKEY
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
 defaultPodOptions:
   securityContext:
     seccompProfile: { type: RuntimeDefault }
@@ -68,6 +91,12 @@ service:
     ports:
       http:
         port: *port
+      metrics:
+        port: *metricsPort
+serviceMonitor:
+  radarr:
+    endpoints:
+      - port: metrics
 route:
   radarr:
     enabled: true

@@ -36,7 +36,8 @@ controllers:
           capabilities: {drop: ["ALL"]}
         resources:
           requests:
-            cpu: 4000m
+            # 7d p95 ~0, max 2.1 cores (model load); inference is on GPU
+            cpu: 500m
             memory: 8Gi
             nvidia.com/gpu: 1
           limits:

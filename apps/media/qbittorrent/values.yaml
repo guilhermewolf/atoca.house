@@ -38,6 +38,26 @@ controllers:
             memory: 1280Mi
           limits:
             memory: 4Gi
+      exporter:
+        image:
+          repository: ghcr.io/martabal/qbittorrent-exporter
+          tag: v2.0.4@sha256:9289fc5ad5cef7af6af5af5ab5ed7b8d609827490ba374df858905d66da7ec5f
+        env:
+          # No credentials: qBittorrent's LocalHostAuth=false lets the sidecar in via localhost.
+          QBITTORRENT_BASE_URL: http://localhost:80
+          # qBittorrent >= 5.2 names the session cookie QBT_SID_<webui port>.
+          QBITTORRENT_COOKIE_NAME: QBT_SID_80
+          EXPORTER_PORT: &metricsPort 8090
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 16Mi
+          limits:
+            memory: 64Mi
 defaultPodOptions:
   annotations:
     k8s.v1.cni.cncf.io/networks: |-
@@ -61,6 +81,13 @@ service:
     ports:
       http:
         port: *port
+      metrics:
+        port: *metricsPort
+
+serviceMonitor:
+  qbittorrent:
+    endpoints:
+      - port: metrics
 
 route:
   qbittorrent:

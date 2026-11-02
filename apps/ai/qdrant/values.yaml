@@ -62,6 +62,18 @@ service:
       grpc:
         port: 6334
 
+serviceMonitor:
+  app:
+    endpoints:
+      - port: http
+        path: /metrics
+        # /metrics requires an API key once one is set; the read-only key is enough
+        authorization:
+          type: Bearer
+          credentials:
+            name: qdrant-secrets
+            key: QDRANT__SERVICE__READ_ONLY_API_KEY
+
 persistence:
   data:
     type: persistentVolumeClaim

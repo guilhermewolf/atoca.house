@@ -1,0 +1,943 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/grafana.integreatly.org/grafanadashboard_v1beta1.json
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: cluster-logs
+  namespace: grafana
+spec:
+  allowCrossNamespaceImport: true
+  folder: Overview
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  json: |
+    {
+      "uid": "cluster-logs",
+      "title": "Cluster Logs",
+      "tags": [
+        "homelab",
+        "logs"
+      ],
+      "editable": true,
+      "graphTooltip": 1,
+      "refresh": "",
+      "schemaVersion": 39,
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "links": [
+        {
+          "title": "Overview",
+          "type": "link",
+          "url": "/d/homelab-overview",
+          "icon": "dashboard"
+        },
+        {
+          "title": "Cluster Logs",
+          "type": "link",
+          "url": "/d/cluster-logs",
+          "icon": "doc"
+        },
+        {
+          "title": "Unraid NAS",
+          "type": "link",
+          "url": "/d/unraid-nas",
+          "icon": "dashboard"
+        }
+      ],
+      "panels": [
+        {
+          "id": 30,
+          "type": "stat",
+          "title": "Log lines",
+          "description": "",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 4,
+            "h": 4
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in($source) node:in($node) namespace:in($namespace) workload:in($workload) pod:in($pod) container:in($container) $search | stats count() lines",
+              "queryType": "stats",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 31,
+          "type": "stat",
+          "title": "Errors",
+          "description": "",
+          "gridPos": {
+            "x": 4,
+            "y": 0,
+            "w": 4,
+            "h": 4
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in($source) node:in($node) namespace:in($namespace) workload:in($workload) pod:in($pod) container:in($container) $search (level:~\"(?i)^(err|error|fatal|crit|critical|panic|emerg|alert)$\" OR level:in(\"50\",\"60\") OR severity:in(\"0\",\"1\",\"2\",\"3\")) | stats count() errors",
+              "queryType": "stats",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 500
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 32,
+          "type": "stat",
+          "title": "Warnings",
+          "description": "",
+          "gridPos": {
+            "x": 8,
+            "y": 0,
+            "w": 4,
+            "h": 4
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in($source) node:in($node) namespace:in($namespace) workload:in($workload) pod:in($pod) container:in($container) $search (level:~\"(?i)^warn(ing)?$\" OR level:=\"40\" OR severity:=\"4\") | stats count() warnings",
+              "queryType": "stats",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 200
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 33,
+          "type": "timeseries",
+          "title": "Volume by namespace",
+          "description": "",
+          "gridPos": {
+            "x": 12,
+            "y": 0,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in($source) node:in($node) namespace:in($namespace) workload:in($workload) pod:in($pod) container:in($container) $search | stats by (source, namespace) count() lines",
+              "queryType": "statsRange",
+              "refId": "A",
+              "legendFormat": "{{source}} {{namespace}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "bars",
+                "fillOpacity": 60,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              },
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max",
+                "lastNotNull"
+              ],
+              "sortBy": "Max",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 34,
+          "type": "timeseries",
+          "title": "Errors & warnings over time",
+          "description": "",
+          "gridPos": {
+            "x": 0,
+            "y": 4,
+            "w": 12,
+            "h": 4
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in($source) node:in($node) namespace:in($namespace) workload:in($workload) pod:in($pod) container:in($container) $search (level:~\"(?i)^(err|error|fatal|crit|critical|panic|emerg|alert)$\" OR level:in(\"50\",\"60\") OR severity:in(\"0\",\"1\",\"2\",\"3\")) | stats count() errors",
+              "queryType": "statsRange",
+              "refId": "A",
+              "legendFormat": "errors"
+            },
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in($source) node:in($node) namespace:in($namespace) workload:in($workload) pod:in($pod) container:in($container) $search (level:~\"(?i)^warn(ing)?$\" OR level:=\"40\" OR severity:=\"4\") | stats count() warnings",
+              "queryType": "statsRange",
+              "refId": "B",
+              "legendFormat": "warnings"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "bars",
+                "fillOpacity": 60,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              },
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "A"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "fixed",
+                      "fixedColor": "red"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byFrameRefID",
+                  "options": "B"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "fixed",
+                      "fixedColor": "orange"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 35,
+          "type": "table",
+          "title": "Top error sources",
+          "description": "",
+          "gridPos": {
+            "x": 0,
+            "y": 8,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in($source) node:in($node) namespace:in($namespace) workload:in($workload) pod:in($pod) container:in($container) $search (level:~\"(?i)^(err|error|fatal|crit|critical|panic|emerg|alert)$\" OR level:in(\"50\",\"60\") OR severity:in(\"0\",\"1\",\"2\",\"3\")) | stats by (namespace, workload, container) count() errors | sort by (errors) desc | limit 20",
+              "queryType": "stats",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "filterable": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm"
+          },
+          "transformations": [
+            {
+              "id": "labelsToFields",
+              "options": {
+                "mode": "columns"
+              }
+            },
+            {
+              "id": "merge",
+              "options": {}
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true
+                }
+              }
+            },
+            {
+              "id": "sortBy",
+              "options": {
+                "sort": [
+                  {
+                    "field": "errors",
+                    "desc": true
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": 36,
+          "type": "table",
+          "title": "Noisiest pods",
+          "description": "",
+          "gridPos": {
+            "x": 12,
+            "y": 8,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in($source) node:in($node) namespace:in($namespace) workload:in($workload) pod:in($pod) container:in($container) $search | stats by (namespace, pod) count() lines | sort by (lines) desc | limit 20",
+              "queryType": "stats",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "filterable": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm"
+          },
+          "transformations": [
+            {
+              "id": "labelsToFields",
+              "options": {
+                "mode": "columns"
+              }
+            },
+            {
+              "id": "merge",
+              "options": {}
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true
+                }
+              }
+            },
+            {
+              "id": "sortBy",
+              "options": {
+                "sort": [
+                  {
+                    "field": "lines",
+                    "desc": true
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": 37,
+          "type": "logs",
+          "title": "Errors & warnings",
+          "gridPos": {
+            "x": 0,
+            "y": 16,
+            "w": 24,
+            "h": 12
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in($source) node:in($node) namespace:in($namespace) workload:in($workload) pod:in($pod) container:in($container) $search ((level:~\"(?i)^(err|error|fatal|crit|critical|panic|emerg|alert)$\" OR level:in(\"50\",\"60\") OR severity:in(\"0\",\"1\",\"2\",\"3\")) OR (level:~\"(?i)^warn(ing)?$\" OR level:=\"40\" OR severity:=\"4\")) | sort by (_time) desc | limit 1000",
+              "queryType": "instant",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "wrapLogMessage": true,
+            "enableLogDetails": true,
+            "prettifyLogMessage": false,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none",
+            "enableInfiniteScrolling": true
+          }
+        },
+        {
+          "id": 38,
+          "type": "logs",
+          "title": "All logs",
+          "gridPos": {
+            "x": 0,
+            "y": 28,
+            "w": 24,
+            "h": 18
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in($source) node:in($node) namespace:in($namespace) workload:in($workload) pod:in($pod) container:in($container) $search | sort by (_time) desc | limit 1000",
+              "queryType": "instant",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "wrapLogMessage": true,
+            "enableLogDetails": true,
+            "prettifyLogMessage": false,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none",
+            "enableInfiniteScrolling": true
+          }
+        },
+        {
+          "id": 41,
+          "type": "row",
+          "title": "Talos (node OS logs)",
+          "collapsed": true,
+          "gridPos": {
+            "x": 0,
+            "y": 46,
+            "w": 24,
+            "h": 1
+          },
+          "panels": [
+            {
+              "id": 39,
+              "type": "timeseries",
+              "title": "Talos log volume by service",
+              "description": "",
+              "gridPos": {
+                "x": 0,
+                "y": 47,
+                "w": 24,
+                "h": 7
+              },
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "victoriametrics-logs-datasource",
+                    "uid": "victoria-logs"
+                  },
+                  "editorMode": "code",
+                  "expr": "source:=talos node:in($node) $search | stats by (service) count() lines",
+                  "queryType": "statsRange",
+                  "refId": "A",
+                  "legendFormat": "{{service}}"
+                }
+              ],
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "short",
+                  "custom": {
+                    "drawStyle": "bars",
+                    "fillOpacity": 60,
+                    "lineWidth": 1,
+                    "showPoints": "never",
+                    "spanNulls": true,
+                    "stacking": {
+                      "mode": "normal",
+                      "group": "A"
+                    }
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  }
+                },
+                "overrides": []
+              },
+              "options": {
+                "legend": {
+                  "displayMode": "table",
+                  "placement": "right",
+                  "calcs": [
+                    "max",
+                    "lastNotNull"
+                  ],
+                  "sortBy": "Max",
+                  "sortDesc": true
+                },
+                "tooltip": {
+                  "mode": "multi",
+                  "sort": "desc"
+                }
+              }
+            },
+            {
+              "id": 40,
+              "type": "logs",
+              "title": "Talos logs",
+              "gridPos": {
+                "x": 0,
+                "y": 54,
+                "w": 24,
+                "h": 14
+              },
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "victoriametrics-logs-datasource",
+                    "uid": "victoria-logs"
+                  },
+                  "editorMode": "code",
+                  "expr": "source:=talos node:in($node) $search | sort by (_time) desc | limit 1000",
+                  "queryType": "instant",
+                  "refId": "A"
+                }
+              ],
+              "options": {
+                "showTime": true,
+                "wrapLogMessage": true,
+                "enableLogDetails": true,
+                "prettifyLogMessage": false,
+                "sortOrder": "Descending",
+                "dedupStrategy": "none",
+                "enableInfiniteScrolling": true
+              }
+            }
+          ]
+        }
+      ],
+      "annotations": {
+        "list": []
+      },
+      "templating": {
+        "list": [
+          {
+            "name": "source",
+            "label": "Source",
+            "type": "query",
+            "datasource": {
+              "type": "victoriametrics-logs-datasource",
+              "uid": "victoria-logs"
+            },
+            "query": {
+              "type": "fieldValue",
+              "field": "source",
+              "query": "*",
+              "limit": 1000,
+              "refId": "A"
+            },
+            "definition": "source | *",
+            "refresh": 2,
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "sort": 1
+          },
+          {
+            "name": "node",
+            "label": "Node",
+            "type": "query",
+            "datasource": {
+              "type": "victoriametrics-logs-datasource",
+              "uid": "victoria-logs"
+            },
+            "query": {
+              "type": "fieldValue",
+              "field": "node",
+              "query": "source:in($source)",
+              "limit": 1000,
+              "refId": "A"
+            },
+            "definition": "node | source:in($source)",
+            "refresh": 2,
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "sort": 1
+          },
+          {
+            "name": "namespace",
+            "label": "Namespace",
+            "type": "query",
+            "datasource": {
+              "type": "victoriametrics-logs-datasource",
+              "uid": "victoria-logs"
+            },
+            "query": {
+              "type": "fieldValue",
+              "field": "namespace",
+              "query": "source:in($source) node:in($node)",
+              "limit": 1000,
+              "refId": "A"
+            },
+            "definition": "namespace | source:in($source) node:in($node)",
+            "refresh": 2,
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "sort": 1
+          },
+          {
+            "name": "workload",
+            "label": "Workload",
+            "type": "query",
+            "datasource": {
+              "type": "victoriametrics-logs-datasource",
+              "uid": "victoria-logs"
+            },
+            "query": {
+              "type": "fieldValue",
+              "field": "workload",
+              "query": "namespace:in($namespace)",
+              "limit": 1000,
+              "refId": "A"
+            },
+            "definition": "workload | namespace:in($namespace)",
+            "refresh": 2,
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "sort": 1
+          },
+          {
+            "name": "pod",
+            "label": "Pod",
+            "type": "query",
+            "datasource": {
+              "type": "victoriametrics-logs-datasource",
+              "uid": "victoria-logs"
+            },
+            "query": {
+              "type": "fieldValue",
+              "field": "pod",
+              "query": "namespace:in($namespace) workload:in($workload)",
+              "limit": 1000,
+              "refId": "A"
+            },
+            "definition": "pod | namespace:in($namespace) workload:in($workload)",
+            "refresh": 2,
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "sort": 1
+          },
+          {
+            "name": "container",
+            "label": "Container",
+            "type": "query",
+            "datasource": {
+              "type": "victoriametrics-logs-datasource",
+              "uid": "victoria-logs"
+            },
+            "query": {
+              "type": "fieldValue",
+              "field": "container",
+              "query": "namespace:in($namespace) pod:in($pod)",
+              "limit": 1000,
+              "refId": "A"
+            },
+            "definition": "container | namespace:in($namespace) pod:in($pod)",
+            "refresh": 2,
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "sort": 1
+          },
+          {
+            "name": "search",
+            "label": "Search (LogsQL)",
+            "type": "textbox",
+            "query": "",
+            "current": {
+              "text": "",
+              "value": ""
+            },
+            "description": "Free LogsQL filter, e.g.  timeout  or  _msg:~\"(?i)oom\"  or  -\"GET /health\""
+          }
+        ]
+      }
+    }

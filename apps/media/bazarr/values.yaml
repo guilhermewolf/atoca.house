@@ -43,6 +43,29 @@ controllers:
               periodSeconds: 5
               timeoutSeconds: 5
               failureThreshold: 30
+      exportarr:
+        image:
+          repository: ghcr.io/onedr0p/exportarr
+          tag: v2.3.0@sha256:af535d94061cf97a52e1661945ffba78c03f9443eae7c0da1a80a5a4be56b520
+        args: ["bazarr"]
+        env:
+          PORT: &metricsPort 9707
+          URL: http://localhost:6767
+          APIKEY:
+            valueFrom:
+              secretKeyRef:
+                name: bazarr-secret
+                key: BAZARR_API_KEY
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
 
 defaultPodOptions:
   securityContext:
@@ -58,6 +81,13 @@ service:
     ports:
       http:
         port: *port
+      metrics:
+        port: *metricsPort
+
+serviceMonitor:
+  bazarr:
+    endpoints:
+      - port: metrics
 
 route:
   bazarr:

@@ -68,6 +68,8 @@ controllers:
           FORGEJO__oauth2_client__ENABLE_AUTO_REGISTRATION: false
           FORGEJO__oauth2_client__ACCOUNT_LINKING: login
           FORGEJO__oauth2_client__USERNAME: nickname
+          # Prometheus /metrics (no token: only reachable in-cluster and via the internal gateway)
+          FORGEJO__metrics__ENABLED: true
           # Logging
           FORGEJO__log__MODE: console
           FORGEJO__log__LEVEL: info
@@ -178,6 +180,19 @@ service:
       ssh:
         port: 22
         targetPort: *sshPort
+
+serviceMonitor:
+  app:
+    service:
+      identifier: app
+    endpoints:
+      - port: http
+        path: /metrics
+        relabelings:
+          # Forgejo still emits gitea_* metrics; the Gitea dashboard filters on job="gitea"
+          - action: replace
+            targetLabel: job
+            replacement: gitea
 
 route:
   app:

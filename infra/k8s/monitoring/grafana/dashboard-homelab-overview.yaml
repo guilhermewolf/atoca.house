@@ -1,0 +1,1737 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/grafana.integreatly.org/grafanadashboard_v1beta1.json
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: homelab-overview
+  namespace: grafana
+spec:
+  allowCrossNamespaceImport: true
+  folder: Overview
+  instanceSelector:
+    matchLabels:
+      grafana.internal/instance: grafana
+  json: |
+    {
+      "uid": "homelab-overview",
+      "title": "Homelab Overview",
+      "tags": [
+        "homelab",
+        "overview"
+      ],
+      "editable": true,
+      "graphTooltip": 1,
+      "refresh": "1m",
+      "schemaVersion": 39,
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "links": [
+        {
+          "title": "Overview",
+          "type": "link",
+          "url": "/d/homelab-overview",
+          "icon": "dashboard"
+        },
+        {
+          "title": "Cluster Logs",
+          "type": "link",
+          "url": "/d/cluster-logs",
+          "icon": "doc"
+        },
+        {
+          "title": "Unraid NAS",
+          "type": "link",
+          "url": "/d/unraid-nas",
+          "icon": "dashboard"
+        }
+      ],
+      "panels": [
+        {
+          "id": 1,
+          "type": "row",
+          "title": "Health at a glance",
+          "collapsed": false,
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 1
+          },
+          "panels": []
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "Nodes not ready",
+          "description": "",
+          "gridPos": {
+            "x": 0,
+            "y": 1,
+            "w": 3,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "count(kube_node_info) - sum(kube_node_status_condition{condition=\"Ready\",status=\"true\"})",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "Firing alerts",
+          "description": "",
+          "gridPos": {
+            "x": 3,
+            "y": 1,
+            "w": 3,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "count(ALERTS{alertstate=\"firing\",severity!=\"none\"}) or vector(0)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  }
+                ]
+              },
+              "links": [
+                {
+                  "title": "Alert rules",
+                  "url": "/alerting/list"
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "Ceph health",
+          "description": "",
+          "gridPos": {
+            "x": 6,
+            "y": 1,
+            "w": 3,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max(ceph_health_status)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "OK"
+                    },
+                    "1": {
+                      "text": "WARN"
+                    },
+                    "2": {
+                      "text": "ERR"
+                    }
+                  }
+                }
+              ],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  },
+                  {
+                    "color": "red",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 5,
+          "type": "stat",
+          "title": "Ceph used",
+          "description": "",
+          "gridPos": {
+            "x": 9,
+            "y": 1,
+            "w": 3,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max(ceph_cluster_total_used_bytes / ceph_cluster_total_bytes)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 0.75
+                  },
+                  {
+                    "color": "red",
+                    "value": 0.9
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 6,
+          "type": "stat",
+          "title": "Pods not running",
+          "description": "",
+          "gridPos": {
+            "x": 12,
+            "y": 1,
+            "w": 3,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum(kube_pod_status_phase{phase=~\"Pending|Failed|Unknown\"}) or vector(0)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 7,
+          "type": "stat",
+          "title": "Restarts (1h)",
+          "description": "",
+          "gridPos": {
+            "x": 15,
+            "y": 1,
+            "w": 3,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "round(sum(increase(kube_pod_container_status_restarts_total[1h]))) or vector(0)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  },
+                  {
+                    "color": "red",
+                    "value": 10
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 8,
+          "type": "stat",
+          "title": "Argo out of sync",
+          "description": "",
+          "gridPos": {
+            "x": 18,
+            "y": 1,
+            "w": 3,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "count(argocd_app_info{sync_status!=\"Synced\"}) or vector(0)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 9,
+          "type": "stat",
+          "title": "Argo unhealthy",
+          "description": "",
+          "gridPos": {
+            "x": 21,
+            "y": 1,
+            "w": 3,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "count(argocd_app_info{health_status=~\"Degraded|Missing|Unknown\"}) or vector(0)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 10,
+          "type": "stat",
+          "title": "Log errors (time range)",
+          "description": "",
+          "gridPos": {
+            "x": 0,
+            "y": 5,
+            "w": 4,
+            "h": 4
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in(*) (level:~\"(?i)^(err|error|fatal|crit|critical|panic|emerg|alert)$\" OR level:in(\"50\",\"60\") OR severity:in(\"0\",\"1\",\"2\",\"3\")) | stats count() errors",
+              "queryType": "stats",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 500
+                  }
+                ]
+              },
+              "links": [
+                {
+                  "title": "Open Cluster Logs",
+                  "url": "/d/cluster-logs?${__url_time_range}"
+                }
+              ]
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 11,
+          "type": "stat",
+          "title": "Probes failing",
+          "description": "",
+          "gridPos": {
+            "x": 4,
+            "y": 5,
+            "w": 4,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "count(probe_success == 0) or vector(0)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 12,
+          "type": "stat",
+          "title": "Certs expiring < 14d",
+          "description": "",
+          "gridPos": {
+            "x": 8,
+            "y": 5,
+            "w": 4,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "count((certmanager_certificate_expiration_timestamp_seconds - time()) < 14*86400) or vector(0)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 13,
+          "type": "stat",
+          "title": "PVCs > 85% full",
+          "description": "",
+          "gridPos": {
+            "x": 12,
+            "y": 5,
+            "w": 4,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "count(kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes > 0.85) or vector(0)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 14,
+          "type": "stat",
+          "title": "GPU utilisation",
+          "description": "",
+          "gridPos": {
+            "x": 16,
+            "y": 5,
+            "w": 4,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max(DCGM_FI_DEV_GPU_UTIL)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  },
+                  {
+                    "color": "green",
+                    "value": 10
+                  },
+                  {
+                    "color": "orange",
+                    "value": 90
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 15,
+          "type": "stat",
+          "title": "GPU memory used",
+          "description": "",
+          "gridPos": {
+            "x": 20,
+            "y": 5,
+            "w": 4,
+            "h": 4
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max(DCGM_FI_DEV_FB_USED) / (max(DCGM_FI_DEV_FB_USED) + max(DCGM_FI_DEV_FB_FREE))",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "mappings": [],
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 0.75
+                  },
+                  {
+                    "color": "red",
+                    "value": 0.9
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "textMode": "value",
+            "justifyMode": "center",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 16,
+          "type": "row",
+          "title": "Hosts (cluster nodes, NAS, Home Assistant)",
+          "collapsed": false,
+          "gridPos": {
+            "x": 0,
+            "y": 9,
+            "w": 24,
+            "h": 1
+          },
+          "panels": []
+        },
+        {
+          "id": 17,
+          "type": "timeseries",
+          "title": "CPU",
+          "description": "",
+          "gridPos": {
+            "x": 0,
+            "y": 10,
+            "w": 8,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval]))",
+              "legendFormat": "{{instance}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              },
+              "color": {
+                "mode": "palette-classic"
+              },
+              "min": 0,
+              "max": 1
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max",
+                "lastNotNull"
+              ],
+              "sortBy": "Max",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 18,
+          "type": "timeseries",
+          "title": "Memory",
+          "description": "",
+          "gridPos": {
+            "x": 8,
+            "y": 10,
+            "w": 8,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes",
+              "legendFormat": "{{instance}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              },
+              "color": {
+                "mode": "palette-classic"
+              },
+              "min": 0,
+              "max": 1
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max",
+                "lastNotNull"
+              ],
+              "sortBy": "Max",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 19,
+          "type": "timeseries",
+          "title": "Disk (fullest filesystem)",
+          "description": "",
+          "gridPos": {
+            "x": 16,
+            "y": 10,
+            "w": 8,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max by (instance) (1 - node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs|ramfs|nsfs\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs|ramfs|nsfs\"})",
+              "legendFormat": "{{instance}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              },
+              "color": {
+                "mode": "palette-classic"
+              },
+              "min": 0,
+              "max": 1
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max",
+                "lastNotNull"
+              ],
+              "sortBy": "Max",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 20,
+          "type": "timeseries",
+          "title": "Network receive",
+          "description": "",
+          "gridPos": {
+            "x": 0,
+            "y": 18,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum by (instance) (rate(node_network_receive_bytes_total{device!~\"lo|veth.*|lxc.*|cilium.*|docker.*|br-.*\"}[$__rate_interval]))",
+              "legendFormat": "{{instance}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              },
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max",
+                "lastNotNull"
+              ],
+              "sortBy": "Max",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 21,
+          "type": "timeseries",
+          "title": "Network transmit",
+          "description": "",
+          "gridPos": {
+            "x": 12,
+            "y": 18,
+            "w": 12,
+            "h": 8
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum by (instance) (rate(node_network_transmit_bytes_total{device!~\"lo|veth.*|lxc.*|cilium.*|docker.*|br-.*\"}[$__rate_interval]))",
+              "legendFormat": "{{instance}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              },
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max",
+                "lastNotNull"
+              ],
+              "sortBy": "Max",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 22,
+          "type": "row",
+          "title": "Workloads",
+          "collapsed": false,
+          "gridPos": {
+            "x": 0,
+            "y": 26,
+            "w": 24,
+            "h": 1
+          },
+          "panels": []
+        },
+        {
+          "id": 23,
+          "type": "table",
+          "title": "Firing alerts",
+          "description": "",
+          "gridPos": {
+            "x": 0,
+            "y": 27,
+            "w": 12,
+            "h": 9
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum by (alertname, severity, namespace) (ALERTS{alertstate=\"firing\",severity!=\"none\"})",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false,
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "filterable": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm"
+          },
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "Value": true
+                },
+                "indexByName": {
+                  "severity": 0,
+                  "alertname": 1,
+                  "namespace": 2
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": 24,
+          "type": "table",
+          "title": "Restarting containers (1h)",
+          "description": "",
+          "gridPos": {
+            "x": 12,
+            "y": 27,
+            "w": 12,
+            "h": 9
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sort_desc(round(sum by (namespace, pod, container) (increase(kube_pod_container_status_restarts_total[1h]))) > 0)",
+              "legendFormat": "",
+              "refId": "A",
+              "instant": true,
+              "range": false,
+              "format": "table"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "filterable": true
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm"
+          },
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true
+                },
+                "renameByName": {
+                  "Value": "restarts"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": 25,
+          "type": "bargauge",
+          "title": "PVC usage (top 10)",
+          "description": "",
+          "gridPos": {
+            "x": 0,
+            "y": 36,
+            "w": 12,
+            "h": 9
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "topk(10, max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes))",
+              "legendFormat": "{{namespace}}/{{persistentvolumeclaim}}",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1,
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 0.75
+                  },
+                  {
+                    "color": "red",
+                    "value": 0.9
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "displayMode": "gradient",
+            "orientation": "horizontal",
+            "showUnfilled": true,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          }
+        },
+        {
+          "id": 26,
+          "type": "timeseries",
+          "title": "CPU by namespace (top 10)",
+          "description": "",
+          "gridPos": {
+            "x": 12,
+            "y": 36,
+            "w": 12,
+            "h": 9
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "topk(10, sum by (namespace) (rate(container_cpu_usage_seconds_total{container!=\"\"}[$__rate_interval])))",
+              "legendFormat": "{{namespace}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              },
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max",
+                "lastNotNull"
+              ],
+              "sortBy": "Max",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 27,
+          "type": "row",
+          "title": "Logs",
+          "collapsed": false,
+          "gridPos": {
+            "x": 0,
+            "y": 45,
+            "w": 24,
+            "h": 1
+          },
+          "panels": []
+        },
+        {
+          "id": 28,
+          "type": "timeseries",
+          "title": "Errors by namespace",
+          "description": "",
+          "gridPos": {
+            "x": 0,
+            "y": 46,
+            "w": 24,
+            "h": 8
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in(*) (level:~\"(?i)^(err|error|fatal|crit|critical|panic|emerg|alert)$\" OR level:in(\"50\",\"60\") OR severity:in(\"0\",\"1\",\"2\",\"3\")) | stats by (namespace) count() errors",
+              "queryType": "statsRange",
+              "refId": "A",
+              "legendFormat": "{{namespace}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "bars",
+                "fillOpacity": 60,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              },
+              "color": {
+                "mode": "palette-classic"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "calcs": [
+                "max",
+                "lastNotNull"
+              ],
+              "sortBy": "Max",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          }
+        },
+        {
+          "id": 29,
+          "type": "logs",
+          "title": "Recent errors (all sources)",
+          "gridPos": {
+            "x": 0,
+            "y": 54,
+            "w": 24,
+            "h": 12
+          },
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "victoria-logs"
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "victoriametrics-logs-datasource",
+                "uid": "victoria-logs"
+              },
+              "editorMode": "code",
+              "expr": "source:in(*) (level:~\"(?i)^(err|error|fatal|crit|critical|panic|emerg|alert)$\" OR level:in(\"50\",\"60\") OR severity:in(\"0\",\"1\",\"2\",\"3\")) | sort by (_time) desc | limit 1000",
+              "queryType": "instant",
+              "refId": "A"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "wrapLogMessage": true,
+            "enableLogDetails": true,
+            "prettifyLogMessage": false,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none",
+            "enableInfiniteScrolling": true
+          }
+        }
+      ],
+      "templating": {
+        "list": []
+      },
+      "annotations": {
+        "list": []
+      }
+    }

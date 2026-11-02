@@ -13,3 +13,4 @@ spec:
     - datasourceName: prometheus
       inputName: DS_PROMETHEUS
   url: https://grafana.com/api/dashboards/25155/revisions/8/download
+  folder: Apps

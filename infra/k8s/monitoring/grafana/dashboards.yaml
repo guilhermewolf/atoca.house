@@ -16,3 +16,4 @@ spec:
   configMapRef:
     name: grafana-grafana-operator-dashboard
     key: grafana-operator.json
+  folder: Observability

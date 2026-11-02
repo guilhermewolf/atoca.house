@@ -36,6 +36,16 @@ spec:
         type: Recreate
       template:
         spec:
+          securityContext:
+            fsGroup: 10001
+            fsGroupChangePolicy: OnRootMismatch
+            seccompProfile:
+              type: RuntimeDefault
+          # persist grafana.db (users, sessions, stars, prefs) across restarts
+          volumes:
+            - name: grafana-data
+              persistentVolumeClaim:
+                claimName: grafana-pvc
           containers:
             - name: grafana
               env:
@@ -68,6 +78,10 @@ spec:
 
   client:
     preferIngress: false
+
+  # landing page = dashboard-homelab-overview.yaml
+  preferences:
+    homeDashboardUid: homelab-overview
 
   persistentVolumeClaim:
     spec:

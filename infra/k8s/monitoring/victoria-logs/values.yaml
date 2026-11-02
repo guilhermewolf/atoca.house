@@ -8,6 +8,7 @@ dashboards:
       # Grafana CR is grafana/grafana, labelled grafana.internal/instance=grafana.
       # Chart default selector {dashboards: grafana} matches nothing.
       allowCrossNamespaceImport: true
+      folder: Observability
       instanceSelector:
         matchLabels:
           grafana.internal/instance: grafana

@@ -10,3 +10,4 @@ spec:
     matchLabels:
       grafana.internal/instance: grafana
   url: https://grafana.com/api/dashboards/17813/revisions/2/download
+  folder: Security

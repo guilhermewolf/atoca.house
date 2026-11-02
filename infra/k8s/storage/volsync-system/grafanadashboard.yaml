@@ -16,3 +16,4 @@ spec:
     - name: VAR_REPLICATIONDESTNAME
       value: .*-dst
   url: https://grafana.com/api/dashboards/21356/revisions/3/download
+  folder: Storage

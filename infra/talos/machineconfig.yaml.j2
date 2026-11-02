@@ -47,6 +47,12 @@ machine:
     image: factory.talos.dev/metal-installer/0dbd47b1b0b8bd535b09d91d8f0ae3998944a3fa9c98143bf6ca1e117c017e58:v1.14.0
     wipe: false
     grubUseUKICmdline: true
+  # Service logs -> fluent-bit (infra/k8s/monitoring/fluent-bit/talos-service.yaml)
+  # -> VictoriaLogs (source:talos). Kernel logs: KmsgLogConfig below.
+  logging:
+    destinations:
+      - endpoint: tcp://192.168.60.134:5170/
+        format: json_lines
   kubelet:
     defaultRuntimeSeccompProfileEnabled: true
     disableManifestsDirectory: true
@@ -207,6 +213,12 @@ configuration:
           claim: groups
           prefix: "oidc:"
 {% endif %}
+---
+# Kernel logs (dmesg) survive a hang/reboot only if shipped off-node.
+apiVersion: v1alpha1
+kind: KmsgLogConfig
+name: victoria-logs
+url: tcp://192.168.60.134:5170/
 ---
 apiVersion: v1alpha1
 kind: SysctlConfig

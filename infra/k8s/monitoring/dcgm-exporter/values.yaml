@@ -2,6 +2,8 @@
 defaultPodOptions:
   automountServiceAccountToken: true
   runtimeClassName: nvidia
+  # KUBERNETES_VIRTUAL_GPUS maps GPU PIDs -> pods via /proc/<pid>/cgroup; needs host PID namespace
+  hostPID: true
   nodeSelector:
     node.kubernetes.io/gpu: "true"
 

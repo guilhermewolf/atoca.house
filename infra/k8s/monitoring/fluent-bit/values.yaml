@@ -29,6 +29,29 @@ luaScripts:
       r["k_ownerReferences"] = nil
       return 2, ts, r
     end
+  # Talos logs carry no hostname (kernel logs can't take extraTags), so map
+  # the sender IP to the node name.
+  # ponytail: static map, add a line when a node joins.
+  talos_fields.lua: |
+    local nodes = {
+      ["192.168.40.11"] = "node-01",
+      ["192.168.40.12"] = "node-02",
+      ["192.168.40.13"] = "node-03",
+      ["192.168.40.14"] = "node-04",
+    }
+    function talos_fields(tag, ts, r)
+      local ip = string.match(r["source_address"] or "", "%d+%.%d+%.%d+%.%d+")
+      r["node"] = nodes[ip] or ip or "unknown"
+      r["source"] = "talos"
+      r["service"] = r["talos-service"] or "kernel"
+      r["source_address"] = nil
+      return 2, ts, r
+    end
+extraPorts:
+  - name: talos
+    port: 5170
+    containerPort: 5170
+    protocol: TCP
 config:
   service: |-
     [SERVICE]
@@ -55,6 +78,15 @@ config:
       tag kubernetes.*
       skip_empty_lines on
       skip_long_lines on
+
+    [INPUT]
+      name tcp
+      alias talos
+      listen 0.0.0.0
+      port 5170
+      format json
+      tag talos
+      source_address_key source_address
 
   filters: |-
     [FILTER]
@@ -98,6 +130,12 @@ config:
       rename k_labels_app app
       rename k_labels_k8s-app app
 
+    [FILTER]
+      name lua
+      match talos
+      script /fluent-bit/scripts/talos_fields.lua
+      call talos_fields
+
   customParsers: |-
     [PARSER]
       name containerd
@@ -122,6 +160,21 @@ config:
       net.keepalive_idle_timeout 30
       net.connect_timeout 10
       workers 2
+
+    [OUTPUT]
+      name http
+      match talos
+      host victoria-logs-server.victoria-logs.svc.cluster.local
+      port 9428
+      uri /insert/jsonline?_stream_fields=source,node,service&_msg_field=msg&_time_field=talos-time
+      format json_lines
+      json_date_format iso8601
+      compress gzip
+      log_response_payload false
+      retry_limit false
+      net.keepalive on
+      net.keepalive_idle_timeout 30
+      net.connect_timeout 10
 
 dashboards:
   enabled: true

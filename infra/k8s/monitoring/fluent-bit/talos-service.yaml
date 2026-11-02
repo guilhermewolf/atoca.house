@@ -1,0 +1,22 @@
+---
+# Receives Talos service + kernel logs (json_lines over TCP) from every node.
+# Talos machine config points machine.logging and KmsgLogConfig here.
+# externalTrafficPolicy Local keeps the node's source IP, which the
+# talos_fields Lua filter maps to the node name.
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluent-bit-talos
+  annotations:
+    lbipam.cilium.io/ips: 192.168.60.134
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  selector:
+    app.kubernetes.io/instance: fluent-bit
+    app.kubernetes.io/name: fluent-bit
+  ports:
+    - name: talos
+      port: 5170
+      targetPort: 5170
+      protocol: TCP

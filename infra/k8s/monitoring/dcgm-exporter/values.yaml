@@ -1,37 +1,92 @@
-runtimeClassName: nvidia
+---
+defaultPodOptions:
+  automountServiceAccountToken: true
+  runtimeClassName: nvidia
+  nodeSelector:
+    node.kubernetes.io/gpu: "true"
 
-image:
-  repository: mirror.gcr.io/nvidia/dcgm-exporter
-  tag: 4.5.1-4.8.0-distroless
-
-extraEnv:
-  - name: NVIDIA_DRIVER_CAPABILITIES
-    value: "all"
-  - name: NVIDIA_VISIBLE_DEVICES
-    value: "all"
-
-resources:
-  requests:
-    memory: 128Mi
-  limits:
-    memory: 1024Mi
-    nvidia.com/gpu: 1
-
-tolerations:
-  - key: nvidia.com/gpu
-    operator: Exists
-    effect: NoSchedule
-
-affinity:
-  nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: extensions.talos.dev/nvidia-container-toolkit-production
-              operator: Exists
-serviceMonitor:
-  interval: 1s
-  scrapeTimeout: 1s
-  honorLabels: true
-  labels:
-    prometheus: kube-prometheus-stack
+controllers:
+  dcgm-exporter:
+    type: daemonset
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          repository: nvcr.io/nvidia/k8s/dcgm-exporter
+          tag: 4.5.3-4.8.2-distroless@sha256:e9030b4fca0c8f110032f3b151b030e7e9db56604b407cf79631e1a3218b35e0
+        args:
+          - -f
+          - /etc/dcgm-exporter/default-counters.csv
+        env:
+          DCGM_EXPORTER_KUBERNETES: "true"
+          # map time-sliced GPU replicas (nvidia-device-plugin sharing) back to each pod
+          KUBERNETES_VIRTUAL_GPUS: "true"
+          DCGM_EXPORTER_LISTEN: ":9400"
+          NODE_NAME:
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+        probes:
+          liveness: &probes
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: &port 9400
+              initialDelaySeconds: 45
+              periodSeconds: 15
+              timeoutSeconds: 5
+          readiness: *probes
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities: { drop: ["ALL"] }
+          runAsNonRoot: false
+          runAsUser: 0
+          runAsGroup: 0
+serviceAccount:
+  dcgm-exporter: {}
+# Pod informer (DCGM_EXPORTER_KUBERNETES) lists pods cluster-wide
+rbac:
+  roles:
+    dcgm-exporter:
+      type: ClusterRole
+      rules:
+        - apiGroups: [""]
+          resources: ["pods"]
+          verbs: ["get", "list", "watch"]
+  bindings:
+    dcgm-exporter:
+      type: ClusterRoleBinding
+      roleRef:
+        identifier: dcgm-exporter
+      subjects:
+        - identifier: dcgm-exporter
+persistence:
+  exporter-metrics:
+    type: configMap
+    name: dcgm-exporter-metrics
+    globalMounts:
+      - path: /etc/dcgm-exporter/default-counters.csv
+        subPath: default-counters.csv
+        readOnly: true
+  pod-gpu-resources:
+    type: hostPath
+    hostPath: /var/lib/kubelet/pod-resources
+    globalMounts:
+      - path: /var/lib/kubelet/pod-resources
+        readOnly: true
+service:
+  app:
+    ports:
+      metrics:
+        enabled: true
+        port: *port

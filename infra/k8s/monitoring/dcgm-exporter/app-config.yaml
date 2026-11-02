@@ -3,7 +3,7 @@
 app:
   name: dcgm-exporter
   namespace: dcgm-exporter
-  chart: dcgm-exporter
-  chartRepo: ghcr.io/home-operations/charts-mirror
-  chartVersion: 4.8.4
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.3.0
   useVaultPlugin: false

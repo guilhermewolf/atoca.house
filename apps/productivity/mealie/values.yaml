@@ -87,7 +87,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=ghcr.io/gerardpollorebozado/social-to-mealie
           repository: ghcr.io/gerardpollorebozado/social-to-mealie
-          tag: v1.8.1@sha256:2dc8ecdea53e632093bf368fdd330b1dbe4cd063bf28800fbb644a0edaa54f7d
+          tag: v1.8.2@sha256:fc63ef76f0dda92ebd97213c5772fccfacf985e382336eccd5df5cf1af61f5b1
         env:
           MEALIE_URL: http://mealie-app.mealie.svc.cluster.local:9000
           EXTERNAL_MEALIE_URL: https://mealie.atoca.house

@@ -4,6 +4,6 @@ app:
   name: fluent-bit
   namespace: fluent-bit
   chart: fluent-bit
-  chartRepo: ghcr.io/home-operations/charts-mirror
+  chartRepo: ghcr.io/fluent/helm-charts
   chartVersion: 0.55.0
   useVaultPlugin: false

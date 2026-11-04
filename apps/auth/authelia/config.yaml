@@ -503,7 +503,9 @@ data:
             # kube-apiserver reads preferred_username/groups from the id_token.
             claims_policy: 'default'
             userinfo_signed_response_alg: none
-            token_endpoint_auth_method: client_secret_basic
+            # Headlamp's token refresh sends the secret in the POST body;
+            # initial login auto-detects, so post works for both.
+            token_endpoint_auth_method: client_secret_post
           - client_id: autobrr
             client_name: autobrr
             client_secret: '{{ secret "/config/secret/AUTOBRR_OAUTH_CLIENT_SECRET" }}'

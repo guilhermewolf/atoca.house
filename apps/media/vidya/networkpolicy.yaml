@@ -30,3 +30,13 @@ spec:
       ports:
         - port: 31415
           protocol: TCP
+    # Return traffic for Vidya's OIDC calls to auth.atoca.house (external
+    # gateway LB). Cilium drops the SYN-ACK when every ingress rule has both
+    # from+ports, so this rule must stay port-less.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              gateway.envoyproxy.io/owning-gateway-name: atoca-house-external

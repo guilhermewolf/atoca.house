@@ -3,7 +3,7 @@ controllers:
   shelfmark:
     containers:
       shelfmark:
-        image:
+        image: &image
           repository: ghcr.io/calibrain/shelfmark
           tag: v1.6.1@sha256:0e5c9ff5f858a9695dc18bc355d8aa29dfee5c0d9c634919484c2bab9955ad5a
         command:
@@ -30,6 +30,8 @@ controllers:
           OIDC_USE_ADMIN_GROUP: "true"
           OIDC_ADMIN_GROUP: admins
           OIDC_AUTO_PROVISION: "true"
+          # UID 99 has no passwd entry -> HOME=/ (read-only); Chromium needs a writable home
+          HOME: /home/shelfmark
         envFrom:
           - secretRef:
               name: shelfmark-secret
@@ -47,7 +49,20 @@ controllers:
             cpu: 10m
             memory: 192Mi
           limits:
-            memory: 512Mi
+            memory: 2Gi # bypasser runs Chromium
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+    initContainers:
+      # image symlinks /app/downloaded_files -> /tmp/shelfmark/seleniumbase/downloaded_files;
+      # emptyDir /tmp hides it and the bypasser never creates it (FileExistsError).
+      # Created here as the app user so /tmp/shelfmark stays writable.
+      tmp-dirs:
+        image: *image
+        command: ["mkdir", "-p", "/tmp/shelfmark/seleniumbase/downloaded_files"]
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
@@ -116,8 +131,10 @@ persistence:
           - path: /data
   tmpfs:
     type: emptyDir
-    sizeLimit: 1Gi
+    sizeLimit: 2Gi
     globalMounts:
+      - path: /home/shelfmark
+        subPath: home
       - path: /tmp
         subPath: tmp
       - path: /var/log

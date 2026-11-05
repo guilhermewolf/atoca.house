@@ -5,4 +5,4 @@ app:
   namespace: k8tz
   chart: k8tz
   chartRepo: https://k8tz.github.io/k8tz/
-  chartVersion: 0.19.0
+  chartVersion: 0.22.0

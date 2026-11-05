@@ -3,7 +3,7 @@ app:
   namespace: crowdsec
   chart: crowdsec
   chartRepo: https://crowdsecurity.github.io/helm-charts
-  chartVersion: 0.24.2
+  chartVersion: 0.24.3
   disableAutoSync: true
   # Chart schema only knows `k8s-audit`, not the `kubernetes` acquisition source.
   skipSchemaValidation: true

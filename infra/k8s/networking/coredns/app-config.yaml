@@ -3,5 +3,5 @@ app:
   namespace: kube-system
   chart: coredns
   chartRepo: ghcr.io/coredns/charts
-  chartVersion: 1.50.0
+  chartVersion: 1.50.1
   useVaultPlugin: false

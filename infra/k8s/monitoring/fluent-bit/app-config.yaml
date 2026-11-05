@@ -5,5 +5,5 @@ app:
   namespace: fluent-bit
   chart: fluent-bit
   chartRepo: ghcr.io/fluent/helm-charts
-  chartVersion: 0.55.0
+  chartVersion: 0.58.3
   useVaultPlugin: false

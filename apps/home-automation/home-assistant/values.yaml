@@ -1,0 +1,104 @@
+---
+controllers:
+  home-assistant:
+    annotations:
+      reloader.stakater.com/auto: "true"
+    containers:
+      app:
+        image:
+          # renovate: datasource=docker depName=ghcr.io/home-operations/home-assistant
+          repository: ghcr.io/home-operations/home-assistant
+          tag: 2026.11.0@sha256:7c1ab60a4bb4cc1f34c314bc209d72d7b7336f0da38d4a69064935d01bba1ba6
+        # Reverse proxy trust is UI-only since HA 2026.8 (YAML http: / env vars
+        # are ignored). Settings > System > Network > HTTP server:
+        #   Trust X-Forwarded-For: on, Trusted proxies: 10.244.0.0/16
+        # Until set, the HTTPRoute returns 400 - use port-forward to configure.
+        probes:
+          liveness: &probes
+            enabled: true
+          readiness: *probes
+          startup:
+            enabled: true
+            spec:
+              periodSeconds: 10
+              failureThreshold: 30
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        resources:
+          requests:
+            cpu: 50m
+            memory: 512Mi
+          limits:
+            memory: 2Gi
+
+defaultPodOptions:
+  annotations:
+    # Second NIC on the IoT VLAN for mDNS/SSDP discovery (cast, HomeKit, WLED...).
+    # Static IP below the UniFi DHCP pool (192.168.70.6-254); .5 is bambuddy.
+    k8s.v1.cni.cncf.io/networks: |-
+      [{
+        "name": "iot",
+        "namespace": "kube-system",
+        "ips": ["192.168.70.4/24"],
+        "mac": "02:6e:d7:05:0c:84"
+      }]
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }
+    fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
+
+service:
+  app:
+    controller: home-assistant
+    ports:
+      http:
+        port: &port 8123
+        # Envoy keeps the frontend websocket upgraded.
+        appProtocol: kubernetes.io/ws
+
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    annotations:
+      gatus.io/enabled: "true"
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - hass-test.atoca.house
+    rules:
+      - backendRefs:
+          - name: home-assistant
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+
+persistence:
+  config:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: ceph-block
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    # Restore gate - see restore.yaml.
+    dataSourceRef:
+      apiGroup: volsync.backube
+      kind: ReplicationDestination
+      name: home-assistant-restore
+    globalMounts:
+      - path: /config
+  # No emptyDirs nested under /config: runc fails creating the mountpoint on the
+  # ceph volume ("openat2 /config/.venv: Bad message").
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

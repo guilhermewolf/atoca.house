@@ -1,8 +1,0 @@
----
-# Application configuration for home-assistant
-app:
-  name: home-assistant
-  namespace: home-assistant
-  chart: app-template
-  chartRepo: ghcr.io/bjw-s-labs/helm
-  chartVersion: 5.3.0

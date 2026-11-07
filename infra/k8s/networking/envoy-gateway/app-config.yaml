@@ -3,5 +3,5 @@ app:
   namespace: envoy-gateway-system
   chart: gateway-helm
   chartRepo: mirror.gcr.io/envoyproxy
-  chartVersion: 1.9.3
+  chartVersion: v1.10.0
   disableAutoSync: true

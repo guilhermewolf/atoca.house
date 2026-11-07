@@ -107,7 +107,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=ghcr.io/thespaghettidetective/obico-ml-api-cpu
           repository: ghcr.io/thespaghettidetective/obico-ml-api-cpu
-          tag: 2026.10.2@sha256:e1b1c5b4cfc517ed884cad24e4a709d31b935ea49dab45ff60d31a62f4cb86ee
+          tag: 2026.11.6@sha256:6c4889750552907bc11ee4fb3c97a482d25dd074be7458b185461b82cc1dc7b3
         # Loopback only: the pod IP is also on the IoT VLAN (net1).
         command: ["gunicorn", "--bind", "127.0.0.1:3333", "--workers", "1", "--timeout", "120", "wsgi"]
         probes:

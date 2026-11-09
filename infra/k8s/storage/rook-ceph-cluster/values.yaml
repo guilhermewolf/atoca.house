@@ -28,6 +28,10 @@ cephClusterSpec:
       device_failure_prediction_mode: local # requires mgr module
     mgr:
       debug_mgr: "1/5" # default; stops Python DEBUG k8s-client "response body" PodList dumps from the rook module
+      # With the rook orchestrator off, the prometheus module logs
+      # "Failed to collect cephadm daemon status: No orchestrator configured"
+      # every scrape (~230/h). Exporter breakage still shows as target-down.
+      mgr/prometheus/log_level: critical
   cleanupPolicy:
     wipeDevicesFromOtherClusters: true
   crashCollector:

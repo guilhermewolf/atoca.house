@@ -71,3 +71,26 @@ jobs:
         run: |
           gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file output/diff.md --edit-last || \
           gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file output/diff.md
+
+      # A crashed run skips the tool's own cleanup; its Applications then fail to
+      # reconcile every minute and flood the error alert. Reap any older than
+      # 30 min (concurrent runs from other PRs are younger). Runner has no kubectl.
+      - name: Reap orphaned Applications
+        if: always()
+        shell: python3 {0}
+        run: |
+          import datetime, json, ssl, urllib.request
+          sa = "/var/run/secrets/kubernetes.io/serviceaccount"
+          token = open(f"{sa}/token").read()
+          ctx = ssl.create_default_context(cafile=f"{sa}/ca.crt")
+          base = ("https://kubernetes.default.svc/apis/argoproj.io/v1alpha1"
+                  "/namespaces/argocd-diff-preview/applications")
+          def call(url, method="GET"):
+              req = urllib.request.Request(url, method=method, headers={"Authorization": f"Bearer {token}"})
+              return json.load(urllib.request.urlopen(req, context=ctx))
+          cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=30)
+          for app in call(f"{base}?labelSelector=argocd-diff-preview-run-id")["items"]:
+              m = app["metadata"]
+              if datetime.datetime.fromisoformat(m["creationTimestamp"].replace("Z", "+00:00")) < cutoff:
+                  print("deleting", m["name"])
+                  call(f"{base}/{m['name']}", "DELETE")

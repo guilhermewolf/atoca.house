@@ -10,6 +10,11 @@ metadata:
 spec:
   postgresVersion: 17
 
+  # Keeps pg_stat_statements in `public` for the exporter (see init-sql.yaml).
+  databaseInitSQL:
+    name: postgres-init-sql
+    key: init.sql
+
   # cert-manager-issued TLS (see certificates.yaml). Both secrets chain to the
   # internal postgres-ca, so apps can sslmode=verify-full against this CA.
   customTLSSecret:

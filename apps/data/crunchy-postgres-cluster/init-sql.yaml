@@ -1,0 +1,23 @@
+---
+# Referenced by spec.databaseInitSQL in postgres-cluster.yaml. PGO runs it once
+# per cluster bootstrap (incl. pgBackRest restores); must stay idempotent.
+#
+# autoCreateUserSchema gives the `postgres` superuser a `postgres` schema, so
+# PGO's monitoring setup creates pg_stat_statements there (search_path is
+# "$user", public). The exporter queries public.pg_stat_statements and logs
+# ~2k errors/h when it is missing. Pin the extension to public.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-sql
+data:
+  init.sql: |
+    DO $$
+    BEGIN
+      IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements') THEN
+        ALTER EXTENSION pg_stat_statements SET SCHEMA public;
+      ELSE
+        CREATE EXTENSION pg_stat_statements SCHEMA public;
+      END IF;
+    END
+    $$;

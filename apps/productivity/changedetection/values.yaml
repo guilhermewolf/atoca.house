@@ -48,6 +48,9 @@ controllers:
         env:
           - { name: TIMEOUT, value: "300000" }
           - { name: CONCURRENT, value: "10" }
+          # Default logs :trace, which echoes every failed page sub-resource
+          # ("error: Failed to load resource") into the hourly error alert.
+          - { name: DEBUG, value: "browserless*,-**:trace,-**:verbose" }
         resources:
           requests:
             cpu: 25m

@@ -12,7 +12,7 @@ provider:
       - name: UNIFI_API_KEY
         valueFrom:
           secretKeyRef:
-            name: external-dns-unifi-secret
+            name: &secret external-dns-unifi-secret
             key: external_dns_api_key
     livenessProbe:
       httpGet:
@@ -25,10 +25,8 @@ provider:
         path: /readyz
         port: http-webhook
       initialDelaySeconds: 10
-      timeoutSeconds: 5
 
 extraArgs:
-  - --annotation-filter=externaldns.enable.custom/internal notin (false,no)
   # UCG API spikes >5s under load; default 5s read timeout makes startup fatal
   - --webhook-provider-read-timeout=30s
 
@@ -38,16 +36,18 @@ policy: sync
 sources:
   - gateway-httproute
   - service
+  - crd
 
 txtOwnerId: main
 
 txtPrefix: "k8s-%{record_type}."
+labelFilter: externaldns.enable.custom/internal notin (false,no)
 
 domainFilters:
   - atoca.house
-
+  - resolver.arpa
 serviceMonitor:
   enabled: true
 
 podAnnotations:
-  secret.reloader.stakater.com/reload: external-dns-unifi-secret
+  secret.reloader.stakater.com/reload: *secret

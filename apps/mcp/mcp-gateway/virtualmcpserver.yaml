@@ -1,0 +1,127 @@
+---
+# Single public MCP endpoint (https://mcp.atoca.house/mcp) aggregating every
+# backend in the `mcp-tools` MCPGroup. Add a backend = add an MCPServer or
+# MCPServerEntry with `groupRef: mcp-tools`; it appears here automatically.
+#
+# Auth flow: Claude / ChatGPT discover this server's embedded OAuth AS (CIMD or
+# DCR, so users only paste the URL), the AS sends the browser to Authelia
+# (client `mcp-gateway`), and Cedar authorizes each tool call against the
+# `groups` claim of Authelia's JWT access token (LLDAP groups).
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/toolhive.stacklok.dev/mcpoidcconfig_v1beta1.json
+apiVersion: toolhive.stacklok.dev/v1beta1
+kind: MCPOIDCConfig
+metadata:
+  name: mcp-gateway
+spec:
+  type: inline
+  inline:
+    # Tokens are issued by the embedded AS below, so the issuer is ourselves.
+    issuer: https://mcp.atoca.house
+    jwksAllowPrivateIP: true
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/toolhive.stacklok.dev/virtualmcpserver_v1beta1.json
+apiVersion: toolhive.stacklok.dev/v1beta1
+kind: VirtualMCPServer
+metadata:
+  name: mcp-gateway
+  # clientId fields are plain strings in the CRD, so AVP fills them at sync
+  # time from 1Password (inline paths: Authelia values live in item `authelia`).
+spec:
+  groupRef:
+    name: mcp-tools
+  replicas: 1
+  config:
+    aggregation:
+      # Tool names become workload_tool, e.g. grafana-mcp_query_prometheus.
+      conflictResolution: prefix
+      conflictResolutionConfig:
+        prefixFormat: "{workload}_"
+  authServerConfig:
+    issuer: https://mcp.atoca.house
+    # Persistent keys: without them every restart invalidates all tokens.
+    signingKeySecretRefs:
+      - name: mcp-gateway-secret
+        key: SIGNING_KEY
+    hmacSecretRefs:
+      - name: mcp-gateway-secret
+        key: HMAC_SECRET
+    # Claude / ChatGPT identify themselves via Client ID Metadata Documents;
+    # DCR stays available as fallback for other clients.
+    cimd:
+      enabled: true
+    # ponytail: in-memory sessions; a pod restart forces users to reconnect.
+    # Switch to `type: redis` (Dragonfly + ACL password) if that gets annoying.
+    storage:
+      type: memory
+      # Public DCR endpoint: cap stored clients so anonymous registrations
+      # can't grow the in-memory store unbounded.
+      maxDCRClients: 200
+    registrationRateLimit:
+      maxTokens: 10
+      refillPeriod: 1m
+    upstreamProviders:
+      - name: authelia
+        type: oidc
+        oidcConfig:
+          issuerUrl: https://auth.atoca.house
+          clientId: "<path:vaults/K8s/items/authelia#MCP_GATEWAY_OAUTH_CLIENT_ID>"
+          clientSecretRef:
+            name: mcp-gateway-secret
+            key: AUTHELIA_CLIENT_SECRET
+          redirectUri: https://mcp.atoca.house/oauth/callback
+          scopes: ["openid", "profile", "email", "groups", "offline_access"]
+      # Second login step: the user authorizes this gateway in Outline so
+      # Outline calls run as them (see mcpserverentries.yaml). Confidential
+      # client created in Outline -> Settings -> Applications.
+      - name: outline
+        type: oauth2
+        oauth2Config:
+          authorizationEndpoint: https://outline.atoca.house/oauth/authorize
+          tokenEndpoint: https://outline.atoca.house/oauth/token
+          clientId: "<path:vaults/K8s/items/mcp-gateway#OUTLINE_OAUTH_CLIENT_ID>"
+          clientSecretRef:
+            name: mcp-gateway-secret
+            key: OUTLINE_OAUTH_CLIENT_SECRET
+          tokenEndpointAuthMethod: client_secret_post
+          redirectUri: https://mcp.atoca.house/oauth/callback
+          scopes: ["read", "write"]
+    # Cedar keeps reading groups from Authelia, not Outline.
+    primaryUpstreamProvider: authelia
+  # Only people who can use Outline tools walk the Outline login step.
+  authServerUpstreamFilter:
+    claim: groups
+    rules:
+      - groups: ["admins", "household"]
+        upstreamProviders: ["outline"]
+  incomingAuth:
+    type: oidc
+    oidcConfigRef:
+      name: mcp-gateway
+      audience: https://mcp.atoca.house
+      resourceUrl: https://mcp.atoca.house
+    # Cedar. Groups from Authelia's access token become THVGroup::"groupname"
+    # parents; each tool's parent is Backend::"workload-name". tools/list is
+    # filtered by these call_tool rules, so users only see what they may call.
+    authzConfig:
+      type: inline
+      inline:
+        policies:
+          - 'permit(principal in THVGroup::"admins", action, resource);'
+          - >-
+            permit(principal in THVGroup::"household", action == Action::"call_tool", resource in Backend::"outline-mcp");
+          - >-
+            permit(principal, action == Action::"call_tool", resource in Backend::"context7-mcp")
+            when { principal in THVGroup::"household" || principal in THVGroup::"family" || principal in THVGroup::"friends" };
+  outgoingAuth:
+    source: discovered
+  podTemplateSpec:
+    spec:
+      containers:
+        - name: vmcp
+          resources:
+            requests:
+              cpu: 20m
+              memory: 128Mi
+            limits:
+              # Upstream reports memory growth under session churn (#6932).
+              memory: 512Mi

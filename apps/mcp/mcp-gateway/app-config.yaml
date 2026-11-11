@@ -1,0 +1,7 @@
+---
+# Application configuration for mcp-gateway
+app:
+  name: mcp-gateway
+  namespace: mcp
+  # VirtualMCPServer clientIds are plain strings; AVP fills them from 1Password.
+  useVaultPlugin: true

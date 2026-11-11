@@ -48,3 +48,17 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+
+  # Apps with `useVaultPlugin: true` in app-config.yaml render through AVP so
+  # fields that CRDs only accept as plain strings (e.g. OAuth client IDs) can be
+  # placeholders resolved from 1Password at sync time.
+  templatePatch: |
+    {{- if dig "app" "useVaultPlugin" false . }}
+    spec:
+      sources:
+        - repoURL: https://github.com/guilhermewolf/atoca.house
+          targetRevision: HEAD
+          path: 'apps/mcp/{{.app.name}}'
+          plugin:
+            name: argocd-vault-plugin
+    {{- end }}

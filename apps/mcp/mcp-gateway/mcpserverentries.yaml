@@ -1,0 +1,49 @@
+---
+# Remote MCP servers built into apps, joined to the gateway group without pods.
+#
+# Outline: per-user. The caller's own Outline OAuth token (collected at
+# connect time via the `outline` upstream in virtualmcpserver.yaml) is
+# injected, so edits/notifications are attributed to the real user.
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/toolhive.stacklok.dev/mcpserverentry_v1beta1.json
+apiVersion: toolhive.stacklok.dev/v1beta1
+kind: MCPServerEntry
+metadata:
+  name: outline-mcp
+spec:
+  groupRef:
+    name: mcp-tools
+  remoteUrl: http://outline.outline.svc.cluster.local:8080/mcp
+  transport: streamable-http
+  allowPrivateEndpoint: true
+  externalAuthConfigRef:
+    name: outline-user-token
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/toolhive.stacklok.dev/mcpexternalauthconfig_v1beta1.json
+apiVersion: toolhive.stacklok.dev/v1beta1
+kind: MCPExternalAuthConfig
+metadata:
+  name: outline-user-token
+spec:
+  type: upstreamInject
+  upstreamInject:
+    providerName: outline
+---
+# n8n: instance-level MCP has no per-user auth, so it uses one service token
+# (every caller acts as its owner). Admin-only via Cedar.
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/toolhive.stacklok.dev/mcpserverentry_v1beta1.json
+apiVersion: toolhive.stacklok.dev/v1beta1
+kind: MCPServerEntry
+metadata:
+  name: n8n-mcp
+spec:
+  groupRef:
+    name: mcp-tools
+  remoteUrl: http://n8n.n8n.svc.cluster.local/mcp-server/http
+  transport: streamable-http
+  allowPrivateEndpoint: true
+  headerForward:
+    addHeadersFromSecret:
+      - headerName: Authorization
+        valueSecretRef:
+          name: mcp-gateway-secret
+          key: N8N_AUTHORIZATION

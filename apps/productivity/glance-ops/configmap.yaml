@@ -494,8 +494,6 @@ data:
         glance-ops-url: https://ops.atoca.house
         grafana: sh:grafana-light
         grafana-url: https://grafana.atoca.house
-        ha-mcp: sh:home-assistant-light
-        ha-mcp-url: https://ha-mcp.atoca.house
         headlamp: sh:headlamp-light
         headlamp-url: https://headlamp.atoca.house
         hermes: mdi:message-fast
@@ -578,10 +576,8 @@ data:
         actual-url: https://actual.atoca.house
         ai-memory: mdi:brain
         ai-memory-url: https://ai-memory.atoca.house
-        argocd-mcp: sh:argo-cd-light
-        argocd-mcp-url: https://argocd-mcp.atoca.house
-        arr-mcp: mdi:robot
-        arr-mcp-url: https://arr-mcp.atoca.house
+        mcp-gateway: mdi:hub
+        mcp-gateway-url: https://mcp.atoca.house
         bentopdf: mdi:file-pdf-box
         bentopdf-url: https://pdf.atoca.house
         camcontrol: mdi:cctv
@@ -594,8 +590,6 @@ data:
         forgejo-url: https://forge.atoca.house
         freshrss: sh:freshrss-light
         freshrss-url: https://freshrss.atoca.house
-        kubesearch-mcp: mdi:magnify
-        kubesearch-mcp-url: https://kubesearch-mcp.atoca.house
         mealie-app: sh:mealie-light
         mealie-app-url: https://mealie.atoca.house
         mealie-social-to-mealie: sh:mealie-light

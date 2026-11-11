@@ -1,0 +1,28 @@
+---
+# Public: Claude / ChatGPT connectors call from their own clouds, so this must
+# be reachable through the Cloudflare tunnel (atoca-house-external).
+# yaml-language-server: $schema=https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/gateway.networking.k8s.io/httproute_v1.json
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: mcp-gateway
+  namespace: mcp
+  annotations:
+    # `/` is OAuth-protected (401); vMCP serves an unauthenticated health check.
+    gatus.home-operations.com/endpoint: |-
+      url: https://mcp.atoca.house/health
+      conditions: ["[STATUS] == 200"]
+spec:
+  parentRefs:
+    - name: atoca-house-external
+      namespace: kube-system
+  hostnames:
+    - mcp.atoca.house
+  rules:
+    - backendRefs:
+        - name: vmcp-mcp-gateway
+          port: 4483
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

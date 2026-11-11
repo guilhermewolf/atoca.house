@@ -122,6 +122,12 @@ spec:
   outgoingAuth:
     source: discovered
   podTemplateSpec:
+    # The operator owns the Deployment's own annotations, so Reloader reads
+    # this from the pod template instead (its podAnnotations fallback).
+    # ToolHive doesn't watch Secrets: without this, ESO updates never land.
+    metadata:
+      annotations:
+        secret.reloader.stakater.com/reload: mcp-gateway-secret
     spec:
       containers:
         - name: vmcp

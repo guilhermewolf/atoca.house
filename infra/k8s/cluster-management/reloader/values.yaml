@@ -1,6 +1,11 @@
 fullnameOverride: reloader
 reloader:
   isArgoRollouts: false
+  # Restart workloads by stamping a pod-template annotation instead of
+  # injecting a STAKATER_* env var. Operators that reconcile container env
+  # exactly (e.g. ToolHive vMCP) revert env changes but tolerate extra
+  # annotations, and it keeps ArgoCD diffs out of the container spec.
+  reloadStrategy: annotations
   deployment:
     resources:
       requests:

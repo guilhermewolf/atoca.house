@@ -14,4 +14,11 @@ spec:
     # in-cluster endpoint.
     - name: VL_INSTANCE_ENTRYPOINT
       value: http://victoria-logs-server.victoria-logs.svc.cluster.local:9428
-  transport: stdio
+    # Native streamable HTTP instead of stdio: resources/list embeds the docs
+    # and the stdio proxy breaks those large messages into invalid JSON-RPC.
+    - name: MCP_SERVER_MODE
+      value: http
+    - name: MCP_LISTEN_ADDR
+      value: ":8081"
+  transport: streamable-http
+  mcpPort: 8081

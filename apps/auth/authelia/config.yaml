@@ -291,9 +291,15 @@ data:
             response_types: ["code"]
             grant_types: ["authorization_code", "refresh_token"]
             # RFC 9068 JWT access tokens (default is opaque, which vMCP can't read).
+            # RFC 9068 requires an aud; implicit mode grants it without the
+            # client having to request it.
             access_token_signed_response_alg: RS256
+            audience: ['https://mcp.atoca.house/mcp']
+            requested_audience_mode: 'implicit'
             userinfo_signed_response_alg: none
-            token_endpoint_auth_method: 'client_secret_basic'
+            # ToolHive OIDC upstreams always send the secret in the body
+            # (no auth-method option); basic -> invalid_client.
+            token_endpoint_auth_method: 'client_secret_post'
 
           - client_id: outline
             client_name: Outline

@@ -64,6 +64,9 @@ spec:
         type: oidc
         oidcConfig:
           issuerUrl: https://auth.atoca.house
+          # Split DNS: in-cluster auth.atoca.house resolves to the internal
+          # gateway (192.168.60.x); ToolHive's SSRF guard blocks private IPs.
+          allowPrivateIPs: true
           clientId: "<path:vaults/K8s/items/authelia#MCP_GATEWAY_OAUTH_CLIENT_ID>"
           clientSecretRef:
             name: mcp-gateway-secret
@@ -78,6 +81,7 @@ spec:
         oauth2Config:
           authorizationEndpoint: https://outline.atoca.house/oauth/authorize
           tokenEndpoint: https://outline.atoca.house/oauth/token
+          allowPrivateIPs: true
           clientId: "<path:vaults/K8s/items/mcp-gateway#OUTLINE_OAUTH_CLIENT_ID>"
           clientSecretRef:
             name: mcp-gateway-secret
@@ -97,8 +101,11 @@ spec:
     type: oidc
     oidcConfigRef:
       name: mcp-gateway
-      audience: https://mcp.atoca.house
-      resourceUrl: https://mcp.atoca.house
+      # Must be the full endpoint URL. ToolHive matches the RFC 8707 `resource`
+      # exactly, and MCP SDKs normalise a bare origin to "https://host/"
+      # (trailing slash) -> invalid_target. A path is left untouched.
+      audience: https://mcp.atoca.house/mcp
+      resourceUrl: https://mcp.atoca.house/mcp
     # Cedar. Groups from Authelia's access token become THVGroup::"groupname"
     # parents; each tool's parent is Backend::"workload-name". tools/list is
     # filtered by these call_tool rules, so users only see what they may call.

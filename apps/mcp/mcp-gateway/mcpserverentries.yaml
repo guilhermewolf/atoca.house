@@ -12,7 +12,9 @@ metadata:
 spec:
   groupRef:
     name: mcp-tools
-  remoteUrl: http://outline.outline.svc.cluster.local:8080/mcp
+  # Public hostname, not the svc: Outline answers 405 to plain-HTTP /mcp (it
+  # expects HTTPS); resolves to the internal gateway via split DNS.
+  remoteUrl: https://outline.atoca.house/mcp
   transport: streamable-http
   allowPrivateEndpoint: true
   externalAuthConfigRef:

@@ -115,6 +115,14 @@ data:
             mcp:
               access_token: '1h'
               refresh_token: '30d'
+            # Headlamp's cookie outlives the default 90m refresh_token; next day
+            # every API call retries the dead token in parallel, tripping the
+            # /api/oidc/token rate limit so the fresh login's code exchange 429s
+            # (Headlamp shows HTTP 500 after Authelia login).
+            headlamp:
+              id_token: '1h'
+              access_token: '1h'
+              refresh_token: '30d'
         # access_control (domain/subject) rules do NOT gate OIDC authorization
         # requests - Authelia issues tokens to the client, not a domain, so
         # per-client group restriction must go through authorization_policies
@@ -526,6 +534,7 @@ data:
             # Headlamp forwards the id_token to kube-apiserver, which maps
             # groups -> RBAC (infra/k8s/monitoring/headlamp/rbac.yaml).
             authorization_policy: admins
+            lifespan: 'headlamp'
             require_pkce: true
             pkce_challenge_method: 'S256'
             pre_configured_consent_duration: 1y

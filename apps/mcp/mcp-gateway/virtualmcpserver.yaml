@@ -49,10 +49,18 @@ spec:
     # DCR stays available as fallback for other clients.
     cimd:
       enabled: true
-    # ponytail: in-memory sessions; a pod restart forces users to reconnect.
-    # Switch to `type: redis` (Dragonfly + ACL password) if that gets annoying.
+    # Redis so tokens survive gateway rollouts (memory storage logged every
+    # client out on each new pod). Shared Dragonfly, db 0, no auth.
+    # ponytail: any in-cluster pod can read these tokens; move to a dedicated
+    # password-protected Dragonfly if that matters.
     storage:
-      type: memory
+      type: redis
+      redis:
+        addr: dragonfly.dragonfly-cluster.svc.cluster.local:6379
+        aclUserConfig:
+          passwordSecretRef:
+            name: mcp-gateway-secret
+            key: REDIS_PASSWORD
       # Public DCR endpoint: cap stored clients so anonymous registrations
       # can't grow the in-memory store unbounded.
       maxDCRClients: 200

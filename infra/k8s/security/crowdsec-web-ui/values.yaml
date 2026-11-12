@@ -8,7 +8,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=ghcr.io/theduffman85/crowdsec-web-ui
           repository: ghcr.io/theduffman85/crowdsec-web-ui
-          tag: 2026.11.8@sha256:c531d36780cfb072023aa273849ea081e2a6dc18df15326dde6af7dcc6cda160
+          tag: 2026.11.10@sha256:9822833b0359983bc8f70b7142028050a4c1dc5569eb6b3bc1b20a9970e61641
         env:
           TZ: Europe/Amsterdam
           CONFIG_UPDATES_ENABLED: "false"

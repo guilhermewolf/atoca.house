@@ -5,5 +5,5 @@ app:
   namespace: victoria-logs
   chart: victoria-logs-single
   chartRepo: ghcr.io/victoriametrics/helm-charts
-  chartVersion: 0.13.12
+  chartVersion: 0.13.13
   useVaultPlugin: false

@@ -7,7 +7,7 @@ metadata:
 spec:
   groupRef:
     name: mcp-tools
-  image: ghcr.io/aplaceforallmystuff/mcp-arr:1.7.3@sha256:ace72c56448e8695e1d2d060e7437470e3f883fcc9316f1294e3a7f682e1efa1
+  image: ghcr.io/aplaceforallmystuff/mcp-arr:1.7.4@sha256:b64eb8fe294b95bf363cd00bb9e14d7ff81d2953b521eda0d49d6a056a17369e
   env:
     # mcp-arr only speaks HTTP when MCP_TRANSPORT is literally "http", but
     # ToolHive overwrites that var with its own transport name. Run the image

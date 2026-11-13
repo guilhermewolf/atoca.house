@@ -16,5 +16,25 @@
       matchPackageNames: ["/spegel/"],
       changelogUrl: "https://github.com/spegel-org/spegel/blob/main/CHANGELOG.md",
     },
+    {
+      description: "Source URL for ToolHive operator images/charts (tags vX.Y.Z)",
+      matchPackageNames: ["/^ghcr\\.io/stacklok/toolhive//"],
+      sourceUrl: "https://github.com/stacklok/toolhive",
+    },
+    {
+      description: "Source URL for ai-memory (no OCI source label)",
+      matchPackageNames: ["/akitaonrails/ai-memory/"],
+      sourceUrl: "https://github.com/akitaonrails/ai-memory",
+    },
+    {
+      description: "CoreDNS chart: releases live in coredns/helm, not coredns/coredns",
+      matchPackageNames: ["ghcr.io/coredns/charts/coredns"],
+      sourceUrl: "https://github.com/coredns/helm",
+    },
+    {
+      description: "Blackbox exporter chart: releases live in helm-charts, not the app repo",
+      matchPackageNames: ["ghcr.io/prometheus-community/charts/prometheus-blackbox-exporter"],
+      sourceUrl: "https://github.com/prometheus-community/helm-charts",
+    },
   ],
 }

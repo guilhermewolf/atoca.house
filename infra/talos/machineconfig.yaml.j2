@@ -220,6 +220,14 @@ kind: KmsgLogConfig
 name: victoria-logs
 url: tcp://192.168.60.134:5170/
 ---
+# Hardware watchdog (SP5100 TCO on every node): machined pets it; a hard hang
+# (node frozen, power LED on) self-reboots after the timeout instead of
+# waiting for a manual power cycle.
+apiVersion: v1alpha1
+kind: WatchdogTimerConfig
+device: /dev/watchdog0
+timeout: 2m
+---
 apiVersion: v1alpha1
 kind: SysctlConfig
 params:

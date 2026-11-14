@@ -28,7 +28,7 @@ controllers:
       ledfx:
         image:
           repository: ghcr.io/ledfx/ledfx
-          tag: edge@sha256:ee73b47c58004c48d354eb8d13d17b8eccc4ef36eb468bdb4474d88b8c450870
+          tag: edge@sha256:4a689e9812849a478bf311b6a48a951993bca1e627175dc42ee2b45222600b63
         args:
           - --offline
           - --clear-effects

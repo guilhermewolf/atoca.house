@@ -157,10 +157,13 @@ persistence:
       - path: /data
 
   # whole media share read-only; add course folders (e.g. /media/masterclass) in Vidya's admin UI
+  # Mount the export root + subPath like every other NFS app: an NFS root handle on an Unraid
+  # shfs subdirectory goes stale when shfs re-issues the dir's inode ("fileid changed").
   media:
     type: nfs
     server: nas.internal
-    path: /mnt/user/data/media/
+    path: /mnt/user/data
     globalMounts:
       - path: /media
+        subPath: media
         readOnly: true

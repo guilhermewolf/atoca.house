@@ -10,7 +10,7 @@ controllers:
       app:
         image:
           repository: docker.io/makeplane/iframely
-          tag: v2.5.7@sha256:ed13efa0a8803667e8246bc17773a2f4d9279e1328573d2ec0d02f6769952189
+          tag: v2.5.8@sha256:982d2ed0259c5843513fdc1978af662f3d4332fb74a8a74ddce99a378b8ee737
         env:
           # Loads /iframely/config.production.js from the configmap below.
           NODE_ENV: production

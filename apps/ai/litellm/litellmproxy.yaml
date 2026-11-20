@@ -6,7 +6,7 @@ metadata:
   name: litellm
 spec:
   # Renovate's kubernetes manager picks up this image line.
-  image: ghcr.io/berriai/litellm-non_root:1.110.1@sha256:a59d746be84b1bbf6afd665ea5a86bbe382460d2670c4bc16fa80c64d5b264e3
+  image: ghcr.io/berriai/litellm-non_root:1.110.2@sha256:c3b5e373cb990e361b0e4934f77f075a9459d5e7f1a8d0e80c7d9199111ef688
   replicas: 1
   # Models come from LiteLLMModel CRs in ./models, rendered into config.yaml
   # (GitOps source of truth). Postgres still backs the UI, virtual keys, spend.

@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: shelfmark
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "55 1 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: garage
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "35 3 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

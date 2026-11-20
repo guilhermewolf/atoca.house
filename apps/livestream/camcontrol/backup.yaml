@@ -10,7 +10,7 @@ metadata:
 spec:
   sourcePVC: camcontrol-config
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "45 0 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

@@ -10,7 +10,7 @@ metadata:
 spec:
   sourcePVC: skylight-config
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "40 0 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

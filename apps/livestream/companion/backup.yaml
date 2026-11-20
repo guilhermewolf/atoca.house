@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: companion
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "50 0 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

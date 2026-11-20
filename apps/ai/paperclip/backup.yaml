@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: paperclip
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "20 0 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

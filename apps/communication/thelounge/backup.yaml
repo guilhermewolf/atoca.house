@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: thelounge
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "25 0 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: bazarr
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "10 1 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

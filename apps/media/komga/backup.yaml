@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: komga
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "35 1 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

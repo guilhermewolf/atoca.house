@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: radarr
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "50 1 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

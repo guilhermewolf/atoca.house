@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: kavita
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "30 1 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

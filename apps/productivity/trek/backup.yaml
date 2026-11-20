@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: trek-data
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "25 3 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

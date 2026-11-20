@@ -9,7 +9,7 @@ metadata:
 spec:
   sourcePVC: odoo
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "15 3 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

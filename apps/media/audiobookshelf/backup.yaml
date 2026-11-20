@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: audiobookshelf
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "0 1 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

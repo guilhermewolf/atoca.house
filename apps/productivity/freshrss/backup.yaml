@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: freshrss
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "45 2 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

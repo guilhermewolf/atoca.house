@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: jellyfin-config
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "25 1 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

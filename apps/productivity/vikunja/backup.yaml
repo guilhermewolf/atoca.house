@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: vikunja
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "30 3 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

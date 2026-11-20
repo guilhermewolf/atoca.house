@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: qui
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "20 3 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

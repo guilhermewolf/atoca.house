@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: upbrr
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "10 2 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

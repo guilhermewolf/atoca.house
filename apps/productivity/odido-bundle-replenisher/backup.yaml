@@ -8,7 +8,7 @@ metadata:
 spec:
   sourcePVC: odido-bundle-replenisher
   trigger:
-    schedule: "0 0 * * *"
+    schedule: "10 3 * * *"
   restic:
     accessModes:
       - ReadWriteOnce

@@ -40,3 +40,14 @@ spec:
           podSelector:
             matchLabels:
               gateway.envoyproxy.io/owning-gateway-name: atoca-house-external
+    # DNS replies via the kube-dns VIP. With loadBalancer.mode=dsr, a reply
+    # from a CoreDNS pod on another node misses conntrack here and gets
+    # "Policy denied", so ~half of lookups (incl. auth.atoca.house) time out
+    # with EAI_AGAIN and OIDC discovery fails. Port-less for the same reason.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns

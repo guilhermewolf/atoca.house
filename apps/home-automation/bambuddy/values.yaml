@@ -69,7 +69,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=ghcr.io/maziggy/bambu-studio-api
           repository: ghcr.io/maziggy/bambu-studio-api
-          tag: bambuddy-1.3.1@sha256:7dbe1531e74a6ec3cb3fc390cd399882c62511f294d25425537efd0649d227b8
+          tag: bambuddy-1.3.2@sha256:c28c16d9e11e5d7c326e05f4fb30838e2d918e6a3c301feedbb321b56bcbf647
         env:
           PORT: &slicerPort 3001
           # Bambu Studio CLI writes its config under $HOME.

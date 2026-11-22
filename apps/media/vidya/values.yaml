@@ -9,7 +9,7 @@ controllers:
           # Fork with in-app OIDC, built by vidya-self's Forgejo Actions workflow.
           # Not Renovate-managed: the private registry has no host rule here.
           repository: forge.atoca.house/guilherme/vidya-self
-          tag: 8e60249@sha256:6700ecc49f8b3b7e19c619cb6af2b5884817a6e5f643ded780e82b5a35d06125
+          tag: 6d0abd4@sha256:2b4f3f87815ea5b514a8692896526679d10cf4942b5edc9538d1fb45c3eda337
         env:
           VIDYA_DATA_PATH: /data
           PORT: &port 31415
@@ -33,6 +33,8 @@ controllers:
           # only from the pod CIDR so clients can't spoof their IP.
           TRUST_PROXY: 10.244.0.0/16
           VIDYA_SCAN_INTERVAL_MINUTES: "360"
+          # Origin of the iOS app's (Capacitor) webview.
+          VIDYA_CORS_ORIGINS: capacitor://localhost
           # Browser-incompatible videos are transcoded on the fly to HLS
           # segments in this scratch dir (the hls emptyDir below).
           VIDYA_HLS_PATH: /tmp/vidya-hls
@@ -102,6 +104,8 @@ defaultPodOptions:
 
 service:
   app:
+    # Keep the name "vidya" now that a second service exists (route + Gatus use it).
+    forceRename: vidya
     # Gatus probes /healthz in-cluster: the route is behind gateway OIDC and
     # the internal gateway only gets a DNS check.
     annotations:
@@ -114,10 +118,24 @@ service:
     ports:
       http:
         port: *port
+  # Fixed LAN IP, BGP-advertised to the UCG only (not internet-facing).
+  # networkpolicy.yaml limits it to RFC1918 sources.
+  lb:
+    controller: vidya
+    type: LoadBalancer
+    annotations:
+      lbipam.cilium.io/ips: 192.168.60.135
+    ports:
+      http:
+        port: 80
+        targetPort: *port
 
 route:
   app:
     enabled: true
+    # With a second route the chart would name this "vidya-app";
+    # securitypolicy.yaml targets "vidya".
+    forceRename: vidya
     kind: HTTPRoute
     parentRefs:
       - name: atoca-house-internal
@@ -132,6 +150,42 @@ route:
           - path:
               type: PathPrefix
               value: /
+
+  # VIDYA iOS app: it can't follow the gateway OIDC redirect, so these paths
+  # skip securitypolicy.yaml (which targets only the "vidya" route) and rely
+  # on the app's own auth (session cookie or app token). More specific than
+  # the "/" prefix above, so they win. "/" itself is the app's reachability
+  # check; matched only for the app's Origin so browsers keep the gate.
+  mobile:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+    hostnames:
+      - vidya.atoca.house
+    rules:
+      - backendRefs:
+          - name: vidya
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /api
+          - path:
+              type: PathPrefix
+              value: /assets
+          # Called right after the server address is saved; if the gateway
+          # redirects it, the app drops back to the address screen silently.
+          - path:
+              type: Exact
+              value: /isFirstStartUp
+          - path:
+              type: Exact
+              value: /
+            headers:
+              - name: Origin
+                value: capacitor://localhost
 
 persistence:
   tmp:

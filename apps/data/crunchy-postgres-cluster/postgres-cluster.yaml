@@ -169,6 +169,12 @@ spec:
       password:
         type: AlphaNumeric
 
+    - name: excalidash
+      databases:
+        - excalidash
+      password:
+        type: AlphaNumeric
+
   instances:
     - name: postgres
       metadata:

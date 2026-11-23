@@ -1,0 +1,32 @@
+---
+# Block pods from talking NFS to the NAS directly. Cilium masquerades pod
+# traffic to the node IP, which the NAS export rule allows. Kubelet mounts come
+# from the host, so NFS volumes are unaffected.
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: deny-pod-nas-nfs
+spec:
+  # blackbox-exporter-lan probes nas:2049; KEDA scales all NFS apps to zero
+  # if that probe fails.
+  endpointSelector:
+    matchExpressions:
+      - key: io.kubernetes.pod.namespace
+        operator: NotIn
+        values:
+          - blackbox-exporter-lan
+  # Deny-only policy: must not put every pod into default-deny.
+  enableDefaultDeny:
+    egress: false
+    ingress: false
+  egressDeny:
+    - toCIDR:
+        - 192.168.40.160/32
+      toPorts:
+        - ports:
+            - port: "2049"
+              protocol: TCP
+            - port: "111"
+              protocol: TCP
+            - port: "111"
+              protocol: UDP

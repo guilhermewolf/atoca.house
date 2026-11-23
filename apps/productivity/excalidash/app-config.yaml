@@ -1,0 +1,8 @@
+---
+# Application configuration for excalidash
+app:
+  name: excalidash
+  namespace: excalidash
+  chart: app-template
+  chartRepo: ghcr.io/bjw-s-labs/helm
+  chartVersion: 5.3.0

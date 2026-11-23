@@ -1,0 +1,184 @@
+---
+# Drawings and images live in Postgres (DATABASE_PROVIDER=postgresql, no S3),
+# so the pod is stateless and needs no PVC or Volsync.
+controllers:
+  excalidash:
+    labels:
+      postgres: "true"
+    annotations:
+      reloader.stakater.com/auto: "true"
+    initContainers:
+      # The entrypoint replaces /app/dist/generated and chmods /app/uploads, and
+      # neither works on a read-only rootfs or on an emptyDir mountpoint owned
+      # by root. Seed UID-owned directories that are mounted via subPath.
+      init-rw:
+        image: &backendImage
+          # renovate: datasource=docker depName=docker.io/zimengxiong/excalidash-backend
+          repository: docker.io/zimengxiong/excalidash-backend
+          tag: 0.7.0@sha256:f0160bc2b28d24e8ec4ab8d07eeaea357e4c524e983b1fbf6f712503ca5fe17f
+        command:
+          - /bin/sh
+          - -c
+          - mkdir -p /rw/dist /rw/prisma /rw/uploads && cp -R /app/dist/. /rw/dist/
+        securityContext: &securityContext
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+    containers:
+      backend:
+        image: *backendImage
+        env:
+          NODE_ENV: production
+          PORT: &backendPort 8000
+          DATABASE_PROVIDER: postgresql
+          FRONTEND_URL: https://excalidash.atoca.house
+          # Envoy Gateway -> frontend nginx -> backend.
+          TRUST_PROXY: "2"
+          # TLS terminates at the gateway.
+          ENFORCE_HTTPS_REDIRECT: "false"
+          UPDATE_CHECK_OUTBOUND: "false"
+          AUTH_MODE: oidc_enforced
+          OIDC_PROVIDER_NAME: Authelia
+          OIDC_ISSUER_URL: https://auth.atoca.house
+          OIDC_CLIENT_ID: excalidash
+          OIDC_REDIRECT_URI: https://excalidash.atoca.house/api/auth/oidc/callback
+          OIDC_SCOPES: openid profile email groups
+          OIDC_TOKEN_ENDPOINT_AUTH_METHOD: client_secret_basic
+          OIDC_GROUPS_CLAIM: groups
+          OIDC_ADMIN_GROUPS: admins
+          # Admin comes from the group above, not from who logs in first.
+          OIDC_FIRST_USER_ADMIN: "false"
+        envFrom:
+          - secretRef:
+              name: excalidash-secret
+          - secretRef:
+              name: excalidash-db-secret
+        probes:
+          startup:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: *backendPort
+              periodSeconds: 5
+              timeoutSeconds: 5
+              failureThreshold: 60
+          liveness: &backendProbe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /health
+                port: *backendPort
+              periodSeconds: 30
+              timeoutSeconds: 10
+              failureThreshold: 3
+          readiness: *backendProbe
+        securityContext: *securityContext
+        resources:
+          requests:
+            cpu: 25m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+      frontend:
+        image:
+          # renovate: datasource=docker depName=docker.io/zimengxiong/excalidash-frontend
+          repository: docker.io/zimengxiong/excalidash-frontend
+          tag: 0.7.0@sha256:c528f96807a20d865f15a99938833a49a0611ed0fd9913c571b8a5303b420641
+        env:
+          BACKEND_URL: localhost:8000
+        probes:
+          liveness: &frontendProbe
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: &port 8080
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness: *frontendProbe
+        securityContext: *securityContext
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
+defaultPodOptions:
+  annotations:
+    k8s.ksgate.org/postgres-ready: |
+      {
+        "apiVersion": "postgres-operator.crunchydata.com/v1beta1",
+        "kind": "PostgresCluster",
+        "name": "postgres",
+        "namespace": "crunchy-postgres-cluster",
+        "expression": "has(resource.status.instances) && resource.status.instances.exists(i, i.readyReplicas >= 1)"
+      }
+  schedulingGates:
+    - name: k8s.ksgate.org/postgres-ready
+  securityContext:
+    seccompProfile: { type: RuntimeDefault }
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    fsGroup: 1001
+    fsGroupChangePolicy: OnRootMismatch
+    # nginx also binds :80 (hardcoded in the image) with ALL caps dropped.
+    sysctls:
+      - name: net.ipv4.ip_unprivileged_port_start
+        value: "0"
+service:
+  app:
+    controller: excalidash
+    ports:
+      http:
+        port: *port
+route:
+  app:
+    enabled: true
+    kind: HTTPRoute
+    parentRefs:
+      - name: atoca-house-internal
+        namespace: kube-system
+        sectionName: https
+    hostnames:
+      - excalidash.atoca.house
+    rules:
+      - backendRefs:
+          - name: excalidash
+            port: *port
+        matches:
+          - path:
+              type: PathPrefix
+              value: /
+persistence:
+  postgres-ca:
+    type: configMap
+    name: postgres-ca
+    advancedMounts:
+      excalidash:
+        backend:
+          - path: /etc/ssl/postgres/ca.crt
+            subPath: ca.crt
+            readOnly: true
+  rw:
+    type: emptyDir
+    advancedMounts:
+      excalidash:
+        init-rw:
+          - path: /rw
+        backend:
+          - path: /app/dist
+            subPath: dist
+          - path: /app/prisma
+            subPath: prisma
+          - path: /app/uploads
+            subPath: uploads
+  tmp:
+    type: emptyDir
+    globalMounts:
+      - path: /tmp

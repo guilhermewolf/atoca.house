@@ -58,6 +58,9 @@ pluginsManager:
       - name: headlamp-rook-plugin
         source: https://artifacthub.io/packages/headlamp/headlamp-rook/headlamp-rook-plugin
         version: 1.0.2
+      - name: headlamp_trivy
+        source: https://artifacthub.io/packages/headlamp/headlamp-trivy/headlamp_trivy
+        version: 0.3.2
       - name: headlamp_victoria_logs
         source: https://artifacthub.io/packages/headlamp/headlamp-victoria-logs/headlamp_victoria_logs
         version: 2026.904.1

@@ -1,0 +1,32 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/volsync.backube/replicationdestination_v1alpha1.json
+# Restore source for the suwayomi PVC. No destinationPVC: the restore lands in a
+# VolSync-managed snapshot (status.latestImage), never in the live PVC. The
+# existing PVC predates this file and dataSourceRef is immutable, so values.yaml
+# does not reference it; add dataSourceRef only when recreating the PVC.
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationDestination
+metadata:
+  name: suwayomi-restore
+  namespace: suwayomi
+spec:
+  trigger:
+    manual: restore-once
+  restic:
+    repository: suwayomi-r2-secret
+    copyMethod: Snapshot
+    volumeSnapshotClassName: csi-ceph-blockpool
+    storageClassName: ceph-block
+    accessModes:
+      - ReadWriteOnce
+    capacity: 5Gi
+    cacheStorageClassName: openebs-hostpath
+    cacheAccessModes:
+      - ReadWriteOnce
+    cleanupCachePVC: true
+    cleanupTempPVC: true
+    enableFileDeletion: true
+    moverSecurityContext:
+      runAsUser: 99
+      runAsGroup: 100
+      fsGroup: 100

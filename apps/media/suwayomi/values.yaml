@@ -13,19 +13,17 @@ controllers:
           BIND_PORT: &port 4567
           # CBZ is the most portable format for comic readers
           DOWNLOAD_AS_CBZ: "true"
-          AUTO_DOWNLOAD_CHAPTERS: "true"
-          AUTO_DOWNLOAD_EXCLUDE_UNREAD: "false"
-          UPDATE_INTERVAL: 12
-          UPDATE_EXCLUDE_UNREAD: "false"
-          UPDATE_EXCLUDE_STARTED: "false"
-          UPDATE_EXCLUDE_COMPLETED: "true"
-          UPDATE_MANGA_INFO: "true"
+          # Auto-download and update-exclusion settings have no env vars in the
+          # image entrypoint; they live in the DB and are set via the WebUI.
+          # Hours between library update checks; 6 is the server minimum
+          UPDATE_INTERVAL: 6
           MAX_SOURCES_IN_PARALLEL: 6
           WEB_UI_CHANNEL: stable
           WEB_UI_FLAVOR: WebUI
           # v2.3.x maps this to server.extensionStores; the older EXTENSION_REPOS
           # name is silently ignored and leaves you with zero sources.
-          EXTENSION_STORES: '["https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json"]'
+          # Use the protobuf index; the server rewrites index.min.json to it anyway.
+          EXTENSION_STORES: '["https://github.com/keiyoushi/extensions/raw/repo/index.pb"]'
           # Suwayomi keeps its own backups; Volsync covers the PVC
           BACKUP_INTERVAL: 0
           # Reuse the existing FlareSolverr deployment for Cloudflare-gated sources

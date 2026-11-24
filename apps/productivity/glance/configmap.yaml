@@ -132,9 +132,6 @@ data:
                       - title: Audiobooks & Podcasts
                         url: https://audiobookshelf.atoca.house
                         icon: sh:audiobookshelf-light
-                      - title: Ebooks
-                        url: https://komga.atoca.house
-                        icon: sh:komga
                       - title: Comics & Manga
                         url: https://suwayomi.atoca.house
                         icon: sh:suwayomi-light
@@ -248,9 +245,6 @@ data:
                   - title: Audiobooks
                     url: https://audiobookshelf.atoca.house
                     icon: sh:audiobookshelf-light
-                  - title: Ebooks
-                    url: https://komga.atoca.house
-                    icon: sh:komga
 
       # =========================================================================
       # LIFE — saved links, video, personal tools.
@@ -271,9 +265,6 @@ data:
                       - title: Audiobooks & Podcasts
                         url: https://audiobookshelf.atoca.house
                         icon: sh:audiobookshelf-light
-                      - title: Ebooks
-                        url: https://komga.atoca.house
-                        icon: sh:komga
                       - title: Comics & Manga
                         url: https://suwayomi.atoca.house
                         icon: sh:suwayomi-light
@@ -388,12 +379,10 @@ data:
         jellyfin-app-url: https://jellyfin.atoca.house
         karakeep: sh:karakeep-light
         karakeep-url: https://karakeep.atoca.house
-        komga: sh:komga
         mealie-app: sh:mealie-light
         mealie-app-url: https://mealie.atoca.house
         omni-tools: mdi:tools
         omni-tools-url: https://omni-tools.atoca.house
-        komga-url: https://komga.atoca.house
         open-webui: sh:open-webui-light
         open-webui-url: https://chat.atoca.house
         outline: sh:outline-light

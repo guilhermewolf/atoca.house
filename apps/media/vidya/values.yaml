@@ -200,7 +200,7 @@ persistence:
     globalMounts:
       - path: /tmp/vidya-hls
 
-  # key "config" keeps PVC name = "vidya", matching backup.yaml/restore.yaml (same as kavita)
+  # key "config" keeps PVC name = "vidya", matching backup.yaml/restore.yaml
   config:
     enabled: true
     type: persistentVolumeClaim

@@ -508,8 +508,6 @@ data:
         jellystat-url: https://jellystat.atoca.house
         karakeep: sh:karakeep-light
         karakeep-url: https://karakeep.atoca.house
-        kavita: sh:kavita-light
-        kavita-url: https://kavita.atoca.house
         kube-prometheus-stack-moni-alertmanager: mdi:bell-alert
         kube-prometheus-stack-moni-alertmanager-url: https://alertmanager.atoca.house
         kube-prometheus-stack-moni-prometheus: sh:prometheus-light

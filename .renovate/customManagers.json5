@@ -3,6 +3,19 @@
   customManagers: [
     {
       customType: "regex",
+      description: "GitHub release binaries pinned by version + sha256 of an attachment",
+      managerFilePatterns: ["/(^|/)\\.github/workflows/.+\\.ya?ml$/"],
+      // # renovate-attachment: depName=foo/bar
+      // FOO_VERSION: v1.0.0
+      // # optional comment
+      // FOO_SHA256: <64 hex>
+      matchStrings: [
+        "# renovate-attachment: depName=(?<depName>\\S+)\\n\\s+\\w+: (?<currentValue>\\S+)\\n(?:\\s*#.*\\n)?\\s+\\w+: (?<currentDigest>[a-f0-9]{64})",
+      ],
+      datasourceTemplate: "github-release-attachments",
+    },
+    {
+      customType: "regex",
       description: "Process annotated dependencies",
       managerFilePatterns: [
         "/\\.env(?:\\.j2)?$/",

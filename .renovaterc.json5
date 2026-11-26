@@ -64,7 +64,7 @@
 
   "docker-compose": {
     managerFilePatterns: [
-      "/(^|/)stacks/.+\\.ya?ml$/",
+      "/(^|/)docker/.+\\.ya?ml$/",
     ],
   },
 

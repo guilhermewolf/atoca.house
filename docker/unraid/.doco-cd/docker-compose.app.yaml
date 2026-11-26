@@ -1,0 +1,40 @@
+---
+# Bootstrap for doco-cd itself. NOT managed by doco-cd (it can't manage itself).
+# Deploy once by hand on the NAS (see Outline: "Execution: NAS GitOps cutover").
+#
+# 1Password service account token (read-only on vault "Unraid") lives on flash:
+#   /boot/config/doco-cd/op_token  -> persistent, root-only, not mounted by vscode
+name: doco-cd
+secrets:
+  op_token:
+    file: /boot/config/doco-cd/op_token
+services:
+  app:
+    container_name: doco-cd
+    image: ghcr.io/kimdre/doco-cd:0.138.0@sha256:9d8d10b795f7ef4372088475fd16277d7b79a0e85434fbfc34270e26fb90ddea
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: info
+      DEPLOY_CONFIG_BASE_DIR: ./docker/unraid/
+      # Public repo: no git token needed. 5 min poll instead of a webhook.
+      POLL_CONFIG: |-
+        - url: https://github.com/guilhermewolf/atoca.house.git
+          reference: refs/heads/main
+          interval: 300
+      SECRET_PROVIDER: 1password
+      SECRET_PROVIDER_ACCESS_TOKEN_FILE: /run/secrets/op_token
+    ports:
+      - 9120:9120  # Prometheus metrics (scraped by the cluster)
+    secrets:
+      - op_token
+    healthcheck:
+      test: ["CMD", "/doco-cd", "healthcheck"]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - data:/data
+volumes:
+  data: {}

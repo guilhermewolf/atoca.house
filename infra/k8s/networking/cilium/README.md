@@ -22,6 +22,10 @@ router bgp 64513
   neighbor 192.168.40.14 peer-group k8s
   neighbor 192.168.40.14 description "node-04"
 
+  ! Unraid NAS (FRR in docker/unraid/frr) announces 192.168.60.250/32
+  neighbor 192.168.40.160 remote-as 64515
+  neighbor 192.168.40.160 description "unraid-nas"
+
   ! IPv4 unicast address family
   address-family ipv4 unicast
     neighbor k8s next-hop-self

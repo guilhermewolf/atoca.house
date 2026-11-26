@@ -1,0 +1,39 @@
+---
+# doco-cd deploy config for the Unraid NAS.
+# Every subdirectory with a docker-compose.yaml becomes one Compose project
+# (project name = directory name). Removing a directory removes the stack.
+working_dir: ./docker/unraid
+auto_discovery:
+  enabled: true
+  depth: 1
+  delete: true
+  remove_volumes: false
+reconciliation:
+  enabled: true
+  events:
+    - die
+    - destroy
+    - unhealthy
+# Resolved from 1Password (vault "Unraid") and exposed as ${VAR} to every stack.
+# Convention: one item per app, field name = env var name.
+external_secrets:
+  # restic
+  RESTIC_REPOSITORY: op://Unraid/restic/RESTIC_REPOSITORY
+  RESTIC_PASSWORD: op://Unraid/restic/RESTIC_PASSWORD
+  AWS_ACCESS_KEY_ID: op://Unraid/restic/AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: op://Unraid/restic/AWS_SECRET_ACCESS_KEY
+  # duplicati
+  SETTINGS_ENCRYPTION_KEY: op://Unraid/duplicati/SETTINGS_ENCRYPTION_KEY
+  DUPLICATI_WEBSERVICE_PASSWORD: op://Unraid/duplicati/DUPLICATI_WEBSERVICE_PASSWORD
+  # vscode
+  VSCODE_SUDO_PASSWORD: op://Unraid/vscode/VSCODE_SUDO_PASSWORD
+  VSCODE_CONNECTION_TOKEN: op://Unraid/vscode/VSCODE_CONNECTION_TOKEN
+  # spotify-slsk
+  SPOTIPY_CLIENT_ID: op://Unraid/spotify-slsk/SPOTIPY_CLIENT_ID
+  SPOTIPY_CLIENT_SECRET: op://Unraid/spotify-slsk/SPOTIPY_CLIENT_SECRET
+  SLSKD_API_KEY: op://Unraid/spotify-slsk/SLSKD_API_KEY
+  SPOTIFY_PLAYLIST_URLS: op://Unraid/spotify-slsk/SPOTIFY_PLAYLIST_URLS
+  # traefik (Cloudflare DNS-01, Zone:DNS:Edit on atoca.house)
+  CF_DNS_API_TOKEN: op://Unraid/traefik/CF_DNS_API_TOKEN
+  # dexd (UniFi Network API key, Settings -> Control Plane -> Integrations)
+  DEXD_UNIFI_API_KEY: op://Unraid/dexd/DEXD_UNIFI_API_KEY

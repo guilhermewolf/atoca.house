@@ -79,7 +79,7 @@ area/terraform:
 area/docker:
   - changed-files:
       - any-glob-to-any-file:
-          - "stacks/**/*"
+          - "docker/**/*"
           - "**/docker-compose*.yaml"
           - "**/Dockerfile"
 

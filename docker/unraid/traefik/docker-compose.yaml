@@ -1,0 +1,80 @@
+---
+# TLS reverse proxy for NAS containers, bound only to the services VIP
+# (192.168.60.250, announced by ../frr). Unraid's nginx keeps 192.168.40.160:80/443.
+#
+# - Hostnames: router labels on the traefik container (Docker provider).
+# - Backends:  file-provider services pointing at the host-published ports,
+#              so app stacks need no changes.
+# - DNS:       dexd reads those router labels and creates UniFi static records
+#              <host> -> 192.168.60.250 (NAS-only, independent of the cluster).
+#
+# Add a service = one router label pair below + one backend line in nas-backends.
+configs:
+  nas-backends:
+    content: |
+      http:
+        services:
+          duplicati:    {loadBalancer: {servers: [{url: "http://192.168.40.160:8200"}]}}
+          syncthing:    {loadBalancer: {servers: [{url: "http://192.168.40.160:8384"}]}}
+          vscode:       {loadBalancer: {servers: [{url: "http://192.168.40.160:3000"}]}}
+          speedtest:    {loadBalancer: {servers: [{url: "http://192.168.40.160:3002"}]}}
+          spotify-slsk: {loadBalancer: {servers: [{url: "http://192.168.40.160:3003"}]}}
+services:
+  traefik:
+    container_name: traefik
+    image: ghcr.io/traefik/traefik:v3.8.0@sha256:cd3078e07dfe0c551b1df6fca2697c52f35da0a18c7bd81da4d3b1f012405098
+    restart: unless-stopped
+    command:
+      - --entryPoints.web.address=:80
+      - --entryPoints.web.http.redirections.entryPoint.to=websecure
+      - --entryPoints.web.http.redirections.entryPoint.scheme=https
+      - --entryPoints.websecure.address=:443
+      - --entryPoints.websecure.http.tls=true
+      - --entryPoints.websecure.http.tls.certResolver=cf
+      - --entryPoints.websecure.http.tls.domains[0].main=*.atoca.house
+      - --certificatesResolvers.cf.acme.dnsChallenge.provider=cloudflare
+      - --certificatesResolvers.cf.acme.storage=/certs/acme.json
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
+      - --providers.file.directory=/etc/traefik/dynamic
+    environment:
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+    configs:
+      - source: nas-backends
+        target: /etc/traefik/dynamic/nas-backends.yaml
+    labels:
+      traefik.enable: "true"
+      dexd.enabled: "true"
+      traefik.http.routers.duplicati.rule: Host(`duplicati.atoca.house`)
+      traefik.http.routers.duplicati.service: duplicati@file
+      traefik.http.routers.syncthing.rule: Host(`syncthing.atoca.house`)
+      traefik.http.routers.syncthing.service: syncthing@file
+      traefik.http.routers.vscode.rule: Host(`vscode.atoca.house`)
+      traefik.http.routers.vscode.service: vscode@file
+      traefik.http.routers.speedtest.rule: Host(`speedtest.atoca.house`)
+      traefik.http.routers.speedtest.service: speedtest@file
+      traefik.http.routers.spotify-slsk.rule: Host(`spotify-slsk.atoca.house`)
+      traefik.http.routers.spotify-slsk.service: spotify-slsk@file
+    ports:
+      - 192.168.60.250:80:80
+      - 192.168.60.250:443:443
+    volumes:
+      - acme:/certs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  dexd:
+    container_name: dexd
+    image: ghcr.io/ishioni/dexd:0.4.5@sha256:f1e793713645dfe1aa2f7c85ee89814e5e96741d83c2a927a25700f910c5db21
+    restart: unless-stopped
+    environment:
+      UNIFI_HOST: https://192.168.10.1
+      UNIFI_API_KEY: ${DEXD_UNIFI_API_KEY}
+      DEFAULT_TARGET: 192.168.60.250
+      # Distinct owner from the cluster's unifi-dns (external-dns, owner "main")
+      TXT_OWNER: unraid
+    ports:
+      - 9121:8080  # Prometheus metrics (scraped by the cluster)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+volumes:
+  acme: {}

@@ -72,7 +72,7 @@ controllers:
       app:
         image:
           repository: docker.io/library/elasticsearch
-          tag: 8.19.25@sha256:d609f45c5b8ac4f97090d4029520a256581c8f0b70b6cc28aa82255aa98b9bec
+          tag: 8.19.26@sha256:9507398e316f867a21c2c5e0dcb825075067510125e733b4c7b690683325a29f
         env:
           discovery.type: single-node
           xpack.security.enabled: "false"

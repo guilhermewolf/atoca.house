@@ -44,7 +44,7 @@ controllers:
         # and ad-blocking to PLAYWRIGHT_DRIVER_URL query params.
         image:
           repository: ghcr.io/browserless/chromium
-          tag: v2.64.3@sha256:f53b8d1dedf3dce0cc738ae4d5cb82a72cb895914364bc36345215da7b7b785c
+          tag: v2.64.4@sha256:cee2fee0b7c92dfb70f0ab0738801a358b8548e5fdb954d5ca9315e459d11a71
         env:
           - { name: TIMEOUT, value: "120000" }
           # Each session launches its own Chromium (~200-400Mi on heavy pages);

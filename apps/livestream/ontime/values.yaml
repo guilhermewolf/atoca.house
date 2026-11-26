@@ -8,7 +8,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=getontime/ontime
           repository: getontime/ontime
-          tag: v4.15.1@sha256:e5749b09a80e712c269fa4c540d074467da19f1cacbc0be0c3cdec16c2b1c11e
+          tag: v4.16.0@sha256:c55bcde3dc2351af4187c6b11e9bfa6ff8d00d0fe0546b6a81530e5303e0b0fc
         env:
           TZ: Europe/Amsterdam
         securityContext:

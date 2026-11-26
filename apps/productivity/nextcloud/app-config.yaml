@@ -6,4 +6,4 @@ app:
   namespace: nextcloud
   chart: nextcloud
   chartRepo: ghcr.io/nextcloud/helm
-  chartVersion: 9.4.5
+  chartVersion: 9.4.6

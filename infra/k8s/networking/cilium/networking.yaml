@@ -7,9 +7,10 @@ kind: CiliumLoadBalancerIPPool
 metadata:
   name: home-pool
 spec:
-  allowFirstLastIPs: "No"  # Exclude .0 and .255
+  # .240-.254 reserved for non-k8s VIPs announced via BGP (192.168.60.250 = Unraid NAS, docker/unraid/frr)
   blocks:
-    - cidr: 192.168.60.0/24
+    - start: 192.168.60.1
+      stop: 192.168.60.239
 
 ---
 # BGP Advertisement - advertise LoadBalancer IPs via BGP

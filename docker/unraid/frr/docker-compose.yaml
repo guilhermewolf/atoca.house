@@ -1,0 +1,17 @@
+---
+# Advertises the NAS services VIP (192.168.60.250/32) to the UCG Max over BGP.
+# The VIP itself lives on `lo` (added by /boot/config/go); FRR only announces it.
+services:
+  frr:
+    container_name: frr
+    image: quay.io/frrouting/frr:10.7.1@sha256:e995beaa50fdc9edb35eadcfefa29b7f062cc06f2b812613789b68fa541554d2
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - NET_BIND_SERVICE
+      - SYS_ADMIN
+    network_mode: host
+    volumes:
+      - ./config/daemons:/etc/frr/daemons:ro
+      - ./config/frr.conf:/etc/frr/frr.conf:ro

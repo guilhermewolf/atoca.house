@@ -1,4 +1,3 @@
-version: "3.8"
 
 services:
   syncthing:
@@ -23,7 +22,7 @@ services:
       resources:
         limits:
           cpus: "1.0"
-          memory: 512M
+          memory: 1G
         reservations:
           cpus: "0.5"
           memory: 128M

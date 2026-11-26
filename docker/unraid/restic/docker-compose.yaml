@@ -1,13 +1,13 @@
-version: '3.8'
 
 services:
   backup:
-    image: mazzolino/restic@sha256:84a18b739c15216b07dcb9e14985437d49b7a3a68ef8ce48c1323b9f59bf794e
+    image: mazzolino/restic:latest@sha256:84a18b739c15216b07dcb9e14985437d49b7a3a68ef8ce48c1323b9f59bf794e
     restart: unless-stopped
     container_name: restic-backup
     network_mode: bridge
     environment:
-      RUN_ON_STARTUP: "true"
+      # false: doco-cd/Renovate recreations must not trigger an off-schedule backup
+      RUN_ON_STARTUP: "false"
       # 10:30 Europe/Amsterdam = 08:30 UTC. The Unraid Appdata.Backup plugin runs on a UTC
       # host at 07:00 UTC and finishes ~07:01, so this leaves ~90min of headroom. Do not move
       # this earlier than 09:30 local or restic uploads yesterday's dump.
@@ -33,7 +33,7 @@ services:
 
 
   prune:
-    image: mazzolino/restic@sha256:84a18b739c15216b07dcb9e14985437d49b7a3a68ef8ce48c1323b9f59bf794e
+    image: mazzolino/restic:latest@sha256:84a18b739c15216b07dcb9e14985437d49b7a3a68ef8ce48c1323b9f59bf794e
     container_name: restic-prune
     network_mode: bridge
     restart: unless-stopped

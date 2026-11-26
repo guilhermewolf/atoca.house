@@ -1,0 +1,29 @@
+---
+# Imported from the hand-made Portainer stack. Secrets now come from op://Unraid/spotify-slsk.
+services:
+  spotify-slsk:
+    image: ghcr.io/guilhermewolf/spotify-slsk/spotify-slsk:2.1.0@sha256:fe247ca6cc597baa132f0aeebbd539993c21e6780feabbcc5b93a34e2164b1c3
+    user: 99:100
+    ports:
+      - 3003:8000
+    environment:
+      - SPOTIPY_CLIENT_ID=${SPOTIPY_CLIENT_ID}
+      - SPOTIPY_CLIENT_SECRET=${SPOTIPY_CLIENT_SECRET}
+      - SPOTIFY_PLAYLIST_URLS=${SPOTIFY_PLAYLIST_URLS}
+      - SLSKD_API_KEY=${SLSKD_API_KEY}
+      - SLSKD_DOWNLOADS_DIR=/downloads/complete/music
+      - SLSKD_PREFERRED_FORMATS="flac"
+      - SLSKD_HOST_URL=https://slskd.atoca.house
+      - SLSKD_PLAYLISTS_DIR=/playlists
+      - TZ=Europe/Amsterdam
+      - LOGLEVEL=INFO
+    volumes:
+      - /mnt/user/musics/playlists:/playlists
+      - /mnt/blaze/appdata/spotify-slsk:/app/data
+      - /mnt/user/data/slskd/complete:/downloads/complete/music
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    restart: unless-stopped

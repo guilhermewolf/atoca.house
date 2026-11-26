@@ -8,10 +8,8 @@ services:
       - --web.listen-address=0.0.0.0:9100
       - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
     container_name: node-exporter
-    image: quay.io/prometheus/node-exporter:v1.13.1
+    image: quay.io/prometheus/node-exporter:v1.13.1@sha256:011e2d12c5bff759b90804bda642664775d7b4b127bf5148539bb82d3f590bb7
     network_mode: host
-    ports:
-      - 9100:9100
     restart: unless-stopped
     volumes:
       - /:/host/root:ro

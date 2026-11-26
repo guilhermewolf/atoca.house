@@ -1,4 +1,3 @@
-version: "3.8"
 
 services:
   duplicati:
@@ -24,7 +23,8 @@ services:
           memory: 256M
     volumes:
       - /mnt/user/backups:/backups
-      - /mnt/user:/source
+      # read-only: backups never need to write the source; restore into /backups instead
+      - /mnt/user:/source:ro
       - /mnt/blaze/appdata/duplicati:/config
     restart: unless-stopped
     labels:

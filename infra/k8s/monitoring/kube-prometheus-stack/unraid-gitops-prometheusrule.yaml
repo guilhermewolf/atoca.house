@@ -1,0 +1,42 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/monitoring.coreos.com/prometheusrule_v1.json
+# Alerts for the NAS GitOps loop (docker/unraid: doco-cd + dexd).
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: unraid-gitops-rules
+spec:
+  groups:
+    - name: unraid-gitops.rules
+      rules:
+        - alert: UnraidDocoCdDown
+          expr: up{job="unraid-doco-cd"} == 0
+          for: 10m
+          annotations:
+            summary: doco-cd on the NAS is down; docker/unraid changes are not being deployed
+          labels:
+            severity: warning
+
+        - alert: UnraidDexdDown
+          expr: up{job="unraid-dexd"} == 0
+          for: 10m
+          annotations:
+            summary: dexd on the NAS is down; NAS *.atoca.house DNS records are not reconciled
+          labels:
+            severity: warning
+
+        - alert: UnraidDexdReconcileStale
+          expr: time() - dexd_reconcile_last_success_timestamp_seconds > 900
+          for: 5m
+          annotations:
+            summary: dexd has not reconciled UniFi DNS successfully for 15 minutes
+          labels:
+            severity: warning
+
+        - alert: UnraidDexdErrors
+          expr: increase(dexd_provider_errors_total[10m]) > 0 or increase(dexd_changes_total{result="error"}[10m]) > 0
+          for: 10m
+          annotations:
+            summary: dexd is failing to write records to the UniFi controller
+          labels:
+            severity: warning

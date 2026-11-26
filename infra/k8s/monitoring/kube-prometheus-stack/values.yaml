@@ -81,12 +81,13 @@ prometheus:
 
 prometheus-node-exporter:
   fullnameOverride: node-exporter
-  # Chart default extraArgs exclude ALL of /var/lib/kubelet/, which hides every
+  # Chart defaultArgs (node-exporter chart >=6.0.0) exclude ALL of /var/lib/kubelet/, which hides every
   # in-tree NFS volume mount (kubernetes.io~nfs) from the filesystem collector.
   # Without these series there is no way to detect a stale NFS handle: the pod
   # stays Running 1/1 and only fails at syscall time. Narrow the exclusion so
   # ~nfs mounts are scraped while the noisy per-pod tmpfs/csi mounts stay out.
-  extraArgs:
+  # Must override defaultArgs, not extraArgs: node-exporter rejects repeated flags.
+  defaultArgs:
     - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|run/containerd/.+|var/lib/docker/.+|var/lib/kubelet/(plugins|pods/[^/]+/(volume-subpaths|volumes/kubernetes\.io~(configmap|secret|projected|empty-dir|csi)))/.+)($|/)
     - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs|erofs)$
   # Deliberate exception to the repo-wide runAsNonRoot default.

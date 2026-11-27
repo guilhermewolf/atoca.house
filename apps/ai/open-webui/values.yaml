@@ -107,9 +107,20 @@ controllers:
           # tool servers, ...) are read only on first boot and the DB wins.
           # Anything changed in the admin UI resets on restart.
           ENABLE_PERSISTENT_CONFIG: "False"
-          # Models: LiteLLM only (its ollama-backed groups cover local models).
+          # Two providers: Ollama direct (local GPU models, native API: pull/
+          # delete in Admin > Connections, keep_alive, vision) and LiteLLM
+          # (cloud + subscriptions). Local models are NOT listed via LiteLLM
+          # too, so the picker has no duplicates. Tags show the provider.
+          ENABLE_OLLAMA_API: "True"
+          OLLAMA_BASE_URLS: http://ollama.ollama.svc.cluster.local
+          # Allowlist hides embedding/HA-only/duplicate tags (nomic-embed-text,
+          # home-3b, hf.co/unsloth/Qwen3.8...). Add new `ollama pull`s here.
+          OLLAMA_API_CONFIGS: >-
+            {"0":{"enable":true,"tags":[{"name":"Ollama"}],"model_ids":[
+            "qwen3.8:27b-iq4","qwen3.5:9b",
+            "hf.co/mradermacher/Qwen3.5-9B-heretic-v2-GGUF:Q8_0",
+            "gemma4:12b","gemma4:e4b","qwen3:14b","deepseek-r1:8b"]}}
           # Per-app virtual key minted by litellm-operator (litellm-key.yaml).
-          ENABLE_OLLAMA_API: "False"
           ENABLE_OPENAI_API: "True"
           OPENAI_API_BASE_URL: http://litellm.litellm.svc.cluster.local:4000/v1
           OPENAI_API_KEY:
@@ -119,18 +130,18 @@ controllers:
                 key: LITELLM_API_KEY
           # LiteLLM's /v1/models expands the chatgpt/* and nous/* wildcards into
           # ~200 entries (image/audio models, ones the account rejects). List
-          # only the chat model groups; add new LiteLLMModels here.
+          # only the cloud chat model groups (local ones come from Ollama above);
+          # add new LiteLLMModels here.
           OPENAI_API_CONFIGS: >-
-            {"0":{"enable":true,"model_ids":[
+            {"0":{"enable":true,"tags":[{"name":"LiteLLM"}],"model_ids":[
             "chatgpt/gpt-6.1-sol","chatgpt/gpt-6-sol","chatgpt/gpt-6-luna",
             "nous-claude-opus","nous-claude-sonnet",
-            "groq-gpt-oss-120b","cerebras-gpt-oss-120b","openrouter-free","mistral-small",
-            "qwen3.8-27b","qwen3.5-9b","gemma4-12b","gemma4-e4b"]}}
+            "groq-gpt-oss-120b","cerebras-gpt-oss-120b","openrouter-free","mistral-small"]}}
           # ChatGPT-like out of the box. Which models a non-admin sees at all is
           # set per model (name, description, access) in Admin > Models — DB,
           # not env. Pinned = the short list in the sidebar.
           DEFAULT_MODELS: chatgpt/gpt-6-sol
-          DEFAULT_PINNED_MODELS: chatgpt/gpt-6.1-sol,chatgpt/gpt-6-sol,chatgpt/gpt-6-luna,groq-gpt-oss-120b,qwen3.5-9b
+          DEFAULT_PINNED_MODELS: chatgpt/gpt-6.1-sol,chatgpt/gpt-6-sol,chatgpt/gpt-6-luna,groq-gpt-oss-120b,qwen3.5:9b,qwen3.8:27b-iq4
           # Non-admins get Custom-GPT-style assistants, projects/knowledge,
           # saved prompts and scheduled tasks.
           USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS: "True"
@@ -138,7 +149,9 @@ controllers:
           USER_PERMISSIONS_WORKSPACE_PROMPTS_ACCESS: "True"
           USER_PERMISSIONS_FEATURES_AUTOMATIONS: "True"
           # Titles, tags, follow-ups, search queries: never on the chat model
-          # (would burn Nous credit / ChatGPT quota on housekeeping).
+          # (would burn Nous credit / ChatGPT quota on housekeeping). Ollama
+          # chats: no TASK_MODEL = housekeeping runs on the chat's own local
+          # model (stays private, no GPU swap).
           TASK_MODEL_EXTERNAL: groq-gpt-oss-120b
           ENABLE_EVALUATION_ARENA_MODELS: "False"
           ENABLE_COMMUNITY_SHARING: "False"

@@ -6,29 +6,6 @@ controllers:
     # Filestore + sessions live on one RWO PVC — never scale past 1.
     replicas: 1
     strategy: Recreate
-    pod:
-      annotations:
-        k8s.ksgate.org/postgres-ready: |
-          {
-            "apiVersion": "postgres-operator.crunchydata.com/v1beta1",
-            "kind": "PostgresCluster",
-            "name": "postgres",
-            "namespace": "crunchy-postgres-cluster",
-            "expression": "has(resource.status.instances) && resource.status.instances.exists(i, i.readyReplicas >= 1)"
-          }
-        # Odoo's bus uses LISTEN/NOTIFY, which PgBouncer transaction pooling
-        # breaks — connect to the primary directly, not postgres-pgbouncer.
-        k8s.ksgate.org/postgres-service: |
-          {
-            "apiVersion": "v1",
-            "kind": "Service",
-            "name": "postgres-primary",
-            "namespace": "crunchy-postgres-cluster"
-          }
-      schedulingGates:
-        - name: k8s.ksgate.org/postgres-ready
-        - name: k8s.ksgate.org/postgres-service
-
     initContainers:
       # OCA auth_oidc (OIDC code flow + PKCE against Authelia) is not in the
       # image: fetch the module and its python-jose dependency onto the PVC.

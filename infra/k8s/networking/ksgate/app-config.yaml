@@ -1,8 +1,0 @@
-app:
-  name: ksgate
-  namespace: ksgate
-  chart: ksgate
-  chartRepo: ghcr.io/ksgate/charts
-  chartVersion: 0.6.2
-  hasValues: false
-  disableAutoSync: true

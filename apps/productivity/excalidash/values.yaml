@@ -109,17 +109,6 @@ controllers:
           limits:
             memory: 128Mi
 defaultPodOptions:
-  annotations:
-    k8s.ksgate.org/postgres-ready: |
-      {
-        "apiVersion": "postgres-operator.crunchydata.com/v1beta1",
-        "kind": "PostgresCluster",
-        "name": "postgres",
-        "namespace": "crunchy-postgres-cluster",
-        "expression": "has(resource.status.instances) && resource.status.instances.exists(i, i.readyReplicas >= 1)"
-      }
-  schedulingGates:
-    - name: k8s.ksgate.org/postgres-ready
   securityContext:
     seccompProfile: { type: RuntimeDefault }
     runAsNonRoot: true

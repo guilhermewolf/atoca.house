@@ -11,7 +11,7 @@ controllers:
         image:
           # renovate: datasource=docker depName=akitaonrails/ai-memory
           repository: docker.io/akitaonrails/ai-memory
-          tag: 3.6.3@sha256:02f735b968136980add44214ef4264c2e8c3a149d1584eb737b2c7aace537ada
+          tag: 3.6.4@sha256:f6c6b100b415dc51c27693603b2662bb1cd98040342339d23e73b3eecc3b3158
         args:
           - serve
           - --transport
